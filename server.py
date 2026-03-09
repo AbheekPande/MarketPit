@@ -3,16 +3,24 @@ MarketPit — Python Backend Server (Railway Edition)
 Fetches real-time Indian stock data from Yahoo Finance (yfinance)
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import yfinance as yf
 from datetime import datetime
 import threading
 import time
 import os
+import urllib.request
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins so the HTML frontend can connect
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    return response
 
 NIFTY500 = [
     ("RELIANCE",    "Reliance Industries"),
@@ -478,6 +486,19 @@ def index():
     </body></html>"""
 
 
+def keep_alive():
+    """Ping self every 10 minutes to prevent Railway from sleeping"""
+    time.sleep(60)  # wait for server to start
+    port = int(os.environ.get("PORT", 5000))
+    url = f"http://localhost:{port}/api/status"
+    while True:
+        try:
+            urllib.request.urlopen(url, timeout=5)
+            print(f"[{datetime.now().strftime('%H:%M')}] Keep-alive ping sent")
+        except Exception as e:
+            print(f"Keep-alive failed: {e}")
+        time.sleep(600)  # ping every 10 minutes
+
 if __name__ == "__main__":
     print("=" * 55)
     print("  MarketPit Backend — Railway Edition")
@@ -486,6 +507,8 @@ if __name__ == "__main__":
     refresh_cache()
     t = threading.Thread(target=background_refresher, daemon=True)
     t.start()
+    k = threading.Thread(target=keep_alive, daemon=True)
+    k.start()
     # Railway uses PORT environment variable
     port = int(os.environ.get("PORT", 5000))
     print(f"Server running on port {port}")
