@@ -1055,13 +1055,6 @@
   <main>
     <!-- FEED PAGE -->
     <div class="page active" id="page-feed">
-      <!-- Breaking News -->
-      <div class="breaking-strip fade-in" style="margin-bottom:14px;">
-        <span class="breaking-label">⚡ FLASH</span>
-        <span class="breaking-text">Fed minutes show majority favor holding rates through Q3 2025 — bond yields spike 12bps</span>
-        <span class="breaking-time">2m ago</span>
-      </div>
-
       <!-- Feed filters -->
       <div class="feed-filter fade-in">
         <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
@@ -1089,7 +1082,7 @@
               <button class="compose-action-btn has-tooltip">📊 <span class="tooltip">Add Chart</span></button>
               <button class="compose-action-btn has-tooltip">📋 <span class="tooltip">Add Poll</span></button>
               <button class="compose-action-btn has-tooltip">🔗 <span class="tooltip">Add Link</span></button>
-              <button class="btn-primary" style="padding:7px 16px;font-size:12px;">Post to Pit</button>
+              <button class="btn-primary" style="padding:7px 16px;font-size:12px;" onclick="submitPost()">Post to Pit</button>
             </div>
           </div>
         </div>
@@ -1185,159 +1178,31 @@
       <span class="modal-title">YOUR PROFILE</span>
       <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg3);border-radius:10px;margin-bottom:16px;border:1px solid var(--border);">
-      <div class="avatar" style="width:50px;height:50px;font-size:18px;border-radius:50%;">JP</div>
-      <div>
-        <div style="font-weight:700;font-size:16px;color:var(--text);">JadeParadox</div>
-        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);">@jadeparadox · Level 14 Analyst</div>
-        <div style="display:flex;gap:14px;margin-top:8px;">
-          <span style="font-size:12px;color:var(--text2);"><strong style="color:var(--text);">1.4k</strong> followers</span>
-          <span style="font-size:12px;color:var(--text2);"><strong style="color:var(--text);">312</strong> following</span>
-          <span style="font-size:12px;color:var(--green);"><strong>+78%</strong> call accuracy</span>
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--accent);">247</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Posts</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--green);">+78%</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Accuracy</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--gold);">4,200</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Pit Points</div>
-      </div>
-    </div>
-    <button class="btn-primary" style="width:100%;">Edit Profile</button>
+    <div id="profileContent"></div>
   </div>
 </div>
 
 <script>
-// ── DATA ──
-const posts = [
-  {
-    id:1,
-    author:'VoltexTrader',
-    handle:'@voltex',
-    badge:'bull',badgeLabel:'BULL',
-    avatar:'VT',
-    avatarColor:'linear-gradient(135deg,#00e5ff,#0080ff)',
-    time:'4m ago',
-    pit:'Equities',pitColor:'rgba(0,229,255,0.1)',pitTextColor:'var(--accent)',
-    text:'Breaking down <span class="ticker-tag">$NVDA</span> earnings setup: Options market pricing in a 9.2% move. IV rank sitting at 88. The real play here might be the <span class="hashtag">#AIinfrastructure</span> ripple — <span class="mention">@DataFlowPro</span> your read on hyperscaler capex guidance?',
-    chart:true,
-    chartColor:'#00e5ff',
-    chartUp:true,
-    likes:284,
-    comments:47,
-    reposts:31,
-    bulls:72,bears:28
-  },
-  {
-    id:2,
-    author:'CryptoNomad_X',
-    handle:'@cryptonomad',
-    badge:'analyst',badgeLabel:'ANALYST',
-    avatar:'CN',
-    avatarColor:'linear-gradient(135deg,#ffd700,#ff9900)',
-    time:'18m ago',
-    pit:'Crypto',pitColor:'rgba(255,215,0,0.1)',pitTextColor:'var(--gold)',
-    text:'<span class="ticker-tag">$BTC</span> weekly close above 87k was the confirmation I needed. Next key levels: 92k resistance, then the psychological 100k. On-chain: exchange outflows at 3-month high — classic pre-rally accumulation pattern. Long bias, stops below 84k.',
-    poll:{options:['🚀 100k+ by EOQ','📊 Consolidate 80-95k range','📉 Correction to 72k first'],votes:[1240,2870,890]},
-    likes:512,
-    comments:89,
-    reposts:71,
-    bulls:81,bears:19
-  },
-  {
-    id:3,
-    author:'IronCommodities',
-    handle:'@ironcomm',
-    badge:'bear',badgeLabel:'BEAR',
-    avatar:'IC',
-    avatarColor:'linear-gradient(135deg,#ff3355,#ff6b35)',
-    time:'35m ago',
-    pit:'Commodities',pitColor:'rgba(255,107,53,0.1)',pitTextColor:'var(--accent2)',
-    text:'WTI crude <span class="ticker-tag">$OIL</span> technically exhausted at the 200DMA. OPEC+ compliance issues + USD strength = headwinds. Target: $71 over next 3 weeks. Positioning short via Dec puts. <span class="hashtag">#commodities</span> <span class="hashtag">#oiltrading</span>',
-    chart:true,
-    chartColor:'#ff3355',
-    chartUp:false,
-    likes:156,
-    comments:28,
-    reposts:19,
-    bulls:33,bears:67
-  },
-  {
-    id:4,
-    author:'MacroMaestro',
-    handle:'@macmaestro',
-    badge:'mod',badgeLabel:'MOD',
-    avatar:'MM',
-    avatarColor:'linear-gradient(135deg,#00ff88,#00b860)',
-    time:'1h ago',
-    pit:'Macro',pitColor:'rgba(0,255,136,0.1)',pitTextColor:'var(--green)',
-    text:'Fed minutes reading: "Higher for longer" is the consensus. But watch the labor market — any crack in NFP and the narrative flips fast. Bond market already positioning for 2 cuts in H2. <span class="ticker-tag">$TLT</span> long starting to look interesting at current yields. My macro thesis thread 👇',
-    likes:892,
-    comments:134,
-    reposts:203,
-    bulls:58,bears:42
-  }
-];
-
-const chatMessages = [
-  {user:'VoltexTrader',av:'VT',color:'linear-gradient(135deg,#00e5ff,#0080ff)',time:'now',text:'<span class="ticker-tag">$NVDA</span> looking strong pre-market 👀',badge:'bull'},
-  {user:'CryptoNomad_X',av:'CN',color:'linear-gradient(135deg,#ffd700,#ff9900)',time:'1m',text:'BTC holding 88k support nicely',badge:'analyst'},
-  {user:'SentinelVega',av:'SV',color:'linear-gradient(135deg,#ff6b35,#ffaa00)',time:'2m',text:'Anyone watching the <span class="ticker-tag">$DXY</span> rejection?'},
-  {user:'IronComm',av:'IC',color:'linear-gradient(135deg,#ff3355,#ff6b35)',time:'3m',text:'WTI rejection at 200DMA is clean'},
-  {user:'QuantAlpha',av:'QA',color:'linear-gradient(135deg,#8855ff,#aa44ff)',time:'4m',text:'Dark pool prints showing massive <span class="ticker-tag">$SPY</span> call buying 🔥'},
-  {user:'MacroMaestro',av:'MM',color:'linear-gradient(135deg,#00ff88,#00b860)',time:'5m',text:'Fed speak at 2pm EST — stay alert'},
-];
-
-const leaderboardData = [
-  {rank:1,name:'VoltexTrader',av:'VT',color:'linear-gradient(135deg,#00e5ff,#0080ff)',stat:'+84% acc · 3 streak',score:'9,840'},
-  {rank:2,name:'QuantAlpha',av:'QA',color:'linear-gradient(135deg,#8855ff,#aa44ff)',stat:'+79% acc · SPY calls',score:'8,110'},
-  {rank:3,name:'MacroMaestro',av:'MM',color:'linear-gradient(135deg,#00ff88,#00b860)',stat:'+75% acc · macro',score:'7,220'},
-  {rank:4,name:'CryptoNomad',av:'CN',color:'linear-gradient(135deg,#ffd700,#ff9900)',stat:'+71% acc · BTC',score:'6,050'},
-];
-
 // ── LIVE DATA CONFIG ──
 const API_BASE = 'https://web-production-78fc1.up.railway.app/api';
-let liveStocks = [];   // populated from backend
-let liveIndices = [];  // populated from backend
+let liveStocks = [];
+let liveIndices = [];
+
+// ── LOCAL STORAGE HELPERS ──
+function getPosts() { try { return JSON.parse(localStorage.getItem('mp_posts') || '[]'); } catch(e) { return []; } }
+function savePosts(p) { localStorage.setItem('mp_posts', JSON.stringify(p)); }
+function getUser() { try { return JSON.parse(localStorage.getItem('mp_user') || 'null'); } catch(e) { return null; } }
+function saveUser(u) { localStorage.setItem('mp_user', JSON.stringify(u)); }
+function getMessages() { try { return JSON.parse(localStorage.getItem('mp_messages') || '[]'); } catch(e) { return []; } }
+function saveMessages(m) { localStorage.setItem('mp_messages', JSON.stringify(m)); }
 
 const communities = [
-  {name:'Equity Pit',emoji:'🏦',desc:'Stocks, ETFs, and equity analysis. Earnings plays, technicals, and fundamentals.',members:'12.4k',active:'847',color:'linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,100,200,0.3))',joined:true},
-  {name:'Crypto Vault',emoji:'₿',desc:'Bitcoin, altcoins, DeFi, and on-chain analytics. No shill zone.',members:'28.1k',active:'2.1k',color:'linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.3))',joined:false},
-  {name:'Commodities Pit',emoji:'🛢️',desc:'Energy, metals, agriculture. Futures, spot, and physical markets.',members:'5.8k',active:'312',color:'linear-gradient(135deg,rgba(255,107,53,0.3),rgba(200,50,0,0.3))',joined:true},
-  {name:'Macro Desk',emoji:'🌐',desc:'Central banks, rates, FX, and global macro. Big picture views.',members:'9.2k',active:'531',color:'linear-gradient(135deg,rgba(0,255,136,0.3),rgba(0,150,80,0.3))',joined:false},
-  {name:'Options Flow',emoji:'📈',desc:'Unusual options activity, dark pool prints, gamma analysis.',members:'4.1k',active:'198',color:'linear-gradient(135deg,rgba(150,80,255,0.3),rgba(80,0,200,0.3))',joined:false},
-  {name:'Dark Pool Intel',emoji:'🔬',desc:'Institutional flow, dark pool activity, block trades.',members:'2.7k',active:'134',color:'linear-gradient(135deg,rgba(255,50,100,0.3),rgba(150,0,50,0.3))',joined:false},
-];
-
-const dmContacts = [
-  {av:'SV',color:'linear-gradient(135deg,#ff6b35,#ffaa00)',name:'SentinelVega',preview:'That NVDA setup is clean, I agree',time:'2m',status:'online',unread:2},
-  {av:'QA',color:'linear-gradient(135deg,#8855ff,#aa44ff)',name:'QuantAlpha',preview:'Forwarded the dark pool report',time:'14m',status:'online',unread:0},
-  {av:'VT',color:'linear-gradient(135deg,#00e5ff,#0080ff)',name:'VoltexTrader',preview:'Thanks for the tag',time:'1h',status:'away',unread:0},
-  {av:'MM',color:'linear-gradient(135deg,#00ff88,#00b860)',name:'MacroMaestro',preview:'Let me know what you think of…',time:'3h',status:'offline',unread:0},
-];
-
-const dmConvo = [
-  {sent:false,text:"Hey, saw your NVDA thesis — really solid read on the options setup. IV rank at 88 is nuts.",time:'Yesterday 6:32 PM'},
-  {sent:true,text:"Thanks! Been watching the hyperscaler capex story for weeks. Think the earnings gap holds.",time:'Yesterday 6:45 PM'},
-  {sent:false,text:"Agreed. What's your positioning? I'm thinking 15 delta calls, 3 weeks out.",time:'Yesterday 7:01 PM'},
-  {sent:true,text:"I like that. I'm going slightly ITM to reduce the IV drag risk.",time:'Yesterday 7:15 PM'},
-  {sent:false,text:"Smart. Let me know if you see unusual flow before the print 🚀",time:'Today 9:22 AM'},
-];
-
-const notifications = [
-  {icon:'💬',text:'VoltexTrader replied to your post about $BTC',time:'2m ago'},
-  {icon:'👍',text:'Your $NVDA analysis got 284 upvotes',time:'18m ago'},
-  {icon:'📢',text:'MacroMaestro mentioned you in a post',time:'1h ago'},
-  {icon:'🏆',text:'You reached Top 10 in Equity Pit leaderboard!',time:'2h ago'},
-  {icon:'⚡',text:'New breaking alert: Fed minutes released',time:'3h ago'},
+  {name:'Equity Pit',emoji:'🏦',desc:'Stocks, ETFs, and equity analysis. Earnings plays, technicals, and fundamentals.',color:'linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,100,200,0.3))',joined:false},
+  {name:'Crypto Vault',emoji:'₿',desc:'Bitcoin, altcoins, DeFi, and on-chain analytics. No shill zone.',color:'linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.3))',joined:false},
+  {name:'Commodities Pit',emoji:'🛢️',desc:'Energy, metals, agriculture. Futures, spot, and physical markets.',color:'linear-gradient(135deg,rgba(255,107,53,0.3),rgba(200,50,0,0.3))',joined:false},
+  {name:'Macro Desk',emoji:'🌐',desc:'Central banks, rates, FX, and global macro. Big picture views.',color:'linear-gradient(135deg,rgba(0,255,136,0.3),rgba(0,150,80,0.3))',joined:false},
+  {name:'Options Flow',emoji:'📈',desc:'Unusual options activity, dark pool prints, gamma analysis.',color:'linear-gradient(135deg,rgba(150,80,255,0.3),rgba(80,0,200,0.3))',joined:false},
+  {name:'Dark Pool Intel',emoji:'🔬',desc:'Institutional flow, dark pool activity, block trades.',color:'linear-gradient(135deg,rgba(255,50,100,0.3),rgba(150,0,50,0.3))',joined:false},
 ];
 
 // ── RENDER TRENDING (live) ──
@@ -1478,116 +1343,179 @@ function generateSparkline(up, color) {
   </svg>`;
 }
 
+// ── RENDER POSTS (real — from localStorage) ──
 function renderPosts() {
-  document.getElementById('postsContainer').innerHTML = posts.map(p=>`
+  const posts = getPosts();
+  const container = document.getElementById('postsContainer');
+  if (posts.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:48px 20px;color:var(--text3);">
+        <div style="font-size:36px;margin-bottom:12px;">📭</div>
+        <div style="font-size:15px;color:var(--text2);font-weight:600;">No posts yet</div>
+        <div style="font-size:12px;margin-top:6px;">Be the first to share a trade idea above!</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = posts.slice().reverse().map(p=>{
+    const initials = p.author.slice(0,2).toUpperCase();
+    const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                    'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)',
+                    'linear-gradient(135deg,#8855ff,#aa44ff)','linear-gradient(135deg,#ff3355,#ff6b35)'];
+    const color = colors[p.author.length % colors.length];
+    return `
     <div class="post-card fade-in">
       <div class="post-header">
-        <div class="post-avatar" style="background:${p.avatarColor}">${p.av}</div>
+        <div class="post-avatar" style="background:${color}">${initials}</div>
         <div class="post-meta">
           <div class="post-author">
             <span class="author-name">${p.author}</span>
-            <span class="author-handle">${p.handle}</span>
-            <span class="post-badge badge-${p.badge}">${p.badgeLabel}</span>
+            <span class="author-handle">@${p.author.toLowerCase().replace(/\s/g,'')}</span>
           </div>
-          <div class="post-time">${p.time}</div>
+          <div class="post-time">${new Date(p.time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${new Date(p.time).toLocaleDateString('en-IN')}</div>
         </div>
-        <span class="post-pit-tag tag-chip ${p.pit.toLowerCase().replace(' ','')}" style="background:${p.pitColor};color:${p.pitTextColor};border-color:${p.pitTextColor}20;">${p.pit}</span>
+        ${p.pit ? `<span class="tag-chip stocks" style="margin-left:auto;font-size:10px;">${p.pit}</span>` : ''}
       </div>
-      <div class="post-body">
-        <div class="post-text">${p.text}</div>
-      </div>
-      ${p.chart ? `<div class="post-chart-preview">${generateSparkline(p.chartUp, p.chartColor)}</div>` : ''}
-      ${p.poll ? `<div class="post-poll">${p.poll.options.map((opt,i)=>{
-        const total=p.poll.votes.reduce((a,b)=>a+b,0);
-        const pct=Math.round(p.poll.votes[i]/total*100);
-        const col=i===0?'var(--green)':i===1?'var(--accent)':'var(--red)';
-        return `<div class="poll-option"><div class="poll-fill" style="width:${pct}%;background:${col};"></div><span class="poll-label">${opt}</span><span class="poll-pct">${pct}%</span></div>`;
-      }).join('')}</div>` : ''}
-      <div class="sentiment-bar"><div class="sent-bull" style="width:${p.bulls}%"></div><div class="sent-bear" style="width:${p.bears}%"></div></div>
+      <div class="post-body"><div class="post-text">${p.text}</div></div>
       <div class="post-footer">
-        <button class="post-action" onclick="this.classList.toggle('liked');this.querySelector('.cnt').textContent=(parseInt(this.querySelector('.cnt').textContent)+(this.classList.contains('liked')?1:-1))"><span>↑</span><span class="cnt">${p.likes}</span></button>
-        <button class="post-action"><span>💬</span><span>${p.comments}</span></button>
-        <button class="post-action"><span>↗</span><span>${p.reposts}</span></button>
-        <button class="post-action" onclick="this.classList.toggle('bookmarked')"><span>🔖</span></button>
-        <span style="margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;color:var(--green);">${p.bulls}% 🐂</span>
-        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--red);">${p.bears}% 🐻</span>
+        <button class="post-action" onclick="likePost(${p.id},this)"><span>↑</span><span class="cnt">${p.likes||0}</span></button>
+        <button class="post-action"><span>💬</span><span>0</span></button>
+        <button class="post-action" onclick="deletePost(${p.id})"><span>🗑️</span></button>
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 }
 
-// ── RENDER MARKET ──
-// ── RENDER LEADERBOARD ──
+function likePost(id, btn) {
+  const posts = getPosts();
+  const p = posts.find(x=>x.id===id);
+  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; }
+}
+
+function deletePost(id) {
+  savePosts(getPosts().filter(p=>p.id!==id));
+  renderPosts();
+}
+
+// ── SUBMIT POST ──
+function submitPost() {
+  const user = getUser();
+  if (!user) { alert('Please set your username first — click your avatar top right!'); return; }
+  const input = document.querySelector('.compose-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const pitBtn = document.querySelector('.tag-chip.active-pit');
+  const pit = pitBtn ? pitBtn.textContent.replace('+ ','') : '';
+  const posts = getPosts();
+  posts.push({ id: Date.now(), author: user.name, text, pit, time: new Date().toISOString(), likes: 0 });
+  savePosts(posts);
+  input.value = '';
+  renderPosts();
+}
+
+// ── RENDER LEADERBOARD (real — top posters) ──
 function renderLeaderboard() {
-  const rankClass = ['gold','silver','bronze',''];
-  document.getElementById('leaderboard').innerHTML = leaderboardData.map((l,i)=>`
+  const posts = getPosts();
+  const counts = {};
+  posts.forEach(p => { counts[p.author] = (counts[p.author]||0) + (p.likes||0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const rankClass = ['gold','silver','bronze','',''];
+  const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                  'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)',
+                  'linear-gradient(135deg,#8855ff,#aa44ff)'];
+  const el = document.getElementById('leaderboard');
+  if (sorted.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:8px 10px;">No activity yet — start posting!</div>`;
+    return;
+  }
+  el.innerHTML = sorted.map(([name,score],i)=>`
     <div class="lead-item">
-      <div class="lead-rank ${rankClass[i]}">${l.rank}</div>
-      <div class="lead-av" style="background:${l.color}">${l.av}</div>
-      <div class="lead-info"><div class="lead-name">${l.name}</div><div class="lead-stat">${l.stat}</div></div>
-      <div class="lead-score">${l.score}</div>
+      <div class="lead-rank ${rankClass[i]}">${i+1}</div>
+      <div class="lead-av" style="background:${colors[i%colors.length]}">${name.slice(0,2).toUpperCase()}</div>
+      <div class="lead-info"><div class="lead-name">${name}</div><div class="lead-stat">${score} pts</div></div>
     </div>`).join('');
 }
 
-// ── RENDER CHAT ──
+// ── RENDER CHAT (real — localStorage) ──
 function renderChat() {
-  document.getElementById('chatMessages').innerHTML = chatMessages.map(m=>`
-    <div class="chat-msg">
-      <div class="chat-msg-av" style="background:${m.color}">${m.av}</div>
+  const msgs = getMessages();
+  const el = document.getElementById('chatMessages');
+  if (msgs.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:10px;">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+  el.innerHTML = msgs.slice(-30).map(m=>{
+    const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                    'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)'];
+    const c = colors[m.user.length % colors.length];
+    return `<div class="chat-msg">
+      <div class="chat-msg-av" style="background:${c}">${m.user.slice(0,2).toUpperCase()}</div>
       <div class="chat-msg-body">
         <div class="chat-msg-name">${m.user} <span class="chat-msg-time">${m.time}</span></div>
         <div class="chat-msg-text">${m.text}</div>
       </div>
-    </div>`).join('');
-  const msgs = document.getElementById('chatMessages');
-  msgs.scrollTop = msgs.scrollHeight;
+    </div>`;}).join('');
+  el.scrollTop = el.scrollHeight;
 }
 
 // ── RENDER COMMUNITIES ──
 function renderCommunities() {
-  document.getElementById('communityGrid').innerHTML = communities.map(c=>`
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  document.getElementById('communityGrid').innerHTML = communities.map(c=>{
+    const isJoined = joined.includes(c.name);
+    const posts = getPosts().filter(p=>p.pit===c.name).length;
+    return `
     <div class="community-card">
       <div class="community-banner" style="background:${c.color}">${c.emoji} ${c.name}</div>
       <div class="community-info">
         <div class="community-name">${c.name}</div>
         <div class="community-desc">${c.desc}</div>
         <div class="community-meta">
-          <div class="community-stat"><span class="community-stat-val">${c.members}</span><span class="community-stat-label">Members</span></div>
-          <div class="community-stat"><span class="community-stat-val" style="color:var(--green)">${c.active}</span><span class="community-stat-label">Online</span></div>
+          <div class="community-stat"><span class="community-stat-val">${posts}</span><span class="community-stat-label">Posts</span></div>
         </div>
       </div>
-      <button class="join-btn ${c.joined?'joined':''}" onclick="this.classList.toggle('joined');this.textContent=this.classList.contains('joined')?'✓ Joined':'+ Join Pit'">${c.joined?'✓ Joined':'+ Join Pit'}</button>
-    </div>`).join('');
+      <button class="join-btn ${isJoined?'joined':''}" onclick="toggleJoin('${c.name}',this)">${isJoined?'✓ Joined':'+ Join Pit'}</button>
+    </div>`}).join('');
 }
 
-// ── RENDER DMs ──
+function toggleJoin(name, btn) {
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  const idx = joined.indexOf(name);
+  if (idx>-1) joined.splice(idx,1); else joined.push(name);
+  localStorage.setItem('mp_joined', JSON.stringify(joined));
+  btn.classList.toggle('joined');
+  btn.textContent = btn.classList.contains('joined') ? '✓ Joined' : '+ Join Pit';
+}
+
+// ── RENDER DMs (real — localStorage per user) ──
 function renderDMs() {
-  document.getElementById('dmList').innerHTML = dmContacts.map(d=>`
-    <div class="dm-item ${d.unread?'unread':''}">
-      <div class="dm-av" style="background:${d.color}">${d.av}<div class="dm-status ${d.status}"></div></div>
-      <div class="dm-body"><div class="dm-name">${d.name}</div><div class="dm-preview">${d.preview}</div></div>
-      <div>
-        <div class="dm-time">${d.time}</div>
-        ${d.unread?`<div class="dm-unread-count" style="margin-top:4px;margin-left:auto;">${d.unread}</div>`:''}
-      </div>
-    </div>`).join('');
-
-  document.getElementById('dmConversation').innerHTML = dmConvo.map(m=>`
-    <div style="display:flex;justify-content:${m.sent?'flex-end':'flex-start'};">
-      <div style="max-width:75%;padding:10px 14px;border-radius:${m.sent?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${m.sent?'rgba(0,229,255,0.15)':'var(--bg3)'};border:1px solid ${m.sent?'rgba(0,229,255,0.25)':'var(--border)'};font-size:13px;color:var(--text);line-height:1.5;">
-        ${m.text}
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-top:4px;text-align:right;">${m.time}</div>
-      </div>
-    </div>`).join('');
+  const user = getUser();
+  document.getElementById('dmList').innerHTML = `
+    <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px;">
+      ${user ? 'No conversations yet.<br>DMs coming soon with backend!' : 'Set your username to use DMs'}
+    </div>`;
+  document.getElementById('dmConversation').innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--text3);font-size:12px;">Select a conversation</div>`;
 }
 
-// ── RENDER NOTIFICATIONS ──
+// ── RENDER NOTIFICATIONS (real) ──
 function renderNotifs() {
-  document.getElementById('notifList').innerHTML = notifications.map(n=>`
+  const posts = getPosts();
+  const user = getUser();
+  const el = document.getElementById('notifList');
+  if (!user || posts.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:10px;">No notifications yet.</div>`;
+    return;
+  }
+  const myPosts = posts.filter(p=>p.author===user.name && p.likes>0);
+  if (myPosts.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:10px;">No notifications yet.</div>`;
+    return;
+  }
+  el.innerHTML = myPosts.map(p=>`
     <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);">
-      <span style="font-size:18px;">${n.icon}</span>
+      <span style="font-size:18px;">👍</span>
       <div>
-        <div style="font-size:13px;color:var(--text);line-height:1.4;">${n.text}</div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-top:4px;">${n.time}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.4;">Your post got ${p.likes} like${p.likes!==1?'s':''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">"${p.text.slice(0,60)}${p.text.length>60?'…':''}"</div>
       </div>
     </div>`).join('');
 }
@@ -1616,28 +1544,81 @@ function setChatTab(tab, name) {
 
 // ── MODALS ──
 function openModal(id) {
+  if (id === 'profileModal') renderProfileModal();
   document.getElementById(id).classList.add('open');
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
+function renderProfileModal() {
+  const user = getUser();
+  const posts = getPosts();
+  const el = document.getElementById('profileContent');
+  if (!user) {
+    el.innerHTML = `
+      <div style="margin-bottom:14px;color:var(--text2);font-size:13px;">Choose your username to start posting and chatting.</div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" id="usernameInput" placeholder="e.g. TradingHawk" maxlength="20">
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="setUsername()">Set Username & Join</button>`;
+  } else {
+    const myPosts = posts.filter(p=>p.author===user.name);
+    const totalLikes = myPosts.reduce((a,p)=>a+(p.likes||0),0);
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg3);border-radius:10px;margin-bottom:16px;border:1px solid var(--border);">
+        <div class="avatar" style="width:50px;height:50px;font-size:18px;">${user.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-weight:700;font-size:16px;color:var(--text);">${user.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">@${user.name.toLowerCase().replace(/\s/g,'')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);">${myPosts.length}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Posts</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--green);">${totalLikes}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Likes received</div>
+        </div>
+      </div>
+      <button class="btn-ghost" style="width:100%" onclick="localStorage.removeItem('mp_user');closeModal('profileModal');updateAvatar();renderPosts();renderChat();">Log out</button>`;
+  }
+}
+
+function setUsername() {
+  const val = document.getElementById('usernameInput').value.trim();
+  if (!val || val.length < 2) { alert('Please enter at least 2 characters'); return; }
+  saveUser({name: val});
+  closeModal('profileModal');
+  updateAvatar();
+  renderPosts();
+  renderChat();
+}
+
+function updateAvatar() {
+  const user = getUser();
+  const av = document.querySelector('header .avatar');
+  if (av) av.textContent = user ? user.name.slice(0,2).toUpperCase() : '?';
+  const composeAv = document.querySelector('.compose-box .avatar');
+  if (composeAv) composeAv.textContent = user ? user.name.slice(0,2).toUpperCase() : '?';
+}
+
 // ── SEND CHAT ──
 function sendChat() {
+  const user = getUser();
+  if (!user) { alert('Set your username first — click your avatar!'); return; }
   const input = document.getElementById('chatInputField');
   const text = input.value.trim();
   if (!text) return;
-  const msgs = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'chat-msg';
-  div.innerHTML = `
-    <div class="chat-msg-av" style="background:linear-gradient(135deg,#8855ff,#aa44ff)">JP</div>
-    <div class="chat-msg-body">
-      <div class="chat-msg-name">JadeParadox <span class="chat-msg-time">now</span></div>
-      <div class="chat-msg-text">${text}</div>
-    </div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+  const msgs = getMessages();
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  msgs.push({user: user.name, text, time: now});
+  if (msgs.length > 100) msgs.splice(0, msgs.length - 100);
+  saveMessages(msgs);
+  renderChat();
   input.value = '';
 }
 
@@ -1654,14 +1635,9 @@ function sendDM() {
   input.value = '';
 }
 
-// ── LIVE TICKER UPDATES ──
-function randomize(price, up) {
-  const delta = (Math.random() * 0.4 - 0.18) * (up ? 1.2 : 0.8);
-  return (parseFloat(price.replace(/,/g,'')) * (1 + delta/100)).toFixed(2);
-}
-
 // ── INIT ──
-renderTrending([]);   // show empty state first
+updateAvatar();
+renderTrending([]);
 renderPosts();
 renderLeaderboard();
 renderChat();
@@ -1669,47 +1645,10 @@ renderCommunities();
 renderDMs();
 renderNotifs();
 
-// Fetch live data immediately, then refresh every 60s
+// Fetch live stock data, refresh every 60s
 fetchLiveData();
 loadSymbols();
 setInterval(fetchLiveData, 60000);
-
-// Simulated live chat
-const liveMsgs = [
-  "Anyone entering $NVDA now or waiting for a pullback?",
-  "Volume on $BTC looking thin rn 👀",
-  "$SPY bouncing off 580 support",
-  "Fed speak in 30min, be careful with positions",
-  "Huge put sweep on $QQQ just printed",
-  "Gold breaking out again. $GLD looking strong",
-  "$ETH correlation with BTC decoupling slightly",
-  "WTI inventories tomorrow — short-term bearish setup",
-];
-const liveUsers = [
-  {n:'TechWolf',av:'TW',c:'linear-gradient(135deg,#ff55aa,#ff0080)'},
-  {n:'PacificRim',av:'PR',c:'linear-gradient(135deg,#00ffcc,#00aaff)'},
-  {n:'VolScalper',av:'VS',c:'linear-gradient(135deg,#aa55ff,#5500ff)'},
-  {n:'NightOwl',av:'NO',c:'linear-gradient(135deg,#ffaa00,#ff5500)'},
-];
-let msgIdx = 0;
-setInterval(()=>{
-  const msgs = document.getElementById('chatMessages');
-  if (!msgs) return;
-  const u = liveUsers[Math.floor(Math.random()*liveUsers.length)];
-  const div = document.createElement('div');
-  div.className = 'chat-msg';
-  div.style.animation = 'fadeIn 0.3s ease both';
-  div.innerHTML = `
-    <div class="chat-msg-av" style="background:${u.c}">${u.av}</div>
-    <div class="chat-msg-body">
-      <div class="chat-msg-name">${u.n} <span class="chat-msg-time">now</span></div>
-      <div class="chat-msg-text">${liveMsgs[msgIdx % liveMsgs.length]}</div>
-    </div>`;
-  msgs.appendChild(div);
-  while (msgs.children.length > 20) msgs.removeChild(msgs.firstChild);
-  msgs.scrollTop = msgs.scrollHeight;
-  msgIdx++;
-}, 4500);
 </script>
 </body>
 </html>
