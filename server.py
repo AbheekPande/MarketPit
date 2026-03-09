@@ -1,9 +1,6 @@
 """
-MarketPit — Python Backend Server (Nifty 500 Edition)
+MarketPit — Python Backend Server (Railway Edition)
 Fetches real-time Indian stock data from Yahoo Finance (yfinance)
-
-Run:  py server.py
-Then open marketpit.html in your browser.
 """
 
 from flask import Flask, jsonify, request
@@ -12,11 +9,11 @@ import yfinance as yf
 from datetime import datetime
 import threading
 import time
+import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Allow all origins so the HTML frontend can connect
 
-# ── All Nifty 500 Stocks (NSE symbols) ──
 NIFTY500 = [
     ("RELIANCE",    "Reliance Industries"),
     ("TCS",         "Tata Consultancy Services"),
@@ -85,10 +82,8 @@ NIFTY500 = [
     ("LUPIN",       "Lupin Ltd"),
     ("BIOCON",      "Biocon Ltd"),
     ("AUROPHARMA",  "Aurobindo Pharma"),
-    ("IPCALAB",     "IPCA Laboratories"),
     ("ALKEM",       "Alkem Laboratories"),
     ("LALPATHLAB",  "Dr Lal PathLabs"),
-    ("METROPOLIS",  "Metropolis Healthcare"),
     ("MAXHEALTH",   "Max Healthcare"),
     ("FORTIS",      "Fortis Healthcare"),
     ("NH",          "Narayana Hrudayalaya"),
@@ -108,9 +103,6 @@ NIFTY500 = [
     ("RECLTD",      "REC Ltd"),
     ("PFC",         "Power Finance Corp"),
     ("NHPC",        "NHPC Ltd"),
-    ("SJVN",        "SJVN Ltd"),
-    ("TORNTPOWER",  "Torrent Power"),
-    ("CESC",        "CESC Ltd"),
     ("ADANIGREEN",  "Adani Green Energy"),
     ("ADANIPOWER",  "Adani Power"),
     ("SUZLON",      "Suzlon Energy"),
@@ -123,7 +115,6 @@ NIFTY500 = [
     ("SHRIRAMFIN",  "Shriram Finance"),
     ("MUTHOOTFIN",  "Muthoot Finance"),
     ("MANAPPURAM",  "Manappuram Finance"),
-    ("IIFL",        "IIFL Finance"),
     ("M&M",         "Mahindra & Mahindra"),
     ("ASHOKLEY",    "Ashok Leyland"),
     ("TVSMOTOR",    "TVS Motor Company"),
@@ -138,19 +129,9 @@ NIFTY500 = [
     ("CUMMINSIND",  "Cummins India"),
     ("KALYANKJIL",  "Kalyan Jewellers"),
     ("BATA",        "Bata India"),
-    ("RELAXO",      "Relaxo Footwears"),
-    ("METROBRAND",  "Metro Brands"),
     ("VBL",         "Varun Beverages"),
     ("JUBLFOOD",    "Jubilant Foodworks"),
-    ("DEVYANI",     "Devyani International"),
-    ("WESTLIFE",    "Westlife Foodworld"),
-    ("IRCTC",       "IRCTC"),
-    ("EASEMYTRIP",  "Easy Trip Planners"),
-    ("THOMASCOOK",  "Thomas Cook India"),
-    ("LEMONTRE",    "Lemon Tree Hotels"),
-    ("EIHOTEL",     "EIH Ltd"),
     ("PVRINOX",     "PVR INOX"),
-    ("NAZARA",      "Nazara Technologies"),
     ("TATAELXSI",   "Tata Elxsi"),
     ("KPIT",        "KPIT Technologies"),
     ("LTTS",        "L&T Technology Services"),
@@ -159,25 +140,18 @@ NIFTY500 = [
     ("COFORGE",     "Coforge Ltd"),
     ("HAPPSTMNDS",  "Happiest Minds Tech"),
     ("TANLA",       "Tanla Platforms"),
-    ("ROUTE",       "Route Mobile"),
     ("INDIAMART",   "IndiaMART InterMESH"),
     ("NAUKRI",      "Info Edge (Naukri)"),
     ("AFFLE",       "Affle India"),
     ("CLEAN",       "Clean Science & Tech"),
-    ("FINEORG",     "Fine Organic Industries"),
     ("TATACHEM",    "Tata Chemicals"),
     ("ATUL",        "Atul Ltd"),
     ("NAVINFLUOR",  "Navin Fluorine"),
     ("SRF",         "SRF Ltd"),
     ("DEEPAKNTR",   "Deepak Nitrite"),
-    ("AAVAS",       "Aavas Financiers"),
-    ("HOMEFIRST",   "Home First Finance"),
-    ("CANFINHOME",  "Can Fin Homes"),
     ("LICHSGFIN",   "LIC Housing Finance"),
-    ("PNBHOUSING",  "PNB Housing Finance"),
     ("LICI",        "Life Insurance Corp (LIC)"),
     ("GICRE",       "General Insurance Corp"),
-    ("NIACL",       "New India Assurance"),
     ("STARHEALTH",  "Star Health Insurance"),
     ("ICICIGI",     "ICICI Lombard General"),
     ("360ONE",      "360 ONE WAM"),
@@ -190,7 +164,6 @@ NIFTY500 = [
     ("KFINTECH",    "KFin Technologies"),
 ]
 
-# ── Index Symbols ──
 INDICES = [
     {"sym": "NIFTY 50",   "yf": "^NSEI",   "name": "Nifty 50"},
     {"sym": "SENSEX",     "yf": "^BSESN",  "name": "BSE Sensex"},
@@ -202,7 +175,6 @@ INDICES = [
 
 STOCK_LOOKUP = {sym: name for sym, name in NIFTY500}
 
-# Top 50 pre-fetched on startup
 TOP50_SYMS = [
     "RELIANCE","TCS","HDFCBANK","BHARTIARTL","ICICIBANK",
     "INFOSYS","SBIN","HINDUNILVR","ITC","LT",
@@ -213,7 +185,7 @@ TOP50_SYMS = [
     "COALINDIA","ONGC","ADANIPORTS","GRASIM","BRITANNIA",
     "CIPLA","DRREDDY","HEROMOTOCO","HINDALCO","DIVISLAB",
     "EICHERMOT","BPCL","TATACONSUM","APOLLOHOSP","BAJAJ-AUTO",
-    "VEDL","SBILIFE","HDFCLIFE","ZOMATO","IRCTC",
+    "VEDL","SBILIFE","HDFCLIFE","IRCTC","LICI",
 ]
 
 _cache = {
@@ -244,7 +216,7 @@ def fetch_quote(symbol_yf):
 
 
 def refresh_cache():
-    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Refreshing Top 50 + Indices...")
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Refreshing...")
     top50_data = []
     for sym in TOP50_SYMS:
         yf_sym = sym.replace(" ","") + ".NS"
@@ -260,7 +232,6 @@ def refresh_cache():
         q = fetch_quote(idx["yf"])
         indices_data.append({"sym": idx["sym"], "name": idx["name"],
                               "price": q["price"], "chg": q["chg"], "up": q["up"]})
-        print(f"  {idx['sym']:15}  {q['price']:>12}  {q['chg']}")
 
     with _cache_lock:
         _cache["top50"] = top50_data
@@ -307,7 +278,6 @@ def api_quote(symbol):
             if s["sym"].upper() == sym_clean:
                 return jsonify({"symbol": sym_clean, "name": s["name"],
                                 "price": s["price"], "chg": s["chg"], "up": s["up"], "source": "cache"})
-    print(f"  Live fetch: {sym_clean}")
     q = fetch_quote(sym_clean + ".NS")
     return jsonify({"symbol": sym_clean, "name": STOCK_LOOKUP.get(sym_clean, sym_clean),
                     "price": q["price"], "chg": q["chg"], "up": q["up"], "source": "live"})
@@ -334,26 +304,26 @@ def index():
         lu = _cache["last_updated"] or "not yet"
         count = len(_cache["top50"])
     return f"""<html><body style="font-family:monospace;background:#080b10;color:#c8d8e8;padding:30px">
-    <h2 style="color:#00e5ff">MarketPit API Server</h2>
+    <h2 style="color:#00e5ff">MarketPit API Server Running!</h2>
     <p>Last updated: <strong style="color:#00ff88">{lu}</strong> | Stocks cached: <strong style="color:#00ff88">{count}</strong></p>
-    <hr style="border-color:#1e2d3d;margin:16px 0">
     <ul>
       <li><a href="/api/all" style="color:#00e5ff">/api/all</a> — Top 50 + indices</li>
-      <li><a href="/api/symbols" style="color:#00e5ff">/api/symbols</a> — All {len(NIFTY500)} symbol names</li>
-      <li><a href="/api/quote/RELIANCE" style="color:#00e5ff">/api/quote/RELIANCE</a> — Any single stock</li>
-      <li><a href="/api/search?q=tata" style="color:#00e5ff">/api/search?q=tata</a> — Search stocks</li>
-      <li><a href="/api/status" style="color:#00e5ff">/api/status</a> — Server status</li>
+      <li><a href="/api/symbols" style="color:#00e5ff">/api/symbols</a> — All symbols</li>
+      <li><a href="/api/quote/RELIANCE" style="color:#00e5ff">/api/quote/RELIANCE</a> — Single stock</li>
+      <li><a href="/api/search?q=tata" style="color:#00e5ff">/api/search?q=tata</a> — Search</li>
     </ul>
     </body></html>"""
 
+
 if __name__ == "__main__":
     print("=" * 55)
-    print("  MarketPit Backend — Nifty 500 Edition")
-    print(f"  Total symbols loaded: {len(NIFTY500)}")
+    print("  MarketPit Backend — Railway Edition")
+    print(f"  Total symbols: {len(NIFTY500)}")
     print("=" * 55)
     refresh_cache()
     t = threading.Thread(target=background_refresher, daemon=True)
     t.start()
-    print("Server running at http://localhost:5000")
-    print("Open marketpit.html in your browser\n")
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Railway uses PORT environment variable
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Server running on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=False)
