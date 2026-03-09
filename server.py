@@ -284,14 +284,111 @@ def api_symbols():
 @app.route("/api/quote/<symbol>")
 def api_quote(symbol):
     sym_clean = symbol.upper().replace(" ","")
-    with _cache_lock:
-        for s in _cache["top50"]:
-            if s["sym"].upper() == sym_clean:
-                return jsonify({"symbol": sym_clean, "name": s["name"],
-                                "price": s["price"], "chg": s["chg"], "up": s["up"], "source": "cache"})
+    # Always fetch fresh full data for individual quote requests
     q = fetch_quote(sym_clean + ".NS")
-    return jsonify({"symbol": sym_clean, "name": STOCK_LOOKUP.get(sym_clean, sym_clean),
-                    "price": q["price"], "chg": q["chg"], "up": q["up"], "source": "live"})
+    return jsonify({
+        "symbol": sym_clean,
+        "name": STOCK_LOOKUP.get(sym_clean, sym_clean),
+        "price": q.get("price"),
+        "chg": q.get("chg"),
+        "up": q.get("up"),
+        "high": q.get("high"),
+        "low": q.get("low"),
+        "volume": q.get("volume"),
+        "week52high": q.get("week52high"),
+        "week52low": q.get("week52low"),
+        "marketcap": q.get("marketcap"),
+        "source": "live"
+    })
+
+@app.route("/api/technical/<symbol>")
+def api_technical(symbol):
+    sym_clean = symbol.upper().replace(" ","")
+    try:
+        ticker = yf.Ticker(sym_clean + ".NS")
+        hist = ticker.history(period="6mo")
+        if hist.empty:
+            return jsonify({"error": "No data"}), 404
+
+        close = hist["Close"]
+        price = round(float(close.iloc[-1]), 2)
+
+        # Moving Averages
+        ma50  = round(float(close.tail(50).mean()), 2)  if len(close) >= 50  else None
+        ma200 = round(float(close.tail(200).mean()), 2) if len(close) >= 200 else None
+
+        # RSI (14 period)
+        delta = close.diff()
+        gain  = delta.clip(lower=0).rolling(14).mean()
+        loss  = (-delta.clip(upper=0)).rolling(14).mean()
+        rs    = gain / loss
+        rsi   = round(float(100 - (100 / (1 + rs.iloc[-1]))), 1)
+
+        # MACD
+        ema12 = close.ewm(span=12, adjust=False).mean()
+        ema26 = close.ewm(span=26, adjust=False).mean()
+        macd_line   = ema12 - ema26
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        macd_val    = round(float(macd_line.iloc[-1]), 2)
+        signal_val  = round(float(signal_line.iloc[-1]), 2)
+        macd_bullish = macd_val > signal_val
+
+        # Bollinger Bands (20 period)
+        ma20  = close.rolling(20).mean()
+        std20 = close.rolling(20).std()
+        bb_upper = round(float((ma20 + 2*std20).iloc[-1]), 2)
+        bb_lower = round(float((ma20 - 2*std20).iloc[-1]), 2)
+        bb_mid   = round(float(ma20.iloc[-1]), 2)
+
+        # Support & Resistance (recent 20-day low/high)
+        support    = round(float(hist["Low"].tail(20).min()), 2)
+        resistance = round(float(hist["High"].tail(20).max()), 2)
+
+        # Overall signal
+        signals = []
+        if ma50 and price > ma50:   signals.append("BUY")
+        else:                        signals.append("SELL")
+        if ma200 and price > ma200: signals.append("BUY")
+        else:                        signals.append("SELL")
+        if rsi < 30:                 signals.append("BUY")
+        elif rsi > 70:               signals.append("SELL")
+        else:                        signals.append("HOLD")
+        if macd_bullish:             signals.append("BUY")
+        else:                        signals.append("SELL")
+
+        buy_count  = signals.count("BUY")
+        sell_count = signals.count("SELL")
+        if buy_count >= 3:   overall = "STRONG BUY"
+        elif buy_count == 2: overall = "BUY"
+        elif sell_count >= 3:overall = "STRONG SELL"
+        elif sell_count == 2:overall = "SELL"
+        else:                overall = "HOLD"
+
+        # Sparkline (last 30 days closing prices)
+        sparkline = [round(float(x), 2) for x in close.tail(30).tolist()]
+
+        return jsonify({
+            "symbol": sym_clean,
+            "price": price,
+            "ma50": ma50,
+            "ma200": ma200,
+            "rsi": rsi,
+            "macd": macd_val,
+            "macd_signal": signal_val,
+            "macd_bullish": macd_bullish,
+            "bb_upper": bb_upper,
+            "bb_lower": bb_lower,
+            "bb_mid": bb_mid,
+            "support": support,
+            "resistance": resistance,
+            "overall": overall,
+            "buy_signals": buy_count,
+            "sell_signals": sell_count,
+            "sparkline": sparkline
+        })
+    except Exception as e:
+        print(f"Technical error {sym_clean}: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/search")
 def api_search():
