@@ -1249,7 +1249,7 @@ async function showStockDetail(sym, name) {
     const ta = taRes.ok ? await taRes.json() : null;
 
     const up = d.up;
-    const overallColor = ta ? (ta.overall.includes('BUY') ? 'var(--green)' : ta.overall.includes('SELL') ? 'var(--red)' : 'var(--gold)') : 'var(--text3)';
+    const currency = d.currency || '₹'; = ta ? (ta.overall.includes('BUY') ? 'var(--green)' : ta.overall.includes('SELL') ? 'var(--red)' : 'var(--gold)') : 'var(--text3)';
 
     // Sparkline SVG
     let sparkSVG = '';
@@ -1277,6 +1277,7 @@ async function showStockDetail(sym, name) {
     }
 
     // RSI gauge
+    const overallColor = ta ? (ta.overall.includes('BUY') ? 'var(--green)' : ta.overall.includes('SELL') ? 'var(--red)' : 'var(--gold)') : 'var(--text3)';
     const rsiColor = ta ? (ta.rsi < 30 ? 'var(--green)' : ta.rsi > 70 ? 'var(--red)' : 'var(--gold)') : 'var(--text3)';
     const rsiLabel = ta ? (ta.rsi < 30 ? 'OVERSOLD 🟢' : ta.rsi > 70 ? 'OVERBOUGHT 🔴' : 'NEUTRAL 🟡') : '—';
 
@@ -1285,7 +1286,7 @@ async function showStockDetail(sym, name) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">PRICE</div>
-          <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text);">₹${d.price}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text);">${currency}${d.price}</div>
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">CHANGE</div>
@@ -1431,8 +1432,24 @@ async function fetchLiveData() {
   }
 }
 
-// ── STOCK SEARCH ──
-let allSymbols = [];  // loaded from /api/symbols on startup
+// ── CRYPTO & COMMODITY SEARCH LIST ──
+const cryptoSymbols = [
+  {sym:'BTC', name:'Bitcoin'}, {sym:'ETH', name:'Ethereum'},
+  {sym:'BNB', name:'Binance Coin'}, {sym:'SOL', name:'Solana'},
+  {sym:'XRP', name:'XRP'}, {sym:'ADA', name:'Cardano'},
+  {sym:'DOGE', name:'Dogecoin'}, {sym:'MATIC', name:'Polygon'},
+  {sym:'DOT', name:'Polkadot'}, {sym:'AVAX', name:'Avalanche'},
+  {sym:'LINK', name:'Chainlink'}, {sym:'LTC', name:'Litecoin'},
+  {sym:'UNI', name:'Uniswap'}, {sym:'SHIB', name:'Shiba Inu'},
+  {sym:'PEPE', name:'Pepe'}, {sym:'INJ', name:'Injective'},
+];
+const commoditySymbols = [
+  {sym:'GOLD', name:'Gold Futures'}, {sym:'SILVER', name:'Silver Futures'},
+  {sym:'CRUDE', name:'Crude Oil WTI'}, {sym:'BRENT', name:'Brent Crude'},
+  {sym:'NATURALGAS', name:'Natural Gas'}, {sym:'COPPER', name:'Copper Futures'},
+  {sym:'PLATINUM', name:'Platinum Futures'}, {sym:'WHEAT', name:'Wheat Futures'},
+  {sym:'CORN', name:'Corn Futures'},
+];
 
 async function loadSymbols() {
   try {
@@ -1442,15 +1459,29 @@ async function loadSymbols() {
   } catch(e) { console.warn('Could not load symbols', e); }
 }
 
+// ── STOCK SEARCH ──
+let allSymbols = [];  // loaded from /api/symbols on startup
+
 function onStockSearch(query) {
   const dropdown = document.getElementById('searchDropdown');
   document.getElementById('searchResultCard').style.display = 'none';
   if (!query || query.length < 1) { dropdown.style.display = 'none'; return; }
 
   const q = query.toLowerCase();
-  const matches = allSymbols.filter(s =>
+
+  const stockMatches = allSymbols.filter(s =>
     s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
-  ).slice(0, 12);
+  ).slice(0, 6).map(s => ({...s, type:'stock', badge:'NSE', badgeColor:'var(--accent)'}));
+
+  const cryptoMatches = cryptoSymbols.filter(s =>
+    s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+  ).slice(0, 3).map(s => ({...s, type:'crypto', badge:'CRYPTO', badgeColor:'var(--gold)'}));
+
+  const commMatches = commoditySymbols.filter(s =>
+    s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+  ).slice(0, 3).map(s => ({...s, type:'commodity', badge:'COMMODITY', badgeColor:'var(--accent2)'}));
+
+  const matches = [...stockMatches, ...cryptoMatches, ...commMatches].slice(0, 12);
 
   if (matches.length === 0) {
     dropdown.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:var(--text3);">No results found</div>`;
@@ -1458,13 +1489,8 @@ function onStockSearch(query) {
     return;
   }
 
-  dropdown.innerHTML = matches.map(s => {
-    const symMatch = s.sym.toLowerCase().includes(q);
-    const highlighted = symMatch
-      ? `<span style="color:var(--accent)">${s.sym}</span>`
-      : s.sym;
-    return `
-    <div onmousedown="event.preventDefault();fetchAndShowQuote('${s.sym}','${s.name.replace(/'/g,'')}');showStockDetail('${s.sym}','${s.name.replace(/'/g,'')}')"
+  dropdown.innerHTML = matches.map(s => `
+    <div onmousedown="event.preventDefault();showStockDetail('${s.sym}','${s.name.replace(/'/g,'')}')"
       style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);
              display:flex;justify-content:space-between;align-items:center;transition:background 0.1s;"
       onmouseover="this.style.background='rgba(0,229,255,0.06)'"
@@ -1472,14 +1498,14 @@ function onStockSearch(query) {
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="width:32px;height:32px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);
                     display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;
-                    font-size:9px;font-weight:700;color:var(--accent);">${s.sym.slice(0,3)}</div>
+                    font-size:9px;font-weight:700;color:${s.badgeColor};">${s.sym.slice(0,3)}</div>
         <div>
-          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${highlighted}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:1px;">${s.name}</div>
         </div>
       </div>
-      <span style="font-size:10px;color:var(--accent2);white-space:nowrap;">NSE ›</span>
-    </div>`}).join('');
+      <span style="font-size:9px;color:${s.badgeColor};border:1px solid ${s.badgeColor}44;border-radius:4px;padding:2px 5px;white-space:nowrap;">${s.badge}</span>
+    </div>`).join('');
   dropdown.style.display = 'block';
 }
 

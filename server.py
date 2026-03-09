@@ -281,14 +281,67 @@ def api_symbols():
     with _cache_lock:
         return jsonify({"symbols": _cache["all_symbols"], "count": len(_cache["all_symbols"])})
 
+# ── CRYPTO & COMMODITY LOOKUP ──
+CRYPTO_LOOKUP = {
+    "BTC": ("BTC-USD", "Bitcoin"),
+    "BITCOIN": ("BTC-USD", "Bitcoin"),
+    "ETH": ("ETH-USD", "Ethereum"),
+    "ETHEREUM": ("ETH-USD", "Ethereum"),
+    "BNB": ("BNB-USD", "Binance Coin"),
+    "SOL": ("SOL-USD", "Solana"),
+    "XRP": ("XRP-USD", "XRP"),
+    "ADA": ("ADA-USD", "Cardano"),
+    "DOGE": ("DOGE-USD", "Dogecoin"),
+    "MATIC": ("MATIC-USD", "Polygon"),
+    "DOT": ("DOT-USD", "Polkadot"),
+    "AVAX": ("AVAX-USD", "Avalanche"),
+    "LINK": ("LINK-USD", "Chainlink"),
+    "LTC": ("LTC-USD", "Litecoin"),
+    "UNI": ("UNI-USD", "Uniswap"),
+    "ATOM": ("ATOM-USD", "Cosmos"),
+    "SHIB": ("SHIB-USD", "Shiba Inu"),
+    "PEPE": ("PEPE-USD", "Pepe"),
+    "TON": ("TON11419-USD", "Toncoin"),
+    "INJ": ("INJ-USD", "Injective"),
+}
+
+COMMODITY_LOOKUP = {
+    "GOLD": ("GC=F", "Gold Futures"),
+    "SILVER": ("SI=F", "Silver Futures"),
+    "CRUDE": ("CL=F", "Crude Oil WTI"),
+    "OIL": ("CL=F", "Crude Oil WTI"),
+    "CRUDEOIL": ("CL=F", "Crude Oil WTI"),
+    "BRENT": ("BZ=F", "Brent Crude Oil"),
+    "NATURALGAS": ("NG=F", "Natural Gas"),
+    "GAS": ("NG=F", "Natural Gas"),
+    "COPPER": ("HG=F", "Copper Futures"),
+    "PLATINUM": ("PL=F", "Platinum Futures"),
+    "WHEAT": ("ZW=F", "Wheat Futures"),
+    "CORN": ("ZC=F", "Corn Futures"),
+    "ALUMINIUM": ("ALI=F", "Aluminium Futures"),
+    "NICKEL": ("NI=F", "Nickel Futures"),
+}
+
+def resolve_symbol(raw):
+    """Returns (yf_symbol, display_name, currency_prefix, asset_type)"""
+    key = raw.upper().replace(" ","").replace("-","")
+    if key in CRYPTO_LOOKUP:
+        yf_sym, name = CRYPTO_LOOKUP[key]
+        return yf_sym, name, "$", "crypto"
+    if key in COMMODITY_LOOKUP:
+        yf_sym, name = COMMODITY_LOOKUP[key]
+        return yf_sym, name, "$", "commodity"
+    # Indian stock default
+    return key + ".NS", STOCK_LOOKUP.get(key, key), "₹", "stock"
+
+
 @app.route("/api/quote/<symbol>")
 def api_quote(symbol):
-    sym_clean = symbol.upper().replace(" ","")
-    # Always fetch fresh full data for individual quote requests
-    q = fetch_quote(sym_clean + ".NS")
+    yf_sym, name, prefix, asset_type = resolve_symbol(symbol)
+    q = fetch_quote(yf_sym)
     return jsonify({
-        "symbol": sym_clean,
-        "name": STOCK_LOOKUP.get(sym_clean, sym_clean),
+        "symbol": symbol.upper(),
+        "name": name,
         "price": q.get("price"),
         "chg": q.get("chg"),
         "up": q.get("up"),
@@ -298,14 +351,16 @@ def api_quote(symbol):
         "week52high": q.get("week52high"),
         "week52low": q.get("week52low"),
         "marketcap": q.get("marketcap"),
+        "currency": prefix,
+        "asset_type": asset_type,
         "source": "live"
     })
 
 @app.route("/api/technical/<symbol>")
 def api_technical(symbol):
-    sym_clean = symbol.upper().replace(" ","")
+    yf_sym, display_name, prefix, asset_type = resolve_symbol(symbol)
     try:
-        ticker = yf.Ticker(sym_clean + ".NS")
+        ticker = yf.Ticker(yf_sym)
         hist = ticker.history(period="6mo")
         if hist.empty:
             return jsonify({"error": "No data"}), 404
