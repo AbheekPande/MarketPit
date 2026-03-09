@@ -978,45 +978,38 @@
         <a class="pit-item active" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,229,255,0.12);">📊</div>
           <span class="pit-name">All Markets</span>
-          <span class="pit-count">2.4k</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🏦</div>
           <span class="pit-name">Equities</span>
-          <span class="pit-count">891</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,215,0,0.1);">₿</div>
           <span class="pit-name">Crypto</span>
-          <span class="pit-count">1.1k</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,107,53,0.1);">🛢️</div>
           <span class="pit-name">Commodities</span>
-          <span class="pit-count">412</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🌐</div>
           <span class="pit-name">Macro</span>
-          <span class="pit-count">654</span>
         </a>
         <div class="divider"></div>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(100,100,255,0.1);">📈</div>
           <span class="pit-name">Options Flow</span>
-          <span class="pit-count">287</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,100,200,0.1);">🔬</div>
           <span class="pit-name">Dark Pool</span>
-          <span class="pit-count">178</span>
         </a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
         Trending Now
-        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;">Loading…</span>
+        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;white-space:nowrap;">Loading…</span>
       </div>
       <!-- Stock Search -->
       <div style="position:relative;margin-bottom:10px;">
@@ -1172,6 +1165,19 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="stockDetailModal" onclick="closeModal('stockDetailModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title" id="sdSym"></span>
+        <span style="font-size:12px;color:var(--text3);margin-left:8px;" id="sdName"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal('stockDetailModal')">✕</button>
+    </div>
+    <div id="sdBody"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="profileModal" onclick="closeModal('profileModal')">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -1213,7 +1219,7 @@ function renderTrending(data) {
     return;
   }
   list.innerHTML = data.map(t=>`
-    <div class="trend-item">
+    <div class="trend-item" onclick="showStockDetail('${t.sym}','${t.name.replace(/'/g,'')}')" style="cursor:pointer;">
       <div>
         <div class="trend-sym">${t.sym}</div>
         <div class="trend-name">${t.name}</div>
@@ -1223,6 +1229,61 @@ function renderTrending(data) {
         <div class="trend-chg ${t.up?'up':'dn'}">${t.chg}</div>
       </div>
     </div>`).join('');
+}
+
+// ── STOCK DETAIL MODAL ──
+async function showStockDetail(sym, name) {
+  document.getElementById('stockDetailModal').classList.add('open');
+  document.getElementById('sdSym').textContent = sym;
+  document.getElementById('sdName').textContent = name;
+  document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3);">Loading…</div>`;
+  try {
+    const res = await fetch(`${API_BASE}/quote/${sym}`);
+    const d = await res.json();
+    const up = d.up;
+    document.getElementById('sdBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">PRICE</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text);">₹${d.price}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">CHANGE</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:${up?'var(--green)':'var(--red)'};">${d.chg}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">DAY HIGH</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">₹${d.high||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">DAY LOW</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">₹${d.low||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">VOLUME</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);">${d.volume ? (d.volume>1e7?(d.volume/1e7).toFixed(1)+'Cr':(d.volume/1e5).toFixed(1)+'L') : '—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">52W HIGH</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">₹${d.week52high||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">52W LOW</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">₹${d.week52low||'—'}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">MKT CAP</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);">${d.marketcap ? '₹'+(d.marketcap/1e12).toFixed(1)+'T' : '—'}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);text-align:right;">
+        Last updated: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST · ~15min delay
+      </div>`;
+  } catch(e) {
+    document.getElementById('sdBody').innerHTML = `<div style="color:var(--accent2);padding:20px;text-align:center;">Could not load data. Server may be offline.</div>`;
+  }
 }
 
 // ── FETCH LIVE DATA FROM BACKEND ──
@@ -1239,9 +1300,9 @@ async function fetchLiveData() {
     renderTrending(liveStocks.slice(0, 5));
 
     // Update last-updated badge
-    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN') : '—';
+    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST' : '—';
     const badge = document.getElementById('liveTimestamp');
-    if (badge) badge.textContent = `Live · ${ts}`;
+    if (badge) badge.textContent = `LIVE · ${ts}`;
 
     // Flash green pulse on update
     document.querySelectorAll('.trend-item').forEach(el => {
@@ -1346,6 +1407,7 @@ function generateSparkline(up, color) {
 // ── RENDER POSTS (real — from localStorage) ──
 function renderPosts() {
   const posts = getPosts();
+  const liked = JSON.parse(localStorage.getItem('mp_liked')||'[]');
   const container = document.getElementById('postsContainer');
   if (posts.length === 0) {
     container.innerHTML = `
@@ -1377,7 +1439,7 @@ function renderPosts() {
       </div>
       <div class="post-body"><div class="post-text">${p.text}</div></div>
       <div class="post-footer">
-        <button class="post-action" onclick="likePost(${p.id},this)"><span>↑</span><span class="cnt">${p.likes||0}</span></button>
+        <button class="post-action" onclick="likePost(${p.id},this)" style="${liked.includes(p.id)?'color:var(--accent);opacity:0.5;':''}" ${liked.includes(p.id)?'disabled':''}><span>↑</span><span class="cnt">${p.likes||0}</span></button>
         <button class="post-action"><span>💬</span><span>0</span></button>
         <button class="post-action" onclick="deletePost(${p.id})"><span>🗑️</span></button>
       </div>
@@ -1385,9 +1447,13 @@ function renderPosts() {
 }
 
 function likePost(id, btn) {
+  const liked = JSON.parse(localStorage.getItem('mp_liked')||'[]');
+  if (liked.includes(id)) return;
+  liked.push(id);
+  localStorage.setItem('mp_liked', JSON.stringify(liked));
   const posts = getPosts();
   const p = posts.find(x=>x.id===id);
-  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; }
+  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; btn.style.color='var(--accent)'; btn.style.opacity='0.5'; }
 }
 
 function deletePost(id) {
