@@ -1007,9 +1007,9 @@
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
-        Trending Now
-        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;white-space:nowrap;">Loading…</span>
+      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:6px;white-space:nowrap;overflow:hidden;">
+        <span>Trending Now</span>
+        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;white-space:nowrap;flex-shrink:0;">Loading…</span>
       </div>
       <!-- Stock Search -->
       <div style="position:relative;margin-bottom:10px;">
@@ -1019,7 +1019,7 @@
                  outline:none;box-sizing:border-box;"
           oninput="onStockSearch(this.value)"
           onfocus="this.style.borderColor='var(--accent)'"
-          onblur="setTimeout(()=>{ document.getElementById('searchDropdown').style.display='none'; this.style.borderColor='var(--border)'; },200)">
+          onblur="setTimeout(()=>{ document.getElementById('searchDropdown').style.display='none'; this.style.borderColor='var(--border)'; },400)">
         <div id="searchDropdown"
           style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;
                  background:var(--panel);border:1px solid var(--border2);border-radius:8px;
@@ -1300,7 +1300,7 @@ async function fetchLiveData() {
     renderTrending(liveStocks.slice(0, 5));
 
     // Update last-updated badge
-    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST' : '—';
+    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST' : '—';
     const badge = document.getElementById('liveTimestamp');
     if (badge) badge.textContent = `LIVE · ${ts}`;
 
@@ -1356,7 +1356,7 @@ function onStockSearch(query) {
       ? `<span style="color:var(--accent)">${s.sym}</span>`
       : s.sym;
     return `
-    <div onclick="fetchAndShowQuote('${s.sym}','${s.name.replace(/'/g,'')}');showStockDetail('${s.sym}','${s.name.replace(/'/g,'')}')"
+    <div onmousedown="event.preventDefault();fetchAndShowQuote('${s.sym}','${s.name.replace(/'/g,'')}');showStockDetail('${s.sym}','${s.name.replace(/'/g,'')}')"
       style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);
              display:flex;justify-content:space-between;align-items:center;transition:background 0.1s;"
       onmouseover="this.style.background='rgba(0,229,255,0.06)'"
