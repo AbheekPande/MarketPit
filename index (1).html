@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarketPit — Trading Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b10; --bg2: #0d1117; --bg3: #111820; --panel: #0f1520;
+  --border: rgba(255,255,255,0.07); --border2: rgba(0,229,255,0.2);
+  --text: #e8f4ff; --text2: #a0b4c8; --text3: #506070;
+  --accent: #00e5ff; --accent2: #ff6b35; --green: #00ff88; --red: #ff3355; --gold: #ffd700;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+/* HEADER */
+header { height:52px; background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:16px; flex-shrink:0; z-index:100; }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:3px; color:var(--accent); cursor:pointer; }
+.nav-tabs { display:flex; gap:4px; margin-left:8px; }
+.nav-tab { padding:5px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; background:none; color:var(--text3); transition:all 0.15s; }
+.nav-tab.active { background:rgba(0,229,255,0.12); color:var(--accent); }
+.nav-tab:hover:not(.active) { color:var(--text2); background:rgba(255,255,255,0.04); }
+.header-search { flex:1; max-width:340px; margin-left:auto; position:relative; }
+.header-search input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:6px 12px 6px 32px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
+.header-search input:focus { border-color:var(--accent); }
+.header-search::before { content:'⌕'; position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:14px; }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#00e5ff,#0080ff); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0; border:2px solid transparent; transition:border-color 0.2s; }
+.avatar:hover { border-color:var(--accent); }
+.notif-btn { width:32px; height:32px; border-radius:50%; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; position:relative; }
+
+/* LAYOUT */
+.layout { display:flex; flex:1; overflow:hidden; }
+
+/* LEFT SIDEBAR */
+.left-sidebar { width:220px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; }
+.sidebar-section { padding:10px 8px; border-bottom:1px solid var(--border); }
+.section-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:2px; padding:4px 8px 6px; text-transform:uppercase; }
+
+/* PITS NAV */
+.pit-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; cursor:pointer; transition:all 0.15s; }
+.pit-item:hover, .pit-item.active { background:rgba(0,229,255,0.08); }
+.pit-item.active .pit-name { color:var(--accent); }
+.pit-icon { font-size:14px; width:20px; text-align:center; }
+.pit-name { font-size:13px; font-weight:500; color:var(--text2); }
+.pit-item.active .pit-name { color:var(--accent); font-weight:600; }
+
+/* TRENDING STOCKS */
+.trend-header { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 4px; }
+.trend-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; }
+.trend-live { font-family:'Space Mono',monospace; font-size:9px; color:var(--green); white-space:nowrap; }
+.stock-item { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; cursor:pointer; transition:background 0.15s; border-radius:6px; margin:1px 4px; }
+.stock-item:hover { background:rgba(0,229,255,0.06); }
+.stock-sym { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text); }
+.stock-name { font-size:9px; color:var(--text3); margin-top:1px; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.stock-price { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; text-align:right; }
+.stock-chg { font-family:'Space Mono',monospace; font-size:9px; text-align:right; }
+.up { color:var(--green); } .dn { color:var(--red); }
+
+/* SEARCH BOX */
+.stock-search-wrap { padding:6px 8px; }
+.stock-search-wrap input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:6px 10px; color:var(--text); font-size:11px; font-family:'DM Sans',sans-serif; outline:none; }
+.stock-search-wrap input:focus { border-color:var(--accent); }
+.search-dropdown { display:none; background:var(--panel); border:1px solid var(--border2); border-radius:8px; margin:4px 8px; max-height:220px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+.search-item { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.1s; }
+.search-item:hover { background:rgba(0,229,255,0.06); }
+.search-item:last-child { border-bottom:none; }
+.search-sym { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text); }
+.search-name { font-size:10px; color:var(--text3); margin-top:1px; }
+.search-badge { font-size:9px; border-radius:4px; padding:2px 5px; border:1px solid; white-space:nowrap; }
+
+/* MAIN FEED */
+.main-feed { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.feed-filters { padding:10px 16px; border-bottom:1px solid var(--border); display:flex; gap:6px; flex-shrink:0; }
+.filter-btn { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:none; color:var(--text3); transition:all 0.15s; }
+.filter-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+.filter-btn:hover:not(.active) { border-color:var(--border2); color:var(--text2); }
+.feed-scroll { flex:1; overflow-y:auto; padding:12px 16px; }
+.feed-scroll::-webkit-scrollbar { width:4px; }
+.feed-scroll::-webkit-scrollbar-track { background:transparent; }
+.feed-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* COMPOSE */
+.compose-box { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:12px; }
+.compose-row { display:flex; gap:10px; align-items:flex-start; }
+.compose-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; resize:none; min-height:50px; line-height:1.5; }
+.compose-input::placeholder { color:var(--text3); }
+.compose-actions { display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.pit-tag { padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all 0.15s; }
+.pit-tag.stocks { color:#00e5ff; border-color:rgba(0,229,255,0.3); background:rgba(0,229,255,0.08); }
+.pit-tag.crypto { color:#ffd700; border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08); }
+.pit-tag.commodities { color:#ff6b35; border-color:rgba(255,107,53,0.3); background:rgba(255,107,53,0.08); }
+.pit-tag.macro { color:#00ff88; border-color:rgba(0,255,136,0.3); background:rgba(0,255,136,0.08); }
+.pit-tag.active-pit { filter:brightness(1.3); transform:scale(1.05); }
+.btn-post { margin-left:auto; padding:7px 18px; background:var(--accent); color:#000; border:none; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; transition:opacity 0.15s; }
+.btn-post:hover { opacity:0.85; }
+
+/* POST CARD */
+.post-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; transition:border-color 0.2s; animation:fadeIn 0.3s ease; }
+.post-card:hover { border-color:var(--border2); }
+.post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.post-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; flex-shrink:0; }
+.post-author { font-weight:700; font-size:13px; color:var(--text); }
+.post-handle { font-size:11px; color:var(--text3); margin-left:4px; }
+.post-time { font-family:'Space Mono',monospace; font-size:10px; color:var(--text3); margin-top:1px; }
+.post-pit { margin-left:auto; font-size:10px; padding:3px 8px; border-radius:10px; border:1px solid; font-weight:600; }
+.post-text { font-size:13px; line-height:1.6; color:var(--text2); margin-bottom:10px; }
+.post-footer { display:flex; align-items:center; gap:8px; }
+.post-action { background:none; border:none; color:var(--text3); font-size:12px; cursor:pointer; padding:4px 8px; border-radius:6px; display:flex; align-items:center; gap:4px; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+.post-action:hover { background:rgba(255,255,255,0.05); color:var(--text2); }
+.post-action.liked { color:var(--accent); }
+
+/* RIGHT SIDEBAR - CHAT */
+.right-sidebar { width:280px; background:var(--bg2); border-left:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+.chat-header { padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.chat-title { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:1.5px; color:var(--text); }
+.online-dot { width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; margin-right:4px; animation:pulse 2s infinite; }
+.chat-msgs { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+.chat-msgs::-webkit-scrollbar { width:3px; }
+.chat-msgs::-webkit-scrollbar-thumb { background:var(--border); }
+.chat-msg { display:flex; gap:8px; align-items:flex-start; }
+.chat-av { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:8px; font-weight:700; flex-shrink:0; }
+.chat-user { font-size:11px; font-weight:700; color:var(--text); }
+.chat-text { font-size:12px; color:var(--text2); line-height:1.4; margin-top:1px; }
+.chat-time { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); margin-left:4px; }
+.chat-input-row { padding:10px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
+.chat-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
+.chat-input:focus { border-color:var(--accent); }
+.chat-send { width:32px; height:32px; background:var(--accent); border:none; border-radius:8px; cursor:pointer; color:#000; font-size:14px; display:flex; align-items:center; justify-content:center; transition:opacity 0.15s; }
+.chat-send:hover { opacity:0.8; }
+.leaderboard-section { padding:10px; border-top:1px solid var(--border); }
+.lb-title { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; margin-bottom:8px; }
+.lb-item { display:flex; align-items:center; gap:8px; padding:5px 0; }
+.lb-rank { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; width:16px; text-align:center; }
+.lb-rank.gold { color:var(--gold); } .lb-rank.silver { color:#c0c0c0; } .lb-rank.bronze { color:#cd7f32; }
+.lb-name { font-size:12px; font-weight:600; flex:1; }
+.lb-pts { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--panel); border:1px solid var(--border2); border-radius:16px; width:540px; max-width:95vw; max-height:88vh; overflow-y:auto; padding:24px; animation:modalIn 0.2s ease; }
+.modal::-webkit-scrollbar { width:4px; }
+.modal::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.modal-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; color:var(--text); }
+.modal-close { background:none; border:none; color:var(--text3); font-size:18px; cursor:pointer; }
+.modal-close:hover { color:var(--text); }
+.stat-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.stat-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+.stat-box { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.stat-label { font-size:10px; color:var(--text3); margin-bottom:4px; font-family:'Space Mono',monospace; letter-spacing:0.5px; }
+.stat-val { font-family:'Space Mono',monospace; font-size:16px; font-weight:700; }
+.stat-val.lg { font-size:20px; }
+.stat-val.sm { font-size:12px; }
+.section-divider { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; margin:12px 0 8px; }
+.signal-box { border-radius:10px; padding:14px; text-align:center; margin-bottom:12px; }
+.signal-val { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px; }
+.signal-sub { font-size:11px; color:var(--text3); margin-top:4px; }
+.rsi-bar-wrap { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:8px; }
+.rsi-bar-track { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; position:relative; margin:6px 0; }
+.rsi-bar-fill { height:6px; border-radius:3px; transition:width 0.5s ease; }
+.rsi-marker { position:absolute; top:-3px; width:12px; height:12px; border-radius:50%; border:2px solid var(--panel); transform:translateX(-50%); }
+.form-input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:12px; }
+.form-input:focus { border-color:var(--accent); }
+.btn-primary { background:var(--accent); color:#000; border:none; border-radius:8px; padding:10px 20px; font-weight:700; font-size:13px; cursor:pointer; width:100%; transition:opacity 0.15s; }
+.btn-primary:hover { opacity:0.85; }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); border-radius:8px; padding:10px 20px; font-weight:600; font-size:13px; cursor:pointer; width:100%; transition:all 0.15s; }
+.btn-ghost:hover { border-color:var(--border2); color:var(--text); }
+.empty-state { text-align:center; padding:48px 20px; color:var(--text3); }
+.empty-icon { font-size:36px; margin-bottom:12px; }
+.empty-title { font-size:15px; color:var(--text2); font-weight:600; margin-bottom:6px; }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-spin { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo" onclick="showPage('feed')">MARKETPIT</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab(this,'feed')">⚡ Feed</button>
+    <button class="nav-tab" onclick="switchTab(this,'pits')">🏛️ Pits</button>
+    <button class="nav-tab" onclick="switchTab(this,'messages')">💬 Messages</button>
+  </div>
+  <div class="header-search">
+    <input type="text" placeholder="Search tickers, pits, traders…" id="headerSearch" oninput="onHeaderSearch(this.value)" onblur="setTimeout(()=>document.getElementById('headerDrop').style.display='none',300)">
+    <div id="headerDrop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:200;background:var(--panel);border:1px solid var(--border2);border-radius:8px;max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+  </div>
+  <div class="notif-btn" onclick="openModal('notifModal')">🔔</div>
+  <div class="avatar" id="headerAvatar" onclick="openModal('profileModal')">?</div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="left-sidebar">
+    <div class="sidebar-section">
+      <div class="section-label">Your Pits</div>
+      <div class="pit-item active" onclick="filterFeed('',this)"><span class="pit-icon">📊</span><span class="pit-name">All Markets</span></div>
+      <div class="pit-item" onclick="filterFeed('Stocks',this)"><span class="pit-icon">🏦</span><span class="pit-name">Equities</span></div>
+      <div class="pit-item" onclick="filterFeed('Crypto',this)"><span class="pit-icon">₿</span><span class="pit-name">Crypto</span></div>
+      <div class="pit-item" onclick="filterFeed('Commodities',this)"><span class="pit-icon">🛢️</span><span class="pit-name">Commodities</span></div>
+      <div class="pit-item" onclick="filterFeed('Macro',this)"><span class="pit-icon">🌐</span><span class="pit-name">Macro</span></div>
+      <div class="pit-item" onclick="filterFeed('Options',this)"><span class="pit-icon">📈</span><span class="pit-name">Options Flow</span></div>
+    </div>
+
+    <!-- STOCK SEARCH -->
+    <div style="padding:8px 8px 0;">
+      <div class="trend-header">
+        <span class="trend-label">Trending Now</span>
+        <span class="trend-live" id="liveTs">Loading…</span>
+      </div>
+      <div class="stock-search-wrap">
+        <input type="text" placeholder="Search NSE, Crypto, Commodities…" id="stockSearch"
+          oninput="onStockSearch(this.value)"
+          onblur="setTimeout(()=>document.getElementById('stockDrop').style.display='none',350)">
+      </div>
+      <div class="search-dropdown" id="stockDrop"></div>
+    </div>
+
+    <!-- TRENDING LIST -->
+    <div id="trendList" style="padding:0 4px 8px;">
+      <div style="padding:10px;color:var(--text3);font-size:11px;text-align:center;"><div class="loading-spin"></div></div>
+    </div>
+  </div>
+
+  <!-- MAIN FEED -->
+  <div class="main-feed" id="page-feed">
+    <div class="feed-filters">
+      <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
+      <button class="filter-btn" onclick="setFilter(this)">✨ New</button>
+      <button class="filter-btn" onclick="setFilter(this)">📌 Following</button>
+    </div>
+    <div class="feed-scroll">
+      <div class="compose-box">
+        <div class="compose-row">
+          <div class="avatar" id="composeAv" style="width:36px;height:36px;font-size:11px;flex-shrink:0;">?</div>
+          <textarea class="compose-input" id="composeInput" placeholder="Drop your trade idea, analysis, or market take…"></textarea>
+        </div>
+        <div class="compose-actions">
+          <span class="pit-tag stocks" onclick="selectPit(this,'Stocks')">+ Stocks</span>
+          <span class="pit-tag crypto" onclick="selectPit(this,'Crypto')">+ Crypto</span>
+          <span class="pit-tag commodities" onclick="selectPit(this,'Commodities')">+ Commodities</span>
+          <span class="pit-tag macro" onclick="selectPit(this,'Macro')">+ Macro</span>
+          <button class="btn-post" onclick="submitPost()">Post to Pit</button>
+        </div>
+      </div>
+      <div id="postsContainer"></div>
+    </div>
+  </div>
+
+  <!-- PITS PAGE -->
+  <div class="main-feed" id="page-pits" style="display:none;">
+    <div class="feed-scroll">
+      <div style="padding:8px 0 16px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;">TRADING PITS</div>
+      <div id="pitsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+    </div>
+  </div>
+
+  <!-- MESSAGES PAGE -->
+  <div class="main-feed" id="page-messages" style="display:none;">
+    <div class="feed-scroll">
+      <div style="padding:8px 0 16px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;">MESSAGES</div>
+      <div id="dmContent"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="right-sidebar">
+    <div class="chat-header">
+      <div class="chat-title"><span class="online-dot"></span>LIVE FLOOR CHAT</div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div style="color:var(--text3);font-size:12px;padding:8px;">No messages yet. Say hello! 👋</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Message the floor…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">▶</button>
+    </div>
+    <div class="leaderboard-section">
+      <div class="lb-title">TOP CALLERS THIS WEEK</div>
+      <div id="leaderboard"><div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STOCK DETAIL MODAL -->
+<div class="modal-overlay" id="stockModal" onclick="if(event.target===this)closeModal('stockModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title" id="sdSym"></span>
+        <span style="font-size:13px;color:var(--text3);margin-left:10px;" id="sdName"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
+    </div>
+    <div id="sdBody"><div style="text-align:center;padding:30px;"><div class="loading-spin"></div></div></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal" onclick="if(event.target===this)closeModal('profileModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">YOUR PROFILE</span>
+      <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+    </div>
+    <div id="profileBody"></div>
+  </div>
+</div>
+
+<!-- NOTIF MODAL -->
+<div class="modal-overlay" id="notifModal" onclick="if(event.target===this)closeModal('notifModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">NOTIFICATIONS</span>
+      <button class="modal-close" onclick="closeModal('notifModal')">✕</button>
+    </div>
+    <div id="notifBody"></div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const API_BASE = 'https://web-production-78fc1.up.railway.app/api';
+
+// ── STORAGE ──
+const getPosts    = () => { try { return JSON.parse(localStorage.getItem('mp_posts')||'[]'); } catch(e){return [];} };
+const savePosts   = p  => localStorage.setItem('mp_posts', JSON.stringify(p));
+const getUser     = () => { try { return JSON.parse(localStorage.getItem('mp_user')||'null'); } catch(e){return null;} };
+const saveUser    = u  => localStorage.setItem('mp_user', JSON.stringify(u));
+const getMsgs     = () => { try { return JSON.parse(localStorage.getItem('mp_chat')||'[]'); } catch(e){return [];} };
+const saveMsgs    = m  => localStorage.setItem('mp_chat', JSON.stringify(m));
+const getLiked    = () => { try { return JSON.parse(localStorage.getItem('mp_liked')||'[]'); } catch(e){return [];} };
+const saveLiked   = l  => localStorage.setItem('mp_liked', JSON.stringify(l));
+
+// ── CRYPTO & COMMODITY SYMBOLS ──
+const CRYPTO_LIST = [
+  {sym:'BTC',name:'Bitcoin',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'ETH',name:'Ethereum',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'BNB',name:'Binance Coin',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'SOL',name:'Solana',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'XRP',name:'XRP',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'ADA',name:'Cardano',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'DOGE',name:'Dogecoin',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'MATIC',name:'Polygon',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'AVAX',name:'Avalanche',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'LINK',name:'Chainlink',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'LTC',name:'Litecoin',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'SHIB',name:'Shiba Inu',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'PEPE',name:'Pepe',badge:'CRYPTO',bc:'var(--gold)'},
+  {sym:'DOT',name:'Polkadot',badge:'CRYPTO',bc:'var(--gold)'},
+];
+const COMM_LIST = [
+  {sym:'GOLD',name:'Gold Futures',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'SILVER',name:'Silver Futures',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'CRUDE',name:'Crude Oil WTI',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'BRENT',name:'Brent Crude',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'NATURALGAS',name:'Natural Gas',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'COPPER',name:'Copper',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'PLATINUM',name:'Platinum',badge:'COMMODITY',bc:'var(--accent2)'},
+  {sym:'WHEAT',name:'Wheat',badge:'COMMODITY',bc:'var(--accent2)'},
+];
+
+let allStockSymbols = [];
+let liveStocks = [];
+let _retryCount = 0;
+let _currentFilter = '';
+let _selectedPit = '';
+
+// ── AVATAR COLORS ──
+const AV_COLORS = [
+  'linear-gradient(135deg,#00e5ff,#0080ff)',
+  'linear-gradient(135deg,#ffd700,#ff9900)',
+  'linear-gradient(135deg,#00ff88,#00b860)',
+  'linear-gradient(135deg,#ff6b35,#ffaa00)',
+  'linear-gradient(135deg,#8855ff,#aa44ff)',
+  'linear-gradient(135deg,#ff3355,#ff6b35)',
+];
+const getColor = name => AV_COLORS[name.length % AV_COLORS.length];
+
+// ── FETCH LIVE DATA ──
+async function fetchLiveData() {
+  try {
+    const res = await fetch(`${API_BASE}/all`);
+    if (!res.ok) throw new Error('error');
+    const json = await res.json();
+    _retryCount = 0;
+    liveStocks = json.stocks || [];
+    renderTrending(liveStocks.slice(0,6));
+    const ts = json.last_updated
+      ? new Date(json.last_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST'
+      : '—';
+    const el = document.getElementById('liveTs');
+    if (el) { el.textContent = `LIVE · ${ts}`; el.style.color='var(--green)'; }
+  } catch(e) {
+    _retryCount++;
+    const el = document.getElementById('liveTs');
+    if (_retryCount <= 3) {
+      if (el) el.textContent = `Retrying… (${_retryCount})`;
+      document.getElementById('trendList').innerHTML = `<div style="padding:10px;color:var(--text3);font-size:11px;text-align:center;">⏳ Connecting… attempt ${_retryCount}</div>`;
+      setTimeout(fetchLiveData, 5000);
+    } else {
+      if (el) { el.textContent = 'OFFLINE'; el.style.color='var(--red)'; }
+      document.getElementById('trendList').innerHTML = `<div style="padding:10px;color:var(--accent2);font-size:11px;text-align:center;">⚠️ Server offline</div>`;
+    }
+  }
+}
+
+async function loadSymbols() {
+  try {
+    const res = await fetch(`${API_BASE}/symbols`);
+    const json = await res.json();
+    allStockSymbols = (json.symbols||[]).map(s=>({...s, badge:'NSE', bc:'var(--accent)'}));
+  } catch(e) {}
+}
+
+// ── RENDER TRENDING ──
+function renderTrending(data) {
+  if (!data || !data.length) {
+    document.getElementById('trendList').innerHTML = `<div style="padding:10px;color:var(--text3);font-size:11px;text-align:center;">No data</div>`;
+    return;
+  }
+  document.getElementById('trendList').innerHTML = data.map(t => `
+    <div class="stock-item" onclick="openStockModal('${t.sym}','${(t.name||t.sym).replace(/'/g,'')}')">
+      <div>
+        <div class="stock-sym">${t.sym}</div>
+        <div class="stock-name">${t.name||''}</div>
+      </div>
+      <div>
+        <div class="stock-price ${t.up?'up':'dn'}">₹${t.price}</div>
+        <div class="stock-chg ${t.up?'up':'dn'}">${t.chg}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── SEARCH ──
+function onStockSearch(q) {
+  const drop = document.getElementById('stockDrop');
+  if (!q || q.length < 1) { drop.style.display='none'; return; }
+  const ql = q.toLowerCase();
+  const stocks = allStockSymbols.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,5);
+  const crypto = CRYPTO_LIST.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,3);
+  const comm   = COMM_LIST.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,3);
+  const all = [...stocks, ...crypto, ...comm].slice(0,10);
+  if (!all.length) {
+    drop.innerHTML = `<div style="padding:10px;color:var(--text3);font-size:12px;">No results</div>`;
+    drop.style.display='block'; return;
+  }
+  drop.innerHTML = all.map(s=>`
+    <div class="search-item" onmousedown="event.preventDefault();openStockModal('${s.sym}','${s.name.replace(/'/g,'')}');document.getElementById('stockSearch').value='';document.getElementById('stockDrop').style.display='none'">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:8px;font-weight:700;color:${s.bc};">${s.sym.slice(0,3)}</div>
+        <div>
+          <div class="search-sym">${s.sym}</div>
+          <div class="search-name">${s.name}</div>
+        </div>
+      </div>
+      <span class="search-badge" style="color:${s.bc};border-color:${s.bc}44;">${s.badge}</span>
+    </div>`).join('');
+  drop.style.display='block';
+}
+
+function onHeaderSearch(q) {
+  const drop = document.getElementById('headerDrop');
+  if (!q || q.length < 1) { drop.style.display='none'; return; }
+  const ql = q.toLowerCase();
+  const stocks = allStockSymbols.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,4);
+  const crypto = CRYPTO_LIST.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,2);
+  const comm   = COMM_LIST.filter(s => s.sym.toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql)).slice(0,2);
+  const all = [...stocks, ...crypto, ...comm].slice(0,8);
+  if (!all.length) { drop.style.display='none'; return; }
+  drop.innerHTML = all.map(s=>`
+    <div style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);transition:background 0.1s;"
+      onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background=''"
+      onmousedown="event.preventDefault();openStockModal('${s.sym}','${s.name.replace(/'/g,'')}');document.getElementById('headerSearch').value='';document.getElementById('headerDrop').style.display='none'">
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
+        <div style="font-size:10px;color:var(--text3);">${s.name}</div>
+      </div>
+      <span style="font-size:9px;color:${s.bc};border:1px solid ${s.bc}44;border-radius:4px;padding:2px 5px;">${s.badge}</span>
+    </div>`).join('');
+  drop.style.display='block';
+}
+
+// ── STOCK DETAIL MODAL ──
+async function openStockModal(sym, name) {
+  document.getElementById('sdSym').textContent = sym;
+  document.getElementById('sdName').textContent = name;
+  document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:40px;"><div class="loading-spin"></div><div style="color:var(--text3);font-size:12px;margin-top:12px;">Loading data & technical analysis…</div></div>`;
+  openModal('stockModal');
+
+  try {
+    const [qRes, taRes] = await Promise.all([
+      fetch(`${API_BASE}/quote/${sym}`),
+      fetch(`${API_BASE}/technical/${sym}`)
+    ]);
+    const d  = qRes.ok  ? await qRes.json()  : null;
+    const ta = taRes.ok ? await taRes.json() : null;
+
+    if (!d || d.price === 'N/A') {
+      document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--accent2);">⚠️ Could not load data for ${sym}</div>`;
+      return;
+    }
+
+    const cur = d.currency || '₹';
+    const up  = d.up;
+
+    // Sparkline
+    let sparkHTML = '';
+    if (ta && ta.sparkline && ta.sparkline.length > 1) {
+      const pts = ta.sparkline;
+      const min = Math.min(...pts), max = Math.max(...pts), range = max - min || 1;
+      const W = 460, H = 70;
+      const coords = pts.map((p,i)=>`${(i/(pts.length-1))*W},${H-((p-min)/range)*H}`).join(' ');
+      const lc = pts[pts.length-1] >= pts[0] ? '#00ff88' : '#ff3355';
+      sparkHTML = `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:12px;">
+          <div class="section-divider" style="margin:0 0 6px;">30-DAY PRICE CHART</div>
+          <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:65px;" preserveAspectRatio="none">
+            <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${lc}" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="${lc}" stop-opacity="0"/>
+            </linearGradient></defs>
+            <polygon points="${coords} ${W},${H} 0,${H}" fill="url(#sg)"/>
+            <polyline points="${coords}" fill="none" stroke="${lc}" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;">
+            <span>${cur}${pts[0].toLocaleString()}</span><span>30 days ago</span><span>${cur}${pts[pts.length-1].toLocaleString()}</span>
+          </div>
+        </div>`;
+    }
+
+    // Overall signal
+    let signalHTML = '';
+    if (ta && ta.overall) {
+      const sc = ta.overall.includes('BUY') ? 'var(--green)' : ta.overall.includes('SELL') ? 'var(--red)' : 'var(--gold)';
+      signalHTML = `
+        <div class="signal-box" style="background:${sc}14;border:1px solid ${sc}33;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'Space Mono',monospace;">OVERALL SIGNAL</div>
+          <div class="signal-val" style="color:${sc};">${ta.overall}</div>
+          <div class="signal-sub">${ta.buy_signals} Buy · ${ta.sell_signals} Sell signals from 4 indicators</div>
+        </div>`;
+    }
+
+    // RSI bar
+    let rsiHTML = '';
+    if (ta && ta.rsi) {
+      const rc = ta.rsi < 30 ? 'var(--green)' : ta.rsi > 70 ? 'var(--red)' : 'var(--gold)';
+      const rl = ta.rsi < 30 ? 'OVERSOLD 🟢' : ta.rsi > 70 ? 'OVERBOUGHT 🔴' : 'NEUTRAL 🟡';
+      rsiHTML = `
+        <div class="rsi-bar-wrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);">RSI (14)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:${rc};">${ta.rsi} <span style="font-size:10px;">${rl}</span></div>
+          </div>
+          <div class="rsi-bar-track">
+            <div class="rsi-bar-fill" style="width:${ta.rsi}%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));"></div>
+            <div class="rsi-marker" style="left:${ta.rsi}%;background:${rc};"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);">
+            <span>0 Oversold</span><span>30</span><span>50</span><span>70</span><span>100 Overbought</span>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById('sdBody').innerHTML = `
+      ${signalHTML}
+
+      <div class="stat-grid-2">
+        <div class="stat-box">
+          <div class="stat-label">PRICE</div>
+          <div class="stat-val lg">${cur}${d.price}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">CHANGE</div>
+          <div class="stat-val lg ${up?'up':'dn'}">${d.chg}</div>
+        </div>
+      </div>
+
+      ${sparkHTML}
+
+      ${ta ? `
+      <div class="section-divider">TECHNICAL INDICATORS</div>
+      <div class="stat-grid-2" style="margin-bottom:8px;">
+        <div class="stat-box">
+          <div class="stat-label">MACD</div>
+          <div class="stat-val ${ta.macd_bullish?'up':'dn'}">${ta.macd}</div>
+          <div style="font-size:10px;margin-top:3px;color:${ta.macd_bullish?'var(--green)':'var(--red)'};">${ta.macd_bullish?'📈 Bullish':'📉 Bearish'}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">MACD SIGNAL</div>
+          <div class="stat-val">${ta.macd_signal}</div>
+          <div style="font-size:10px;margin-top:3px;color:var(--text3);">Signal line</div>
+        </div>
+      </div>
+
+      ${rsiHTML}
+
+      <div class="section-divider" style="margin-top:10px;">MOVING AVERAGES</div>
+      <div class="stat-grid-2">
+        <div class="stat-box">
+          <div class="stat-label">50 DAY MA</div>
+          <div class="stat-val sm">${ta.ma50?cur+ta.ma50:'—'}</div>
+          <div style="font-size:10px;margin-top:3px;color:${ta.ma50&&ta.price>ta.ma50?'var(--green)':'var(--red)'};">
+            ${ta.ma50?(ta.price>ta.ma50?'✅ Price above':'⚠️ Price below'):'—'}
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">200 DAY MA</div>
+          <div class="stat-val sm">${ta.ma200?cur+ta.ma200:'Insufficient data'}</div>
+          <div style="font-size:10px;margin-top:3px;color:${ta.ma200&&ta.price>ta.ma200?'var(--green)':'var(--red)'};">
+            ${ta.ma200?(ta.price>ta.ma200?'✅ Price above':'⚠️ Price below'):'—'}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">BOLLINGER BANDS</div>
+      <div class="stat-grid-3">
+        <div class="stat-box"><div class="stat-label">UPPER</div><div class="stat-val sm dn">${ta.bb_upper?cur+ta.bb_upper:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">MID</div><div class="stat-val sm">${ta.bb_mid?cur+ta.bb_mid:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">LOWER</div><div class="stat-val sm up">${ta.bb_lower?cur+ta.bb_lower:'—'}</div></div>
+      </div>
+
+      <div class="section-divider">SUPPORT & RESISTANCE</div>
+      <div class="stat-grid-2">
+        <div class="stat-box" style="border-color:rgba(0,255,136,0.2);">
+          <div class="stat-label">SUPPORT (20D)</div>
+          <div class="stat-val up">${ta.support?cur+ta.support:'—'}</div>
+        </div>
+        <div class="stat-box" style="border-color:rgba(255,51,85,0.2);">
+          <div class="stat-label">RESISTANCE (20D)</div>
+          <div class="stat-val dn">${ta.resistance?cur+ta.resistance:'—'}</div>
+        </div>
+      </div>` : ''}
+
+      <div class="section-divider">PRICE STATS</div>
+      <div class="stat-grid-3">
+        <div class="stat-box"><div class="stat-label">DAY HIGH</div><div class="stat-val sm up">${d.high?cur+d.high:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">DAY LOW</div><div class="stat-val sm dn">${d.low?cur+d.low:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">VOLUME</div><div class="stat-val sm">${d.volume?(d.volume>1e7?(d.volume/1e7).toFixed(1)+'Cr':(d.volume/1e5).toFixed(1)+'L'):'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">52W HIGH</div><div class="stat-val sm up">${d.week52high?cur+d.week52high:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">52W LOW</div><div class="stat-val sm dn">${d.week52low?cur+d.week52low:'—'}</div></div>
+        <div class="stat-box"><div class="stat-label">MKT CAP</div><div class="stat-val sm">${d.marketcap?cur+(d.marketcap/1e12).toFixed(2)+'T':'—'}</div></div>
+      </div>
+
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);text-align:right;margin-top:10px;">
+        ~15min delayed · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST
+      </div>`;
+
+  } catch(e) {
+    document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--accent2);">⚠️ Could not connect to server.</div>`;
+  }
+}
+
+// ── POSTS ──
+function renderPosts() {
+  const posts = getPosts();
+  const liked = getLiked();
+  const f = _currentFilter;
+  const filtered = f ? posts.filter(p=>p.pit===f) : posts;
+  const container = document.getElementById('postsContainer');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No posts yet</div><div>Be the first to share a trade idea!</div></div>`;
+    return;
+  }
+  container.innerHTML = filtered.slice().reverse().map(p => {
+    const av = p.author.slice(0,2).toUpperCase();
+    const col = getColor(p.author);
+    const pitColors = {Stocks:'var(--accent)',Crypto:'var(--gold)',Commodities:'var(--accent2)',Macro:'var(--green)',Options:'#8855ff'};
+    const pc = pitColors[p.pit] || 'var(--text3)';
+    const isLiked = liked.includes(p.id);
+    return `
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-av" style="background:${col};">${av}</div>
+        <div>
+          <div><span class="post-author">${p.author}</span><span class="post-handle">@${p.author.toLowerCase().replace(/\s/g,'')}</span></div>
+          <div class="post-time">${new Date(p.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST · ${new Date(p.time).toLocaleDateString('en-IN')}</div>
+        </div>
+        ${p.pit?`<div class="post-pit" style="color:${pc};border-color:${pc}44;background:${pc}0f;">${p.pit}</div>`:''}
+      </div>
+      <div class="post-text">${p.text}</div>
+      <div class="post-footer">
+        <button class="post-action ${isLiked?'liked':''}" onclick="likePost(${p.id},this)" ${isLiked?'disabled':''}>↑ <span class="cnt">${p.likes||0}</span></button>
+        <button class="post-action">💬 0</button>
+        <button class="post-action" onclick="deletePost(${p.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function likePost(id, btn) {
+  const liked = getLiked();
+  if (liked.includes(id)) return;
+  liked.push(id);
+  saveLiked(liked);
+  const posts = getPosts();
+  const p = posts.find(x=>x.id===id);
+  if (p) { p.likes=(p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent=p.likes; btn.classList.add('liked'); btn.disabled=true; }
+}
+
+function deletePost(id) {
+  savePosts(getPosts().filter(p=>p.id!==id));
+  renderPosts(); renderLeaderboard();
+}
+
+function submitPost() {
+  const user = getUser();
+  if (!user) { openModal('profileModal'); renderProfileModal(); return; }
+  const input = document.getElementById('composeInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const posts = getPosts();
+  posts.push({id:Date.now(), author:user.name, text, pit:_selectedPit, time:new Date().toISOString(), likes:0});
+  savePosts(posts);
+  input.value='';
+  _selectedPit='';
+  document.querySelectorAll('.pit-tag').forEach(t=>t.classList.remove('active-pit'));
+  renderPosts(); renderLeaderboard();
+}
+
+function selectPit(el, pit) {
+  document.querySelectorAll('.pit-tag').forEach(t=>t.classList.remove('active-pit'));
+  if (_selectedPit === pit) { _selectedPit=''; } else { _selectedPit=pit; el.classList.add('active-pit'); }
+}
+
+function filterFeed(pit, el) {
+  _currentFilter = pit;
+  document.querySelectorAll('.pit-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  renderPosts();
+}
+
+// ── LEADERBOARD ──
+function renderLeaderboard() {
+  const posts = getPosts();
+  const scores = {};
+  posts.forEach(p => { scores[p.author] = (scores[p.author]||0) + (p.likes||0) + 1; });
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const ranks = ['gold','silver','bronze','',''];
+  const el = document.getElementById('leaderboard');
+  if (!sorted.length) { el.innerHTML = `<div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div>`; return; }
+  el.innerHTML = sorted.map(([name,score],i)=>`
+    <div class="lb-item">
+      <div class="lb-rank ${ranks[i]}">${i+1}</div>
+      <div class="post-av" style="background:${getColor(name)};width:22px;height:22px;font-size:8px;">${name.slice(0,2).toUpperCase()}</div>
+      <div class="lb-name">${name}</div>
+      <div class="lb-pts">${score}pt</div>
+    </div>`).join('');
+}
+
+// ── CHAT ──
+function renderChat() {
+  const msgs = getMsgs();
+  const el = document.getElementById('chatMsgs');
+  if (!msgs.length) { el.innerHTML=`<div style="color:var(--text3);font-size:12px;padding:8px;">No messages yet. Say hello! 👋</div>`; return; }
+  el.innerHTML = msgs.slice(-40).map(m=>`
+    <div class="chat-msg">
+      <div class="chat-av" style="background:${getColor(m.user)};">${m.user.slice(0,2).toUpperCase()}</div>
+      <div>
+        <div><span class="chat-user">${m.user}</span><span class="chat-time">${m.time}</span></div>
+        <div class="chat-text">${m.text}</div>
+      </div>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendChat() {
+  const user = getUser();
+  if (!user) { alert('Set your username first — click your avatar!'); return; }
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = getMsgs();
+  msgs.push({user:user.name, text, time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})});
+  if (msgs.length > 100) msgs.splice(0, msgs.length-100);
+  saveMsgs(msgs);
+  renderChat();
+  input.value='';
+}
+
+// ── PITS PAGE ──
+function renderPits() {
+  const pits = [
+    {name:'Equity Pit',emoji:'🏦',desc:'Stocks, ETFs, and equity analysis.',col:'rgba(0,229,255,0.15)',key:'Stocks'},
+    {name:'Crypto Vault',emoji:'₿',desc:'Bitcoin, altcoins, DeFi, and on-chain analytics.',col:'rgba(255,215,0,0.15)',key:'Crypto'},
+    {name:'Commodities Pit',emoji:'🛢️',desc:'Energy, metals, agriculture and futures.',col:'rgba(255,107,53,0.15)',key:'Commodities'},
+    {name:'Macro Desk',emoji:'🌐',desc:'Central banks, rates, FX, and global macro.',col:'rgba(0,255,136,0.15)',key:'Macro'},
+    {name:'Options Flow',emoji:'📈',desc:'Unusual options activity and gamma analysis.',col:'rgba(150,80,255,0.15)',key:'Options'},
+    {name:'Dark Pool Intel',emoji:'🔬',desc:'Institutional flow and block trades.',col:'rgba(255,50,100,0.15)',key:''},
+  ];
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  document.getElementById('pitsGrid').innerHTML = pits.map(p=>{
+    const posts = getPosts().filter(x=>x.pit===p.key).length;
+    const isJoined = joined.includes(p.name);
+    return `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="background:${p.col};padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${p.emoji} ${p.name}</div>
+      <div style="padding:12px;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${p.desc}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:10px;">${posts} posts</div>
+        <button style="width:100%;padding:7px;border-radius:8px;border:1px solid;cursor:pointer;font-weight:600;font-size:12px;transition:all 0.15s;background:${isJoined?'var(--accent)':'transparent'};color:${isJoined?'#000':'var(--text2)'};border-color:${isJoined?'var(--accent)':'var(--border)'};"
+          onclick="toggleJoin('${p.name}',this)">${isJoined?'✓ Joined':'+ Join Pit'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleJoin(name, btn) {
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  const i = joined.indexOf(name);
+  if (i>-1) joined.splice(i,1); else joined.push(name);
+  localStorage.setItem('mp_joined', JSON.stringify(joined));
+  const isNow = joined.includes(name);
+  btn.style.background = isNow?'var(--accent)':'transparent';
+  btn.style.color = isNow?'#000':'var(--text2)';
+  btn.style.borderColor = isNow?'var(--accent)':'var(--border)';
+  btn.textContent = isNow?'✓ Joined':'+ Join Pit';
+}
+
+// ── MESSAGES PAGE ──
+function renderMessages() {
+  const user = getUser();
+  document.getElementById('dmContent').innerHTML = user
+    ? `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--text3);">
+        <div style="font-size:32px;margin-bottom:12px;">💬</div>
+        <div style="font-size:14px;color:var(--text2);font-weight:600;">Direct Messages Coming Soon</div>
+        <div style="font-size:12px;margin-top:6px;">Real-time DMs require a backend database. Use the Floor Chat for now!</div>
+       </div>`
+    : `<div style="text-align:center;padding:40px;color:var(--text3);">Set your username to use messages</div>`;
+}
+
+// ── PROFILE ──
+function renderProfileModal() {
+  const user = getUser();
+  const el = document.getElementById('profileBody');
+  if (!user) {
+    el.innerHTML = `
+      <div style="color:var(--text2);font-size:13px;margin-bottom:16px;">Choose a username to start posting and chatting.</div>
+      <input class="form-input" id="unInput" placeholder="e.g. TradingHawk" maxlength="20">
+      <button class="btn-primary" onclick="setUsername()">Join MarketPit</button>`;
+  } else {
+    const posts = getPosts().filter(p=>p.author===user.name);
+    const likes = posts.reduce((a,p)=>a+(p.likes||0),0);
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;">
+        <div class="avatar" style="width:48px;height:48px;font-size:16px;background:${getColor(user.name)};">${user.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-weight:700;font-size:16px;">${user.name}</div>
+          <div style="font-size:11px;color:var(--text3);">@${user.name.toLowerCase().replace(/\s/g,'')}</div>
+        </div>
+      </div>
+      <div class="stat-grid-2" style="margin-bottom:16px;">
+        <div class="stat-box"><div class="stat-label">POSTS</div><div class="stat-val">${posts.length}</div></div>
+        <div class="stat-box"><div class="stat-label">LIKES RECEIVED</div><div class="stat-val up">${likes}</div></div>
+      </div>
+      <button class="btn-ghost" onclick="localStorage.removeItem('mp_user');closeModal('profileModal');updateAvatars();renderPosts();renderChat();">Log out</button>`;
+  }
+}
+
+function setUsername() {
+  const val = document.getElementById('unInput').value.trim();
+  if (!val || val.length < 2) { alert('Min 2 characters'); return; }
+  saveUser({name:val});
+  closeModal('profileModal');
+  updateAvatars();
+  renderPosts(); renderChat();
+}
+
+function updateAvatars() {
+  const user = getUser();
+  const initials = user ? user.name.slice(0,2).toUpperCase() : '?';
+  document.getElementById('headerAvatar').textContent = initials;
+  document.getElementById('composeAv').textContent = initials;
+}
+
+// ── NOTIFICATIONS ──
+function renderNotifs() {
+  const posts = getPosts();
+  const user = getUser();
+  const el = document.getElementById('notifBody');
+  if (!user) { el.innerHTML=`<div style="color:var(--text3);padding:10px;">Set your username to see notifications.</div>`; return; }
+  const myPosts = posts.filter(p=>p.author===user.name && p.likes>0);
+  if (!myPosts.length) { el.innerHTML=`<div style="color:var(--text3);padding:10px;">No notifications yet.</div>`; return; }
+  el.innerHTML = myPosts.map(p=>`
+    <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;">
+      <span style="font-size:18px;">👍</span>
+      <div>
+        <div style="font-size:13px;color:var(--text);">Your post got ${p.likes} like${p.likes!==1?'s':''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">"${p.text.slice(0,60)}${p.text.length>60?'…':''}"</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── NAV ──
+function switchTab(btn, page) {
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('page-feed').style.display = page==='feed'?'flex':'none';
+  document.getElementById('page-pits').style.display = page==='pits'?'flex':'none';
+  document.getElementById('page-messages').style.display = page==='messages'?'flex':'none';
+  if (page==='pits') renderPits();
+  if (page==='messages') renderMessages();
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── MODALS ──
+function openModal(id) {
+  if (id==='profileModal') renderProfileModal();
+  if (id==='notifModal') renderNotifs();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── ESC KEY ──
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') {
+    ['stockModal','profileModal','notifModal'].forEach(id=>closeModal(id));
+    document.getElementById('stockDrop').style.display='none';
+    document.getElementById('headerDrop').style.display='none';
+  }
+});
+
+// ── INIT ──
+updateAvatars();
+renderPosts();
+renderChat();
+renderLeaderboard();
+fetchLiveData();
+loadSymbols();
+setInterval(fetchLiveData, 60000);
+</script>
+</body>
+</html>
