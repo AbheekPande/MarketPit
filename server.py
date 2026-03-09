@@ -209,7 +209,18 @@ def fetch_quote(symbol_yf):
             chg_pct = round((chg_val / prev) * 100, 2)
             up = chg_val >= 0
             chg_str = f"+{chg_pct}%" if up else f"{chg_pct}%"
-            return {"price": f"{price:,.2f}", "chg": chg_str, "up": up, "chg_raw": chg_pct}
+            return {
+                "price": f"{price:,.2f}",
+                "chg": chg_str,
+                "up": up,
+                "chg_raw": chg_pct,
+                "high": f"{round(info.day_high,2):,.2f}" if info.day_high else None,
+                "low": f"{round(info.day_low,2):,.2f}" if info.day_low else None,
+                "volume": int(info.three_month_average_volume) if info.three_month_average_volume else None,
+                "week52high": f"{round(info.year_high,2):,.2f}" if info.year_high else None,
+                "week52low": f"{round(info.year_low,2):,.2f}" if info.year_low else None,
+                "marketcap": int(info.market_cap) if info.market_cap else None,
+            }
     except Exception as e:
         print(f"  x {symbol_yf}: {e}")
     return {"price": "N/A", "chg": "—", "up": True, "chg_raw": 0}

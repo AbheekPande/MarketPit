@@ -1255,11 +1255,11 @@ async function showStockDetail(sym, name) {
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">DAY HIGH</div>
-          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">₹${d.high||'—'}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">${d.high ? '₹'+d.high : '—'}</div>
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">DAY LOW</div>
-          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">₹${d.low||'—'}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">${d.low ? '₹'+d.low : '—'}</div>
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">VOLUME</div>
@@ -1267,11 +1267,11 @@ async function showStockDetail(sym, name) {
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">52W HIGH</div>
-          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">₹${d.week52high||'—'}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);">${d.week52high ? '₹'+d.week52high : '—'}</div>
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">52W LOW</div>
-          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">₹${d.week52low||'—'}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red);">${d.week52low ? '₹'+d.week52low : '—'}</div>
         </div>
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">MKT CAP</div>
