@@ -978,45 +978,38 @@
         <a class="pit-item active" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,229,255,0.12);">📊</div>
           <span class="pit-name">All Markets</span>
-          <span class="pit-count">2.4k</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🏦</div>
           <span class="pit-name">Equities</span>
-          <span class="pit-count">891</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,215,0,0.1);">₿</div>
           <span class="pit-name">Crypto</span>
-          <span class="pit-count">1.1k</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,107,53,0.1);">🛢️</div>
           <span class="pit-name">Commodities</span>
-          <span class="pit-count">412</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🌐</div>
           <span class="pit-name">Macro</span>
-          <span class="pit-count">654</span>
         </a>
         <div class="divider"></div>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(100,100,255,0.1);">📈</div>
           <span class="pit-name">Options Flow</span>
-          <span class="pit-count">287</span>
         </a>
         <a class="pit-item" onclick="return false">
           <div class="pit-icon" style="background:rgba(255,100,200,0.1);">🔬</div>
           <span class="pit-name">Dark Pool</span>
-          <span class="pit-count">178</span>
         </a>
       </div>
     </div>
     <div class="sidebar-section">
       <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
         Trending Now
-        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;">Loading…</span>
+        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;white-space:nowrap;">Loading…</span>
       </div>
       <!-- Stock Search -->
       <div style="position:relative;margin-bottom:10px;">
@@ -1239,9 +1232,9 @@ async function fetchLiveData() {
     renderTrending(liveStocks.slice(0, 5));
 
     // Update last-updated badge
-    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN') : '—';
+    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST' : '—';
     const badge = document.getElementById('liveTimestamp');
-    if (badge) badge.textContent = `Live · ${ts}`;
+    if (badge) badge.textContent = `LIVE · ${ts}`;
 
     // Flash green pulse on update
     document.querySelectorAll('.trend-item').forEach(el => {
@@ -1346,6 +1339,7 @@ function generateSparkline(up, color) {
 // ── RENDER POSTS (real — from localStorage) ──
 function renderPosts() {
   const posts = getPosts();
+  const liked = JSON.parse(localStorage.getItem('mp_liked')||'[]');
   const container = document.getElementById('postsContainer');
   if (posts.length === 0) {
     container.innerHTML = `
@@ -1377,7 +1371,7 @@ function renderPosts() {
       </div>
       <div class="post-body"><div class="post-text">${p.text}</div></div>
       <div class="post-footer">
-        <button class="post-action" onclick="likePost(${p.id},this)"><span>↑</span><span class="cnt">${p.likes||0}</span></button>
+        <button class="post-action" onclick="likePost(${p.id},this)" style="${liked.includes(p.id)?'color:var(--accent);opacity:0.5;':''}" ${liked.includes(p.id)?'disabled':''}><span>↑</span><span class="cnt">${p.likes||0}</span></button>
         <button class="post-action"><span>💬</span><span>0</span></button>
         <button class="post-action" onclick="deletePost(${p.id})"><span>🗑️</span></button>
       </div>
@@ -1385,9 +1379,13 @@ function renderPosts() {
 }
 
 function likePost(id, btn) {
+  const liked = JSON.parse(localStorage.getItem('mp_liked')||'[]');
+  if (liked.includes(id)) return;
+  liked.push(id);
+  localStorage.setItem('mp_liked', JSON.stringify(liked));
   const posts = getPosts();
   const p = posts.find(x=>x.id===id);
-  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; }
+  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; btn.style.color='var(--accent)'; btn.style.opacity='0.5'; }
 }
 
 function deletePost(id) {
