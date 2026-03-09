@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarketPit — Trade Ideas. No Noise.</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --bg2: #0d1117;
+    --bg3: #111820;
+    --panel: #131c26;
+    --border: #1e2d3d;
+    --border2: #243347;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --green: #00ff88;
+    --red: #ff3355;
+    --gold: #ffd700;
+    --text: #c8d8e8;
+    --text2: #7a9ab8;
+    --text3: #445566;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size:14px; scroll-behavior:smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,255,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 90% 80%, rgba(255,107,53,0.03) 0%, transparent 50%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.4);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .logo span { color: var(--accent2); }
+  nav {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+  }
+  .nav-btn {
+    padding: 6px 14px;
+    border: none;
+    background: none;
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--panel); }
+  .nav-btn.active {
+    color: var(--accent);
+    background: rgba(0,229,255,0.08);
+  }
+  .nav-btn.active::after {
+    content:'';
+    position:absolute;
+    bottom:-1px;left:14px;right:14px;
+    height:2px;
+    background: var(--accent);
+    border-radius:2px 2px 0 0;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    width: 200px;
+    transition: border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+  .search-bar input::placeholder { color: var(--text3); }
+  .search-icon { color: var(--text3); font-size: 14px; }
+  .btn-primary {
+    padding: 8px 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { background: #33ecff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,229,255,0.25); }
+  .btn-ghost {
+    padding: 8px 16px;
+    background: none;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text2); }
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--bg);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .app-body {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 20px;
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SIDEBAR LEFT ── */
+  .sidebar-left { display: flex; flex-direction: column; gap: 14px; }
+  .sidebar-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .pit-list { display: flex; flex-direction: column; gap: 2px; }
+  .pit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .pit-item:hover, .pit-item.active { background: rgba(0,229,255,0.06); }
+  .pit-item.active .pit-name { color: var(--accent); }
+  .pit-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .pit-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+  }
+  .pit-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .pit-item.active .pit-count { color: var(--accent2); }
+  .divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+  /* trending tickers */
+  .trend-list { display: flex; flex-direction: column; gap: 8px; }
+  .trend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .trend-item:hover { border-color: var(--border2); }
+  .trend-sym { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text); }
+  .trend-name { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .trend-right { text-align: right; }
+  .trend-price { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); }
+  .trend-chg { font-family: 'Space Mono', monospace; font-size: 10px; }
+  .trend-chg.up { color: var(--green); }
+  .trend-chg.dn { color: var(--red); }
+
+  /* ── MAIN FEED ── */
+  .main-feed { display: flex; flex-direction: column; gap: 14px; }
+
+  /* compose */
+  .compose-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+  }
+  .compose-area { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .compose-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    width: 100%;
+    min-height: 70px;
+    transition: border-color 0.2s;
+  }
+  .compose-input:focus { border-color: var(--accent); }
+  .compose-input::placeholder { color: var(--text3); }
+  .compose-footer { display: flex; align-items: center; justify-content: space-between; }
+  .compose-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .tag-chip:hover { transform: translateY(-1px); }
+  .tag-chip.stocks { background: rgba(0,229,255,0.1); color: var(--accent); border-color: rgba(0,229,255,0.2); }
+  .tag-chip.crypto { background: rgba(255,215,0,0.1); color: var(--gold); border-color: rgba(255,215,0,0.2); }
+  .tag-chip.commodities { background: rgba(255,107,53,0.1); color: var(--accent2); border-color: rgba(255,107,53,0.2); }
+  .tag-chip.macro { background: rgba(0,255,136,0.1); color: var(--green); border-color: rgba(0,255,136,0.2); }
+  .compose-actions { display: flex; gap: 8px; align-items: center; }
+  .compose-action-btn {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: color 0.15s;
+  }
+  .compose-action-btn:hover { color: var(--text2); }
+
+  /* post card */
+  .post-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .post-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .post-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .post-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--bg);
+  }
+  .post-meta { flex: 1; min-width: 0; }
+  .post-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .author-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .author-handle {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .post-badge {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-bull { background: rgba(0,255,136,0.15); color: var(--green); }
+  .badge-bear { background: rgba(255,51,85,0.15); color: var(--red); }
+  .badge-analyst { background: rgba(0,229,255,0.15); color: var(--accent); }
+  .badge-mod { background: rgba(255,215,0,0.15); color: var(--gold); }
+  .post-time {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Space Mono', monospace;
+    margin-top: 2px;
+  }
+  .post-pit-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .post-body { padding: 0 16px 12px 66px; }
+  .post-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .post-text .mention { color: var(--accent); font-weight: 600; }
+  .post-text .hashtag { color: var(--accent2); }
+  .post-text .ticker-tag { 
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    background: rgba(0,229,255,0.08);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+  .post-chart-preview {
+    margin: 10px 16px 10px 66px;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 140px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .chart-svg { width: 100%; height: 100%; }
+  .post-footer {
+    padding: 10px 16px 14px 66px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .post-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .post-action:hover { background: var(--bg3); }
+  .post-action.liked { color: var(--red); }
+  .post-action.bookmarked { color: var(--gold); }
+  .post-action span { font-size: 14px; }
+  .sentiment-bar {
+    margin: 0 16px 12px 66px;
+    background: var(--bg3);
+    border-radius: 6px;
+    overflow: hidden;
+    height: 6px;
+    display: flex;
+  }
+  .sent-bull { background: var(--green); }
+  .sent-bear { background: var(--red); }
+
+  /* poll card */
+  .post-poll {
+    margin: 8px 16px 12px 66px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .poll-option {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .poll-option:last-child { border-bottom: none; }
+  .poll-option:hover { background: rgba(255,255,255,0.02); }
+  .poll-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 0;
+    opacity: 0.08;
+  }
+  .poll-label { font-size: 13px; color: var(--text); flex: 1; position: relative; z-index: 1; }
+  .poll-pct { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text2); position: relative; z-index: 1; }
+
+  /* ── SIDEBAR RIGHT ── */
+  .sidebar-right { display: flex; flex-direction: column; gap: 14px; }
+
+  /* chat panel */
+  .chat-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 420px;
+  }
+  .chat-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chat-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .online-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .chat-online { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+  .chat-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-tab {
+    flex: 1;
+    padding: 8px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .chat-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .chat-msg {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .chat-msg-av {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--bg);
+  }
+  .chat-msg-body { flex: 1; min-width: 0; }
+  .chat-msg-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chat-msg-time { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--text3); }
+  .chat-msg-text {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-top: 2px;
+    word-break: break-word;
+  }
+  .chat-msg-text .ticker-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    background: rgba(0,229,255,0.08);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .chat-input-row {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--text3); }
+  .chat-send {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .chat-send:hover { background: #33ecff; transform: scale(1.05); }
+
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+  .neu { color: var(--text3); }
+
+  /* leaderboard */
+  .lead-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .lead-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .lead-item:hover { background: var(--bg3); }
+  .lead-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--text3);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .lead-rank.gold { color: var(--gold); }
+  .lead-rank.silver { color: #aaa; }
+  .lead-rank.bronze { color: #cd7f32; }
+  .lead-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+  .lead-info { flex: 1; min-width: 0; }
+  .lead-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .lead-stat { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text3); }
+  .lead-score { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); text-align: right; }
+
+  /* feed filter */
+  .feed-filter {
+    display: flex;
+    gap: 6px;
+    background: var(--panel);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text2);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--border2); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+
+  /* mini sparkline */
+  .sparkline { display: inline-block; vertical-align: middle; }
+
+  /* notification badge */
+  .notif-badge {
+    position: relative;
+  }
+  .notif-badge::after {
+    content: '3';
+    position: absolute;
+    top: -4px; right: -4px;
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg2);
+  }
+
+  /* breaking news strip */
+  .breaking-strip {
+    background: linear-gradient(90deg, rgba(255,107,53,0.12), rgba(255,107,53,0.04));
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .breaking-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--accent2);
+    flex-shrink: 0;
+    background: rgba(255,107,53,0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .breaking-text { font-size: 12px; color: var(--text); line-height: 1.4; }
+  .breaking-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text3); flex-shrink: 0; margin-left: auto; }
+
+  /* tooltip on hover */
+  .has-tooltip { position: relative; }
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .has-tooltip:hover .tooltip { opacity: 1; }
+
+  /* Modal overlay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    width: 480px;
+    max-width: 95vw;
+    padding: 24px;
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--text); }
+  .modal-close { background:none; border:none; color:var(--text3); font-size:18px; cursor:pointer; transition:color 0.15s; }
+  .modal-close:hover { color: var(--text); }
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+
+  /* Community page hidden by default */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* community grid */
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 14px;
+  }
+  .community-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .community-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .community-banner {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .community-banner::after {
+    content:'';
+    position:absolute;
+    inset:0;
+    background: linear-gradient(to bottom, transparent 50%, var(--panel));
+  }
+  .community-info { padding: 12px 14px; }
+  .community-name { font-weight: 700; font-size: 14px; color: var(--text); }
+  .community-desc { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
+  .community-meta { display: flex; gap: 14px; margin-top: 10px; }
+  .community-stat { display: flex; flex-direction: column; }
+  .community-stat-val { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); font-weight: 700; }
+  .community-stat-label { font-size: 10px; color: var(--text3); }
+  .join-btn {
+    display: block;
+    width: calc(100% - 28px);
+    margin: 0 14px 14px;
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border2);
+    background: none;
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .join-btn.joined { background: rgba(0,229,255,0.1); color: var(--accent); border-color: rgba(0,229,255,0.3); }
+  .join-btn:hover { background: rgba(0,229,255,0.06); color: var(--accent); }
+
+  /* DM panel */
+  .dm-list { display: flex; flex-direction: column; }
+  .dm-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    position: relative;
+  }
+  .dm-item:hover { background: rgba(255,255,255,0.02); }
+  .dm-item.unread .dm-preview { color: var(--text); }
+  .dm-av {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--bg);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .dm-status {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    border: 2px solid var(--panel);
+  }
+  .dm-status.online { background: var(--green); }
+  .dm-status.away { background: var(--gold); }
+  .dm-status.offline { background: var(--text3); }
+  .dm-body { flex: 1; min-width: 0; }
+  .dm-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dm-preview { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .dm-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text3); text-align: right; }
+  .dm-unread-count {
+    background: var(--accent2);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 1100px) {
+    .app-body { grid-template-columns: 200px 1fr; }
+    .sidebar-right { display: none; }
+  }
+  @media (max-width: 720px) {
+    .app-body { grid-template-columns: 1fr; }
+    .sidebar-left { display: none; }
+    .logo { font-size: 22px; }
+    nav { display: none; }
+  }
+
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.4s ease both;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .post-card:nth-child(1) { animation-delay: 0.05s; }
+  .post-card:nth-child(2) { animation-delay: 0.1s; }
+  .post-card:nth-child(3) { animation-delay: 0.15s; }
+  .post-card:nth-child(4) { animation-delay: 0.2s; }
+
+  /* scrollbar global */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* Flicker on load */
+  @keyframes scanline {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="showPage('feed')">MARKET<span>PIT</span></div>
+    <nav>
+      <button class="nav-btn active" onclick="switchNav(this,'feed')">⚡ Feed</button>
+      <button class="nav-btn" onclick="switchNav(this,'pits')">🏟️ Pits</button>
+      <button class="nav-btn" onclick="switchNav(this,'messages')">💬 Messages</button>
+    </nav>
+    <div class="header-right">
+      <div class="search-bar">
+        <span class="search-icon">⌕</span>
+        <input type="text" placeholder="Search tickers, pits, traders…">
+      </div>
+      <button class="btn-ghost notif-badge" onclick="openModal('notifModal')">🔔</button>
+      <div class="avatar" onclick="openModal('profileModal')">JP</div>
+    </div>
+  </div>
+</header>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-section">
+      <div class="section-title">Your Pits</div>
+      <div class="pit-list">
+        <a class="pit-item active" onclick="return false">
+          <div class="pit-icon" style="background:rgba(0,229,255,0.12);">📊</div>
+          <span class="pit-name">All Markets</span>
+          <span class="pit-count">2.4k</span>
+        </a>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🏦</div>
+          <span class="pit-name">Equities</span>
+          <span class="pit-count">891</span>
+        </a>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(255,215,0,0.1);">₿</div>
+          <span class="pit-name">Crypto</span>
+          <span class="pit-count">1.1k</span>
+        </a>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(255,107,53,0.1);">🛢️</div>
+          <span class="pit-name">Commodities</span>
+          <span class="pit-count">412</span>
+        </a>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(0,255,136,0.1);">🌐</div>
+          <span class="pit-name">Macro</span>
+          <span class="pit-count">654</span>
+        </a>
+        <div class="divider"></div>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(100,100,255,0.1);">📈</div>
+          <span class="pit-name">Options Flow</span>
+          <span class="pit-count">287</span>
+        </a>
+        <a class="pit-item" onclick="return false">
+          <div class="pit-icon" style="background:rgba(255,100,200,0.1);">🔬</div>
+          <span class="pit-name">Dark Pool</span>
+          <span class="pit-count">178</span>
+        </a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+        Trending Now
+        <span id="liveTimestamp" style="font-size:9px;color:var(--green);letter-spacing:1px;">Loading…</span>
+      </div>
+      <!-- Stock Search -->
+      <div style="position:relative;margin-bottom:10px;">
+        <input id="stockSearchInput" type="text" placeholder="Search any NSE stock…"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+                 padding:7px 10px;color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;
+                 outline:none;box-sizing:border-box;"
+          oninput="onStockSearch(this.value)"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="setTimeout(()=>{ document.getElementById('searchDropdown').style.display='none'; this.style.borderColor='var(--border)'; },200)">
+        <div id="searchDropdown"
+          style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;
+                 background:var(--panel);border:1px solid var(--border2);border-radius:8px;
+                 max-height:200px;overflow-y:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        </div>
+      </div>
+      <!-- Search result live card -->
+      <div id="searchResultCard" style="display:none;background:var(--bg3);border:1px solid var(--border2);
+           border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div id="srcSym" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);"></div>
+            <div id="srcName" style="font-size:10px;color:var(--text3);margin-top:1px;"></div>
+          </div>
+          <div style="text-align:right;">
+            <div id="srcPrice" style="font-family:'Space Mono',monospace;font-size:14px;color:var(--text);"></div>
+            <div id="srcChg" style="font-family:'Space Mono',monospace;font-size:11px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="trend-list" id="trendList"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main>
+    <!-- FEED PAGE -->
+    <div class="page active" id="page-feed">
+      <!-- Feed filters -->
+      <div class="feed-filter fade-in">
+        <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
+        <button class="filter-btn" onclick="setFilter(this)">🆕 New</button>
+        <button class="filter-btn" onclick="setFilter(this)">📌 Following</button>
+        <button class="filter-btn" onclick="setFilter(this)">💼 Stocks</button>
+        <button class="filter-btn" onclick="setFilter(this)">₿ Crypto</button>
+        <button class="filter-btn" onclick="setFilter(this)">🛢️ Commodities</button>
+        <button class="filter-btn" onclick="setFilter(this)">🌐 Macro</button>
+      </div>
+
+      <!-- Compose -->
+      <div class="compose-box fade-in" style="margin-top:14px;">
+        <div class="avatar">JP</div>
+        <div class="compose-area">
+          <textarea class="compose-input" placeholder="Drop your trade idea, analysis, or market take…" rows="3"></textarea>
+          <div class="compose-footer">
+            <div class="compose-tags">
+              <span class="tag-chip stocks">+ Stocks</span>
+              <span class="tag-chip crypto">+ Crypto</span>
+              <span class="tag-chip commodities">+ Commodities</span>
+              <span class="tag-chip macro">+ Macro</span>
+            </div>
+            <div class="compose-actions">
+              <button class="compose-action-btn has-tooltip">📊 <span class="tooltip">Add Chart</span></button>
+              <button class="compose-action-btn has-tooltip">📋 <span class="tooltip">Add Poll</span></button>
+              <button class="compose-action-btn has-tooltip">🔗 <span class="tooltip">Add Link</span></button>
+              <button class="btn-primary" style="padding:7px 16px;font-size:12px;" onclick="submitPost()">Post to Pit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts -->
+      <div id="postsContainer" style="margin-top:14px;display:flex;flex-direction:column;gap:14px;"></div>
+    </div>
+
+    <!-- PITS PAGE -->
+    <div class="page" id="page-pits">
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--text);">TRADING PITS</div>
+        <div style="color:var(--text3);font-size:13px;margin-top:4px;">Join communities. Share ideas. Trade together.</div>
+      </div>
+      <div class="community-grid" id="communityGrid"></div>
+    </div>
+
+    <!-- MESSAGES PAGE -->
+    <div class="page" id="page-messages">
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;height:70vh;">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
+          <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text);text-transform:uppercase;">Direct Messages</span>
+            <button class="btn-primary" style="padding:5px 12px;font-size:11px;">+ New</button>
+          </div>
+          <div style="padding:10px;border-bottom:1px solid var(--border);">
+            <input class="chat-input" style="width:100%;border-radius:8px;" placeholder="Search messages…">
+          </div>
+          <div class="dm-list" style="flex:1;overflow-y:auto;" id="dmList"></div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+            <div class="dm-av" style="background:linear-gradient(135deg,#ff6b35,#ffaa00);">SV</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;color:var(--text);">SentinelVega</div>
+              <div style="font-size:11px;color:var(--green);display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>Online now</div>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;" id="dmConversation"></div>
+          <div style="padding:14px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;">
+            <input class="chat-input" style="flex:1;border-radius:20px;" placeholder="Type a message…" id="dmInputField">
+            <button class="chat-send" onclick="sendDM()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <!-- Live Chat -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <span class="chat-title">Live Floor Chat</span>
+        <div class="chat-online"><div class="online-dot"></div>847 online</div>
+      </div>
+      <div class="chat-tabs">
+        <button class="chat-tab active" onclick="setChatTab(this,'global')">🌐 Global</button>
+        <button class="chat-tab" onclick="setChatTab(this,'stocks')">📊 Stocks</button>
+        <button class="chat-tab" onclick="setChatTab(this,'crypto')">₿ Crypto</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-row">
+        <input class="chat-input" placeholder="Message the floor…" id="chatInputField" onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+
+    <!-- Top Traders -->
+    <div class="market-card">
+      <div class="section-title">Top Callers This Week</div>
+      <div class="lead-list" id="leaderboard"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="notifModal" onclick="closeModal('notifModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">NOTIFICATIONS</span>
+      <button class="modal-close" onclick="closeModal('notifModal')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;" id="notifList"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profileModal" onclick="closeModal('profileModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">YOUR PROFILE</span>
+      <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+    </div>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<script>
+// ── LIVE DATA CONFIG ──
+const API_BASE = 'https://web-production-78fc1.up.railway.app/api';
+let liveStocks = [];
+let liveIndices = [];
+
+// ── LOCAL STORAGE HELPERS ──
+function getPosts() { try { return JSON.parse(localStorage.getItem('mp_posts') || '[]'); } catch(e) { return []; } }
+function savePosts(p) { localStorage.setItem('mp_posts', JSON.stringify(p)); }
+function getUser() { try { return JSON.parse(localStorage.getItem('mp_user') || 'null'); } catch(e) { return null; } }
+function saveUser(u) { localStorage.setItem('mp_user', JSON.stringify(u)); }
+function getMessages() { try { return JSON.parse(localStorage.getItem('mp_messages') || '[]'); } catch(e) { return []; } }
+function saveMessages(m) { localStorage.setItem('mp_messages', JSON.stringify(m)); }
+
+const communities = [
+  {name:'Equity Pit',emoji:'🏦',desc:'Stocks, ETFs, and equity analysis. Earnings plays, technicals, and fundamentals.',color:'linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,100,200,0.3))',joined:false},
+  {name:'Crypto Vault',emoji:'₿',desc:'Bitcoin, altcoins, DeFi, and on-chain analytics. No shill zone.',color:'linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.3))',joined:false},
+  {name:'Commodities Pit',emoji:'🛢️',desc:'Energy, metals, agriculture. Futures, spot, and physical markets.',color:'linear-gradient(135deg,rgba(255,107,53,0.3),rgba(200,50,0,0.3))',joined:false},
+  {name:'Macro Desk',emoji:'🌐',desc:'Central banks, rates, FX, and global macro. Big picture views.',color:'linear-gradient(135deg,rgba(0,255,136,0.3),rgba(0,150,80,0.3))',joined:false},
+  {name:'Options Flow',emoji:'📈',desc:'Unusual options activity, dark pool prints, gamma analysis.',color:'linear-gradient(135deg,rgba(150,80,255,0.3),rgba(80,0,200,0.3))',joined:false},
+  {name:'Dark Pool Intel',emoji:'🔬',desc:'Institutional flow, dark pool activity, block trades.',color:'linear-gradient(135deg,rgba(255,50,100,0.3),rgba(150,0,50,0.3))',joined:false},
+];
+
+// ── RENDER TRENDING (live) ──
+function renderTrending(data) {
+  const list = document.getElementById('trendList');
+  if (!data || data.length === 0) {
+    list.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:8px 10px;">Connecting to server…</div>`;
+    return;
+  }
+  list.innerHTML = data.map(t=>`
+    <div class="trend-item">
+      <div>
+        <div class="trend-sym">${t.sym}</div>
+        <div class="trend-name">${t.name}</div>
+      </div>
+      <div class="trend-right">
+        <div class="trend-price">₹${t.price}</div>
+        <div class="trend-chg ${t.up?'up':'dn'}">${t.chg}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── FETCH LIVE DATA FROM BACKEND ──
+async function fetchLiveData() {
+  try {
+    const res = await fetch(`${API_BASE}/all`);
+    if (!res.ok) throw new Error('Server error');
+    const json = await res.json();
+
+    liveStocks  = json.stocks  || [];
+    liveIndices = json.indices || [];
+
+    // Update Trending Now sidebar
+    renderTrending(liveStocks.slice(0, 5));
+
+    // Update last-updated badge
+    const ts = json.last_updated ? new Date(json.last_updated).toLocaleTimeString('en-IN') : '—';
+    const badge = document.getElementById('liveTimestamp');
+    if (badge) badge.textContent = `Live · ${ts}`;
+
+    // Flash green pulse on update
+    document.querySelectorAll('.trend-item').forEach(el => {
+      el.style.transition = 'background 0.3s';
+      el.style.background = 'rgba(0,255,136,0.07)';
+      setTimeout(() => el.style.background = '', 600);
+    });
+
+  } catch (err) {
+    console.warn('Backend not reachable:', err.message);
+    document.getElementById('trendList').innerHTML =
+      `<div style="color:var(--accent2);font-size:11px;padding:8px 10px;line-height:1.6;">
+        ⚠️ Server offline.<br>
+        Run <code style="background:var(--bg3);padding:2px 5px;border-radius:3px;">python server.py</code>
+      </div>`;
+    const badge = document.getElementById('liveTimestamp');
+    if (badge) { badge.textContent = 'Offline'; badge.style.color = 'var(--accent2)'; }
+  }
+}
+
+// ── STOCK SEARCH ──
+let allSymbols = [];  // loaded from /api/symbols on startup
+
+async function loadSymbols() {
+  try {
+    const res = await fetch(`${API_BASE}/symbols`);
+    const json = await res.json();
+    allSymbols = json.symbols || [];
+  } catch(e) { console.warn('Could not load symbols', e); }
+}
+
+function onStockSearch(query) {
+  const dropdown = document.getElementById('searchDropdown');
+  document.getElementById('searchResultCard').style.display = 'none';
+  if (!query || query.length < 1) { dropdown.style.display = 'none'; return; }
+
+  const q = query.toLowerCase();
+  const matches = allSymbols.filter(s =>
+    s.sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+  ).slice(0, 12);
+
+  if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+
+  dropdown.innerHTML = matches.map(s => `
+    <div onclick="fetchAndShowQuote('${s.sym}','${s.name.replace(/'/g,'')}')"
+      style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);
+             display:flex;justify-content:space-between;align-items:center;transition:background 0.1s;"
+      onmouseover="this.style.background='rgba(0,229,255,0.06)'"
+      onmouseout="this.style.background=''">
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
+        <div style="font-size:10px;color:var(--text3);">${s.name}</div>
+      </div>
+      <span style="font-size:10px;color:var(--accent2);">NSE ›</span>
+    </div>`).join('');
+  dropdown.style.display = 'block';
+}
+
+async function fetchAndShowQuote(sym, name) {
+  document.getElementById('searchDropdown').style.display = 'none';
+  document.getElementById('stockSearchInput').value = sym;
+
+  const card = document.getElementById('searchResultCard');
+  document.getElementById('srcSym').textContent = sym;
+  document.getElementById('srcName').textContent = name;
+  document.getElementById('srcPrice').textContent = 'Loading…';
+  document.getElementById('srcChg').textContent = '';
+  card.style.display = 'block';
+
+  try {
+    const res = await fetch(`${API_BASE}/quote/${sym}`);
+    const data = await res.json();
+    document.getElementById('srcPrice').textContent = `₹${data.price}`;
+    const chgEl = document.getElementById('srcChg');
+    chgEl.textContent = data.chg;
+    chgEl.style.color = data.up ? 'var(--green)' : 'var(--red)';
+  } catch(e) {
+    document.getElementById('srcPrice').textContent = 'Server offline';
+  }
+}
+function generateSparkline(up, color) {
+  const pts = Array.from({length:20},(_,i)=>{
+    const base = up ? 50 + i*1.5 : 80 - i*1.5;
+    return base + (Math.random()-0.5)*12;
+  });
+  const min = Math.min(...pts), max = Math.max(...pts);
+  const norm = pts.map(p=>((p-min)/(max-min))*110+15);
+  const path = norm.map((y,i)=>`${(i/(norm.length-1))*580},${130-y}`).join(' L ');
+  const fill = norm.map((y,i)=>`${(i/(norm.length-1))*580},${130-y}`).join(' L ');
+  return `<svg class="chart-svg" viewBox="0 0 580 140" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="cg${color.replace('#','')}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M ${fill} L 580,140 L 0,140 Z" fill="url(#cg${color.replace('#','')})" />
+    <polyline points="${norm.map((y,i)=>`${(i/(norm.length-1))*580},${130-y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+// ── RENDER POSTS (real — from localStorage) ──
+function renderPosts() {
+  const posts = getPosts();
+  const container = document.getElementById('postsContainer');
+  if (posts.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:48px 20px;color:var(--text3);">
+        <div style="font-size:36px;margin-bottom:12px;">📭</div>
+        <div style="font-size:15px;color:var(--text2);font-weight:600;">No posts yet</div>
+        <div style="font-size:12px;margin-top:6px;">Be the first to share a trade idea above!</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = posts.slice().reverse().map(p=>{
+    const initials = p.author.slice(0,2).toUpperCase();
+    const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                    'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)',
+                    'linear-gradient(135deg,#8855ff,#aa44ff)','linear-gradient(135deg,#ff3355,#ff6b35)'];
+    const color = colors[p.author.length % colors.length];
+    return `
+    <div class="post-card fade-in">
+      <div class="post-header">
+        <div class="post-avatar" style="background:${color}">${initials}</div>
+        <div class="post-meta">
+          <div class="post-author">
+            <span class="author-name">${p.author}</span>
+            <span class="author-handle">@${p.author.toLowerCase().replace(/\s/g,'')}</span>
+          </div>
+          <div class="post-time">${new Date(p.time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${new Date(p.time).toLocaleDateString('en-IN')}</div>
+        </div>
+        ${p.pit ? `<span class="tag-chip stocks" style="margin-left:auto;font-size:10px;">${p.pit}</span>` : ''}
+      </div>
+      <div class="post-body"><div class="post-text">${p.text}</div></div>
+      <div class="post-footer">
+        <button class="post-action" onclick="likePost(${p.id},this)"><span>↑</span><span class="cnt">${p.likes||0}</span></button>
+        <button class="post-action"><span>💬</span><span>0</span></button>
+        <button class="post-action" onclick="deletePost(${p.id})"><span>🗑️</span></button>
+      </div>
+    </div>`}).join('');
+}
+
+function likePost(id, btn) {
+  const posts = getPosts();
+  const p = posts.find(x=>x.id===id);
+  if (p) { p.likes = (p.likes||0)+1; savePosts(posts); btn.querySelector('.cnt').textContent = p.likes; }
+}
+
+function deletePost(id) {
+  savePosts(getPosts().filter(p=>p.id!==id));
+  renderPosts();
+}
+
+// ── SUBMIT POST ──
+function submitPost() {
+  const user = getUser();
+  if (!user) { alert('Please set your username first — click your avatar top right!'); return; }
+  const input = document.querySelector('.compose-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const pitBtn = document.querySelector('.tag-chip.active-pit');
+  const pit = pitBtn ? pitBtn.textContent.replace('+ ','') : '';
+  const posts = getPosts();
+  posts.push({ id: Date.now(), author: user.name, text, pit, time: new Date().toISOString(), likes: 0 });
+  savePosts(posts);
+  input.value = '';
+  renderPosts();
+}
+
+// ── RENDER LEADERBOARD (real — top posters) ──
+function renderLeaderboard() {
+  const posts = getPosts();
+  const counts = {};
+  posts.forEach(p => { counts[p.author] = (counts[p.author]||0) + (p.likes||0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const rankClass = ['gold','silver','bronze','',''];
+  const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                  'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)',
+                  'linear-gradient(135deg,#8855ff,#aa44ff)'];
+  const el = document.getElementById('leaderboard');
+  if (sorted.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:8px 10px;">No activity yet — start posting!</div>`;
+    return;
+  }
+  el.innerHTML = sorted.map(([name,score],i)=>`
+    <div class="lead-item">
+      <div class="lead-rank ${rankClass[i]}">${i+1}</div>
+      <div class="lead-av" style="background:${colors[i%colors.length]}">${name.slice(0,2).toUpperCase()}</div>
+      <div class="lead-info"><div class="lead-name">${name}</div><div class="lead-stat">${score} pts</div></div>
+    </div>`).join('');
+}
+
+// ── RENDER CHAT (real — localStorage) ──
+function renderChat() {
+  const msgs = getMessages();
+  const el = document.getElementById('chatMessages');
+  if (msgs.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:10px;">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+  el.innerHTML = msgs.slice(-30).map(m=>{
+    const colors = ['linear-gradient(135deg,#00e5ff,#0080ff)','linear-gradient(135deg,#ffd700,#ff9900)',
+                    'linear-gradient(135deg,#00ff88,#00b860)','linear-gradient(135deg,#ff6b35,#ffaa00)'];
+    const c = colors[m.user.length % colors.length];
+    return `<div class="chat-msg">
+      <div class="chat-msg-av" style="background:${c}">${m.user.slice(0,2).toUpperCase()}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-name">${m.user} <span class="chat-msg-time">${m.time}</span></div>
+        <div class="chat-msg-text">${m.text}</div>
+      </div>
+    </div>`;}).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── RENDER COMMUNITIES ──
+function renderCommunities() {
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  document.getElementById('communityGrid').innerHTML = communities.map(c=>{
+    const isJoined = joined.includes(c.name);
+    const posts = getPosts().filter(p=>p.pit===c.name).length;
+    return `
+    <div class="community-card">
+      <div class="community-banner" style="background:${c.color}">${c.emoji} ${c.name}</div>
+      <div class="community-info">
+        <div class="community-name">${c.name}</div>
+        <div class="community-desc">${c.desc}</div>
+        <div class="community-meta">
+          <div class="community-stat"><span class="community-stat-val">${posts}</span><span class="community-stat-label">Posts</span></div>
+        </div>
+      </div>
+      <button class="join-btn ${isJoined?'joined':''}" onclick="toggleJoin('${c.name}',this)">${isJoined?'✓ Joined':'+ Join Pit'}</button>
+    </div>`}).join('');
+}
+
+function toggleJoin(name, btn) {
+  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
+  const idx = joined.indexOf(name);
+  if (idx>-1) joined.splice(idx,1); else joined.push(name);
+  localStorage.setItem('mp_joined', JSON.stringify(joined));
+  btn.classList.toggle('joined');
+  btn.textContent = btn.classList.contains('joined') ? '✓ Joined' : '+ Join Pit';
+}
+
+// ── RENDER DMs (real — localStorage per user) ──
+function renderDMs() {
+  const user = getUser();
+  document.getElementById('dmList').innerHTML = `
+    <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px;">
+      ${user ? 'No conversations yet.<br>DMs coming soon with backend!' : 'Set your username to use DMs'}
+    </div>`;
+  document.getElementById('dmConversation').innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--text3);font-size:12px;">Select a conversation</div>`;
+}
+
+// ── RENDER NOTIFICATIONS (real) ──
+function renderNotifs() {
+  const posts = getPosts();
+  const user = getUser();
+  const el = document.getElementById('notifList');
+  if (!user || posts.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:10px;">No notifications yet.</div>`;
+    return;
+  }
+  const myPosts = posts.filter(p=>p.author===user.name && p.likes>0);
+  if (myPosts.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:10px;">No notifications yet.</div>`;
+    return;
+  }
+  el.innerHTML = myPosts.map(p=>`
+    <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);">
+      <span style="font-size:18px;">👍</span>
+      <div>
+        <div style="font-size:13px;color:var(--text);line-height:1.4;">Your post got ${p.likes} like${p.likes!==1?'s':''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">"${p.text.slice(0,60)}${p.text.length>60?'…':''}"</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── NAV / PAGE SWITCH ──
+function switchNav(btn, page) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+}
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setChatTab(tab, name) {
+  document.querySelectorAll('.chat-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+}
+
+// ── MODALS ──
+function openModal(id) {
+  if (id === 'profileModal') renderProfileModal();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function renderProfileModal() {
+  const user = getUser();
+  const posts = getPosts();
+  const el = document.getElementById('profileContent');
+  if (!user) {
+    el.innerHTML = `
+      <div style="margin-bottom:14px;color:var(--text2);font-size:13px;">Choose your username to start posting and chatting.</div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" id="usernameInput" placeholder="e.g. TradingHawk" maxlength="20">
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="setUsername()">Set Username & Join</button>`;
+  } else {
+    const myPosts = posts.filter(p=>p.author===user.name);
+    const totalLikes = myPosts.reduce((a,p)=>a+(p.likes||0),0);
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg3);border-radius:10px;margin-bottom:16px;border:1px solid var(--border);">
+        <div class="avatar" style="width:50px;height:50px;font-size:18px;">${user.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-weight:700;font-size:16px;color:var(--text);">${user.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">@${user.name.toLowerCase().replace(/\s/g,'')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);">${myPosts.length}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Posts</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--green);">${totalLikes}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Likes received</div>
+        </div>
+      </div>
+      <button class="btn-ghost" style="width:100%" onclick="localStorage.removeItem('mp_user');closeModal('profileModal');updateAvatar();renderPosts();renderChat();">Log out</button>`;
+  }
+}
+
+function setUsername() {
+  const val = document.getElementById('usernameInput').value.trim();
+  if (!val || val.length < 2) { alert('Please enter at least 2 characters'); return; }
+  saveUser({name: val});
+  closeModal('profileModal');
+  updateAvatar();
+  renderPosts();
+  renderChat();
+}
+
+function updateAvatar() {
+  const user = getUser();
+  const av = document.querySelector('header .avatar');
+  if (av) av.textContent = user ? user.name.slice(0,2).toUpperCase() : '?';
+  const composeAv = document.querySelector('.compose-box .avatar');
+  if (composeAv) composeAv.textContent = user ? user.name.slice(0,2).toUpperCase() : '?';
+}
+
+// ── SEND CHAT ──
+function sendChat() {
+  const user = getUser();
+  if (!user) { alert('Set your username first — click your avatar!'); return; }
+  const input = document.getElementById('chatInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = getMessages();
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  msgs.push({user: user.name, text, time: now});
+  if (msgs.length > 100) msgs.splice(0, msgs.length - 100);
+  saveMessages(msgs);
+  renderChat();
+  input.value = '';
+}
+
+function sendDM() {
+  const input = document.getElementById('dmInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  const convo = document.getElementById('dmConversation');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;justify-content:flex-end;';
+  div.innerHTML = `<div style="max-width:75%;padding:10px 14px;border-radius:14px 14px 4px 14px;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.25);font-size:13px;color:var(--text);line-height:1.5;">${text}<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-top:4px;text-align:right;">now</div></div>`;
+  convo.appendChild(div);
+  convo.scrollTop = convo.scrollHeight;
+  input.value = '';
+}
+
+// ── INIT ──
+updateAvatar();
+renderTrending([]);
+renderPosts();
+renderLeaderboard();
+renderChat();
+renderCommunities();
+renderDMs();
+renderNotifs();
+
+// Fetch live stock data, refresh every 60s
+fetchLiveData();
+loadSymbols();
+setInterval(fetchLiveData, 60000);
+</script>
+</body>
+</html>
