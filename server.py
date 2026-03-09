@@ -369,88 +369,241 @@ def api_technical(symbol):
     yf_sym, display_name, prefix, asset_type = resolve_symbol(symbol)
     try:
         ticker = yf.Ticker(yf_sym)
-        hist = ticker.history(period="6mo")
+        hist   = ticker.history(period="1y")
         if hist.empty:
             return jsonify({"error": "No data"}), 404
 
-        close = hist["Close"]
-        price = round(float(close.iloc[-1]), 2)
+        close  = hist["Close"]
+        high   = hist["High"]
+        low    = hist["Low"]
+        volume = hist["Volume"]
+        price  = round(float(close.iloc[-1]), 2)
 
-        # Moving Averages
-        ma50  = round(float(close.tail(50).mean()), 2)  if len(close) >= 50  else None
-        ma200 = round(float(close.tail(200).mean()), 2) if len(close) >= 200 else None
+        def r(v, d=2):
+            try: return round(float(v), d)
+            except: return None
 
-        # RSI (14 period)
+        # ── MOVING AVERAGES ──
+        ma10  = r(close.tail(10).mean())  if len(close) >= 10  else None
+        ma20  = r(close.tail(20).mean())  if len(close) >= 20  else None
+        ma50  = r(close.tail(50).mean())  if len(close) >= 50  else None
+        ma100 = r(close.tail(100).mean()) if len(close) >= 100 else None
+        ma200 = r(close.tail(200).mean()) if len(close) >= 200 else None
+
+        # EMA
+        ema9   = r(close.ewm(span=9,   adjust=False).mean().iloc[-1])
+        ema21  = r(close.ewm(span=21,  adjust=False).mean().iloc[-1])
+        ema50  = r(close.ewm(span=50,  adjust=False).mean().iloc[-1])
+        ema200 = r(close.ewm(span=200, adjust=False).mean().iloc[-1]) if len(close) >= 200 else None
+
+        # ── RSI (14) ──
         delta = close.diff()
         gain  = delta.clip(lower=0).rolling(14).mean()
         loss  = (-delta.clip(upper=0)).rolling(14).mean()
         rs    = gain / loss
-        rsi   = round(float(100 - (100 / (1 + rs.iloc[-1]))), 1)
+        rsi   = r(100 - (100 / (1 + rs.iloc[-1])), 1)
 
-        # MACD
-        ema12 = close.ewm(span=12, adjust=False).mean()
-        ema26 = close.ewm(span=26, adjust=False).mean()
+        # RSI (7) — faster
+        gain7 = delta.clip(lower=0).rolling(7).mean()
+        loss7 = (-delta.clip(upper=0)).rolling(7).mean()
+        rs7   = gain7 / loss7
+        rsi7  = r(100 - (100 / (1 + rs7.iloc[-1])), 1)
+
+        # ── MACD ──
+        ema12       = close.ewm(span=12, adjust=False).mean()
+        ema26       = close.ewm(span=26, adjust=False).mean()
         macd_line   = ema12 - ema26
         signal_line = macd_line.ewm(span=9, adjust=False).mean()
-        macd_val    = round(float(macd_line.iloc[-1]), 2)
-        signal_val  = round(float(signal_line.iloc[-1]), 2)
-        macd_bullish = macd_val > signal_val
+        macd_hist   = macd_line - signal_line
+        macd_val    = r(macd_line.iloc[-1])
+        signal_val  = r(signal_line.iloc[-1])
+        macd_hist_val = r(macd_hist.iloc[-1])
+        macd_bullish  = macd_val > signal_val
+        # MACD histogram trend (increasing = strengthening)
+        macd_increasing = macd_hist.iloc[-1] > macd_hist.iloc[-2]
 
-        # Bollinger Bands (20 period)
-        ma20  = close.rolling(20).mean()
-        std20 = close.rolling(20).std()
-        bb_upper = round(float((ma20 + 2*std20).iloc[-1]), 2)
-        bb_lower = round(float((ma20 - 2*std20).iloc[-1]), 2)
-        bb_mid   = round(float(ma20.iloc[-1]), 2)
+        # ── BOLLINGER BANDS (20) ──
+        sma20   = close.rolling(20).mean()
+        std20   = close.rolling(20).std()
+        bb_upper = r((sma20 + 2*std20).iloc[-1])
+        bb_lower = r((sma20 - 2*std20).iloc[-1])
+        bb_mid   = r(sma20.iloc[-1])
+        bb_width = r(((bb_upper - bb_lower) / bb_mid) * 100, 1) if bb_mid else None
+        bb_pct   = r(((price - bb_lower) / (bb_upper - bb_lower)) * 100, 1) if bb_upper and bb_lower else None
 
-        # Support & Resistance (recent 20-day low/high)
-        support    = round(float(hist["Low"].tail(20).min()), 2)
-        resistance = round(float(hist["High"].tail(20).max()), 2)
+        # ── STOCHASTIC OSCILLATOR (14,3) ──
+        low14  = low.rolling(14).min()
+        high14 = high.rolling(14).max()
+        stoch_k = r(((close - low14) / (high14 - low14) * 100).iloc[-1], 1)
+        stoch_d = r(((close - low14) / (high14 - low14) * 100).rolling(3).mean().iloc[-1], 1)
+        stoch_bullish = stoch_k and stoch_d and stoch_k > stoch_d
 
-        # Overall signal
+        # ── ATR (Average True Range, 14) ──
+        tr1 = high - low
+        tr2 = (high - close.shift()).abs()
+        tr3 = (low  - close.shift()).abs()
+        tr  = tr1.combine(tr2, max).combine(tr3, max)
+        atr = r(tr.rolling(14).mean().iloc[-1])
+        atr_pct = r((atr / price) * 100, 2) if atr and price else None
+
+        # ── ADX (Average Directional Index, 14) ──
+        try:
+            plus_dm  = high.diff().clip(lower=0)
+            minus_dm = (-low.diff()).clip(lower=0)
+            atr14    = tr.rolling(14).mean()
+            plus_di  = 100 * (plus_dm.rolling(14).mean()  / atr14)
+            minus_di = 100 * (minus_dm.rolling(14).mean() / atr14)
+            dx       = (100 * (plus_di - minus_di).abs() / (plus_di + minus_di))
+            adx      = r(dx.rolling(14).mean().iloc[-1], 1)
+            plus_di_val  = r(plus_di.iloc[-1], 1)
+            minus_di_val = r(minus_di.iloc[-1], 1)
+        except:
+            adx = plus_di_val = minus_di_val = None
+
+        # ── CCI (Commodity Channel Index, 20) ──
+        try:
+            tp  = (high + low + close) / 3
+            cci = r(((tp - tp.rolling(20).mean()) / (0.015 * tp.rolling(20).std())).iloc[-1], 1)
+        except:
+            cci = None
+
+        # ── WILLIAMS %R (14) ──
+        try:
+            wr = r((-(high.rolling(14).max() - close) / (high.rolling(14).max() - low.rolling(14).min()) * 100).iloc[-1], 1)
+        except:
+            wr = None
+
+        # ── VWAP (current session approx using 20 days) ──
+        try:
+            tp_vwap = (high + low + close) / 3
+            vwap = r((tp_vwap * volume).tail(20).sum() / volume.tail(20).sum())
+        except:
+            vwap = None
+
+        # ── VOLUME ANALYSIS ──
+        vol_avg20   = r(volume.tail(20).mean())
+        vol_current = r(float(volume.iloc[-1]))
+        vol_ratio   = r(vol_current / vol_avg20, 2) if vol_avg20 and vol_avg20 > 0 else None
+        vol_spike   = vol_ratio and vol_ratio > 1.5
+
+        # ── SUPPORT & RESISTANCE ──
+        support_20    = r(low.tail(20).min())
+        resistance_20 = r(high.tail(20).max())
+        support_50    = r(low.tail(50).min())
+        resistance_50 = r(high.tail(50).max())
+
+        # Pivot Points (Classic — based on last session)
+        prev_high  = r(float(high.iloc[-2]))
+        prev_low   = r(float(low.iloc[-2]))
+        prev_close = r(float(close.iloc[-2]))
+        if prev_high and prev_low and prev_close:
+            pivot  = r((prev_high + prev_low + prev_close) / 3)
+            r1     = r(2 * pivot - prev_low)
+            r2     = r(pivot + (prev_high - prev_low))
+            s1     = r(2 * pivot - prev_high)
+            s2     = r(pivot - (prev_high - prev_low))
+        else:
+            pivot = r1 = r2 = s1 = s2 = None
+
+        # ── PRICE ACTION ──
+        change_1d  = r(((close.iloc[-1] - close.iloc[-2]) / close.iloc[-2]) * 100, 2)
+        change_1w  = r(((close.iloc[-1] - close.iloc[-6]) / close.iloc[-6]) * 100, 2)  if len(close) >= 6   else None
+        change_1m  = r(((close.iloc[-1] - close.iloc[-22]) / close.iloc[-22]) * 100, 2) if len(close) >= 22 else None
+        change_3m  = r(((close.iloc[-1] - close.iloc[-66]) / close.iloc[-66]) * 100, 2) if len(close) >= 66 else None
+        change_6m  = r(((close.iloc[-1] - close.iloc[-132]) / close.iloc[-132]) * 100, 2) if len(close) >= 132 else None
+        high_52w   = r(float(high.tail(252).max()))
+        low_52w    = r(float(low.tail(252).min()))
+        pct_from_52h = r(((price - high_52w) / high_52w) * 100, 2) if high_52w else None
+        pct_from_52l = r(((price - low_52w)  / low_52w)  * 100, 2) if low_52w  else None
+
+        # ── TREND STRENGTH ──
+        # Price position relative to MAs
+        above_ma50  = price > ma50  if ma50  else None
+        above_ma200 = price > ma200 if ma200 else None
+        golden_cross = (ma50 and ma200 and ma50 > ma200)   # MA50 > MA200 = bullish
+        death_cross  = (ma50 and ma200 and ma50 < ma200)
+
+        # ── OVERALL SIGNAL (expanded to 8 indicators) ──
         signals = []
-        if ma50 and price > ma50:   signals.append("BUY")
-        else:                        signals.append("SELL")
-        if ma200 and price > ma200: signals.append("BUY")
-        else:                        signals.append("SELL")
-        if rsi < 30:                 signals.append("BUY")
-        elif rsi > 70:               signals.append("SELL")
-        else:                        signals.append("HOLD")
-        if macd_bullish:             signals.append("BUY")
-        else:                        signals.append("SELL")
+        if ma50:  signals.append("BUY"  if price > ma50  else "SELL")
+        if ma200: signals.append("BUY"  if price > ma200 else "SELL")
+        if rsi:
+            if rsi < 30:   signals.append("BUY")
+            elif rsi > 70: signals.append("SELL")
+            else:          signals.append("HOLD")
+        signals.append("BUY" if macd_bullish else "SELL")
+        if stoch_k:
+            if stoch_k < 20:   signals.append("BUY")
+            elif stoch_k > 80: signals.append("SELL")
+            else:              signals.append("HOLD")
+        if cci:
+            if cci < -100:  signals.append("BUY")
+            elif cci > 100: signals.append("SELL")
+            else:           signals.append("HOLD")
+        if adx and adx > 25:
+            signals.append("BUY" if (plus_di_val and minus_di_val and plus_di_val > minus_di_val) else "SELL")
+        if vwap:
+            signals.append("BUY" if price > vwap else "SELL")
 
         buy_count  = signals.count("BUY")
         sell_count = signals.count("SELL")
-        if buy_count >= 3:   overall = "STRONG BUY"
-        elif buy_count == 2: overall = "BUY"
-        elif sell_count >= 3:overall = "STRONG SELL"
-        elif sell_count == 2:overall = "SELL"
-        else:                overall = "HOLD"
+        total      = len(signals)
+        if   buy_count >= round(total * 0.75):  overall = "STRONG BUY"
+        elif buy_count >= round(total * 0.5):   overall = "BUY"
+        elif sell_count >= round(total * 0.75): overall = "STRONG SELL"
+        elif sell_count >= round(total * 0.5):  overall = "SELL"
+        else:                                    overall = "HOLD"
 
-        # Sparkline (last 30 days closing prices)
-        sparkline = [round(float(x), 2) for x in close.tail(30).tolist()]
+        sparkline = [r(x) for x in close.tail(30).tolist()]
 
         return jsonify({
-            "symbol": sym_clean,
-            "price": price,
-            "ma50": ma50,
-            "ma200": ma200,
-            "rsi": rsi,
-            "macd": macd_val,
-            "macd_signal": signal_val,
-            "macd_bullish": macd_bullish,
-            "bb_upper": bb_upper,
-            "bb_lower": bb_lower,
-            "bb_mid": bb_mid,
-            "support": support,
-            "resistance": resistance,
-            "overall": overall,
-            "buy_signals": buy_count,
-            "sell_signals": sell_count,
+            "symbol":   symbol.upper(),
+            "price":    price,
+            # Moving Averages
+            "ma10": ma10, "ma20": ma20, "ma50": ma50, "ma100": ma100, "ma200": ma200,
+            "ema9": ema9, "ema21": ema21, "ema50": ema50, "ema200": ema200,
+            # RSI
+            "rsi": rsi, "rsi7": rsi7,
+            # MACD
+            "macd": macd_val, "macd_signal": signal_val,
+            "macd_hist": macd_hist_val, "macd_bullish": macd_bullish,
+            "macd_increasing": macd_increasing,
+            # Bollinger Bands
+            "bb_upper": bb_upper, "bb_lower": bb_lower, "bb_mid": bb_mid,
+            "bb_width": bb_width, "bb_pct": bb_pct,
+            # Stochastic
+            "stoch_k": stoch_k, "stoch_d": stoch_d, "stoch_bullish": stoch_bullish,
+            # ATR
+            "atr": atr, "atr_pct": atr_pct,
+            # ADX
+            "adx": adx, "plus_di": plus_di_val, "minus_di": minus_di_val,
+            # CCI & Williams %R
+            "cci": cci, "williams_r": wr,
+            # VWAP
+            "vwap": vwap,
+            # Volume
+            "vol_avg20": vol_avg20, "vol_current": vol_current,
+            "vol_ratio": vol_ratio, "vol_spike": vol_spike,
+            # Support & Resistance
+            "support": support_20, "resistance": resistance_20,
+            "support_50": support_50, "resistance_50": resistance_50,
+            # Pivot Points
+            "pivot": pivot, "r1": r1, "r2": r2, "s1": s1, "s2": s2,
+            # Price Performance
+            "change_1d": change_1d, "change_1w": change_1w,
+            "change_1m": change_1m, "change_3m": change_3m, "change_6m": change_6m,
+            "high_52w": high_52w, "low_52w": low_52w,
+            "pct_from_52h": pct_from_52h, "pct_from_52l": pct_from_52l,
+            # Trend
+            "above_ma50": above_ma50, "above_ma200": above_ma200,
+            "golden_cross": golden_cross, "death_cross": death_cross,
+            # Signal
+            "overall": overall, "buy_signals": buy_count,
+            "sell_signals": sell_count, "total_signals": total,
             "sparkline": sparkline
         })
     except Exception as e:
-        print(f"Technical error {sym_clean}: {e}")
+        print(f"Technical error {symbol}: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/search")
