@@ -2686,12 +2686,47 @@ function openModal(id) {
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ── ESC KEY ──
+// ── ESC KEY — closes everything ──
 document.addEventListener('keydown', e => {
-  if (e.key==='Escape') {
-    ['stockModal','profileModal','notifModal'].forEach(id=>closeModal(id));
-    document.getElementById('stockDrop').style.display='none';
-    document.getElementById('headerDrop').style.display='none';
+  if (e.key !== 'Escape') return;
+
+  // 1. Close all modals
+  ['stockModal','profileModal','notifModal','settingsModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open')) closeModal(id);
+  });
+
+  // 2. Close share popup
+  closeSharePopup();
+
+  // 3. Close hashtag suggestion popup
+  closeHashtagPopup();
+
+  // 4. Close search dropdowns
+  const stockDrop  = document.getElementById('stockDrop');
+  const headerDrop = document.getElementById('headerDrop');
+  if (stockDrop)  stockDrop.style.display  = 'none';
+  if (headerDrop) headerDrop.style.display = 'none';
+
+  // 5. Close mobile sidebar drawer
+  const drawer  = document.getElementById('sidebarDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  if (drawer)  { drawer.classList.remove('open'); }
+  if (overlay) { overlay.style.display = 'none'; }
+
+  // 6. If in edit-profile view, go back to profile view
+  const profileModal = document.getElementById('profileModal');
+  if (profileModal && profileModal.classList.contains('open')) {
+    const title = document.getElementById('profileModalTitle');
+    if (title && title.textContent === 'EDIT PROFILE') renderProfileModal();
+  }
+
+  // 7. If in a settings sub-page, go back to main settings
+  const settingsModal = document.getElementById('settingsModal');
+  if (settingsModal && settingsModal.classList.contains('open')) {
+    const title = document.getElementById('settingsTitle');
+    if (title && title.textContent !== 'SETTINGS') renderSettings('main');
+    else closeModal('settingsModal');
   }
 });
 
