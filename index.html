@@ -258,6 +258,32 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .pattern-detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .pattern-detail-box { background:var(--bg2); border-radius:16px; width:min(560px,95vw); max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:modalIn 0.2s ease; }
 
+
+/* ── WATCHLIST ── */
+.wl-tab { padding:6px 16px; border-radius:20px; border:1.5px solid var(--border); background:transparent; color:var(--text3); font-size:12px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; transition:all 0.15s; display:flex; align-items:center; gap:6px; }
+.wl-tab.active-wl { border-color:var(--accent); background:rgba(0,112,243,0.1); color:var(--accent); }
+.wl-tab .wl-del { font-size:10px; opacity:0.5; margin-left:2px; }
+.wl-tab .wl-del:hover { opacity:1; color:var(--red); }
+.wl-row { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); transition:background 0.12s; }
+.wl-row:hover { background:var(--bg3); }
+.wl-sym-box { width:44px; height:44px; border-radius:10px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:var(--accent); font-family:'Space Mono',monospace; flex-shrink:0; cursor:pointer; }
+.wl-info { flex:1; min-width:0; }
+.wl-sym { font-weight:800; font-size:14px; color:var(--text); }
+.wl-name { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wl-price { text-align:right; flex-shrink:0; }
+.wl-price-val { font-weight:700; font-size:14px; color:var(--text); }
+.wl-chg { font-size:12px; font-weight:700; }
+.wl-remove { background:none; border:none; color:var(--text3); font-size:16px; cursor:pointer; padding:4px 6px; border-radius:6px; opacity:0.4; transition:opacity 0.15s; flex-shrink:0; }
+.wl-remove:hover { opacity:1; color:var(--red); }
+.wl-section-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; padding:10px 16px 6px; }
+.wl-add-bar { display:flex; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; flex-wrap:wrap; }
+.wl-add-bar input { flex:1; min-width:140px; }
+.wl-type-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text3); font-weight:700; font-size:11px; cursor:pointer; transition:all 0.15s; font-family:'DM Sans',sans-serif; white-space:nowrap; }
+.wl-type-btn.active-wltype { border-color:var(--accent); background:rgba(0,112,243,0.1); color:var(--accent); }
+.wl-search-drop { position:absolute; left:0; right:0; top:100%; background:var(--bg2); border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:200; max-height:220px; overflow-y:auto; }
+.wl-search-item { padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:background 0.1s; }
+.wl-search-item:hover { background:var(--bg3); }
+
 /* ── BOTTOM NAV (mobile only) ── */
 .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:58px; background:var(--bg2); border-top:1px solid var(--border); z-index:300; box-shadow:0 -2px 12px rgba(0,0,0,0.08); }
 .bottom-nav-inner { display:flex; height:100%; }
@@ -360,6 +386,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <button class="nav-tab" onclick="switchTab(this,'news')">📰 News</button>
     <button class="nav-tab" onclick="switchTab(this,'messages')">💬 Messages</button>
     <button class="nav-tab" onclick="switchTab(this,'trending')">🔥 Trending</button>
+    <button class="nav-tab" onclick="switchTab(this,'watchlist')">⭐ Watchlist</button>
   </div>
   <div class="header-search">
     <input type="text" placeholder="Search tickers, pits, traders…" id="headerSearch" oninput="onHeaderSearch(this.value)" onblur="setTimeout(()=>document.getElementById('headerDrop').style.display='none',300)">
@@ -647,6 +674,24 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <div class="feed-scroll" id="trendingContainer" style="padding:0;"></div>
   </div>
 
+
+  <!-- WATCHLIST PAGE -->
+  <div class="main-feed" id="page-watchlist" style="display:none;flex-direction:column;">
+    <!-- Header -->
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;flex-wrap:wrap;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">⭐ WATCHLIST</div>
+      <button onclick="openCreateWatchlist()" style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+        + New Watchlist
+      </button>
+    </div>
+
+    <!-- Watchlist tabs row -->
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;overflow-x:auto;flex-shrink:0;" id="wlTabsRow"></div>
+
+    <!-- Watchlist body -->
+    <div class="feed-scroll" id="wlBody" style="padding:0;"></div>
+  </div>
+
   <!-- RIGHT SIDEBAR -->
   <div class="right-sidebar">
     <div class="chat-header">
@@ -672,6 +717,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <button class="bn-item active" onclick="switchTabMobile(this,'feed')"><span class="bn-icon">⚡</span>Feed</button>
     <button class="bn-item" onclick="switchTabMobile(this,'pits')"><span class="bn-icon">🏛️</span>Pits</button>
     <button class="bn-item" onclick="switchTabMobile(this,'trending')"><span class="bn-icon">🔥</span>Trending</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'watchlist')"><span class="bn-icon">⭐</span>Watch</button>
     <button class="bn-item" onclick="switchTabMobile(this,'news')"><span class="bn-icon">📰</span>News</button>
     <button class="bn-item" onclick="switchTabMobile(this,'messages')"><span class="bn-icon">💬</span>DMs</button>
   </div>
@@ -2052,6 +2098,7 @@ function openUserProfile(username) {
 }
 
 function renderOtherProfile(username) {
+  navPush({ type: 'modal', modal: 'profileModal', extra: 'other', username });
   const me       = getUser();
   const el       = document.getElementById('profileBody');
   const posts    = getPosts().filter(p => p.author === username);
@@ -3109,7 +3156,104 @@ function renderNotifs() {
 }
 
 // ── NAV ──
+
+// ── BROWSER HISTORY NAVIGATION (enables trackpad swipe-back) ──
+// We push a state every time the "view" changes so the browser
+// back gesture has real history entries to pop through.
+
+let _navHistory = [];   // internal stack mirrors browser history
+
+function navPush(state) {
+  // state: { type, page, modal, extra }
+  _navHistory.push(state);
+  try { history.pushState(state, '', location.pathname + location.search); } catch(e) {}
+}
+
+// Seed initial state so the very first pushState has a base to pop to
+(function initNav() {
+  // Replace current entry with a baseline so we never pop past the app
+  try { history.replaceState({ type: 'tab', page: 'feed' }, '', location.pathname); } catch(e) {}
+})();
+
+window.addEventListener('popstate', function(e) {
+  const state = e.state;
+  if (!state) return;
+
+  // Close any open modal first — no matter what the state says
+  document.querySelectorAll('.modal-overlay.open').forEach(m => {
+    m.classList.remove('open');
+  });
+  // Close pattern detail overlay if open
+  document.querySelectorAll('.pattern-detail-overlay').forEach(el => el.remove());
+
+  if (state.type === 'tab') {
+    // Switch to the right tab silently (no new history push)
+    const tabs = document.querySelectorAll('.nav-tab');
+    const order = ['feed','pits','screener','news','messages','trending','watchlist'];
+    const idx   = order.indexOf(state.page);
+    if (idx >= 0 && tabs[idx]) _switchTabSilent(tabs[idx], state.page);
+
+  } else if (state.type === 'modal') {
+    // Re-open a modal silently
+    const el = document.getElementById(state.modal);
+    if (el) el.classList.add('open');
+    if (state.modal === 'profileModal') {
+      if (state.extra === 'other' && state.username) renderOtherProfile(state.username);
+      else renderProfileModal();
+    }
+
+  } else if (state.type === 'screener_tab') {
+    _switchScreenerTabSilent(state.tab);
+
+  } else if (state.type === 'pattern_scan') {
+    scanForPattern(state.patternId);
+  } else if (state.type === 'tab' && state.page === 'watchlist') {
+    _switchTabSilent(null, 'watchlist');
+  }
+});
+
+// ── Silent versions (don't push new history) ──
+function _switchTabSilent(btn, page) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const pages = ['feed','pits','messages','screener','news','trending','watchlist'];
+  pages.forEach(p => {
+    const el = document.getElementById('page-'+p);
+    if (el) el.style.display = p === page ? 'flex' : 'none';
+  });
+  if (page==='pits')      renderPits();
+  if (page==='messages')  renderMessages();
+  if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='trending')  renderTrendingPage('all');
+  if (page==='watchlist') renderWatchlistPage();
+}
+
+function _switchScreenerTabSilent(tab) {
+  const patPanel  = document.getElementById('patternsPanel');
+  const resEl     = document.getElementById('screenerResults');
+  const filtersBar= document.querySelector('#page-screener > div:nth-child(2)');
+  const assetBtns = document.getElementById('screenerAssetBtns');
+
+  document.getElementById('scr_tab_screen').style.background   = tab==='screen'  ? 'var(--accent)' : 'transparent';
+  document.getElementById('scr_tab_screen').style.color        = tab==='screen'  ? '#fff' : 'var(--text3)';
+  document.getElementById('scr_tab_patterns').style.background = tab==='patterns'? 'var(--accent)' : 'transparent';
+  document.getElementById('scr_tab_patterns').style.color      = tab==='patterns'? '#fff' : 'var(--text3)';
+
+  if (tab === 'screen') {
+    if (resEl)      resEl.style.display      = 'block';
+    if (filtersBar) filtersBar.style.display = 'flex';
+    if (assetBtns)  assetBtns.style.display  = 'flex';
+    if (patPanel)   patPanel.style.display   = 'none';
+  } else {
+    if (resEl)      resEl.style.display      = 'none';
+    if (filtersBar) filtersBar.style.display = 'none';
+    if (assetBtns)  assetBtns.style.display  = 'none';
+    if (patPanel)   { patPanel.style.display = 'flex'; renderPatterns(); }
+  }
+}
+
 function switchTabMobile(btn, page) {
+  navPush({ type: 'tab', page });
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   // reuse the desktop nav tab logic — just find the matching nav-tab or call directly
@@ -3119,13 +3263,16 @@ function switchTabMobile(btn, page) {
   document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
   document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
   document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
-  if (page==='pits')     renderPits();
-  if (page==='messages') renderMessages();
-  if (page==='news')     loadNews('markets', document.getElementById('nc_markets'));
-  if (page==='trending') renderTrendingPage('all');
+  document.getElementById('page-watchlist').style.display  = page==='watchlist'?'flex':'none';
+  if (page==='pits')      renderPits();
+  if (page==='messages')  renderMessages();
+  if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='trending')  renderTrendingPage('all');
+  if (page==='watchlist') renderWatchlistPage();
 }
 
 function switchTab(btn, page) {
+  navPush({ type: 'tab', page });
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('page-feed').style.display      = page==='feed'?'flex':'none';
@@ -3134,10 +3281,12 @@ function switchTab(btn, page) {
   document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
   document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
   document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
-  if (page==='pits')     renderPits();
-  if (page==='messages') renderMessages();
-  if (page==='news')     loadNews('markets', document.getElementById('nc_markets'));
-  if (page==='trending') renderTrendingPage('all');
+  document.getElementById('page-watchlist').style.display = page==='watchlist'?'flex':'none';
+  if (page==='pits')      renderPits();
+  if (page==='messages')  renderMessages();
+  if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='trending')  renderTrendingPage('all');
+  if (page==='watchlist') renderWatchlistPage();
 }
 
 
@@ -3479,6 +3628,7 @@ const CHART_PATTERNS = [
 ];
 
 function switchScreenerTab(tab) {
+  navPush({ type: 'screener_tab', tab });
   const screenPanel  = document.getElementById('screenerResults').parentElement;
   const patPanel     = document.getElementById('patternsPanel');
   const filtersBar   = document.querySelector('#page-screener > div:nth-child(2)');
@@ -3552,6 +3702,7 @@ function renderPatterns() {
 function openPatternDetail(id) {
   const p = CHART_PATTERNS.find(x => x.id === id);
   if (!p) return;
+  navPush({ type: 'modal', modal: 'patternDetail', extra: id });
   const overlay = document.createElement('div');
   overlay.className = 'pattern-detail-overlay';
   overlay.innerHTML = `
@@ -3613,6 +3764,7 @@ let _scanPatternId = null;
 let _scanAsset = 'stocks';
 
 async function scanForPattern(patternId) {
+  navPush({ type: 'pattern_scan', patternId });
   _scanPatternId = patternId;
   const p = CHART_PATTERNS.find(x => x.id === patternId);
   if (!p) return;
@@ -3729,6 +3881,319 @@ async function runPatternScan(patternId, assetType, btn) {
       </div>`;
     }).join('')}`;
 }
+
+
+
+// ══════════════════════════════════════════
+//  WATCHLIST
+// ══════════════════════════════════════════
+const WL_KEY        = 'mp_watchlists';
+const WL_ACTIVE_KEY = 'mp_wl_active';
+
+// ── Preset asset lists for search ──
+const WL_STOCKS = [
+  ['RELIANCE','Reliance Industries'],['TCS','Tata Consultancy'],['HDFCBANK','HDFC Bank'],
+  ['INFY','Infosys'],['SBIN','State Bank'],['ICICIBANK','ICICI Bank'],['WIPRO','Wipro'],
+  ['TATAMOTORS','Tata Motors'],['HCLTECH','HCL Tech'],['ADANIENT','Adani Enterprises'],
+  ['BAJFINANCE','Bajaj Finance'],['LT','L&T'],['AXISBANK','Axis Bank'],['KOTAKBANK','Kotak Bank'],
+  ['MARUTI','Maruti Suzuki'],['SUNPHARMA','Sun Pharma'],['TITAN','Titan'],['NESTLEIND','Nestle India'],
+  ['ULTRACEMCO','UltraTech Cement'],['ASIANPAINT','Asian Paints'],['TECHM','Tech Mahindra'],
+  ['POWERGRID','Power Grid'],['NTPC','NTPC'],['ONGC','ONGC'],['COALINDIA','Coal India'],
+  ['BAJAJFINSV','Bajaj Finserv'],['JSWSTEEL','JSW Steel'],['TATASTEEL','Tata Steel'],
+  ['HEROMOTOCO','Hero MotoCorp'],['DIVISLAB','Divi\'s Lab'],['CIPLA','Cipla'],['DRREDDY','Dr Reddy\'s'],
+  ['APOLLOHOSP','Apollo Hospitals'],['HINDALCO','Hindalco'],['BPCL','BPCL'],['IOC','Indian Oil'],
+  ['EICHERMOT','Eicher Motors'],['BRITANNIA','Britannia'],['SHREECEM','Shree Cement'],
+  ['INDUSINDBK','IndusInd Bank'],['M&M','Mahindra & Mahindra'],['GRASIM','Grasim'],
+];
+const WL_CRYPTO = [
+  ['BTC','Bitcoin'],['ETH','Ethereum'],['BNB','BNB'],['SOL','Solana'],['XRP','XRP'],
+  ['DOGE','Dogecoin'],['ADA','Cardano'],['MATIC','Polygon'],['DOT','Polkadot'],
+  ['AVAX','Avalanche'],['LTC','Litecoin'],['LINK','Chainlink'],['UNI','Uniswap'],
+  ['SHIB','Shiba Inu'],['PEPE','Pepe'],['TRX','TRON'],['TON','Toncoin'],
+];
+const WL_COMMODITIES = [
+  ['GOLD','Gold'],['SILVER','Silver'],['CRUDE','Crude Oil'],['BRENT','Brent Oil'],
+  ['NATURALGAS','Natural Gas'],['COPPER','Copper'],['PLATINUM','Platinum'],
+  ['WHEAT','Wheat'],['CORN','Corn'],
+];
+
+let _wlAddType   = 'stocks';
+let _wlSearchQ   = '';
+let _wlPriceCache = {};   // sym → {price,chg,ts}
+
+// ── Storage helpers ──
+function getWatchlists() {
+  try {
+    const data = JSON.parse(localStorage.getItem(WL_KEY) || 'null');
+    if (data && data.length) return data;
+  } catch(e) {}
+  // Default: one empty watchlist
+  return [{ id: 'wl_default', name: 'My Watchlist', items: [] }];
+}
+function saveWatchlists(wls) { localStorage.setItem(WL_KEY, JSON.stringify(wls)); }
+function getActiveWlId() { return localStorage.getItem(WL_ACTIVE_KEY) || getWatchlists()[0]?.id || 'wl_default'; }
+function setActiveWlId(id) { localStorage.setItem(WL_ACTIVE_KEY, id); }
+
+// ── Render the whole watchlist page ──
+function renderWatchlistPage() {
+  const wls    = getWatchlists();
+  const active = getActiveWlId();
+  const wl     = wls.find(w => w.id === active) || wls[0];
+  if (!wl) return;
+  setActiveWlId(wl.id);
+
+  // Render tab row
+  const tabRow = document.getElementById('wlTabsRow');
+  if (tabRow) {
+    tabRow.innerHTML = wls.map(w => `
+      <button onclick="selectWatchlist('${w.id}')" class="wl-tab ${w.id===wl.id?'active-wl':''}">
+        ⭐ ${escHtml(w.name)}
+        <span class="wl-del" onclick="event.stopPropagation();deleteWatchlist('${w.id}')" title="Delete">✕</span>
+      </button>`).join('');
+  }
+
+  // Render body
+  const body = document.getElementById('wlBody');
+  if (!body) return;
+
+  // Group items by type
+  const stocks = wl.items.filter(i => i.type === 'stocks');
+  const crypto  = wl.items.filter(i => i.type === 'crypto');
+  const comms   = wl.items.filter(i => i.type === 'commodities');
+
+  const addBar = buildAddBar(wl.id);
+
+  if (!wl.items.length) {
+    body.innerHTML = addBar + `
+      <div style="text-align:center;padding:60px 20px;color:var(--text3);">
+        <div style="font-size:52px;margin-bottom:12px;">⭐</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:6px;">Your watchlist is empty</div>
+        <div style="font-size:13px;">Search above to add stocks, crypto, or commodities</div>
+      </div>`;
+    hookAddBar();
+    return;
+  }
+
+  let html = addBar;
+  if (stocks.length) {
+    html += `<div class="wl-section-label">🏦 STOCKS</div>`;
+    html += stocks.map(it => wlRow(it, wl.id)).join('');
+  }
+  if (crypto.length) {
+    html += `<div class="wl-section-label">₿ CRYPTO</div>`;
+    html += crypto.map(it => wlRow(it, wl.id)).join('');
+  }
+  if (comms.length) {
+    html += `<div class="wl-section-label">🛢️ COMMODITIES</div>`;
+    html += comms.map(it => wlRow(it, wl.id)).join('');
+  }
+  body.innerHTML = html;
+  hookAddBar();
+
+  // Fetch live prices for all items
+  wl.items.forEach(it => fetchWlPrice(it.sym, it.type));
+}
+
+function wlRow(it, wlId) {
+  const cached = _wlPriceCache[it.sym];
+  const cur    = it.type === 'stocks' ? '₹' : '$';
+  const priceHtml = cached
+    ? `<div class="wl-price-val">${cur}${cached.price||'—'}</div>
+       <div class="wl-chg" style="color:${cached.up?'var(--green)':'var(--red)'};">${cached.chg||''}</div>`
+    : `<div class="wl-price-val" style="color:var(--text3);" id="wlp_${it.sym}">—</div>
+       <div class="wl-chg" id="wlc_${it.sym}" style="color:var(--text3);">—</div>`;
+  return `
+    <div class="wl-row">
+      <div class="wl-sym-box" onclick="fetchAndShowStock('${it.sym}')">${it.sym.slice(0,4)}</div>
+      <div class="wl-info">
+        <div class="wl-sym">${it.sym}</div>
+        <div class="wl-name">${it.name}</div>
+      </div>
+      <div class="wl-price">${priceHtml}</div>
+      <button class="wl-remove" onclick="removeFromWatchlist('${wlId}','${it.sym}')" title="Remove">✕</button>
+    </div>`;
+}
+
+function buildAddBar(wlId) {
+  return `<div class="wl-add-bar" id="wlAddBar">
+    <!-- Type selector -->
+    <div style="display:flex;gap:5px;width:100%;margin-bottom:6px;">
+      <button id="wltype_stocks"       onclick="setWlType('stocks',this)"       class="wl-type-btn active-wltype">🏦 Stocks</button>
+      <button id="wltype_crypto"       onclick="setWlType('crypto',this)"       class="wl-type-btn">₿ Crypto</button>
+      <button id="wltype_commodities"  onclick="setWlType('commodities',this)"  class="wl-type-btn">🛢️ Commodities</button>
+    </div>
+    <!-- Search input -->
+    <div style="position:relative;flex:1;min-width:180px;">
+      <input class="form-input" id="wlSearchInput" placeholder="Search & add…" autocomplete="off" style="margin:0;"
+        oninput="onWlSearch(this.value,'${wlId}')"
+        onfocus="onWlSearch(document.getElementById('wlSearchInput').value,'${wlId}')">
+      <div id="wlSearchDrop" class="wl-search-drop" style="display:none;"></div>
+    </div>
+  </div>`;
+}
+
+function hookAddBar() {
+  // Close dropdown on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function closeWlDrop(e) {
+      const drop = document.getElementById('wlSearchDrop');
+      if (drop && !drop.closest('#wlAddBar')?.contains(e.target)) {
+        drop.style.display = 'none';
+      }
+    }, { once: false, capture: false });
+  }, 50);
+}
+
+function setWlType(type, btn) {
+  _wlAddType = type;
+  ['stocks','crypto','commodities'].forEach(t => {
+    const b = document.getElementById('wltype_'+t);
+    if (b) { b.classList.toggle('active-wltype', t===type); }
+  });
+  const inp = document.getElementById('wlSearchInput');
+  if (inp) onWlSearch(inp.value, getActiveWlId());
+}
+
+function onWlSearch(q, wlId) {
+  _wlSearchQ = q.toLowerCase().trim();
+  const drop = document.getElementById('wlSearchDrop');
+  if (!drop) return;
+
+  let list;
+  if (_wlAddType === 'stocks')      list = WL_STOCKS;
+  else if (_wlAddType === 'crypto') list = WL_CRYPTO;
+  else                               list = WL_COMMODITIES;
+
+  const filtered = _wlSearchQ
+    ? list.filter(([sym,name]) => sym.toLowerCase().includes(_wlSearchQ) || name.toLowerCase().includes(_wlSearchQ))
+    : list.slice(0, 12);
+
+  if (!filtered.length) { drop.style.display = 'none'; return; }
+
+  const wls = getWatchlists();
+  const wl  = wls.find(w => w.id === wlId) || wls[0];
+  const inList = new Set((wl?.items || []).map(i => i.sym));
+
+  drop.innerHTML = filtered.map(([sym, name]) => {
+    const already = inList.has(sym);
+    return `<div class="wl-search-item" onclick="${already?'':`addToWatchlist('${wlId}','${sym}','${name.replace(/'/g,"\\'")}','${_wlAddType}')`}">
+      <div style="width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);flex-shrink:0;font-family:'Space Mono',monospace;">${sym.slice(0,4)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;color:var(--text);">${sym}</div>
+        <div style="font-size:11px;color:var(--text3);">${name}</div>
+      </div>
+      ${already
+        ? `<span style="font-size:11px;color:var(--green);font-weight:700;">✓ Added</span>`
+        : `<span style="font-size:11px;color:var(--accent);font-weight:700;">+ Add</span>`}
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function addToWatchlist(wlId, sym, name, type) {
+  const wls = getWatchlists();
+  const wl  = wls.find(w => w.id === wlId);
+  if (!wl) return;
+  if (wl.items.find(i => i.sym === sym)) { showToast(`${sym} already in watchlist`,'var(--gold)'); return; }
+  wl.items.push({ sym, name, type });
+  saveWatchlists(wls);
+  renderWatchlistPage();
+  fetchWlPrice(sym, type);
+  showToast(`✅ Added ${sym} to ${wl.name}`, 'var(--green)');
+}
+
+function removeFromWatchlist(wlId, sym) {
+  const wls = getWatchlists();
+  const wl  = wls.find(w => w.id === wlId);
+  if (!wl) return;
+  wl.items = wl.items.filter(i => i.sym !== sym);
+  saveWatchlists(wls);
+  renderWatchlistPage();
+  showToast(`Removed ${sym}`, 'var(--text3)');
+}
+
+function selectWatchlist(id) {
+  setActiveWlId(id);
+  renderWatchlistPage();
+}
+
+function deleteWatchlist(id) {
+  let wls = getWatchlists();
+  if (wls.length <= 1) { showToast('⚠ Cannot delete last watchlist', 'var(--red)'); return; }
+  wls = wls.filter(w => w.id !== id);
+  if (getActiveWlId() === id) setActiveWlId(wls[0].id);
+  saveWatchlists(wls);
+  renderWatchlistPage();
+}
+
+function openCreateWatchlist() {
+  // Simple inline prompt via modal-like overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:min(360px,92vw);box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:16px;">NEW WATCHLIST</div>
+      <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;">WATCHLIST NAME</div>
+      <input id="wlNameInput" class="form-input" placeholder="e.g. Tech Picks, Swing Trades…" maxlength="30" style="margin-bottom:16px;" onkeydown="if(event.key==='Enter')confirmCreateWatchlist()">
+      <div style="display:flex;gap:8px;">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+        <button onclick="confirmCreateWatchlist()" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Create ✨</button>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('wlNameInput')?.focus(), 50);
+}
+
+function confirmCreateWatchlist() {
+  const inp  = document.getElementById('wlNameInput');
+  const name = inp?.value.trim();
+  if (!name) return;
+  const wls = getWatchlists();
+  const id  = 'wl_' + Date.now();
+  wls.push({ id, name, items: [] });
+  saveWatchlists(wls);
+  setActiveWlId(id);
+  inp.closest('div[style*="fixed"]')?.remove();
+  renderWatchlistPage();
+  showToast('✨ Watchlist created!', 'var(--green)');
+}
+
+// ── Live price fetcher ──
+async function fetchWlPrice(sym, type) {
+  const cached = _wlPriceCache[sym];
+  if (cached && Date.now() - cached.ts < 60000) {
+    updateWlRowPrice(sym, cached);
+    return;
+  }
+  try {
+    const r = await fetch(`${API_BASE}/quote/${sym}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const data = { price: d.price, chg: d.chg, up: d.up, ts: Date.now() };
+    _wlPriceCache[sym] = data;
+    updateWlRowPrice(sym, data);
+  } catch(e) {}
+}
+
+function updateWlRowPrice(sym, data) {
+  const priceEl = document.getElementById('wlp_' + sym);
+  const chgEl   = document.getElementById('wlc_' + sym);
+  const cur     = (data.chg||'').includes('$') ? '$' : '';
+  if (priceEl) priceEl.textContent = (data.price ? (data.price >= 100 ? '₹' : '$') + data.price : '—');
+  if (chgEl)   { chgEl.textContent = data.chg || '—'; chgEl.style.color = data.up ? 'var(--green)' : 'var(--red)'; }
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Refresh prices every 60s when on watchlist tab ──
+setInterval(() => {
+  if (document.getElementById('page-watchlist')?.style.display !== 'none') {
+    const wls = getWatchlists();
+    const wl  = wls.find(w => w.id === getActiveWlId()) || wls[0];
+    if (wl) wl.items.forEach(it => fetchWlPrice(it.sym, it.type));
+  }
+}, 60000);
 
 
 // ── TRENDING PAGE ──
