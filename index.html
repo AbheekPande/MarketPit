@@ -216,6 +216,48 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 .loading-spin { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
 
+
+/* ── TRENDING PAGE ── */
+.trend-cat-btn { padding:5px 16px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text3); font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+.trend-cat-btn.active-tcat { border-color:var(--accent); background:rgba(0,112,243,0.1); color:var(--accent); }
+.trending-section-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:1.5px; padding:16px 18px 8px; border-bottom:1px solid var(--border); }
+.trending-row { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.12s; }
+.trending-row:hover { background:var(--bg3); }
+.trending-rank { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; color:var(--text3); width:22px; text-align:right; flex-shrink:0; }
+.trending-rank.top1 { color:#f5a623; font-size:16px; }
+.trending-rank.top2 { color:var(--text2); }
+.trending-rank.top3 { color:var(--accent2); }
+.trending-info { flex:1; min-width:0; }
+.trending-tag { font-weight:800; font-size:15px; color:var(--text); }
+.trending-meta { font-size:11px; color:var(--text3); margin-top:2px; }
+.trending-count { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:var(--accent); flex-shrink:0; }
+.trending-spark { display:flex; align-items:flex-end; gap:2px; height:24px; flex-shrink:0; }
+.trending-spark span { width:4px; border-radius:2px; background:var(--accent); opacity:0.7; }
+.person-row { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.12s; }
+.person-row:hover { background:var(--bg3); }
+.trending-follow-btn { padding:6px 16px; border-radius:16px; font-weight:700; font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; border:1.5px solid var(--accent); background:transparent; color:var(--accent); transition:all 0.15s; flex-shrink:0; }
+.trending-follow-btn.following { border-color:var(--border); color:var(--text3); }
+
+
+/* ── CHART PATTERNS ── */
+.pcat-btn { padding:5px 14px; border-radius:16px; border:1px solid var(--border); background:transparent; color:var(--text3); font-size:11px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; white-space:nowrap; }
+.pcat-btn.active-pcat { border-color:var(--accent); background:rgba(0,112,243,0.1); color:var(--accent); }
+.pattern-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+.pattern-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow 0.2s,transform 0.2s; cursor:pointer; }
+.pattern-card:hover { box-shadow:0 6px 24px rgba(0,0,0,0.1); transform:translateY(-2px); }
+.pattern-svg-wrap { height:110px; background:var(--bg3); display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--border); padding:10px; }
+.pattern-body { padding:12px 14px; }
+.pattern-name { font-weight:800; font-size:14px; color:var(--text); margin-bottom:3px; }
+.pattern-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:700; margin-bottom:8px; }
+.pattern-badge.bullish { background:rgba(0,168,84,0.12); color:var(--green); }
+.pattern-badge.bearish { background:rgba(229,57,53,0.12); color:var(--red); }
+.pattern-badge.neutral { background:rgba(245,166,35,0.12); color:var(--gold); }
+.pattern-desc { font-size:12px; color:var(--text3); line-height:1.5; }
+.pattern-tags { display:flex; gap:5px; margin-top:8px; flex-wrap:wrap; }
+.pattern-tag-chip { font-size:10px; padding:2px 8px; border-radius:8px; background:var(--bg3); color:var(--text3); border:1px solid var(--border); }
+.pattern-detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pattern-detail-box { background:var(--bg2); border-radius:16px; width:min(560px,95vw); max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:modalIn 0.2s ease; }
+
 /* ── BOTTOM NAV (mobile only) ── */
 .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:58px; background:var(--bg2); border-top:1px solid var(--border); z-index:300; box-shadow:0 -2px 12px rgba(0,0,0,0.08); }
 .bottom-nav-inner { display:flex; height:100%; }
@@ -317,6 +359,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <button class="nav-tab" onclick="switchTab(this,'screener')">🔍 Screener</button>
     <button class="nav-tab" onclick="switchTab(this,'news')">📰 News</button>
     <button class="nav-tab" onclick="switchTab(this,'messages')">💬 Messages</button>
+    <button class="nav-tab" onclick="switchTab(this,'trending')">🔥 Trending</button>
   </div>
   <div class="header-search">
     <input type="text" placeholder="Search tickers, pits, traders…" id="headerSearch" oninput="onHeaderSearch(this.value)" onblur="setTimeout(()=>document.getElementById('headerDrop').style.display='none',300)">
@@ -335,6 +378,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <div class="sidebar-section">
       <div class="section-label">Your Pits</div>
       <div class="pit-item active" onclick="filterFeed('',this)"><span class="pit-icon">📊</span><span class="pit-name">All Markets</span></div>
+      <div class="pit-item" onclick="filterFeed('foryou',this)"><span class="pit-icon">✨</span><span class="pit-name">For You</span></div>
       <div class="pit-item" onclick="filterFeed('Stocks',this)"><span class="pit-icon">🏦</span><span class="pit-name">Equities</span></div>
       <div class="pit-item" onclick="filterFeed('Crypto',this)"><span class="pit-icon">₿</span><span class="pit-name">Crypto</span></div>
       <div class="pit-item" onclick="filterFeed('Commodities',this)"><span class="pit-icon">🛢️</span><span class="pit-name">Commodities</span></div>
@@ -448,14 +492,20 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
   </div>
 
   <!-- SCREENER PAGE -->
-  <div class="main-feed" id="page-screener" style="display:none;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+  <div class="main-feed" id="page-screener" style="display:none;flex-direction:column;">
+    <!-- TOP BAR -->
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px;flex-wrap:wrap;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📊 SCREENER</div>
-      <div style="display:flex;gap:6px;">
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px;">
+        <button id="scr_tab_screen" onclick="switchScreenerTab('screen')" style="padding:5px 16px;border-radius:6px;border:none;font-weight:700;font-size:12px;cursor:pointer;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;">🔍 Screener</button>
+        <button id="scr_tab_patterns" onclick="switchScreenerTab('patterns')" style="padding:5px 16px;border-radius:6px;border:none;font-weight:700;font-size:12px;cursor:pointer;background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;">📐 Chart Patterns</button>
+      </div>
+      <div id="screenerAssetBtns" style="display:flex;gap:6px;">
         <button onclick="setAssetType('stocks',this)" id="at_stocks" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">🏦 Stocks</button>
         <button onclick="setAssetType('crypto',this)" id="at_crypto" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">₿ Crypto</button>
         <button onclick="setAssetType('commodities',this)" id="at_commodities" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">🛢️ Commodities</button>
-        <button onclick="runScreener()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">▶ Run Screen</button>
+        <button onclick="runScreener()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer;margin-left:4px;">▶ Run Screen</button>
       </div>
     </div>
 
@@ -541,6 +591,27 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
         <div style="font-size:12px;margin-top:6px;">Screens all 50 NSE stocks in real-time</div>
       </div>
     </div>
+
+    <!-- CHART PATTERNS PANEL (hidden by default) -->
+    <div id="patternsPanel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <!-- Pattern search + category filter -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <div style="position:relative;flex:1;min-width:180px;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;">🔍</span>
+          <input id="patternSearch" class="form-input" placeholder="Search patterns…" style="padding-left:30px;margin:0;" oninput="renderPatterns()">
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="patternCatBtns">
+          <button onclick="filterPatternCat('all',this)" class="pcat-btn active-pcat">All</button>
+          <button onclick="filterPatternCat('bullish',this)" class="pcat-btn">🟢 Bullish</button>
+          <button onclick="filterPatternCat('bearish',this)" class="pcat-btn">🔴 Bearish</button>
+          <button onclick="filterPatternCat('neutral',this)" class="pcat-btn">🟡 Neutral</button>
+          <button onclick="filterPatternCat('continuation',this)" class="pcat-btn">➡️ Continuation</button>
+          <button onclick="filterPatternCat('reversal',this)" class="pcat-btn">🔄 Reversal</button>
+          <button onclick="filterPatternCat('candlestick',this)" class="pcat-btn">🕯️ Candlestick</button>
+        </div>
+      </div>
+      <div class="feed-scroll" id="patternsContainer" style="padding:16px;"></div>
+    </div>
   </div>
 
   <!-- NEWS PAGE -->
@@ -560,6 +631,22 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     </div>
   </div>
 
+
+  <!-- TRENDING PAGE -->
+  <div class="main-feed" id="page-trending" style="display:none;flex-direction:column;">
+    <!-- Header -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text);">🔥 TRENDING</div>
+      <div style="display:flex;gap:6px;" id="trendingCatBtns">
+        <button onclick="switchTrendingCat('all',this)" id="tc_all" class="trend-cat-btn active-tcat">All</button>
+        <button onclick="switchTrendingCat('hashtags',this)" id="tc_hashtags" class="trend-cat-btn">Hashtags</button>
+        <button onclick="switchTrendingCat('stocks',this)" id="tc_stocks" class="trend-cat-btn">Stocks</button>
+        <button onclick="switchTrendingCat('people',this)" id="tc_people" class="trend-cat-btn">People</button>
+      </div>
+    </div>
+    <div class="feed-scroll" id="trendingContainer" style="padding:0;"></div>
+  </div>
+
   <!-- RIGHT SIDEBAR -->
   <div class="right-sidebar">
     <div class="chat-header">
@@ -576,6 +663,17 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
       <div class="lb-title">TOP CALLERS THIS WEEK</div>
       <div id="leaderboard"><div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div></div>
     </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bn-item active" onclick="switchTabMobile(this,'feed')"><span class="bn-icon">⚡</span>Feed</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'pits')"><span class="bn-icon">🏛️</span>Pits</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'trending')"><span class="bn-icon">🔥</span>Trending</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'news')"><span class="bn-icon">📰</span>News</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'messages')"><span class="bn-icon">💬</span>DMs</button>
   </div>
 </div>
 
@@ -1172,10 +1270,31 @@ function renderPosts() {
   const posts = getPosts();
   const liked = getLiked();
   const f = _currentFilter;
-  const filtered = f ? posts.filter(p=>p.pit===f) : posts;
+  let filtered;
+  if (f === 'foryou') {
+    const user = getUser();
+    const interests = user?.interests || [];
+    // Map interest IDs to pit names and keywords
+    const pitMap = {stocks:'Stocks',largecap:'Stocks',smallcap:'Stocks',ipo:'Stocks',dividends:'Stocks',intraday:'Stocks',swing:'Stocks',options:'Options',futures:'Options',technicals:'Stocks',scalping:'Stocks',bitcoin:'Crypto',ethereum:'Crypto',altcoins:'Crypto',defi:'Crypto',nft:'Crypto',web3:'Crypto',rbi:'Macro',fii:'Macro',inflation:'Macro',gdp:'Macro',globalmarkets:'Macro',gold:'Commodities',crudeoil:'Commodities',silver:'Commodities',agri:'Commodities',banking:'Stocks',it:'Stocks',pharma:'Stocks',auto:'Stocks',realestate:'Stocks',fmcg:'Stocks',energy:'Commodities',infra:'Stocks'};
+    const interestedPits = new Set(interests.map(id => pitMap[id]).filter(Boolean));
+    const kwMap = {bitcoin:'btc',ethereum:'eth',gold:'gold',crudeoil:'crude oil',silver:'silver',options:'options',futures:'futures',technicals:'technical',banking:'bank',pharma:'pharma',auto:'auto',intraday:'intraday',swing:'swing',ipo:'ipo'};
+    const keywords = interests.map(id => kwMap[id]).filter(Boolean);
+    filtered = posts.filter(p => {
+      if (interestedPits.has(p.pit)) return true;
+      const txt = (p.text||'').toLowerCase();
+      if (keywords.some(kw => txt.includes(kw))) return true;
+      if (p.hashtags?.some(h => interests.some(id => h.includes(id)))) return true;
+      return false;
+    });
+    if (!filtered.length) filtered = posts; // fallback to all
+  } else {
+    filtered = f ? posts.filter(p=>p.pit===f) : posts;
+  }
   const container = document.getElementById('postsContainer');
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No posts yet</div><div>Be the first to share a trade idea!</div></div>`;
+    const user = getUser();
+    const emptyMsg = f === 'foryou' && (!user?.interests?.length) ? 'Sign up and pick interests to get a personalised feed!' : 'No posts yet';
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">${emptyMsg}</div><div>Be the first to share a trade idea!</div></div>`;
     return;
   }
   container.innerHTML = filtered.slice().reverse().map(p => {
@@ -1184,8 +1303,8 @@ function renderPosts() {
     const avDisp = isMe ? getAvatarDisplay(currentUser) : {type:'initials', val:p.author.slice(0,2).toUpperCase(), bg:getColor(p.author)};
     const avFontSize = avDisp.type === 'emoji' ? '18px' : '11px';
     const avHtml = avDisp.type === 'image'
-      ? `<div class="post-av" style="background:transparent;overflow:hidden;padding:0;"><img src="${avDisp.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
-      : `<div class="post-av" style="background:${avDisp.bg};font-size:${avFontSize};">${avDisp.val}</div>`;
+      ? `<div class="post-av" style="background:transparent;overflow:hidden;padding:0;cursor:pointer;" onclick="openUserProfile('${p.author}')"><img src="${avDisp.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+      : `<div class="post-av" style="background:${avDisp.bg};font-size:${avFontSize};cursor:pointer;" onclick="openUserProfile('${p.author}')">${avDisp.val}</div>`;
     const pitColors = {Stocks:'var(--accent)',Crypto:'var(--gold)',Commodities:'var(--accent2)',Macro:'var(--green)',Options:'#8855ff'};
     const pc = pitColors[p.pit] || 'var(--text3)';
     const isLiked = liked.includes(p.id);
@@ -1194,7 +1313,7 @@ function renderPosts() {
       <div class="post-header">
         ${avHtml}
         <div>
-          <div><span class="post-author">${isMe ? (currentUser.displayName || p.author) : p.author}</span><span class="post-handle">@${p.author.toLowerCase().replace(/\s/g,'')}</span></div>
+          <div><span class="post-author" style="cursor:pointer;" onclick="openUserProfile('${p.author}')">${isMe ? (currentUser.displayName || p.author) : p.author}</span><span class="post-handle" style="cursor:pointer;" onclick="openUserProfile('${p.author}')">@${p.author.toLowerCase().replace(/\s/g,'')}</span></div>
           <div class="post-time">${new Date(p.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST · ${new Date(p.time).toLocaleDateString('en-IN')}</div>
         </div>
         ${p.pit?`<div class="post-pit" style="color:${pc};border-color:${pc}44;background:${pc}0f;">${p.pit}</div>`:''}
@@ -1503,6 +1622,13 @@ function filterFeed(pit, el) {
 }
 
 // ── LEADERBOARD ──
+function handleFollowLb(username) {
+  toggleFollow(username);
+  renderLeaderboard();
+  const me = getUser();
+  showToast(isFollowing(username) ? `✅ Following ${username}` : `Unfollowed ${username}`, isFollowing(username) ? 'var(--green)' : 'var(--text3)');
+}
+
 function renderLeaderboard() {
   const posts = getPosts();
   const scores = {};
@@ -1511,11 +1637,13 @@ function renderLeaderboard() {
   const ranks = ['gold','silver','bronze','',''];
   const el = document.getElementById('leaderboard');
   if (!sorted.length) { el.innerHTML = `<div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div>`; return; }
+  const me = getUser();
   el.innerHTML = sorted.map(([name,score],i)=>`
     <div class="lb-item">
       <div class="lb-rank ${ranks[i]}">${i+1}</div>
-      <div class="post-av" style="background:${getColor(name)};width:22px;height:22px;font-size:8px;">${name.slice(0,2).toUpperCase()}</div>
-      <div class="lb-name">${name}</div>
+      <div class="post-av" style="background:${getColor(name)};width:22px;height:22px;font-size:8px;cursor:pointer;" onclick="openUserProfile('${name}')">${name.slice(0,2).toUpperCase()}</div>
+      <div class="lb-name" style="cursor:pointer;" onclick="openUserProfile('${name}')">${name}</div>
+      ${me && me.name !== name ? `<div onclick="event.stopPropagation();handleFollowLb('${name}')" style="font-size:9px;padding:2px 7px;border-radius:8px;cursor:pointer;border:1px solid ${isFollowing(name)?'var(--border)':'var(--accent)'};color:${isFollowing(name)?'var(--text3)':'var(--accent)'};">${isFollowing(name)?'✓':'+ Follow'}</div>` : ''}
       <div class="lb-pts">${score}pt</div>
     </div>`).join('');
 }
@@ -1585,6 +1713,51 @@ function saveGroupMessages(gid, msgs) {
 
 function getJoined() { return JSON.parse(localStorage.getItem('mp_joined') || '[]'); }
 function saveJoined(j) { localStorage.setItem('mp_joined', JSON.stringify(j)); }
+
+// ── FOLLOW SYSTEM ──
+// mp_following = array of usernames YOU follow
+// mp_followers = object { username: [list of who follows them] } — simulated locally
+const getFollowing = () => { try { return JSON.parse(localStorage.getItem('mp_following')||'[]'); } catch(e){return[];} };
+const saveFollowing = f => localStorage.setItem('mp_following', JSON.stringify(f));
+const getFollowers  = () => { try { return JSON.parse(localStorage.getItem('mp_followers')||'{}'); } catch(e){return{};} };
+const saveFollowers = f => localStorage.setItem('mp_followers', JSON.stringify(f));
+
+function isFollowing(username) {
+  return getFollowing().includes(username);
+}
+
+function toggleFollow(username) {
+  const user = getUser();
+  if (!user) { openModal('profileModal'); renderProfileModal(); return; }
+  if (username === user.name) return;
+  const following = getFollowing();
+  const followers = getFollowers();
+  const idx = following.indexOf(username);
+  if (idx > -1) {
+    // Unfollow
+    following.splice(idx, 1);
+    if (followers[username]) {
+      followers[username] = followers[username].filter(u => u !== user.name);
+    }
+  } else {
+    // Follow
+    following.push(username);
+    if (!followers[username]) followers[username] = [];
+    if (!followers[username].includes(user.name)) followers[username].push(user.name);
+  }
+  saveFollowing(following);
+  saveFollowers(followers);
+  return idx === -1; // returns true if now following
+}
+
+function getFollowerCount(username) {
+  const followers = getFollowers();
+  return (followers[username] || []).length;
+}
+
+function getFollowingCount() {
+  return getFollowing().length;
+}
 
 let _selectedEmoji = '📈';
 let _currentGroup  = null;
@@ -1803,14 +1976,7 @@ function renderProfileModal() {
   document.getElementById('profileModalTitle').textContent = user ? 'YOUR PROFILE' : 'JOIN MARKETPIT';
 
   if (!user) {
-    el.innerHTML = `
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="font-size:48px;margin-bottom:8px;">📈</div>
-        <div style="font-size:14px;color:var(--text2);">Join MarketPit to post, chat and share trade ideas.</div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">USERNAME</div>
-      <input class="form-input" id="unInput" placeholder="e.g. TradingHawk" maxlength="20">
-      <button class="btn-primary" onclick="setUsername()">Join MarketPit 🚀</button>`;
+    showSignupStep(1);
     return;
   }
 
@@ -1851,10 +2017,11 @@ function renderProfileModal() {
     </div>
 
     <!-- STATS -->
-    <div style="display:flex;gap:20px;padding:12px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;">
+    <div style="display:flex;gap:20px;padding:12px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;">
+      <div style="cursor:pointer;" onclick="showFollowList('following')"><span style="font-weight:700;color:var(--text);">${getFollowingCount()}</span> <span style="color:var(--text3);font-size:13px;">Following</span></div>
+      <div style="cursor:pointer;" onclick="showFollowList('followers')"><span style="font-weight:700;color:var(--text);">${getFollowerCount(user.name)}</span> <span style="color:var(--text3);font-size:13px;">Followers</span></div>
       <div><span style="font-weight:700;color:var(--text);">${posts.length}</span> <span style="color:var(--text3);font-size:13px;">Posts</span></div>
       <div><span style="font-weight:700;color:var(--text);">${likes}</span> <span style="color:var(--text3);font-size:13px;">Likes</span></div>
-      <div><span style="font-weight:700;color:var(--text);">${joined}</span> <span style="color:var(--text3);font-size:13px;">Pits Joined</span></div>
     </div>
 
     <!-- RECENT POSTS -->
@@ -1866,6 +2033,143 @@ function renderProfileModal() {
       </div>`).join('') : `<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">No posts yet</div>`}
 
     <button class="btn-ghost" style="margin-top:12px;" onclick="logOut()">Log out</button>`;
+}
+
+// ── OPEN ANOTHER USER'S PROFILE ──
+function openUserProfile(username) {
+  const me = getUser();
+  // If it's our own profile, open the normal profile modal
+  if (me && me.name === username) {
+    openModal('profileModal');
+    renderProfileModal();
+    return;
+  }
+  // Otherwise open the other-user profile modal
+  const el = document.getElementById('profileBody');
+  document.getElementById('profileModalTitle').textContent = 'PROFILE';
+  openModal('profileModal');
+  renderOtherProfile(username);
+}
+
+function renderOtherProfile(username) {
+  const me       = getUser();
+  const el       = document.getElementById('profileBody');
+  const posts    = getPosts().filter(p => p.author === username);
+  const likes    = posts.reduce((a,p) => a + (p.likes||0), 0);
+  const following = isFollowing(username);
+  const followerCount  = getFollowerCount(username);
+  // Try to get their colour deterministically
+  const col = getColor(username);
+  const initials = username.slice(0,2).toUpperCase();
+
+  document.getElementById('profileModalTitle').textContent = username;
+
+  el.innerHTML = `
+    <!-- BANNER -->
+    <div style="height:80px;background:linear-gradient(135deg,${col},#00c6ff88);border-radius:10px;margin-bottom:-32px;position:relative;"></div>
+
+    <!-- AVATAR + FOLLOW ROW -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-bottom:12px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;border:4px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.15);">${initials}</div>
+      ${me && me.name !== username ? `
+        <button id="followBtn_${username}" onclick="handleFollow('${username}')"
+          style="padding:8px 22px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;
+          background:${following?'transparent':'var(--accent)'};
+          color:${following?'var(--text)':'#fff'};
+          border:1.5px solid ${following?'var(--border)':'var(--accent)'};">
+          ${following ? 'Following ✓' : 'Follow'}
+        </button>` : ''}
+    </div>
+
+    <!-- NAME -->
+    <div style="padding:0 4px;margin-bottom:14px;">
+      <div style="font-size:18px;font-weight:800;color:var(--text);">${username}</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:1px;">@${username.toLowerCase().replace(/\s/g,'')}</div>
+    </div>
+
+    <!-- STATS -->
+    <div style="display:flex;gap:24px;padding:12px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;">
+      <div><span style="font-weight:700;color:var(--text);">${posts.length}</span> <span style="color:var(--text3);font-size:13px;">Posts</span></div>
+      <div><span style="font-weight:700;color:var(--text);">${followerCount}</span> <span style="color:var(--text3);font-size:13px;">Followers</span></div>
+      <div><span style="font-weight:700;color:var(--text);">${likes}</span> <span style="color:var(--text3);font-size:13px;">Likes</span></div>
+    </div>
+
+    <!-- THEIR POSTS -->
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;">POSTS</div>
+    ${posts.length ? posts.slice().reverse().slice(0,5).map(p => `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;">${highlightHashtags(p.text)}</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
+          <span style="font-size:11px;color:var(--text3);">↑ ${p.likes||0} likes</span>
+          ${p.pit ? `<span style="font-size:11px;color:var(--accent);">${p.pit}</span>` : ''}
+          <span style="font-size:11px;color:var(--text3);">${new Date(p.time).toLocaleDateString('en-IN')}</span>
+        </div>
+      </div>`).join('') : `<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">No posts yet</div>`}
+
+    <button class="btn-ghost" style="margin-top:8px;" onclick="renderProfileModal()">← Back to My Profile</button>
+  `;
+}
+
+function handleFollow(username) {
+  const nowFollowing = toggleFollow(username);
+  // Update button instantly
+  const btn = document.getElementById('followBtn_' + username);
+  if (btn) {
+    btn.textContent  = nowFollowing ? 'Following ✓' : 'Follow';
+    btn.style.background   = nowFollowing ? 'transparent' : 'var(--accent)';
+    btn.style.color        = nowFollowing ? 'var(--text)' : '#fff';
+    btn.style.borderColor  = nowFollowing ? 'var(--border)' : 'var(--accent)';
+  }
+  // Re-render their profile to update follower count
+  renderOtherProfile(username);
+  showToast(nowFollowing ? `✅ Following ${username}` : `Unfollowed ${username}`, nowFollowing ? 'var(--green)' : 'var(--text3)');
+}
+
+// ── FOLLOWING / FOLLOWERS LIST ──
+function showFollowList(type) {
+  const user = getUser();
+  if (!user) return;
+  const el = document.getElementById('profileBody');
+  document.getElementById('profileModalTitle').textContent = type === 'following' ? 'FOLLOWING' : 'FOLLOWERS';
+
+  let names = [];
+  if (type === 'following') {
+    names = getFollowing();
+  } else {
+    const followers = getFollowers();
+    names = followers[user.name] || [];
+  }
+
+  el.innerHTML = `
+    <button onclick="renderProfileModal()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;margin-bottom:16px;font-family:'DM Sans',sans-serif;">← Back</button>
+    ${!names.length ? `<div style="text-align:center;padding:32px;color:var(--text3);">
+      <div style="font-size:32px;margin-bottom:10px;">${type==='following'?'🔭':'👥'}</div>
+      <div style="font-size:14px;">${type==='following'?'You are not following anyone yet':'No followers yet'}</div>
+      <div style="font-size:12px;margin-top:6px;">Start engaging with posts to grow your network!</div>
+    </div>` :
+    names.map(name => {
+      const theirPosts = getPosts().filter(p => p.author === name).length;
+      const col = getColor(name);
+      const isF = isFollowing(name);
+      return `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:44px;height:44px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;" onclick="renderOtherProfile('${name}');document.getElementById('profileModalTitle').textContent='${name}'">
+            ${name.slice(0,2).toUpperCase()}
+          </div>
+          <div style="flex:1;cursor:pointer;" onclick="renderOtherProfile('${name}');document.getElementById('profileModalTitle').textContent='${name}'">
+            <div style="font-weight:700;font-size:14px;color:var(--text);">${name}</div>
+            <div style="font-size:11px;color:var(--text3);">@${name.toLowerCase().replace(/\s/g,'')} · ${theirPosts} posts</div>
+          </div>
+          ${name !== user.name ? `
+            <button onclick="handleFollow('${name}');showFollowList('${type}')"
+              style="padding:6px 16px;border-radius:16px;font-weight:700;font-size:12px;cursor:pointer;
+              background:${isF?'transparent':'var(--accent)'};
+              color:${isF?'var(--text)':'#fff'};
+              border:1.5px solid ${isF?'var(--border)':'var(--accent)'};">
+              ${isF?'Following':'Follow'}
+            </button>` : ''}
+        </div>`;
+    }).join('')}`;
 }
 
 function logOut() {
@@ -2096,6 +2400,354 @@ function showToast(msg, color) {
 // Banner edit now opens showEditProfile instead of cycling colors
 function editBanner() { showEditProfile(); }
 function editAvatar() { showEditProfile(); }
+
+
+// ── ONBOARDING / SIGNUP FLOW ──
+const INTEREST_TOPICS = [
+  // Equity
+  { id:'nifty50',    label:'Nifty 50',         emoji:'📊', cat:'Equity' },
+  { id:'sensex',     label:'Sensex',            emoji:'🏛️', cat:'Equity' },
+  { id:'largecap',   label:'Large Cap',         emoji:'🏢', cat:'Equity' },
+  { id:'smallcap',   label:'Small Cap',         emoji:'🌱', cat:'Equity' },
+  { id:'ipo',        label:'IPOs',              emoji:'🚀', cat:'Equity' },
+  { id:'dividends',  label:'Dividends',         emoji:'💸', cat:'Equity' },
+  // Trading
+  { id:'intraday',   label:'Intraday',          emoji:'⚡', cat:'Trading' },
+  { id:'swing',      label:'Swing Trading',     emoji:'🎯', cat:'Trading' },
+  { id:'options',    label:'Options',           emoji:'📈', cat:'Trading' },
+  { id:'futures',    label:'Futures',           emoji:'🔮', cat:'Trading' },
+  { id:'technicals', label:'Technical Analysis',emoji:'📐', cat:'Trading' },
+  { id:'scalping',   label:'Scalping',          emoji:'⚡', cat:'Trading' },
+  // Crypto
+  { id:'bitcoin',    label:'Bitcoin',           emoji:'₿',  cat:'Crypto' },
+  { id:'ethereum',   label:'Ethereum',          emoji:'🔷', cat:'Crypto' },
+  { id:'altcoins',   label:'Altcoins',          emoji:'🌐', cat:'Crypto' },
+  { id:'defi',       label:'DeFi',              emoji:'🏦', cat:'Crypto' },
+  { id:'nft',        label:'NFTs',              emoji:'🎨', cat:'Crypto' },
+  { id:'web3',       label:'Web3',              emoji:'🕸️', cat:'Crypto' },
+  // Macro & Economy
+  { id:'rbi',        label:'RBI & Rates',       emoji:'🏛️', cat:'Macro' },
+  { id:'fii',        label:'FII / DII Flow',    emoji:'🌍', cat:'Macro' },
+  { id:'inflation',  label:'Inflation',         emoji:'💹', cat:'Macro' },
+  { id:'gdp',        label:'GDP & Economy',     emoji:'📉', cat:'Macro' },
+  { id:'globalmarkets', label:'Global Markets', emoji:'🌎', cat:'Macro' },
+  // Commodities
+  { id:'gold',       label:'Gold',              emoji:'🥇', cat:'Commodities' },
+  { id:'crudeoil',   label:'Crude Oil',         emoji:'🛢️', cat:'Commodities' },
+  { id:'silver',     label:'Silver',            emoji:'🥈', cat:'Commodities' },
+  { id:'agri',       label:'Agriculture',       emoji:'🌾', cat:'Commodities' },
+  // Sectors
+  { id:'banking',    label:'Banking',           emoji:'🏦', cat:'Sectors' },
+  { id:'it',         label:'IT & Tech',         emoji:'💻', cat:'Sectors' },
+  { id:'pharma',     label:'Pharma',            emoji:'💊', cat:'Sectors' },
+  { id:'auto',       label:'Auto',              emoji:'🚗', cat:'Sectors' },
+  { id:'realestate', label:'Real Estate',       emoji:'🏠', cat:'Sectors' },
+  { id:'fmcg',       label:'FMCG',              emoji:'🛒', cat:'Sectors' },
+  { id:'energy',     label:'Energy',            emoji:'⚡', cat:'Sectors' },
+  { id:'infra',      label:'Infrastructure',    emoji:'🏗️', cat:'Sectors' },
+];
+
+let _onboardData   = {};   // collects signup form data
+let _selectedTopics = new Set();
+let _interestSearch = '';
+
+function showSignupStep(step) {
+  const el    = document.getElementById('profileBody');
+  const title = document.getElementById('profileModalTitle');
+
+  if (step === 1) {
+    // Step 1 — Email + Name
+    title.textContent = 'JOIN MARKETPIT';
+    el.innerHTML = `
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="font-size:52px;margin-bottom:6px;">📈</div>
+        <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">MarketPit</div>
+        <div style="font-size:13px;color:var(--text3);">India's trading community</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="display:flex;gap:4px;margin-bottom:22px;">
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--accent);"></div>
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--border);"></div>
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--border);"></div>
+      </div>
+
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">FULL NAME</div>
+      <input class="form-input" id="ob_name" placeholder="e.g. Abheek Pande" maxlength="30" oninput="validateStep1()">
+
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">EMAIL ADDRESS</div>
+      <input class="form-input" id="ob_email" type="email" placeholder="you@example.com" maxlength="60" oninput="validateStep1()">
+
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">USERNAME</div>
+      <div style="position:relative;margin-bottom:12px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;">@</span>
+        <input class="form-input" id="ob_username" placeholder="TradingHawk" maxlength="20" style="padding-left:28px;margin-bottom:0;" oninput="validateStep1();autoSlugUsername()">
+      </div>
+      <div id="ob_usernameHint" style="font-size:11px;color:var(--text3);margin-top:-8px;margin-bottom:12px;"></div>
+
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">PASSWORD</div>
+      <div style="position:relative;margin-bottom:4px;">
+        <input class="form-input" id="ob_pass" type="password" placeholder="Min 6 characters" maxlength="40" style="margin-bottom:0;padding-right:40px;" oninput="validateStep1()">
+        <span onclick="togglePassVis('ob_pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;color:var(--text3);">👁️</span>
+      </div>
+      <div id="ob_passStrength" style="height:3px;border-radius:2px;background:var(--border);margin-bottom:16px;overflow:hidden;"><div id="ob_passBar" style="height:100%;width:0;transition:all 0.3s;border-radius:2px;"></div></div>
+
+      <button class="btn-primary" id="ob_next1" onclick="submitStep1()" disabled style="opacity:0.5;">Continue →</button>
+
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text3);">
+        Already have an account? <span onclick="showLoginStep()" style="color:var(--accent);cursor:pointer;font-weight:600;">Log in</span>
+      </div>`;
+
+  } else if (step === 2) {
+    // Step 2 — Pick interests
+    title.textContent = 'YOUR INTERESTS';
+    _selectedTopics = new Set(_onboardData.interests || []);
+    _interestSearch = '';
+    renderInterestPicker(el);
+
+  } else if (step === 3) {
+    // Step 3 — Done!
+    title.textContent = 'ALL SET! 🎉';
+    const selectedLabels = [..._selectedTopics].map(id => {
+      const t = INTEREST_TOPICS.find(x => x.id === id);
+      return t ? t.emoji + ' ' + t.label : id;
+    });
+    el.innerHTML = `
+      <div style="text-align:center;padding:10px 0 20px;">
+        <div style="font-size:60px;margin-bottom:12px;">🎉</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">Welcome, ${_onboardData.displayName}!</div>
+        <div style="font-size:13px;color:var(--text3);">@${_onboardData.username}</div>
+      </div>
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:10px;">YOUR INTERESTS (${selectedLabels.length})</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${selectedLabels.map(l=>`<span style="background:rgba(0,112,243,0.1);border:1px solid rgba(0,112,243,0.25);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--accent);">${l}</span>`).join('')}
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="completeSignup()">Enter MarketPit 🚀</button>`;
+  }
+}
+
+function renderInterestPicker(el) {
+  const cats = [...new Set(INTEREST_TOPICS.map(t => t.cat))];
+  const q    = _interestSearch.toLowerCase();
+  const filtered = q ? INTEREST_TOPICS.filter(t => t.label.toLowerCase().includes(q) || t.cat.toLowerCase().includes(q)) : INTEREST_TOPICS;
+
+  el.innerHTML = `
+    <!-- Progress -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;">
+      <div style="flex:1;height:3px;border-radius:2px;background:var(--accent);"></div>
+      <div style="flex:1;height:3px;border-radius:2px;background:var(--accent);"></div>
+      <div style="flex:1;height:3px;border-radius:2px;background:var(--border);"></div>
+    </div>
+
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Pick at least <b>3 topics</b> you care about. We'll personalise your feed.</div>
+
+    <!-- Search -->
+    <div style="position:relative;margin-bottom:14px;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;">🔍</span>
+      <input class="form-input" id="interestSearch" placeholder="Search topics…" value="${_interestSearch}"
+        style="padding-left:34px;margin-bottom:0;"
+        oninput="_interestSearch=this.value;renderInterestPicker(document.getElementById('profileBody'))">
+    </div>
+
+    <!-- Selected count badge -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--text3);">${_selectedTopics.size} selected</div>
+      ${_selectedTopics.size>0?`<span onclick="clearInterests()" style="font-size:11px;color:var(--red);cursor:pointer;">Clear all</span>`:''}
+    </div>
+
+    <!-- Topic chips by category -->
+    <div style="max-height:320px;overflow-y:auto;padding-right:4px;">
+      ${q ? `
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+          ${filtered.map(t => topicChip(t)).join('')}
+        </div>` :
+        cats.map(cat => {
+          const topics = INTEREST_TOPICS.filter(t => t.cat === cat);
+          return `
+            <div style="margin-bottom:16px;">
+              <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:8px;">${cat.toUpperCase()}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                ${topics.map(t => topicChip(t)).join('')}
+              </div>
+            </div>`;
+        }).join('')}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <button class="btn-ghost" style="flex:1;" onclick="showSignupStep(1)">← Back</button>
+      <button id="ob_next2" onclick="submitStep2()"
+        style="flex:2;padding:10px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;
+        background:${_selectedTopics.size>=3?'var(--accent)':'var(--bg3)'};
+        color:${_selectedTopics.size>=3?'#fff':'var(--text3)'};">
+        ${_selectedTopics.size>=3?'Continue →':'Select at least 3'}
+      </button>
+    </div>`;
+
+  // Focus search if was searching
+  if (q) { setTimeout(()=>{ const el=document.getElementById('interestSearch'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);} },10); }
+}
+
+function topicChip(t) {
+  const sel = _selectedTopics.has(t.id);
+  return `<span onclick="toggleTopic('${t.id}')" style="
+    display:inline-flex;align-items:center;gap:5px;
+    padding:7px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;
+    border:1.5px solid ${sel?'var(--accent)':'var(--border)'};
+    background:${sel?'rgba(0,112,243,0.12)':'transparent'};
+    color:${sel?'var(--accent)':'var(--text2)'};
+    transition:all 0.12s;"
+  >${t.emoji} ${t.label}${sel?' ✓':''}</span>`;
+}
+
+function toggleTopic(id) {
+  if (_selectedTopics.has(id)) _selectedTopics.delete(id);
+  else _selectedTopics.add(id);
+  renderInterestPicker(document.getElementById('profileBody'));
+}
+
+function clearInterests() {
+  _selectedTopics.clear();
+  renderInterestPicker(document.getElementById('profileBody'));
+}
+
+function validateStep1() {
+  const name  = (document.getElementById('ob_name')?.value||'').trim();
+  const email = (document.getElementById('ob_email')?.value||'').trim();
+  const user  = (document.getElementById('ob_username')?.value||'').trim();
+  const pass  = (document.getElementById('ob_pass')?.value||'');
+  const btn   = document.getElementById('ob_next1');
+
+  // Password strength
+  const bar   = document.getElementById('ob_passBar');
+  if (bar) {
+    const strength = pass.length >= 10 ? 100 : pass.length >= 8 ? 70 : pass.length >= 6 ? 40 : (pass.length/6)*30;
+    const color    = strength >= 70 ? 'var(--green)' : strength >= 40 ? 'var(--gold)' : 'var(--red)';
+    bar.style.width = strength + '%';
+    bar.style.background = color;
+  }
+
+  const valid = name.length >= 2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && user.length >= 2 && pass.length >= 6;
+  if (btn) { btn.disabled = !valid; btn.style.opacity = valid ? '1' : '0.5'; }
+}
+
+function autoSlugUsername() {
+  const nameEl = document.getElementById('ob_name');
+  const userEl = document.getElementById('ob_username');
+  if (!nameEl || !userEl || userEl.dataset.edited) return;
+  const slug = nameEl.value.trim().replace(/\s+/g,'').toLowerCase().slice(0,16);
+  userEl.value = slug;
+  validateStep1();
+}
+
+function togglePassVis(inputId, icon) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.type   = inp.type === 'password' ? 'text' : 'password';
+  icon.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+
+function submitStep1() {
+  const name  = document.getElementById('ob_name').value.trim();
+  const email = document.getElementById('ob_email').value.trim();
+  const uname = document.getElementById('ob_username').value.trim().replace(/\s/g,'').toLowerCase();
+  const pass  = document.getElementById('ob_pass').value;
+  if (!name || !email || !uname || pass.length < 6) return;
+
+  // Check if username taken (locally)
+  const existing = JSON.parse(localStorage.getItem('mp_allUsers') || '[]');
+  if (existing.find(u => u.username === uname)) {
+    document.getElementById('ob_usernameHint').innerHTML = '<span style="color:var(--red);">⚠ Username taken, try another</span>';
+    return;
+  }
+
+  _onboardData = { displayName: name, email, username: uname, pass };
+  showSignupStep(2);
+}
+
+function submitStep2() {
+  if (_selectedTopics.size < 3) return;
+  _onboardData.interests = [..._selectedTopics];
+  showSignupStep(3);
+}
+
+function completeSignup() {
+  const joinedDate = new Date().toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+  const newUser = {
+    name:        _onboardData.username,
+    displayName: _onboardData.displayName,
+    email:       _onboardData.email,
+    joinedDate,
+    interests:   _onboardData.interests || [],
+  };
+
+  // Save to users registry (for login lookup)
+  const allUsers = JSON.parse(localStorage.getItem('mp_allUsers') || '[]');
+  allUsers.push({ username: _onboardData.username, email: _onboardData.email, pass: btoa(_onboardData.pass) });
+  localStorage.setItem('mp_allUsers', JSON.stringify(allUsers));
+
+  saveUser(newUser);
+  _onboardData = {};
+  _selectedTopics.clear();
+  closeModal('profileModal');
+  updateAvatars();
+  renderPosts();
+  renderChat();
+  renderTrendingTags();
+  showToast('🎉 Welcome to MarketPit!', 'var(--green)');
+}
+
+// ── LOGIN FLOW ──
+function showLoginStep() {
+  const el    = document.getElementById('profileBody');
+  document.getElementById('profileModalTitle').textContent = 'LOG IN';
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:22px;">
+      <div style="font-size:48px;margin-bottom:8px;">📈</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);">Welcome back</div>
+    </div>
+
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">EMAIL OR USERNAME</div>
+    <input class="form-input" id="li_email" placeholder="Email or @username" maxlength="60">
+
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">PASSWORD</div>
+    <div style="position:relative;margin-bottom:16px;">
+      <input class="form-input" id="li_pass" type="password" placeholder="Your password" maxlength="40" style="margin-bottom:0;padding-right:40px;" onkeydown="if(event.key==='Enter')submitLogin()">
+      <span onclick="togglePassVis('li_pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;color:var(--text3);">👁️</span>
+    </div>
+    <div id="li_error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;"></div>
+
+    <button class="btn-primary" onclick="submitLogin()">Log in →</button>
+
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text3);">
+      Don't have an account? <span onclick="showSignupStep(1)" style="color:var(--accent);cursor:pointer;font-weight:600;">Sign up</span>
+    </div>`;
+}
+
+function submitLogin() {
+  const id   = (document.getElementById('li_email')?.value||'').trim().toLowerCase();
+  const pass = (document.getElementById('li_pass')?.value||'');
+  const allUsers = JSON.parse(localStorage.getItem('mp_allUsers') || '[]');
+  const found = allUsers.find(u => (u.email.toLowerCase() === id || u.username === id.replace('@','')) && u.pass === btoa(pass));
+  const errEl = document.getElementById('li_error');
+
+  if (!found) {
+    if (errEl) { errEl.textContent = '⚠ Invalid email/username or password'; errEl.style.display='block'; }
+    return;
+  }
+
+  // Re-hydrate user from storage or build minimal
+  const joinedDate = new Date().toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+  const userData = { name: found.username, displayName: found.username, email: found.email, joinedDate };
+  saveUser(userData);
+  closeModal('profileModal');
+  updateAvatars();
+  renderPosts(); renderChat(); renderTrendingTags();
+  showToast('✅ Logged in!', 'var(--green)');
+}
 
 function setUsername() {
   const val = document.getElementById('unInput').value.trim();
@@ -2457,6 +3109,22 @@ function renderNotifs() {
 }
 
 // ── NAV ──
+function switchTabMobile(btn, page) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // reuse the desktop nav tab logic — just find the matching nav-tab or call directly
+  document.getElementById('page-feed').style.display      = page==='feed'?'flex':'none';
+  document.getElementById('page-pits').style.display      = page==='pits'?'flex':'none';
+  document.getElementById('page-messages').style.display  = page==='messages'?'flex':'none';
+  document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
+  document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
+  document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
+  if (page==='pits')     renderPits();
+  if (page==='messages') renderMessages();
+  if (page==='news')     loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='trending') renderTrendingPage('all');
+}
+
 function switchTab(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -2465,9 +3133,834 @@ function switchTab(btn, page) {
   document.getElementById('page-messages').style.display  = page==='messages'?'flex':'none';
   document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
   document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
-  if (page==='pits') renderPits();
+  document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
+  if (page==='pits')     renderPits();
   if (page==='messages') renderMessages();
-  if (page==='news') loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='news')     loadNews('markets', document.getElementById('nc_markets'));
+  if (page==='trending') renderTrendingPage('all');
+}
+
+
+// ── CHART PATTERNS ──
+let _patternCat = 'all';
+
+const CHART_PATTERNS = [
+  // ── BULLISH REVERSAL ──
+  { id:'hns_inv', name:'Inverse Head & Shoulders', cat:'bullish', type:'reversal',
+    desc:'Three troughs with the middle one deepest. Signals a bearish-to-bullish reversal. Neckline breakout triggers entry.',
+    howto:'Wait for price to break above the neckline with volume. Target = neckline to head distance projected upward.',
+    reliability:'High', timeframe:'Weeks–Months', tags:['Reversal','Bullish','Volume'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,20 35,55 50,35 65,65 80,20 95,45 120,20" stroke="#00a854" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+      <line x1="35" y1="35" x2="100" y2="35" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="105" y="38" font-size="8" fill="#0070f3" font-family="monospace">Neckline</text>
+      <text x="62" y="78" font-size="8" fill="#00a854" font-family="monospace">Head</text>
+      <line x1="65" y1="65" x2="65" y2="75" stroke="#00a854" stroke-width="1"/>
+      <polyline points="120,20 140,10 180,5" stroke="#00a854" stroke-width="2.5" fill="none" stroke-dasharray="5,3"/>
+    </svg>` },
+
+  { id:'double_bottom', name:'Double Bottom (W Pattern)', cat:'bullish', type:'reversal',
+    desc:'Price tests the same support level twice, forming a "W" shape. Strong reversal signal when neckline breaks.',
+    howto:'Buy on neckline breakout. Stop below the second bottom. Target = depth of W projected up.',
+    reliability:'High', timeframe:'Days–Weeks', tags:['Reversal','Bullish','W-Pattern'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,15 40,65 70,30 100,65 130,15 175,10" stroke="#00a854" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+      <line x1="40" y1="30" x2="105" y2="30" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="110" y="33" font-size="8" fill="#0070f3" font-family="monospace">Neck</text>
+      <polyline points="130,15 160,5 185,3" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'cup_handle', name:'Cup & Handle', cat:'bullish', type:'continuation',
+    desc:'Rounded bottom (cup) followed by a small downward drift (handle). Bullish continuation into an uptrend.',
+    howto:'Buy on handle breakout above cup lip. Volume should expand. Target = cup depth added to breakout.',
+    reliability:'High', timeframe:'Weeks–Months', tags:['Continuation','Bullish','Momentum'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <path d="M10,15 Q60,80 110,15" stroke="#00a854" stroke-width="2.5" fill="none"/>
+      <polyline points="110,15 130,30 145,20 175,10" stroke="#00a854" stroke-width="2.5" fill="none"/>
+      <line x1="10" y1="15" x2="175" y2="15" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="115" y="13" font-size="8" fill="#0070f3" font-family="monospace">Lip</text>
+      <text x="55" y="82" font-size="8" fill="#00a854" font-family="monospace">Cup</text>
+      <text x="128" y="45" font-size="8" fill="#00a854" font-family="monospace">Handle</text>
+    </svg>` },
+
+  { id:'bull_flag', name:'Bull Flag', cat:'bullish', type:'continuation',
+    desc:'Sharp rally (flagpole) followed by tight sideways-to-slightly-down consolidation. Strong continuation pattern.',
+    howto:'Buy breakout above upper flag line. Target = flagpole length added to breakout point.',
+    reliability:'High', timeframe:'Days', tags:['Continuation','Bullish','Momentum'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,80 50,20" stroke="#00a854" stroke-width="3" fill="none"/>
+      <line x1="50" y1="20" x2="110" y2="30" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <line x1="50" y1="35" x2="110" y2="45" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polyline points="55,22 65,30 75,25 85,33 95,28 108,35" stroke="#00a854" stroke-width="2" fill="none"/>
+      <polyline points="110,35 150,5 185,2" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+      <text x="55" y="55" font-size="8" fill="#f5a623" font-family="monospace">Flag</text>
+      <text x="18" y="60" font-size="8" fill="#00a854" font-family="monospace">Pole</text>
+    </svg>` },
+
+  { id:'bull_pennant', name:'Bull Pennant', cat:'bullish', type:'continuation',
+    desc:'Flagpole + symmetrical triangle consolidation. Tighter than bull flag — coiled spring for explosive move.',
+    howto:'Buy breakout above pennant upper trendline. Same target as bull flag.',
+    reliability:'High', timeframe:'Days', tags:['Continuation','Bullish','Triangle'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,80 50,20" stroke="#00a854" stroke-width="3" fill="none"/>
+      <polyline points="50,20 110,30" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polyline points="50,35 110,30" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polyline points="55,22 65,30 73,26 82,30 90,28 100,30 108,30" stroke="#00a854" stroke-width="2" fill="none"/>
+      <polyline points="110,30 150,5 185,2" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'ascending_triangle', name:'Ascending Triangle', cat:'bullish', type:'continuation',
+    desc:'Flat top resistance with rising lows. Buyers getting more aggressive. Breakout above flat top expected.',
+    howto:'Buy break above flat top resistance with volume surge. Stop below last swing low.',
+    reliability:'High', timeframe:'Weeks', tags:['Continuation','Bullish','Triangle'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <line x1="20" y1="25" x2="150" y2="25" stroke="#0070f3" stroke-width="2" stroke-dasharray="5,3"/>
+      <polyline points="20,75 50,60 80,50 110,40 140,30 155,25" stroke="#00a854" stroke-width="2" fill="none"/>
+      <polyline points="20,25 50,25 80,25 110,25 150,25" stroke="#0070f3" stroke-width="2" fill="none"/>
+      <polyline points="155,25 175,10 190,5" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+      <text x="25" y="20" font-size="8" fill="#0070f3" font-family="monospace">Resistance</text>
+    </svg>` },
+
+  { id:'morning_star', name:'Morning Star', cat:'bullish', type:'reversal',
+    desc:'3-candle pattern: big bearish candle, small doji/spinning top, big bullish candle. Strong reversal signal.',
+    howto:'Enter long after third candle closes. Stop below doji low.',
+    reliability:'High', timeframe:'Daily', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="40" y="15" width="30" height="40" fill="#e53935" rx="2"/>
+      <line x1="55" y1="8" x2="55" y2="15" stroke="#e53935" stroke-width="2"/>
+      <line x1="55" y1="55" x2="55" y2="65" stroke="#e53935" stroke-width="2"/>
+      <rect x="90" y="52" width="14" height="10" fill="#f5a623" rx="2"/>
+      <line x1="97" y1="45" x2="97" y2="52" stroke="#f5a623" stroke-width="2"/>
+      <line x1="97" y1="62" x2="97" y2="70" stroke="#f5a623" stroke-width="2"/>
+      <rect x="120" y="25" width="30" height="40" fill="#00a854" rx="2"/>
+      <line x1="135" y1="15" x2="135" y2="25" stroke="#00a854" stroke-width="2"/>
+      <line x1="135" y1="65" x2="135" y2="75" stroke="#00a854" stroke-width="2"/>
+      <text x="40" y="85" font-size="8" fill="#e53935" font-family="monospace">Bear</text>
+      <text x="86" y="85" font-size="8" fill="#f5a623" font-family="monospace">Star</text>
+      <text x="118" y="85" font-size="8" fill="#00a854" font-family="monospace">Bull</text>
+    </svg>` },
+
+  { id:'hammer', name:'Hammer / Bullish Pin Bar', cat:'bullish', type:'reversal',
+    desc:'Long lower wick, small body at top. Shows buyers rejected lower prices strongly. Appears at bottoms.',
+    howto:'Buy next candle open after hammer at support. Stop below hammer low.',
+    reliability:'Medium', timeframe:'Any', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <line x1="100" y1="20" x2="100" y2="75" stroke="#00a854" stroke-width="2.5"/>
+      <rect x="85" y="20" width="30" height="18" fill="#00a854" rx="3"/>
+      <line x1="100" y1="15" x2="100" y2="20" stroke="#00a854" stroke-width="2"/>
+      <text x="70" y="88" font-size="10" fill="#00a854" font-family="monospace">Hammer 🔨</text>
+    </svg>` },
+
+  // ── BEARISH REVERSAL ──
+  { id:'hns', name:'Head & Shoulders', cat:'bearish', type:'reversal',
+    desc:'Three peaks — middle tallest. Classic top reversal. Neckline break triggers strong sell signal.',
+    howto:'Sell on neckline breakdown. Target = head-to-neckline distance projected downward.',
+    reliability:'High', timeframe:'Weeks–Months', tags:['Reversal','Bearish','Volume'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,70 35,40 50,55 65,20 80,75 95,50 120,75" stroke="#e53935" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+      <line x1="35" y1="55" x2="100" y2="55" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="105" y="58" font-size="8" fill="#0070f3" font-family="monospace">Neckline</text>
+      <text x="58" y="18" font-size="8" fill="#e53935" font-family="monospace">Head</text>
+      <polyline points="120,75 145,85 180,88" stroke="#e53935" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'double_top', name:'Double Top (M Pattern)', cat:'bearish', type:'reversal',
+    desc:'Price tests the same resistance twice, forming an "M". Breakdown below neckline is bearish confirmation.',
+    howto:'Sell on neckline breakdown. Stop above higher of two tops. Target = M height projected down.',
+    reliability:'High', timeframe:'Days–Weeks', tags:['Reversal','Bearish','M-Pattern'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,75 40,25 70,60 100,25 130,75 175,80" stroke="#e53935" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+      <line x1="40" y1="60" x2="105" y2="60" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="110" y="63" font-size="8" fill="#0070f3" font-family="monospace">Neck</text>
+      <polyline points="130,75 155,85 185,88" stroke="#e53935" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'bear_flag', name:'Bear Flag', cat:'bearish', type:'continuation',
+    desc:'Sharp drop (flagpole) followed by small upward drift consolidation. Continuation of downtrend.',
+    howto:'Sell on breakdown below lower flag line. Target = flagpole length projected down.',
+    reliability:'High', timeframe:'Days', tags:['Continuation','Bearish','Momentum'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="10,10 50,65" stroke="#e53935" stroke-width="3" fill="none"/>
+      <line x1="50" y1="55" x2="110" y2="45" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <line x1="50" y1="70" x2="110" y2="60" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <polyline points="55,68 65,60 75,64 85,57 95,61 108,55" stroke="#e53935" stroke-width="2" fill="none"/>
+      <polyline points="110,55 145,85 180,90" stroke="#e53935" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'descending_triangle', name:'Descending Triangle', cat:'bearish', type:'continuation',
+    desc:'Flat bottom support + falling highs. Sellers getting more aggressive. Breakdown below support expected.',
+    howto:'Sell break below flat support. Stop above last swing high.',
+    reliability:'High', timeframe:'Weeks', tags:['Continuation','Bearish','Triangle'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <line x1="20" y1="70" x2="150" y2="70" stroke="#0070f3" stroke-width="2" stroke-dasharray="5,3"/>
+      <polyline points="20,20 50,35 80,45 110,55 140,65 155,70" stroke="#e53935" stroke-width="2" fill="none"/>
+      <polyline points="155,70 175,85 190,88" stroke="#e53935" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+      <text x="22" y="83" font-size="8" fill="#0070f3" font-family="monospace">Support</text>
+    </svg>` },
+
+  { id:'evening_star', name:'Evening Star', cat:'bearish', type:'reversal',
+    desc:'3-candle pattern: big bullish candle, small doji, big bearish candle. Top reversal signal.',
+    howto:'Enter short after third candle closes. Stop above doji high.',
+    reliability:'High', timeframe:'Daily', tags:['Candlestick','Reversal','Bearish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="40" y="30" width="30" height="40" fill="#00a854" rx="2"/>
+      <line x1="55" y1="20" x2="55" y2="30" stroke="#00a854" stroke-width="2"/>
+      <line x1="55" y1="70" x2="55" y2="78" stroke="#00a854" stroke-width="2"/>
+      <rect x="90" y="22" width="14" height="10" fill="#f5a623" rx="2"/>
+      <line x1="97" y1="15" x2="97" y2="22" stroke="#f5a623" stroke-width="2"/>
+      <line x1="97" y1="32" x2="97" y2="40" stroke="#f5a623" stroke-width="2"/>
+      <rect x="120" y="20" width="30" height="40" fill="#e53935" rx="2"/>
+      <line x1="135" y1="12" x2="135" y2="20" stroke="#e53935" stroke-width="2"/>
+      <line x1="135" y1="60" x2="135" y2="70" stroke="#e53935" stroke-width="2"/>
+      <text x="40" y="88" font-size="8" fill="#00a854" font-family="monospace">Bull</text>
+      <text x="86" y="88" font-size="8" fill="#f5a623" font-family="monospace">Star</text>
+      <text x="118" y="88" font-size="8" fill="#e53935" font-family="monospace">Bear</text>
+    </svg>` },
+
+  { id:'shooting_star', name:'Shooting Star / Bearish Pin Bar', cat:'bearish', type:'reversal',
+    desc:'Long upper wick, small body at bottom. Buyers tried to push higher but sellers overwhelmed them.',
+    howto:'Sell next candle open at resistance after shooting star. Stop above wick high.',
+    reliability:'Medium', timeframe:'Any', tags:['Candlestick','Reversal','Bearish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <line x1="100" y1="15" x2="100" y2="70" stroke="#e53935" stroke-width="2.5"/>
+      <rect x="85" y="55" width="30" height="18" fill="#e53935" rx="3"/>
+      <line x1="100" y1="73" x2="100" y2="78" stroke="#e53935" stroke-width="2"/>
+      <text x="58" y="88" font-size="10" fill="#e53935" font-family="monospace">Shooting Star 💫</text>
+    </svg>` },
+
+  // ── NEUTRAL / BILATERAL ──
+  { id:'sym_triangle', name:'Symmetrical Triangle', cat:'neutral', type:'continuation',
+    desc:'Converging trendlines with equal slopes. Coiling pattern — breakout in either direction is powerful.',
+    howto:'Trade breakout direction with volume. Set alerts on both upper and lower trendlines.',
+    reliability:'Medium', timeframe:'Weeks', tags:['Neutral','Triangle','Bilateral'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="20,15 50,28 80,20 110,33 140,28 165,40" stroke="#f5a623" stroke-width="2" fill="none"/>
+      <polyline points="20,75 50,62 80,68 110,55 140,60 165,50" stroke="#f5a623" stroke-width="2" fill="none"/>
+      <line x1="20" y1="15" x2="165" y2="40" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="20" y1="75" x2="165" y2="50" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <polyline points="165,45 185,20 195,15" stroke="#00a854" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+      <polyline points="165,45 185,70 195,80" stroke="#e53935" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'wedge_rising', name:'Rising Wedge', cat:'bearish', type:'reversal',
+    desc:'Price rising within converging upward channel. Despite uptrend, bearish divergence builds — breakdown expected.',
+    howto:'Sell breakdown below lower wedge line. Tighter wedge = stronger breakdown.',
+    reliability:'Medium', timeframe:'Weeks', tags:['Reversal','Bearish','Wedge'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="15,75 45,50 75,38 105,25 135,18 155,15" stroke="#e53935" stroke-width="2" fill="none"/>
+      <polyline points="15,85 45,65 75,55 105,44 135,38 155,35" stroke="#e53935" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+      <polyline points="155,35 175,60 190,80" stroke="#e53935" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'wedge_falling', name:'Falling Wedge', cat:'bullish', type:'reversal',
+    desc:'Price falling within converging downward channel. Despite downtrend, bullish reversal signal.',
+    howto:'Buy breakout above upper wedge line. Strong signal when volume expands.',
+    reliability:'Medium', timeframe:'Weeks', tags:['Reversal','Bullish','Wedge'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <polyline points="15,10 45,30 75,42 105,55 135,62 155,68" stroke="#00a854" stroke-width="2" fill="none"/>
+      <polyline points="15,20 45,42 75,55 105,65 135,72 155,75" stroke="#00a854" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+      <polyline points="155,72 175,45 190,25" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+    </svg>` },
+
+  { id:'rectangle', name:'Rectangle / Trading Range', cat:'neutral', type:'continuation',
+    desc:'Price bounces between flat support and resistance. Breakout in the trend direction is continuation.',
+    howto:'Trade breakout side with volume. Width of box = minimum target.',
+    reliability:'Medium', timeframe:'Days–Weeks', tags:['Neutral','Continuation','Range'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="30" y="25" width="130" height="45" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="5,3" fill="rgba(0,112,243,0.05)" rx="2"/>
+      <polyline points="10,20 30,40 55,30 80,42 105,28 130,38 160,27 180,35" stroke="#f5a623" stroke-width="2" fill="none"/>
+      <polyline points="180,35 195,10" stroke="#00a854" stroke-width="2.5" stroke-dasharray="5,3" fill="none"/>
+      <text x="35" y="20" font-size="8" fill="#0070f3" font-family="monospace">Resistance</text>
+      <text x="35" y="82" font-size="8" fill="#0070f3" font-family="monospace">Support</text>
+    </svg>` },
+
+  // ── MORE CANDLESTICK ──
+  { id:'engulfing_bull', name:'Bullish Engulfing', cat:'bullish', type:'reversal',
+    desc:'Large bullish candle completely engulfs previous smaller bearish candle. Shift of control from sellers to buyers.',
+    howto:'Buy on close of bullish candle. Stop below its low.',
+    reliability:'Medium', timeframe:'Any', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="70" y="35" width="20" height="25" fill="#e53935" rx="2"/>
+      <line x1="80" y1="28" x2="80" y2="35" stroke="#e53935" stroke-width="2"/>
+      <line x1="80" y1="60" x2="80" y2="67" stroke="#e53935" stroke-width="2"/>
+      <rect x="100" y="25" width="28" height="45" fill="#00a854" rx="2"/>
+      <line x1="114" y1="15" x2="114" y2="25" stroke="#00a854" stroke-width="2"/>
+      <line x1="114" y1="70" x2="114" y2="80" stroke="#00a854" stroke-width="2"/>
+      <text x="55" y="88" font-size="9" fill="#e53935" font-family="monospace">Small Bear</text>
+      <text x="95" y="88" font-size="9" fill="#00a854" font-family="monospace">Big Bull</text>
+    </svg>` },
+
+  { id:'engulfing_bear', name:'Bearish Engulfing', cat:'bearish', type:'reversal',
+    desc:'Large bearish candle completely engulfs previous smaller bullish candle. Bears take control.',
+    howto:'Sell on close of bearish candle at resistance. Stop above its high.',
+    reliability:'Medium', timeframe:'Any', tags:['Candlestick','Reversal','Bearish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="70" y="35" width="20" height="25" fill="#00a854" rx="2"/>
+      <line x1="80" y1="28" x2="80" y2="35" stroke="#00a854" stroke-width="2"/>
+      <line x1="80" y1="60" x2="80" y2="67" stroke="#00a854" stroke-width="2"/>
+      <rect x="100" y="25" width="28" height="45" fill="#e53935" rx="2"/>
+      <line x1="114" y1="15" x2="114" y2="25" stroke="#e53935" stroke-width="2"/>
+      <line x1="114" y1="70" x2="114" y2="80" stroke="#e53935" stroke-width="2"/>
+      <text x="55" y="88" font-size="9" fill="#00a854" font-family="monospace">Small Bull</text>
+      <text x="95" y="88" font-size="9" fill="#e53935" font-family="monospace">Big Bear</text>
+    </svg>` },
+
+  { id:'doji', name:'Doji', cat:'neutral', type:'reversal',
+    desc:'Open and close almost equal — forms a cross or plus sign. Market indecision. Stronger at extremes.',
+    howto:'Wait for next candle direction confirmation. Doji alone is not entry signal.',
+    reliability:'Low', timeframe:'Any', tags:['Candlestick','Neutral','Indecision'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <line x1="100" y1="15" x2="100" y2="75" stroke="#8a9db0" stroke-width="2"/>
+      <line x1="80" y1="45" x2="120" y2="45" stroke="#8a9db0" stroke-width="3"/>
+      <text x="72" y="88" font-size="10" fill="#8a9db0" font-family="monospace">Doji ✚</text>
+    </svg>` },
+
+  { id:'three_white_soldiers', name:'Three White Soldiers', cat:'bullish', type:'reversal',
+    desc:'Three consecutive bullish candles each closing higher. Powerful bottom reversal after downtrend.',
+    howto:'Buy after third candle confirmation. Strong when each candle opens within prior body.',
+    reliability:'High', timeframe:'Daily', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="40" y="55" width="28" height="28" fill="#00a854" rx="2"/>
+      <line x1="54" y1="48" x2="54" y2="55" stroke="#00a854" stroke-width="2"/>
+      <line x1="54" y1="83" x2="54" y2="88" stroke="#00a854" stroke-width="2"/>
+      <rect x="80" y="38" width="28" height="30" fill="#00a854" rx="2"/>
+      <line x1="94" y1="30" x2="94" y2="38" stroke="#00a854" stroke-width="2"/>
+      <line x1="94" y1="68" x2="94" y2="75" stroke="#00a854" stroke-width="2"/>
+      <rect x="120" y="18" width="28" height="33" fill="#00a854" rx="2"/>
+      <line x1="134" y1="10" x2="134" y2="18" stroke="#00a854" stroke-width="2"/>
+      <line x1="134" y1="51" x2="134" y2="58" stroke="#00a854" stroke-width="2"/>
+    </svg>` },
+
+  { id:'three_black_crows', name:'Three Black Crows', cat:'bearish', type:'reversal',
+    desc:'Three consecutive bearish candles each closing lower. Powerful top reversal after uptrend.',
+    howto:'Sell after third candle confirmation at resistance zone.',
+    reliability:'High', timeframe:'Daily', tags:['Candlestick','Reversal','Bearish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="40" y="10" width="28" height="30" fill="#e53935" rx="2"/>
+      <line x1="54" y1="5" x2="54" y2="10" stroke="#e53935" stroke-width="2"/>
+      <line x1="54" y1="40" x2="54" y2="47" stroke="#e53935" stroke-width="2"/>
+      <rect x="80" y="30" width="28" height="30" fill="#e53935" rx="2"/>
+      <line x1="94" y1="23" x2="94" y2="30" stroke="#e53935" stroke-width="2"/>
+      <line x1="94" y1="60" x2="94" y2="67" stroke="#e53935" stroke-width="2"/>
+      <rect x="120" y="50" width="28" height="30" fill="#e53935" rx="2"/>
+      <line x1="134" y1="42" x2="134" y2="50" stroke="#e53935" stroke-width="2"/>
+      <line x1="134" y1="80" x2="134" y2="87" stroke="#e53935" stroke-width="2"/>
+    </svg>` },
+
+  { id:'harami', name:'Harami (Bullish)', cat:'bullish', type:'reversal',
+    desc:'Small candle fully inside prior large bearish candle body. Momentum slowing — potential reversal.',
+    howto:'Wait for next bullish confirmation candle before entering.',
+    reliability:'Low', timeframe:'Any', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="65" y="20" width="35" height="55" fill="#e53935" rx="2"/>
+      <line x1="82" y1="12" x2="82" y2="20" stroke="#e53935" stroke-width="2"/>
+      <line x1="82" y1="75" x2="82" y2="83" stroke="#e53935" stroke-width="2"/>
+      <rect x="108" y="37" width="22" height="25" fill="#00a854" rx="2"/>
+      <line x1="119" y1="30" x2="119" y2="37" stroke="#00a854" stroke-width="2"/>
+      <line x1="119" y1="62" x2="119" y2="68" stroke="#00a854" stroke-width="2"/>
+      <text x="60" y="88" font-size="9" fill="#e53935" font-family="monospace">Mother</text>
+      <text x="103" y="88" font-size="9" fill="#00a854" font-family="monospace">Baby</text>
+    </svg>` },
+
+  { id:'tweezer_bottom', name:'Tweezer Bottom', cat:'bullish', type:'reversal',
+    desc:'Two candles with identical lows. Strong support rejection at that price level.',
+    howto:'Buy above the second candle. Stop below the matching lows.',
+    reliability:'Medium', timeframe:'Any', tags:['Candlestick','Reversal','Bullish'],
+    svg:`<svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <rect x="65" y="25" width="25" height="45" fill="#e53935" rx="2"/>
+      <line x1="77" y1="15" x2="77" y2="25" stroke="#e53935" stroke-width="2"/>
+      <line x1="77" y1="70" x2="77" y2="78" stroke="#e53935" stroke-width="2"/>
+      <rect x="102" y="30" width="25" height="40" fill="#00a854" rx="2"/>
+      <line x1="114" y1="20" x2="114" y2="30" stroke="#00a854" stroke-width="2"/>
+      <line x1="114" y1="70" x2="114" y2="78" stroke="#00a854" stroke-width="2"/>
+      <line x1="60" y1="78" x2="150" y2="78" stroke="#0070f3" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="60" y="88" font-size="9" fill="#0070f3" font-family="monospace">Equal Lows ←→</text>
+    </svg>` },
+];
+
+function switchScreenerTab(tab) {
+  const screenPanel  = document.getElementById('screenerResults').parentElement;
+  const patPanel     = document.getElementById('patternsPanel');
+  const filtersBar   = document.querySelector('#page-screener > div:nth-child(2)');
+  const assetBtns    = document.getElementById('screenerAssetBtns');
+
+  document.getElementById('scr_tab_screen').style.background   = tab==='screen'  ? 'var(--accent)' : 'transparent';
+  document.getElementById('scr_tab_screen').style.color        = tab==='screen'  ? '#fff' : 'var(--text3)';
+  document.getElementById('scr_tab_patterns').style.background = tab==='patterns'? 'var(--accent)' : 'transparent';
+  document.getElementById('scr_tab_patterns').style.color      = tab==='patterns'? '#fff' : 'var(--text3)';
+
+  if (tab === 'screen') {
+    document.getElementById('screenerResults').style.display = 'block';
+    if (filtersBar) filtersBar.style.display = 'flex';
+    if (assetBtns)  assetBtns.style.display  = 'flex';
+    if (patPanel)   patPanel.style.display   = 'none';
+  } else {
+    document.getElementById('screenerResults').style.display = 'none';
+    if (filtersBar) filtersBar.style.display = 'none';
+    if (assetBtns)  assetBtns.style.display  = 'none';
+    if (patPanel) { patPanel.style.display = 'flex'; renderPatterns(); }
+  }
+}
+
+function filterPatternCat(cat, btn) {
+  _patternCat = cat;
+  document.querySelectorAll('.pcat-btn').forEach(b => b.classList.remove('active-pcat'));
+  btn.classList.add('active-pcat');
+  renderPatterns();
+}
+
+function renderPatterns() {
+  const container = document.getElementById('patternsContainer');
+  const q   = (document.getElementById('patternSearch')?.value || '').toLowerCase();
+  let list  = CHART_PATTERNS;
+  if (_patternCat !== 'all') {
+    if (_patternCat === 'candlestick') list = list.filter(p => p.tags.includes('Candlestick'));
+    else if (_patternCat === 'reversal') list = list.filter(p => p.type === 'reversal');
+    else if (_patternCat === 'continuation') list = list.filter(p => p.type === 'continuation');
+    else list = list.filter(p => p.cat === _patternCat);
+  }
+  if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)));
+
+  if (!list.length) {
+    container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:36px;margin-bottom:12px;">🔭</div><div>No patterns found</div></div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="margin-bottom:12px;font-size:12px;color:var(--text3);">${list.length} pattern${list.length!==1?'s':''} found</div>
+    <div class="pattern-grid">
+      ${list.map(p => `
+        <div class="pattern-card" onclick="openPatternDetail('${p.id}')">
+          <div class="pattern-svg-wrap">${p.svg}</div>
+          <div class="pattern-body">
+            <div class="pattern-name">${p.name}</div>
+            <div>
+              <span class="pattern-badge ${p.cat}">${p.cat==='bullish'?'🟢 Bullish':p.cat==='bearish'?'🔴 Bearish':'🟡 Neutral'}</span>
+              <span class="pattern-badge neutral" style="margin-left:4px;">🔄 ${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</span>
+            </div>
+            <div class="pattern-desc">${p.desc.slice(0,90)}${p.desc.length>90?'…':''}</div>
+            <div class="pattern-tags">${p.tags.map(t=>`<span class="pattern-tag-chip">${t}</span>`).join('')}</div>
+            <button onclick="event.stopPropagation();scanForPattern('${p.id}')"
+              style="margin-top:10px;width:100%;padding:7px;border-radius:8px;border:1.5px solid var(--accent);background:rgba(0,112,243,0.07);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              🔍 Scan Markets for This Pattern
+            </button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function openPatternDetail(id) {
+  const p = CHART_PATTERNS.find(x => x.id === id);
+  if (!p) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'pattern-detail-overlay';
+  overlay.innerHTML = `
+    <div class="pattern-detail-box">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;">${p.name}</div>
+        <button onclick="this.closest('.pattern-detail-overlay').remove()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;color:var(--text2);">✕</button>
+      </div>
+      <div style="padding:0 20px 20px;">
+        <!-- Big SVG -->
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin:16px 0;height:160px;display:flex;align-items:center;justify-content:center;">
+          ${p.svg}
+        </div>
+        <!-- Badges -->
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <span class="pattern-badge ${p.cat}" style="font-size:12px;padding:4px 12px;">${p.cat==='bullish'?'🟢 Bullish':p.cat==='bearish'?'🔴 Bearish':'🟡 Neutral'}</span>
+          <span class="pattern-badge neutral" style="font-size:12px;padding:4px 12px;">🔄 ${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</span>
+          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px 12px;font-size:12px;color:var(--text3);">📊 Reliability: ${p.reliability}</span>
+          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px 12px;font-size:12px;color:var(--text3);">⏱ ${p.timeframe}</span>
+        </div>
+        <!-- Description -->
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:6px;">WHAT IS IT?</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;">${p.desc}</div>
+        <!-- How to trade -->
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:6px;">HOW TO TRADE</div>
+        <div style="background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;">${p.howto}</div>
+        <!-- Tags -->
+        <div class="pattern-tags">${p.tags.map(t=>`<span class="pattern-tag-chip">${t}</span>`).join('')}</div>
+        <!-- Scan button -->
+        <button onclick="overlay.remove();scanForPattern('${p.id}')"
+          style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;">
+          🔍 Scan All Markets for This Pattern
+        </button>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+
+
+// ── SCAN FOR PATTERN ──
+const SCAN_LISTS = {
+  stocks: null,      // uses liveStocks
+  crypto: [
+    {sym:'BTC',name:'Bitcoin'},{sym:'ETH',name:'Ethereum'},{sym:'BNB',name:'BNB'},
+    {sym:'SOL',name:'Solana'},{sym:'XRP',name:'XRP'},{sym:'DOGE',name:'Dogecoin'},
+    {sym:'ADA',name:'Cardano'},{sym:'MATIC',name:'Polygon'},{sym:'DOT',name:'Polkadot'},
+    {sym:'AVAX',name:'Avalanche'},{sym:'LTC',name:'Litecoin'},{sym:'LINK',name:'Chainlink'},
+  ],
+  commodities: [
+    {sym:'GOLD',name:'Gold'},{sym:'SILVER',name:'Silver'},{sym:'CRUDE',name:'Crude Oil'},
+    {sym:'BRENT',name:'Brent Oil'},{sym:'NATURALGAS',name:'Natural Gas'},
+    {sym:'COPPER',name:'Copper'},{sym:'PLATINUM',name:'Platinum'},
+  ],
+};
+
+let _scanPatternId = null;
+let _scanAsset = 'stocks';
+
+async function scanForPattern(patternId) {
+  _scanPatternId = patternId;
+  const p = CHART_PATTERNS.find(x => x.id === patternId);
+  if (!p) return;
+
+  // Switch to Screener > Patterns tab, show a scan results section
+  switchTab(document.querySelectorAll('.nav-tab')[2], 'screener');
+  switchScreenerTab('patterns');
+
+  const container = document.getElementById('patternsContainer');
+  container.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <button onclick="renderPatterns()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-weight:600;padding:0;">← Back to all patterns</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;">
+      <div style="display:flex;gap:12px;padding:14px;align-items:center;border-bottom:1px solid var(--border);">
+        <div style="width:80px;height:60px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;">${p.svg}</div>
+        <div>
+          <div style="font-weight:800;font-size:16px;color:var(--text);">${p.name}</div>
+          <span class="pattern-badge ${p.cat}" style="margin-top:4px;">${p.cat==='bullish'?'🟢 Bullish':p.cat==='bearish'?'🔴 Bearish':'🟡 Neutral'}</span>
+        </div>
+      </div>
+      <!-- Asset selector -->
+      <div style="padding:12px 14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
+        <button onclick="runPatternScan('${patternId}','stocks',this)" id="ps_stocks" style="padding:6px 14px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">🏦 Stocks</button>
+        <button onclick="runPatternScan('${patternId}','crypto',this)" id="ps_crypto" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">₿ Crypto</button>
+        <button onclick="runPatternScan('${patternId}','commodities',this)" id="ps_comm" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">🛢️ Commodities</button>
+      </div>
+      <div id="scanResults" style="padding:14px;">
+        <div style="text-align:center;color:var(--text3);padding:12px;font-size:13px;">Choose asset type above to start scan</div>
+      </div>
+    </div>`;
+}
+
+async function runPatternScan(patternId, assetType, btn) {
+  // Update button styles
+  ['ps_stocks','ps_crypto','ps_comm'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) { b.style.borderColor='var(--border)'; b.style.background='transparent'; b.style.color='var(--text3)'; }
+  });
+  if (btn) { btn.style.borderColor='var(--accent)'; btn.style.background='rgba(0,112,243,0.1)'; btn.style.color='var(--accent)'; }
+
+  const resultsEl = document.getElementById('scanResults');
+  if (!resultsEl) return;
+
+  // Build scan list
+  let scanList = [];
+  if (assetType === 'stocks') {
+    scanList = liveStocks.length ? liveStocks.slice(0,40).map(s=>({sym:s.sym,name:s.name||s.sym}))
+      : [{sym:'RELIANCE'},{sym:'TCS'},{sym:'HDFCBANK'},{sym:'INFY'},{sym:'SBIN'},{sym:'ICICIBANK'},{sym:'WIPRO'},{sym:'TATAMOTORS'},{sym:'HCLTECH'},{sym:'ADANIENT'}];
+  } else if (assetType === 'crypto') {
+    scanList = SCAN_LISTS.crypto;
+  } else {
+    scanList = SCAN_LISTS.commodities;
+  }
+
+  resultsEl.innerHTML = `<div style="text-align:center;padding:20px;"><div class="loading-spin"></div><div style="margin-top:10px;font-size:12px;color:var(--text3);" id="scanProgress">Scanning ${scanList.length} assets… (0/${scanList.length})</div></div>`;
+
+  const matched = [];
+  let done = 0;
+
+  // Fetch technical data in batches of 4
+  for (let i = 0; i < scanList.length; i += 4) {
+    const batch = scanList.slice(i, i+4);
+    const results = await Promise.all(batch.map(async s => {
+      const key = s.sym + '_tech';
+      if (_screenerCache[key] && (Date.now() - _screenerCache[key].ts < 300000)) {
+        return {...s, ..._screenerCache[key].data};
+      }
+      try {
+        const r = await fetch(`${API_BASE}/technical/${s.sym}`);
+        if (!r.ok) return s;
+        const t = await r.json();
+        _screenerCache[key] = {ts: Date.now(), data: t};
+        return {...s, ...t};
+      } catch(e) { return s; }
+    }));
+    results.forEach(r => { if (r.patterns && r.patterns.includes(patternId)) matched.push(r); });
+    done += batch.length;
+    const prog = document.getElementById('scanProgress');
+    if (prog) prog.textContent = `Scanning ${scanList.length} assets… (${done}/${scanList.length}) — ${matched.length} match${matched.length!==1?'es':''}`;
+  }
+
+  if (!matched.length) {
+    resultsEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text3);">
+      <div style="font-size:32px;margin-bottom:8px;">🔭</div>
+      <div style="font-weight:600;color:var(--text2);">No ${assetType} currently forming this pattern</div>
+      <div style="font-size:12px;margin-top:6px;">Patterns are detected on the latest daily candle data.</div>
+    </div>`;
+    return;
+  }
+
+  const cur = assetType === 'crypto' ? '$' : assetType === 'commodities' ? '$' : '₹';
+  resultsEl.innerHTML = `
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;font-family:'Space Mono',monospace;">
+      ✅ ${matched.length} ASSET${matched.length!==1?'S':''} FORMING THIS PATTERN
+    </div>
+    ${matched.map(s => {
+      const chgNum = parseFloat((s.chg||s.change_1d||0));
+      const isUp   = chgNum >= 0;
+      const signal = s.overall || '—';
+      const sigColor = signal==='STRONG BUY'?'var(--green)':signal==='BUY'?'#44cc88':signal==='HOLD'?'var(--gold)':signal==='SELL'?'#ff8844':'var(--red)';
+      return `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;" onclick="fetchAndShowStock('${s.sym}')">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${(s.sym||'').slice(0,4)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:14px;color:var(--text);">${s.sym}</div>
+          <div style="font-size:11px;color:var(--text3);">${s.name||''} · <span style="color:${sigColor};font-weight:700;">${signal}</span></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-weight:700;font-size:13px;color:var(--text);">${cur}${s.price||'—'}</div>
+          <div style="font-size:11px;font-weight:700;color:${isUp?'var(--green)':'var(--red)'};">${isUp?'+':''}${chgNum.toFixed(2)}%</div>
+        </div>
+        <div style="font-size:18px;flex-shrink:0;">📊</div>
+      </div>`;
+    }).join('')}`;
+}
+
+
+// ── TRENDING PAGE ──
+let _trendingCat = 'all';
+
+const TRENDING_STOCKS_STATIC = [
+  { sym:'RELIANCE', name:'Reliance Industries', sector:'Energy' },
+  { sym:'TCS',      name:'Tata Consultancy',    sector:'IT' },
+  { sym:'HDFCBANK', name:'HDFC Bank',           sector:'Banking' },
+  { sym:'INFY',     name:'Infosys',             sector:'IT' },
+  { sym:'SBIN',     name:'State Bank of India', sector:'Banking' },
+  { sym:'TATAMOTORS',name:'Tata Motors',        sector:'Auto' },
+  { sym:'BTC',      name:'Bitcoin',             sector:'Crypto' },
+  { sym:'ETH',      name:'Ethereum',            sector:'Crypto' },
+  { sym:'GOLD',     name:'Gold',                sector:'Commodity' },
+  { sym:'NIFTY50',  name:'Nifty 50 Index',      sector:'Index' },
+];
+
+function switchTrendingCat(cat, btn) {
+  _trendingCat = cat;
+  document.querySelectorAll('.trend-cat-btn').forEach(b => b.classList.remove('active-tcat'));
+  btn.classList.add('active-tcat');
+  renderTrendingPage(cat);
+}
+
+function renderTrendingPage(cat) {
+  const container = document.getElementById('trendingContainer');
+  container.innerHTML = `<div style="text-align:center;padding:40px;"><div class="loading-spin"></div></div>`;
+  setTimeout(() => {
+    let html = '';
+    if (cat === 'all') {
+      html += buildHashtagsSection(5);
+      html += buildStocksSection(5);
+      html += buildPeopleSection(5);
+    } else if (cat === 'hashtags') {
+      html += buildHashtagsSection(20);
+    } else if (cat === 'stocks') {
+      html += buildStocksSection(15);
+    } else if (cat === 'people') {
+      html += buildPeopleSection(20);
+    }
+    container.innerHTML = html || `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:36px;margin-bottom:12px;">🔭</div><div>Nothing trending yet — start posting!</div></div>`;
+  }, 120);
+}
+
+function miniSpark(values) {
+  if (!values || !values.length) return '';
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  return `<div class="trending-spark">${values.map(v => {
+    const h = Math.round(4 + ((v - min) / range) * 20);
+    return `<span style="height:${h}px;"></span>`;
+  }).join('')}</div>`;
+}
+
+function buildHashtagsSection(limit) {
+  const posts = getPosts();
+  const counts = {};
+  const recentCounts = {}; // last 24h
+  const now = Date.now();
+  posts.forEach(p => {
+    (p.hashtags || []).forEach(tag => {
+      counts[tag] = (counts[tag] || 0) + 1;
+      if (now - new Date(p.time).getTime() < 86400000) {
+        recentCounts[tag] = (recentCounts[tag] || 0) + 1;
+      }
+    });
+  });
+
+  // Also include preset trending tags
+  PRESET_HASHTAGS.slice(0, 8).forEach(({tag}) => {
+    if (!counts[tag]) counts[tag] = 0;
+  });
+
+  const sorted = Object.entries(counts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, limit);
+
+  if (!sorted.length && limit <= 5) return '';
+
+  let html = `<div class="trending-section-label">🏷️ TRENDING HASHTAGS</div>`;
+
+  if (!sorted.length) {
+    html += `<div style="padding:20px 18px;color:var(--text3);font-size:13px;">No hashtags used yet. Start posting with #tags!</div>`;
+    return html;
+  }
+
+  sorted.forEach(([tag, count], i) => {
+    const recent = recentCounts[tag] || 0;
+    const rankClass = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const rankIcon  = i===0?'🔥':i===1?'📈':i===2?'⚡':(i+1);
+    const spark = miniSpark([...Array(7)].map((_,j) => Math.max(1, count * (0.4 + Math.random()*0.6))));
+    html += `
+      <div class="trending-row" onclick="filterByTag('${tag}');switchTab(document.querySelector('.nav-tab'),  'feed')">
+        <div class="trending-rank ${rankClass}">${rankIcon}</div>
+        <div class="trending-info">
+          <div class="trending-tag">${tag}</div>
+          <div class="trending-meta">${count} post${count!==1?'s':''} · ${recent>0?`<span style="color:var(--green);">+${recent} today</span>`:'Finance & Markets'}</div>
+        </div>
+        ${spark}
+        <div class="trending-count">${count}</div>
+      </div>`;
+  });
+
+  if (limit <= 5) {
+    html += `<div style="padding:10px 18px;"><button onclick="document.querySelectorAll('.nav-tab')[5].click()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-weight:600;">See all hashtags →</button></div>`;
+  }
+  return html;
+}
+
+function buildStocksSection(limit) {
+  const posts  = getPosts();
+  const counts = {};
+
+  // Count stock mentions in post text
+  posts.forEach(p => {
+    const text = (p.text || '').toUpperCase();
+    TRENDING_STOCKS_STATIC.forEach(({sym}) => {
+      if (text.includes('$' + sym) || text.includes('#' + sym) || text.includes(sym)) {
+        counts[sym] = (counts[sym] || 0) + 1;
+      }
+    });
+  });
+
+  // Add base counts so it's not empty
+  TRENDING_STOCKS_STATIC.forEach(({sym}, i) => {
+    counts[sym] = (counts[sym] || 0) + Math.max(0, 10 - i*1);
+  });
+
+  const sorted = TRENDING_STOCKS_STATIC
+    .map(s => ({...s, count: counts[s.sym] || 1}))
+    .sort((a,b) => b.count - a.count)
+    .slice(0, limit);
+
+  let html = `<div class="trending-section-label">📊 TRENDING STOCKS & ASSETS</div>`;
+
+  sorted.forEach((s, i) => {
+    const rankClass = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const change = (Math.random() * 4 - 2).toFixed(2);
+    const isUp   = parseFloat(change) >= 0;
+    const spark  = miniSpark([...Array(8)].map(() => 50 + Math.random()*30));
+    html += `
+      <div class="trending-row" onclick="openTickerFromTrending('${s.sym}')">
+        <div class="trending-rank ${rankClass}">${i+1}</div>
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--accent);flex-shrink:0;font-family:'Space Mono',monospace;">${s.sym.slice(0,4)}</div>
+        <div class="trending-info">
+          <div class="trending-tag" style="font-size:14px;">${s.sym}</div>
+          <div class="trending-meta">${s.name} · <span style="color:var(--text3);">${s.sector}</span></div>
+        </div>
+        ${spark}
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:${isUp?'var(--green)':'var(--red)'};">${isUp?'+':''}${change}%</div>
+          <div style="font-size:10px;color:var(--text3);">${s.count} mentions</div>
+        </div>
+      </div>`;
+  });
+
+  if (limit <= 5) {
+    html += `<div style="padding:10px 18px;"><button onclick="switchTrendingCatById('stocks')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-weight:600;">See all stocks →</button></div>`;
+  }
+  return html;
+}
+
+function buildPeopleSection(limit) {
+  const posts  = getPosts();
+  const scores = {};
+  posts.forEach(p => {
+    scores[p.author] = (scores[p.author] || 0) + (p.likes||0)*2 + 1;
+  });
+
+  const sorted = Object.entries(scores)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, limit);
+
+  if (!sorted.length && limit <= 5) return '';
+
+  const me = getUser();
+  let html = `<div class="trending-section-label">👥 WHO TO FOLLOW</div>`;
+
+  if (!sorted.length) {
+    html += `<div style="padding:20px 18px;color:var(--text3);font-size:13px;">No users yet. Be the first to post!</div>`;
+    return html;
+  }
+
+  sorted.forEach(([name, score], i) => {
+    const userPosts  = posts.filter(p => p.author === name).length;
+    const col        = getColor(name);
+    const rankIcon   = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const isF        = isFollowing(name);
+    const isMe       = me && me.name === name;
+    html += `
+      <div class="person-row" onclick="openUserProfile('${name}')">
+        <div style="width:44px;height:44px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;">${name.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:14px;color:var(--text);">${rankIcon} ${name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px;">@${name.toLowerCase().replace(/\s/g,'')} · ${userPosts} posts · ${score} pts</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px;">${getFollowerCount(name)} followers</div>
+        </div>
+        ${!isMe ? `<button onclick="event.stopPropagation();handleFollowTrending('${name}')" id="tfollow_${name}"
+          class="trending-follow-btn ${isF?'following':''}">
+          ${isF?'Following ✓':'+ Follow'}
+        </button>` : `<span style="font-size:11px;color:var(--accent);padding:6px;">You</span>`}
+      </div>`;
+  });
+
+  if (limit <= 5) {
+    html += `<div style="padding:10px 18px;"><button onclick="switchTrendingCatById('people')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-weight:600;">See all people →</button></div>`;
+  }
+  return html;
+}
+
+function handleFollowTrending(name) {
+  const nowF = toggleFollow(name);
+  const btn  = document.getElementById('tfollow_' + name);
+  if (btn) {
+    btn.textContent = nowF ? 'Following ✓' : '+ Follow';
+    btn.classList.toggle('following', nowF);
+  }
+  showToast(nowF ? `✅ Following ${name}` : `Unfollowed ${name}`, nowF ? 'var(--green)' : 'var(--text3)');
+}
+
+function openTickerFromTrending(sym) {
+  // Switch to feed and open the stock modal
+  const feedTab = document.querySelectorAll('.nav-tab')[0];
+  switchTab(feedTab, 'feed');
+  fetchAndShowStock(sym);
+}
+
+function switchTrendingCatById(cat) {
+  const btn = document.getElementById('tc_' + cat);
+  if (btn) switchTrendingCat(cat, btn);
 }
 
 // ── SCREENER ──

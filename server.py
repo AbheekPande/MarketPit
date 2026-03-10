@@ -3,7 +3,7 @@ MarketPit — Python Backend Server (Railway Edition)
 Fetches real-time Indian stock data from Yahoo Finance (yfinance)
 """
 
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, send_file
 from flask_cors import CORS
 import yfinance as yf
 from datetime import datetime
@@ -556,6 +556,194 @@ def api_technical(symbol):
 
         sparkline = [r(x) for x in close.tail(30).tolist()]
 
+        # ── CHART PATTERN DETECTION ──
+        detected_patterns = []
+        try:
+            o = hist["Open"] if "Open" in hist.columns else close
+            c = close
+            h = high
+            l = low
+
+            # Helper: body, wick sizes
+            def body(i):   return abs(float(c.iloc[i]) - float(o.iloc[i]))
+            def rng(i):    return float(h.iloc[i]) - float(l.iloc[i])
+            def upper_w(i): return float(h.iloc[i]) - max(float(c.iloc[i]), float(o.iloc[i]))
+            def lower_w(i): return min(float(c.iloc[i]), float(o.iloc[i])) - float(l.iloc[i])
+            def is_bull(i): return float(c.iloc[i]) > float(o.iloc[i])
+            def is_bear(i): return float(c.iloc[i]) < float(o.iloc[i])
+
+            n = len(c)
+            if n >= 3:
+                i = n - 1  # last candle index
+
+                # ── CANDLESTICK PATTERNS (last 1-3 candles) ──
+                # Hammer
+                if (rng(i) > 0 and lower_w(i) > 2 * body(i) and upper_w(i) < 0.3 * rng(i)):
+                    detected_patterns.append("hammer")
+
+                # Shooting Star
+                if (rng(i) > 0 and upper_w(i) > 2 * body(i) and lower_w(i) < 0.3 * rng(i)):
+                    detected_patterns.append("shooting_star")
+
+                # Doji
+                if (rng(i) > 0 and body(i) < 0.1 * rng(i)):
+                    detected_patterns.append("doji")
+
+                # Bullish Engulfing
+                if (is_bull(i) and is_bear(i-1) and
+                    float(o.iloc[i]) <= float(c.iloc[i-1]) and
+                    float(c.iloc[i]) >= float(o.iloc[i-1]) and
+                    body(i) > body(i-1)):
+                    detected_patterns.append("engulfing_bull")
+
+                # Bearish Engulfing
+                if (is_bear(i) and is_bull(i-1) and
+                    float(o.iloc[i]) >= float(c.iloc[i-1]) and
+                    float(c.iloc[i]) <= float(o.iloc[i-1]) and
+                    body(i) > body(i-1)):
+                    detected_patterns.append("engulfing_bear")
+
+                # Morning Star (3-candle)
+                if (is_bear(i-2) and body(i-2) > 0.5*rng(i-2) and
+                    body(i-1) < 0.3*rng(i-2) and
+                    is_bull(i) and float(c.iloc[i]) > float(o.iloc[i-2])):
+                    detected_patterns.append("morning_star")
+
+                # Evening Star (3-candle)
+                if (is_bull(i-2) and body(i-2) > 0.5*rng(i-2) and
+                    body(i-1) < 0.3*rng(i-2) and
+                    is_bear(i) and float(c.iloc[i]) < float(o.iloc[i-2])):
+                    detected_patterns.append("evening_star")
+
+                # Three White Soldiers
+                if all(is_bull(i-j) and body(i-j) > 0.5*rng(i-j) for j in range(3)):
+                    if float(c.iloc[i]) > float(c.iloc[i-1]) > float(c.iloc[i-2]):
+                        detected_patterns.append("three_white_soldiers")
+
+                # Three Black Crows
+                if all(is_bear(i-j) and body(i-j) > 0.5*rng(i-j) for j in range(3)):
+                    if float(c.iloc[i]) < float(c.iloc[i-1]) < float(c.iloc[i-2]):
+                        detected_patterns.append("three_black_crows")
+
+                # Harami Bullish
+                if (is_bear(i-1) and is_bull(i) and
+                    float(o.iloc[i]) > float(c.iloc[i-1]) and
+                    float(c.iloc[i]) < float(o.iloc[i-1]) and
+                    body(i) < 0.5 * body(i-1)):
+                    detected_patterns.append("harami")
+
+                # Tweezer Bottom
+                if (abs(float(l.iloc[i]) - float(l.iloc[i-1])) < 0.002 * price and
+                    is_bear(i-1) and is_bull(i)):
+                    detected_patterns.append("tweezer_bottom")
+
+            # ── PRICE-ACTION PATTERNS (using last 20-60 candles) ──
+            if n >= 20:
+                closes20 = c.tail(20).values
+                highs20  = h.tail(20).values
+                lows20   = l.tail(20).values
+                cur      = float(c.iloc[-1])
+
+                # Bull Flag: strong run then tight consolidation
+                if n >= 10:
+                    pole_gain = (float(c.iloc[-11]) - float(c.iloc[-21])) / float(c.iloc[-21]) if n >= 21 else 0
+                    consol_range = (max(closes20[-10:]) - min(closes20[-10:])) / float(c.iloc[-11]) if float(c.iloc[-11]) > 0 else 1
+                    if pole_gain > 0.05 and consol_range < 0.04:
+                        detected_patterns.append("bull_flag")
+
+                # Bear Flag: sharp drop then tight up-drift consolidation
+                if n >= 21:
+                    pole_drop = (float(c.iloc[-21]) - float(c.iloc[-11])) / float(c.iloc[-21])
+                    consol_up = (max(closes20[-10:]) - min(closes20[-10:])) / float(c.iloc[-11]) if float(c.iloc[-11]) > 0 else 1
+                    if pole_drop > 0.05 and consol_up < 0.04:
+                        detected_patterns.append("bear_flag")
+
+                # Ascending Triangle: flat resistance + rising lows
+                highs_std = float(c.tail(15).apply(lambda x: x).std()) if n >= 15 else 999
+                if highs_std < 0.01 * cur:
+                    lows15 = l.tail(15).values
+                    if lows15[-1] > lows15[0] * 1.02:
+                        detected_patterns.append("ascending_triangle")
+
+                # Descending Triangle: rising highs + flat support
+                lows_std = float(l.tail(15).std()) if n >= 15 else 999
+                if lows_std < 0.01 * cur:
+                    h15 = h.tail(15).values
+                    if h15[0] > h15[-1] * 1.02:
+                        detected_patterns.append("descending_triangle")
+
+                # Double Bottom: two roughly equal lows with recovery
+                if n >= 40:
+                    first_half = lows20[:10]
+                    sec_half   = lows20[10:]
+                    bot1 = min(first_half); bot2 = min(sec_half)
+                    if abs(bot1 - bot2) / max(bot1, 0.01) < 0.03 and cur > (bot1 * 1.03):
+                        detected_patterns.append("double_bottom")
+
+                # Double Top: two roughly equal highs with drop
+                highs40 = h.tail(40).values if n >= 40 else h.tail(n).values
+                top1 = max(highs40[:len(highs40)//2])
+                top2 = max(highs40[len(highs40)//2:])
+                if abs(top1 - top2) / max(top1, 0.01) < 0.03 and cur < (top1 * 0.97):
+                    detected_patterns.append("double_top")
+
+                # Rising Wedge: rising highs + faster rising lows (converging up)
+                if n >= 20:
+                    h_slope = float(h.tail(20).iloc[-1] - h.tail(20).iloc[0]) / 20
+                    l_slope = float(l.tail(20).iloc[-1] - l.tail(20).iloc[0]) / 20
+                    if h_slope > 0 and l_slope > h_slope * 1.5:
+                        detected_patterns.append("wedge_rising")
+
+                # Falling Wedge: falling lows + faster falling highs (converging down)
+                if n >= 20:
+                    h_slope2 = float(h.tail(20).iloc[-1] - h.tail(20).iloc[0]) / 20
+                    l_slope2 = float(l.tail(20).iloc[-1] - l.tail(20).iloc[0]) / 20
+                    if l_slope2 < 0 and h_slope2 < l_slope2 * 1.5:
+                        detected_patterns.append("wedge_falling")
+
+                # Cup & Handle: rounded bottom in first 2/3, handle in last 1/3
+                if n >= 30:
+                    cup_low = min(c.tail(30).values[:20])
+                    cup_edge_l = float(c.tail(30).values[0])
+                    cup_edge_r = float(c.tail(30).values[19])
+                    handle = c.tail(30).values[20:]
+                    if cup_low < cup_edge_l * 0.97 and cup_low < cup_edge_r * 0.97:
+                        handle_range = max(handle) - min(handle)
+                        if handle_range < 0.04 * cup_edge_r:
+                            detected_patterns.append("cup_handle")
+
+                # Rectangle: price oscillating in tight band for 15+ candles
+                if n >= 15:
+                    band_high = max(highs20)
+                    band_low  = min(lows20)
+                    band_pct  = (band_high - band_low) / max(band_low, 0.01) * 100
+                    if band_pct < 6:
+                        detected_patterns.append("rectangle")
+
+                # Symmetrical Triangle: converging highs and lows
+                if n >= 20:
+                    h_s = float(h.tail(20).iloc[-1] - h.tail(20).iloc[0]) / 20
+                    l_s = float(l.tail(20).iloc[-1] - l.tail(20).iloc[0]) / 20
+                    if h_s < -0.001 and l_s > 0.001:
+                        detected_patterns.append("sym_triangle")
+
+                # Inverse H&S: middle trough lower than two shoulders
+                if n >= 30:
+                    seg = lows20
+                    left_sh = min(seg[:7]); head_tr = min(seg[7:14]); right_sh = min(seg[14:])
+                    if head_tr < left_sh * 0.98 and head_tr < right_sh * 0.98 and abs(left_sh - right_sh) / max(left_sh,0.01) < 0.05:
+                        detected_patterns.append("hns_inv")
+
+                # H&S Top: middle peak higher than two shoulders
+                if n >= 30:
+                    segh = highs20
+                    left_sh_h = max(segh[:7]); head_h = max(segh[7:14]); right_sh_h = max(segh[14:])
+                    if head_h > left_sh_h * 1.02 and head_h > right_sh_h * 1.02 and abs(left_sh_h - right_sh_h) / max(left_sh_h,0.01) < 0.05:
+                        detected_patterns.append("hns")
+
+        except Exception as pe:
+            print(f"Pattern detection error: {pe}")
+
         return jsonify({
             "symbol":   symbol.upper(),
             "price":    price,
@@ -600,7 +788,8 @@ def api_technical(symbol):
             # Signal
             "overall": overall, "buy_signals": buy_count,
             "sell_signals": sell_count, "total_signals": total,
-            "sparkline": sparkline
+            "sparkline": sparkline,
+            "patterns": detected_patterns
         })
     except Exception as e:
         print(f"Technical error {symbol}: {e}")
