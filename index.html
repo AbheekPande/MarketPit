@@ -7,21 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080b10; --bg2: #0d1117; --bg3: #111820; --panel: #0f1520;
-  --border: rgba(255,255,255,0.07); --border2: rgba(0,229,255,0.2);
-  --text: #e8f4ff; --text2: #a0b4c8; --text3: #506070;
-  --accent: #00e5ff; --accent2: #ff6b35; --green: #00ff88; --red: #ff3355; --gold: #ffd700;
+  --bg: #f0f4f8; --bg2: #ffffff; --bg3: #f5f7fa; --panel: #ffffff;
+  --border: rgba(0,0,0,0.09); --border2: rgba(0,120,200,0.3);
+  --text: #0f1923; --text2: #3a5068; --text3: #8a9db0;
+  --accent: #0070f3; --accent2: #ff6b35; --green: #00a854; --red: #e53935; --gold: #f5a623;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
 /* HEADER */
-header { height:52px; background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:16px; flex-shrink:0; z-index:100; }
+header { height:52px; background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:16px; flex-shrink:0; z-index:100; box-shadow:0 1px 8px rgba(0,0,0,0.07); }
 .logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:3px; color:var(--accent); cursor:pointer; }
 .nav-tabs { display:flex; gap:4px; margin-left:8px; }
 .nav-tab { padding:5px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; background:none; color:var(--text3); transition:all 0.15s; }
-.nav-tab.active { background:rgba(0,229,255,0.12); color:var(--accent); }
-.nav-tab:hover:not(.active) { color:var(--text2); background:rgba(255,255,255,0.04); }
+.nav-tab.active { background:rgba(0,112,243,0.1); color:var(--accent); }
+.nav-tab:hover:not(.active) { color:var(--text2); background:rgba(0,0,0,0.04); }
 .header-search { flex:1; max-width:340px; margin-left:auto; position:relative; }
 .header-search input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:6px 12px 6px 32px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
 .header-search input:focus { border-color:var(--accent); }
@@ -40,7 +40,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 
 /* PITS NAV */
 .pit-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; cursor:pointer; transition:all 0.15s; }
-.pit-item:hover, .pit-item.active { background:rgba(0,229,255,0.08); }
+.pit-item:hover, .pit-item.active { background:rgba(0,112,243,0.07); }
 .pit-item.active .pit-name { color:var(--accent); }
 .pit-icon { font-size:14px; width:20px; text-align:center; }
 .pit-name { font-size:13px; font-weight:500; color:var(--text2); }
@@ -51,7 +51,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .trend-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; }
 .trend-live { font-family:'Space Mono',monospace; font-size:9px; color:var(--green); white-space:nowrap; }
 .stock-item { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; cursor:pointer; transition:background 0.15s; border-radius:6px; margin:1px 4px; }
-.stock-item:hover { background:rgba(0,229,255,0.06); }
+.stock-item:hover { background:rgba(0,112,243,0.05); }
 .stock-sym { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text); }
 .stock-name { font-size:9px; color:var(--text3); margin-top:1px; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .stock-price { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; text-align:right; }
@@ -62,9 +62,9 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .stock-search-wrap { padding:6px 8px; }
 .stock-search-wrap input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:6px 10px; color:var(--text); font-size:11px; font-family:'DM Sans',sans-serif; outline:none; }
 .stock-search-wrap input:focus { border-color:var(--accent); }
-.search-dropdown { display:none; background:var(--panel); border:1px solid var(--border2); border-radius:8px; margin:4px 8px; max-height:220px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+.search-dropdown { display:none; background:var(--panel); border:1px solid var(--border2); border-radius:8px; margin:4px 8px; max-height:220px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.12); }
 .search-item { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.1s; }
-.search-item:hover { background:rgba(0,229,255,0.06); }
+.search-item:hover { background:rgba(0,112,243,0.05); }
 .search-item:last-child { border-bottom:none; }
 .search-sym { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text); }
 .search-name { font-size:10px; color:var(--text3); margin-top:1px; }
@@ -74,7 +74,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .main-feed { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .feed-filters { padding:10px 16px; border-bottom:1px solid var(--border); display:flex; gap:6px; flex-shrink:0; }
 .filter-btn { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:none; color:var(--text3); transition:all 0.15s; }
-.filter-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+.filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 .filter-btn:hover:not(.active) { border-color:var(--border2); color:var(--text2); }
 .feed-scroll { flex:1; overflow-y:auto; padding:12px 16px; }
 .feed-scroll::-webkit-scrollbar { width:4px; }
@@ -87,18 +87,29 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .compose-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; resize:none; min-height:50px; line-height:1.5; }
 .compose-input::placeholder { color:var(--text3); }
 .compose-actions { display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+
+/* HASHTAG SUGGESTIONS */
+.hashtag-popup { position:absolute; background:var(--panel); border:1px solid var(--border2); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:400; min-width:200px; max-height:220px; overflow-y:auto; display:none; animation:fadeIn 0.12s ease; }
+.hashtag-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; cursor:pointer; transition:background 0.1s; border-bottom:1px solid var(--border); }
+.hashtag-item:last-child { border-bottom:none; }
+.hashtag-item:hover, .hashtag-item.selected { background:rgba(0,112,243,0.07); }
+.hashtag-tag { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:var(--accent); }
+.hashtag-count { font-size:10px; color:var(--text3); font-family:'Space Mono',monospace; }
+/* Hashtag highlight in post text */
+.post-text .htag { color:var(--accent); font-weight:600; cursor:pointer; }
+.post-text .htag:hover { text-decoration:underline; }
 .pit-tag { padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all 0.15s; }
-.pit-tag.stocks { color:#00e5ff; border-color:rgba(0,229,255,0.3); background:rgba(0,229,255,0.08); }
+.pit-tag.stocks { color:#00e5ff; border-color:rgba(0,112,243,0.25); background:rgba(0,112,243,0.08); }
 .pit-tag.crypto { color:#ffd700; border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08); }
 .pit-tag.commodities { color:#ff6b35; border-color:rgba(255,107,53,0.3); background:rgba(255,107,53,0.08); }
 .pit-tag.macro { color:#00ff88; border-color:rgba(0,255,136,0.3); background:rgba(0,255,136,0.08); }
 .pit-tag.active-pit { filter:brightness(1.3); transform:scale(1.05); }
-.btn-post { margin-left:auto; padding:7px 18px; background:var(--accent); color:#000; border:none; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; transition:opacity 0.15s; }
+.btn-post { margin-left:auto; padding:7px 18px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; transition:opacity 0.15s; }
 .btn-post:hover { opacity:0.85; }
 
 /* POST CARD */
-.post-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; transition:border-color 0.2s; animation:fadeIn 0.3s ease; }
-.post-card:hover { border-color:var(--border2); }
+.post-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; transition:border-color 0.2s,box-shadow 0.2s; animation:fadeIn 0.3s ease; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.post-card:hover { border-color:var(--border2); box-shadow:0 4px 16px rgba(0,112,243,0.08); }
 .post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .post-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; flex-shrink:0; }
 .post-author { font-weight:700; font-size:13px; color:var(--text); }
@@ -108,11 +119,11 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .post-text { font-size:13px; line-height:1.6; color:var(--text2); margin-bottom:10px; }
 .post-footer { display:flex; align-items:center; gap:8px; }
 .post-action { background:none; border:none; color:var(--text3); font-size:12px; cursor:pointer; padding:4px 8px; border-radius:6px; display:flex; align-items:center; gap:4px; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
-.post-action:hover { background:rgba(255,255,255,0.05); color:var(--text2); }
+.post-action:hover { background:rgba(0,0,0,0.05); color:var(--text2); }
 .post-action.liked { color:var(--accent); }
-.share-popup { position:fixed; background:var(--panel); border:1px solid var(--border2); border-radius:12px; padding:10px; z-index:500; box-shadow:0 8px 32px rgba(0,0,0,0.6); display:none; min-width:180px; animation:fadeIn 0.15s ease; }
+.share-popup { position:fixed; background:var(--panel); border:1px solid var(--border2); border-radius:12px; padding:10px; z-index:500; box-shadow:0 8px 32px rgba(0,0,0,0.15); display:none; min-width:180px; animation:fadeIn 0.15s ease; }
 .share-option { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; cursor:pointer; transition:background 0.1s; font-size:13px; font-weight:500; color:var(--text2); }
-.share-option:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+.share-option:hover { background:rgba(0,112,243,0.06); color:var(--text); }
 
 /* RIGHT SIDEBAR - CHAT */
 .right-sidebar { width:280px; background:var(--bg2); border-left:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
@@ -130,7 +141,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .chat-input-row { padding:10px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
 .chat-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
 .chat-input:focus { border-color:var(--accent); }
-.chat-send { width:32px; height:32px; background:var(--accent); border:none; border-radius:8px; cursor:pointer; color:#000; font-size:14px; display:flex; align-items:center; justify-content:center; transition:opacity 0.15s; }
+.chat-send { width:32px; height:32px; background:var(--accent); border:none; border-radius:8px; cursor:pointer; color:#fff; font-size:14px; display:flex; align-items:center; justify-content:center; transition:opacity 0.15s; }
 .chat-send:hover { opacity:0.8; }
 .leaderboard-section { padding:10px; border-top:1px solid var(--border); }
 .lb-title { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:1.5px; margin-bottom:8px; }
@@ -141,7 +152,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .lb-pts { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); }
 
 /* MODAL */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .modal-overlay.open { display:flex; }
 .modal { background:var(--panel); border:1px solid var(--border2); border-radius:16px; width:540px; max-width:95vw; max-height:88vh; overflow-y:auto; padding:24px; animation:modalIn 0.2s ease; }
 .modal::-webkit-scrollbar { width:4px; }
@@ -162,12 +173,12 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 .signal-val { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px; }
 .signal-sub { font-size:11px; color:var(--text3); margin-top:4px; }
 .rsi-bar-wrap { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:8px; }
-.rsi-bar-track { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; position:relative; margin:6px 0; }
+.rsi-bar-track { height:6px; background:rgba(0,0,0,0.08); border-radius:3px; position:relative; margin:6px 0; }
 .rsi-bar-fill { height:6px; border-radius:3px; transition:width 0.5s ease; }
 .rsi-marker { position:absolute; top:-3px; width:12px; height:12px; border-radius:50%; border:2px solid var(--panel); transform:translateX(-50%); }
 .form-input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:12px; }
 .form-input:focus { border-color:var(--accent); }
-.btn-primary { background:var(--accent); color:#000; border:none; border-radius:8px; padding:10px 20px; font-weight:700; font-size:13px; cursor:pointer; width:100%; transition:opacity 0.15s; }
+.btn-primary { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 20px; font-weight:700; font-size:13px; cursor:pointer; width:100%; transition:opacity 0.15s; }
 .btn-primary:hover { opacity:0.85; }
 .btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); border-radius:8px; padding:10px 20px; font-weight:600; font-size:13px; cursor:pointer; width:100%; transition:all 0.15s; }
 .btn-ghost:hover { border-color:var(--border2); color:var(--text); }
@@ -179,7 +190,97 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 @keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes spin { to{transform:rotate(360deg)} }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 .loading-spin { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+
+/* ── BOTTOM NAV (mobile only) ── */
+.bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:58px; background:var(--bg2); border-top:1px solid var(--border); z-index:300; box-shadow:0 -2px 12px rgba(0,0,0,0.08); }
+.bottom-nav-inner { display:flex; height:100%; }
+.bn-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; transition:all 0.15s; border:none; background:none; color:var(--text3); font-size:10px; font-weight:600; font-family:'DM Sans',sans-serif; }
+.bn-item.active { color:var(--accent); }
+.bn-item .bn-icon { font-size:20px; line-height:1; }
+
+/* ── MOBILE SIDEBAR DRAWER ── */
+.sidebar-drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:350; }
+.sidebar-drawer { position:fixed; left:0; top:0; bottom:0; width:280px; background:var(--bg2); z-index:360; transform:translateX(-100%); transition:transform 0.25s ease; overflow-y:auto; box-shadow:4px 0 20px rgba(0,0,0,0.15); }
+.sidebar-drawer.open { transform:translateX(0); }
+
+/* ── RESPONSIVE BREAKPOINTS ── */
+@media (max-width: 768px) {
+  /* Hide desktop nav tabs and search in header */
+  .nav-tabs { display:none; }
+  .header-search { display:none; }
+  .notif-btn { display:none; }
+
+  /* Header becomes minimal */
+  header { padding:0 12px; justify-content:space-between; }
+  .logo { font-size:20px; }
+
+  /* Hide both sidebars */
+  .left-sidebar { display:none; }
+  .right-sidebar { display:none; }
+
+  /* Main content takes full width, add bottom padding for nav */
+  .main-feed { width:100%; }
+  body { padding-bottom:58px; }
+  .layout { padding-bottom:0; }
+
+  /* Show bottom nav */
+  .bottom-nav { display:block; }
+
+  /* Feed padding */
+  .feed-scroll { padding:10px 12px; }
+
+  /* Compose box */
+  .compose-box { border-radius:10px; padding:12px; }
+  .compose-input { font-size:14px; min-height:60px; }
+
+  /* Post cards */
+  .post-card { padding:12px; border-radius:10px; }
+  .post-author { font-size:13px; }
+
+  /* Modal full screen on mobile */
+  .modal { width:100% !important; max-width:100% !important; max-height:92vh; border-radius:16px 16px 0 0; margin:0; position:fixed; bottom:0; left:0; right:0; animation:slideUp 0.25s ease; }
+  .modal-overlay { align-items:flex-end; }
+
+  /* Stock modal chart shorter */
+  #tvChartContainer { height:260px !important; }
+
+  /* Screener filters wrap nicely */
+  .screener-filters { flex-direction:column; }
+
+  /* News grid single column */
+  #newsContainer .news-grid { grid-template-columns:1fr !important; }
+
+  /* Stat grids */
+  .stat-grid-3 { grid-template-columns:1fr 1fr !important; }
+
+  /* Pit tag chips smaller */
+  .pit-tag { font-size:10px; padding:3px 8px; }
+
+  /* Header search shown as icon instead */
+  .header-search-icon { display:flex !important; }
+
+  /* Pits grid single column */
+  #pitsGrid { grid-template-columns:1fr !important; }
+
+  /* Chart interval buttons smaller */
+  #chartIntervals button { padding:3px 6px; font-size:10px; }
+
+  /* Hashtag popup full width */
+  .hashtag-popup { left:0 !important; right:0 !important; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid-2 { grid-template-columns:1fr 1fr; }
+  .stat-grid-3 { grid-template-columns:1fr 1fr !important; }
+  .post-card { padding:10px; }
+  .logo { font-size:18px; letter-spacing:2px; }
+  #chartIntervals { display:none; }
+}
+
+/* Header mobile search icon */
+.header-search-icon { display:none; width:32px; height:32px; border-radius:50%; background:var(--bg3); border:1px solid var(--border); align-items:center; justify-content:center; cursor:pointer; font-size:16px; }
 </style>
 </head>
 <body>
@@ -245,11 +346,16 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
       <button class="filter-btn" onclick="setFilter(this)">📌 Following</button>
     </div>
     <div class="feed-scroll">
-      <div class="compose-box">
+      <div class="compose-box" style="position:relative;">
         <div class="compose-row">
           <div class="avatar" id="composeAv" style="width:36px;height:36px;font-size:11px;flex-shrink:0;">?</div>
-          <textarea class="compose-input" id="composeInput" placeholder="Drop your trade idea, analysis, or market take…"></textarea>
+          <textarea class="compose-input" id="composeInput" placeholder="Drop your trade idea, analysis, or market take… (type # for hashtags)"
+            oninput="onComposeInput(this)" onkeydown="onComposeKeydown(event)"></textarea>
         </div>
+        <!-- Hashtag suggestion popup -->
+        <div class="hashtag-popup" id="hashtagPopup"></div>
+        <!-- Trending hashtag chips -->
+        <div id="trendingTags" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;"></div>
         <div class="compose-actions">
           <span class="pit-tag stocks" onclick="selectPit(this,'Stocks')">+ Stocks</span>
           <span class="pit-tag crypto" onclick="selectPit(this,'Crypto')">+ Crypto</span>
@@ -264,9 +370,48 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 
   <!-- PITS PAGE -->
   <div class="main-feed" id="page-pits" style="display:none;">
-    <div class="feed-scroll">
-      <div style="padding:8px 0 16px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;">TRADING PITS</div>
-      <div id="pitsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+    <!-- Group detail view (hidden by default) -->
+    <div id="groupDetail" style="display:none;flex-direction:column;height:100%;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="closeGroup()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);cursor:pointer;font-size:13px;">← Back</button>
+        <div id="groupDetailTitle" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;"></div>
+        <div id="groupDetailMeta" style="font-size:11px;color:var(--text3);margin-left:auto;font-family:'Space Mono',monospace;"></div>
+      </div>
+      <div id="groupChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
+        <input id="groupChatInput" class="form-input" placeholder="Message the group..." style="flex:1;margin:0;" maxlength="300" onkeydown="if(event.key==='Enter')sendGroupMessage()">
+        <button onclick="sendGroupMessage()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-weight:700;cursor:pointer;">Send</button>
+      </div>
+    </div>
+
+    <!-- Groups list view -->
+    <div id="groupsList" style="display:flex;flex-direction:column;height:100%;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">🏛️ TRADING PITS</div>
+        <button onclick="openCreateGroup()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-weight:700;font-size:13px;cursor:pointer;">+ Create Group</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px;">
+        <div id="pitsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE GROUP MODAL -->
+  <div id="createGroupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:none;align-items:center;justify-content:center;">
+    <div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:24px;width:380px;max-width:90vw;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:16px;">CREATE NEW GROUP</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">GROUP NAME</div>
+      <input id="newGroupName" class="form-input" placeholder="e.g. Nifty Scalpers" maxlength="30" style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">DESCRIPTION</div>
+      <input id="newGroupDesc" class="form-input" placeholder="What's this group about?" maxlength="80" style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">EMOJI ICON</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="emojiPicker">
+        ${['📈','📉','💹','🏦','₿','🛢️','🌐','🔥','💎','🚀','🐂','🐻','⚡','🎯','💰','🏆'].map(e=>`<span onclick="pickEmoji(this,'${e}')" style="font-size:22px;cursor:pointer;padding:4px;border-radius:6px;border:2px solid transparent;transition:all 0.1s;" data-emoji="${e}">${e}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeCreateGroup()" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-weight:600;">Cancel</button>
+        <button onclick="createGroup()" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;">Create Group</button>
+      </div>
     </div>
   </div>
 
@@ -283,10 +428,10 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📊 SCREENER</div>
       <div style="display:flex;gap:6px;">
-        <button onclick="setAssetType('stocks',this)" id="at_stocks" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,229,255,0.15);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">🏦 Stocks</button>
+        <button onclick="setAssetType('stocks',this)" id="at_stocks" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">🏦 Stocks</button>
         <button onclick="setAssetType('crypto',this)" id="at_crypto" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">₿ Crypto</button>
         <button onclick="setAssetType('commodities',this)" id="at_commodities" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">🛢️ Commodities</button>
-        <button onclick="runScreener()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">▶ Run Screen</button>
+        <button onclick="runScreener()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">▶ Run Screen</button>
       </div>
     </div>
 
@@ -379,7 +524,7 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📰 MARKET NEWS</div>
       <div style="display:flex;gap:6px;" id="newsCatBtns">
-        <button onclick="loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,229,255,0.15);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
+        <button onclick="loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
         <button onclick="loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
         <button onclick="loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
         <button onclick="loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
@@ -429,13 +574,27 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 
 <!-- STOCK DETAIL MODAL -->
 <div class="modal-overlay" id="stockModal" onclick="if(event.target===this)closeModal('stockModal')">
-  <div class="modal" onclick="event.stopPropagation()">
+  <div class="modal" style="width:820px;max-width:97vw;" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div>
         <span class="modal-title" id="sdSym"></span>
         <span style="font-size:13px;color:var(--text3);margin-left:10px;" id="sdName"></span>
       </div>
+      <!-- Chart interval selector -->
+      <div style="display:flex;gap:4px;margin-right:12px;" id="chartIntervals">
+        <button onclick="setChartInterval('1D',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">1D</button>
+        <button onclick="setChartInterval('1W',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">1W</button>
+        <button onclick="setChartInterval('1M',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:11px;font-weight:600;cursor:pointer;">1M</button>
+        <button onclick="setChartInterval('3M',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">3M</button>
+        <button onclick="setChartInterval('6M',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">6M</button>
+        <button onclick="setChartInterval('1Y',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">1Y</button>
+        <button onclick="setChartInterval('ALL',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">ALL</button>
+      </div>
       <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
+    </div>
+    <!-- TradingView Chart -->
+    <div id="tvChartContainer" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;height:400px;background:var(--bg3);">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:12px;"><div class="loading-spin"></div></div>
     </div>
     <div id="sdBody"><div style="text-align:center;padding:30px;"><div class="loading-spin"></div></div></div>
   </div>
@@ -615,7 +774,7 @@ function onHeaderSearch(q) {
   if (!all.length) { drop.style.display='none'; return; }
   drop.innerHTML = all.map(s=>`
     <div style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);transition:background 0.1s;"
-      onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background=''"
+      onmouseover="this.style.background='rgba(0,112,243,0.05)'" onmouseout="this.style.background=''"
       onmousedown="event.preventDefault();openStockModal('${s.sym}','${s.name.replace(/'/g,'')}');document.getElementById('headerSearch').value='';document.getElementById('headerDrop').style.display='none'">
       <div>
         <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
@@ -627,11 +786,111 @@ function onHeaderSearch(q) {
 }
 
 // ── STOCK DETAIL MODAL ──
+// Convert MarketPit symbol → TradingView symbol
+function toTVSymbol(sym) {
+  const s = sym.toUpperCase();
+  // Crypto → use COINBASE or BINANCE
+  const cryptoMap = {
+    BTC:'COINBASE:BTCUSD', ETH:'COINBASE:ETHUSD', BNB:'BINANCE:BNBUSDT',
+    SOL:'COINBASE:SOLUSD', XRP:'COINBASE:XRPUSD', ADA:'COINBASE:ADAUSD',
+    DOGE:'COINBASE:DOGEUSD', MATIC:'COINBASE:MATICUSD', AVAX:'COINBASE:AVAXUSD',
+    LINK:'COINBASE:LINKUSD', LTC:'COINBASE:LTCUSD', SHIB:'BINANCE:SHIBUSDT',
+    PEPE:'BINANCE:PEPEUSDT', DOT:'COINBASE:DOTUSD', UNI:'COINBASE:UNIUSD',
+    INJ:'BINANCE:INJUSDT', TON:'BINANCE:TONUSDT', TRX:'BINANCE:TRXUSDT'
+  };
+  if (cryptoMap[s]) return cryptoMap[s];
+  // Commodities
+  const commMap = {
+    GOLD:'TVC:GOLD', SILVER:'TVC:SILVER', CRUDE:'TVC:USOIL', OIL:'TVC:USOIL',
+    BRENT:'TVC:UKOIL', NATURALGAS:'TVC:NATURALGAS', COPPER:'TVC:COPPER',
+    PLATINUM:'TVC:PLATINUM', WHEAT:'CBOT:ZW1!', CORN:'CBOT:ZC1!'
+  };
+  if (commMap[s]) return commMap[s];
+  // Indian stocks → BSE prefix works better on free TradingView
+  const bseMap = {
+    RELIANCE:'BSE:RELIANCE', TCS:'BSE:TCS', HDFCBANK:'BSE:HDFCBANK',
+    INFY:'BSE:INFY', ICICIBANK:'BSE:ICICIBANK', HINDUNILVR:'BSE:HINDUNILVR',
+    SBIN:'BSE:SBIN', BHARTIARTL:'BSE:BHARTIARTL', ITC:'BSE:ITC',
+    KOTAKBANK:'BSE:KOTAKBANK', LT:'BSE:LT', AXISBANK:'BSE:AXISBANK',
+    WIPRO:'BSE:WIPRO', MARUTI:'BSE:MARUTI', SUNPHARMA:'BSE:SUNPHARMA',
+    TITAN:'BSE:TITAN', ULTRACEMCO:'BSE:ULTRACEMCO', BAJFINANCE:'BSE:BAJFINANCE',
+    NESTLEIND:'BSE:NESTLEIND', TECHM:'BSE:TECHM', ONGC:'BSE:ONGC',
+    NTPC:'BSE:NTPC', POWERGRID:'BSE:POWERGRID', COALINDIA:'BSE:COALINDIA',
+    JSWSTEEL:'BSE:JSWSTEEL', TATASTEEL:'BSE:TATASTEEL', HCLTECH:'BSE:HCLTECH',
+    ADANIENT:'BSE:ADANIENT', ADANIPORTS:'BSE:ADANIPORTS', GRASIM:'BSE:GRASIM',
+  };
+  if (bseMap[s]) return bseMap[s];
+  return 'BSE:' + s;
+}
+
+const TV_INTERVALS = {'1D':'1D','1W':'1W','1M':'1M','3M':'3M','6M':'6M','1Y':'12M','ALL':'60M'};
+let _tvSym = '';
+let _tvInterval = '1M';
+
+function setChartInterval(label, btn) {
+  _tvInterval = label;
+  document.querySelectorAll('#chartIntervals button').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--text3)';
+    b.style.borderColor = 'var(--border)';
+  });
+  btn.style.background = 'var(--accent)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--accent)';
+  loadTVChart(_tvSym, label);
+}
+
+function loadTVChart(sym, interval) {
+  const tvSym     = toTVSymbol(sym);
+  const tvInterval = TV_INTERVALS[interval] || '1M';
+  const container = document.getElementById('tvChartContainer');
+
+  // Use TradingView's free iframe embed — works for BSE, crypto, commodities
+  const params = new URLSearchParams({
+    symbol:           tvSym,
+    interval:         tvInterval,
+    timezone:         'Asia/Kolkata',
+    theme:            'light',
+    style:            '1',
+    locale:           'en',
+    toolbar_bg:       '#f5f7fa',
+    enable_publishing:'false',
+    allow_symbol_change: 'true',
+    studies:          'RSI@tv-basicstudies',
+    hide_side_toolbar:'0',
+    withdateranges:   'true',
+    hide_top_toolbar: '0',
+    save_image:       'false',
+    container_id:     'tv_embed',
+  });
+
+  container.innerHTML = `
+    <iframe
+      src="https://www.tradingview.com/widgetembed/?${params.toString()}"
+      style="width:100%;height:100%;border:none;"
+      allowtransparency="true"
+      frameborder="0"
+      scrolling="no"
+      allowfullscreen>
+    </iframe>`;
+}
+
 async function openStockModal(sym, name) {
   document.getElementById('sdSym').textContent = sym;
   document.getElementById('sdName').textContent = name;
-  document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:40px;"><div class="loading-spin"></div><div style="color:var(--text3);font-size:12px;margin-top:12px;">Loading data & technical analysis…</div></div>`;
+  document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:40px;"><div class="loading-spin"></div><div style="color:var(--text3);font-size:12px;margin-top:12px;">Loading technical analysis…</div></div>`;
   openModal('stockModal');
+
+  // Reset interval buttons
+  _tvSym = sym;
+  _tvInterval = '1M';
+  document.querySelectorAll('#chartIntervals button').forEach((b,i) => {
+    b.style.background = i===2 ? 'var(--accent)' : 'transparent';
+    b.style.color = i===2 ? '#fff' : 'var(--text3)';
+  });
+
+  // Load TradingView chart
+  loadTVChart(sym, '1M');
 
   try {
     const [qRes, taRes] = await Promise.all([
@@ -652,31 +911,6 @@ async function openStockModal(sym, name) {
     const fmt = v => v != null ? cur + v.toLocaleString() : '—';
     const fmtN = v => v != null ? v : '—';
     const clr = v => v == null ? '' : v >= 0 ? 'up' : 'dn';
-
-    // Sparkline
-    let sparkHTML = '';
-    if (p.sparkline && p.sparkline.length > 1) {
-      const pts = p.sparkline;
-      const mn = Math.min(...pts), mx = Math.max(...pts), rng = mx - mn || 1;
-      const W = 460, H = 70;
-      const coords = pts.map((v,i)=>`${(i/(pts.length-1))*W},${H-((v-mn)/rng)*H}`).join(' ');
-      const lc = pts[pts.length-1] >= pts[0] ? '#00ff88' : '#ff3355';
-      sparkHTML = `
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:12px;">
-          <div class="section-divider" style="margin:0 0 6px;">30-DAY PRICE CHART</div>
-          <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:65px;" preserveAspectRatio="none">
-            <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="${lc}" stop-opacity="0.25"/>
-              <stop offset="100%" stop-color="${lc}" stop-opacity="0"/>
-            </linearGradient></defs>
-            <polygon points="${coords} ${W},${H} 0,${H}" fill="url(#sg)"/>
-            <polyline points="${coords}" fill="none" stroke="${lc}" stroke-width="2" stroke-linejoin="round"/>
-          </svg>
-          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;">
-            <span>${cur}${pts[0].toLocaleString()}</span><span>30 days ago</span><span>${cur}${pts[pts.length-1].toLocaleString()}</span>
-          </div>
-        </div>`;
-    }
 
     // Signal
     const sc = p.overall ? (p.overall.includes('BUY')?'var(--green)':p.overall.includes('SELL')?'var(--red)':'var(--gold)') : 'var(--text3)';
@@ -712,8 +946,6 @@ async function openStockModal(sym, name) {
         <div class="stat-box"><div class="stat-label">PRICE</div><div class="stat-val lg">${cur}${d.price}</div></div>
         <div class="stat-box"><div class="stat-label">CHANGE TODAY</div><div class="stat-val lg ${up?'up':'dn'}">${d.chg}</div></div>
       </div>
-
-      ${sparkHTML}
 
       <!-- PERFORMANCE -->
       <div class="section-divider">PRICE PERFORMANCE</div>
@@ -854,7 +1086,7 @@ async function openStockModal(sym, name) {
       <div class="stat-grid-3" style="margin-bottom:12px;">
         <div class="stat-box" style="border-color:rgba(255,51,85,0.2);"><div class="stat-label">R2 RESISTANCE</div><div class="stat-val sm dn">${p.r2?cur+p.r2:'—'}</div></div>
         <div class="stat-box" style="border-color:rgba(255,107,53,0.2);"><div class="stat-label">R1 RESISTANCE</div><div class="stat-val sm dn">${p.r1?cur+p.r1:'—'}</div></div>
-        <div class="stat-box" style="border-color:rgba(0,229,255,0.3);"><div class="stat-label">PIVOT POINT</div><div class="stat-val sm">${p.pivot?cur+p.pivot:'—'}</div></div>
+        <div class="stat-box" style="border-color:rgba(0,112,243,0.25);"><div class="stat-label">PIVOT POINT</div><div class="stat-val sm">${p.pivot?cur+p.pivot:'—'}</div></div>
         <div class="stat-box" style="border-color:rgba(0,255,136,0.2);"><div class="stat-label">S1 SUPPORT</div><div class="stat-val sm up">${p.s1?cur+p.s1:'—'}</div></div>
         <div class="stat-box" style="border-color:rgba(0,255,136,0.3);"><div class="stat-label">S2 SUPPORT</div><div class="stat-val sm up">${p.s2?cur+p.s2:'—'}</div></div>
       </div>
@@ -927,7 +1159,7 @@ function renderPosts() {
         </div>
         ${p.pit?`<div class="post-pit" style="color:${pc};border-color:${pc}44;background:${pc}0f;">${p.pit}</div>`:''}
       </div>
-      <div class="post-text">${p.text}</div>
+      <div class="post-text">${highlightHashtags(p.text)}</div>
       <div class="post-footer">
         <button class="post-action ${isLiked?'liked':''}" onclick="likePost(${p.id},this)" ${isLiked?'disabled':''}>↑ <span class="cnt">${p.likes||0}</span></button>
         <button class="post-action">💬 0</button>
@@ -988,7 +1220,7 @@ function shareVia(platform) {
       // Show brief toast
       const toast = document.createElement('div');
       toast.textContent = '✅ Copied to clipboard!';
-      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;z-index:9999;animation:fadeIn 0.2s ease;';
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;z-index:9999;animation:fadeIn 0.2s ease;';
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 2000);
     });
@@ -1003,13 +1235,219 @@ function submitPost() {
   const input = document.getElementById('composeInput');
   const text = input.value.trim();
   if (!text) return;
+  const hashtags = [...new Set((text.match(/#\w+/g) || []).map(h => h.toLowerCase()))];
   const posts = getPosts();
-  posts.push({id:Date.now(), author:user.name, text, pit:_selectedPit, time:new Date().toISOString(), likes:0});
+  posts.push({id:Date.now(), author:user.name, text, pit:_selectedPit, time:new Date().toISOString(), likes:0, hashtags});
   savePosts(posts);
   input.value='';
   _selectedPit='';
+  closeHashtagPopup();
   document.querySelectorAll('.pit-tag').forEach(t=>t.classList.remove('active-pit'));
-  renderPosts(); renderLeaderboard();
+  renderPosts(); renderLeaderboard(); renderTrendingTags();
+}
+
+// ── HASHTAG SYSTEM ──
+const PRESET_HASHTAGS = [
+  {tag:'#nifty50',      desc:'Nifty 50 Index'},
+  {tag:'#sensex',       desc:'BSE Sensex'},
+  {tag:'#bullish',      desc:'Bullish outlook'},
+  {tag:'#bearish',      desc:'Bearish outlook'},
+  {tag:'#breakout',     desc:'Price breakout'},
+  {tag:'#bitcoin',      desc:'Bitcoin discussion'},
+  {tag:'#gold',         desc:'Gold prices'},
+  {tag:'#crudeoil',     desc:'Crude oil prices'},
+  {tag:'#ipo',          desc:'IPO discussion'},
+  {tag:'#results',      desc:'Earnings & results'},
+  {tag:'#technicalanalysis', desc:'TA discussion'},
+  {tag:'#investing',    desc:'Long-term investing'},
+  {tag:'#trading',      desc:'Day trading'},
+  {tag:'#options',      desc:'Options trading'},
+  {tag:'#multibagger',  desc:'Multibagger stocks'},
+  {tag:'#smallcap',     desc:'Small cap stocks'},
+  {tag:'#largecap',     desc:'Large cap stocks'},
+  {tag:'#midcap',       desc:'Mid cap stocks'},
+  {tag:'#rbi',          desc:'RBI & rates'},
+  {tag:'#fii',          desc:'FII activity'},
+  {tag:'#reliance',     desc:'Reliance Industries'},
+  {tag:'#tcs',          desc:'Tata Consultancy'},
+  {tag:'#infosys',      desc:'Infosys'},
+  {tag:'#hdfc',         desc:'HDFC Bank'},
+  {tag:'#ethereum',     desc:'Ethereum'},
+  {tag:'#altcoin',      desc:'Altcoins'},
+  {tag:'#defi',         desc:'DeFi projects'},
+  {tag:'#longterm',     desc:'Long term play'},
+  {tag:'#scalping',     desc:'Scalping trade'},
+  {tag:'#swing',        desc:'Swing trade'},
+];
+
+let _hashtagQuery = '';
+let _hashtagIndex = -1;
+let _hashtagStart = -1;
+
+function getTagCounts() {
+  const counts = {};
+  getPosts().forEach(p => (p.hashtags || []).forEach(h => { counts[h] = (counts[h]||0)+1; }));
+  return counts;
+}
+
+function getAllHashtags(query) {
+  const counts = getTagCounts();
+  // Merge preset + user-generated tags
+  const all = [...PRESET_HASHTAGS];
+  Object.keys(counts).forEach(tag => {
+    if (!all.find(x => x.tag === tag)) all.push({tag, desc:'Community tag'});
+  });
+  const q = query.toLowerCase();
+  return all
+    .filter(x => x.tag.includes(q))
+    .sort((a,b) => (counts[b.tag]||0) - (counts[a.tag]||0))
+    .slice(0, 8);
+}
+
+function onComposeInput(ta) {
+  const val   = ta.value;
+  const pos   = ta.selectionStart;
+  // Find if cursor is right after a # word
+  const before = val.slice(0, pos);
+  const match  = before.match(/#(\w*)$/);
+  if (match) {
+    _hashtagQuery = '#' + match[1];
+    _hashtagStart = before.lastIndexOf('#');
+    _hashtagIndex = 0;
+    showHashtagPopup(match[1], ta);
+  } else {
+    closeHashtagPopup();
+  }
+}
+
+function onComposeKeydown(e) {
+  const popup = document.getElementById('hashtagPopup');
+  if (popup.style.display === 'none' || popup.style.display === '') return;
+  const items = popup.querySelectorAll('.hashtag-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _hashtagIndex = Math.min(_hashtagIndex + 1, items.length - 1);
+    items.forEach((el,i) => el.classList.toggle('selected', i === _hashtagIndex));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _hashtagIndex = Math.max(_hashtagIndex - 1, 0);
+    items.forEach((el,i) => el.classList.toggle('selected', i === _hashtagIndex));
+  } else if (e.key === 'Enter' || e.key === 'Tab') {
+    const sel = popup.querySelector('.hashtag-item.selected') || popup.querySelector('.hashtag-item');
+    if (sel) { e.preventDefault(); insertHashtag(sel.dataset.tag); }
+  } else if (e.key === 'Escape') {
+    closeHashtagPopup();
+  }
+}
+
+function showHashtagPopup(query, ta) {
+  const results = getAllHashtags(query);
+  const popup   = document.getElementById('hashtagPopup');
+  const counts  = getTagCounts();
+  if (!results.length) { closeHashtagPopup(); return; }
+
+  // Position popup below textarea
+  const rect = ta.getBoundingClientRect();
+  const boxRect = ta.closest('.compose-box').getBoundingClientRect();
+  popup.style.top  = (ta.offsetTop + ta.offsetHeight + 4) + 'px';
+  popup.style.left = '50px';
+  popup.style.right = '0';
+  popup.style.display = 'block';
+  _hashtagIndex = 0;
+
+  popup.innerHTML = results.map((x, i) => `
+    <div class="hashtag-item ${i===0?'selected':''}" data-tag="${x.tag}" onclick="insertHashtag('${x.tag}')">
+      <div>
+        <div class="hashtag-tag">${x.tag}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${x.desc}</div>
+      </div>
+      <div class="hashtag-count">${counts[x.tag] ? counts[x.tag]+' posts' : 'Trending'}</div>
+    </div>`).join('');
+}
+
+function insertHashtag(tag) {
+  const ta  = document.getElementById('composeInput');
+  const val = ta.value;
+  const pos = ta.selectionStart;
+  const before = val.slice(0, _hashtagStart);
+  const after  = val.slice(pos);
+  ta.value = before + tag + ' ' + after;
+  const newPos = before.length + tag.length + 1;
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+  closeHashtagPopup();
+}
+
+function closeHashtagPopup() {
+  const p = document.getElementById('hashtagPopup');
+  if (p) p.style.display = 'none';
+  _hashtagIndex = -1;
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.compose-box')) closeHashtagPopup();
+});
+
+function renderTrendingTags() {
+  const counts = getTagCounts();
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const container = document.getElementById('trendingTags');
+  if (!container) return;
+  if (!sorted.length) {
+    // Show default suggestions when no posts
+    const defaults = ['#nifty50','#bitcoin','#breakout','#bullish','#gold','#trading'];
+    container.innerHTML = '<span style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-right:4px;">Trending:</span>' +
+      defaults.map(t=>`<span onclick="insertTag('${t}')" style="font-size:11px;font-weight:600;color:var(--accent);background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.2);border-radius:12px;padding:2px 9px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(0,112,243,0.15)'" onmouseout="this.style.background='rgba(0,112,243,0.08)'">${t}</span>`).join('');
+    return;
+  }
+  container.innerHTML = '<span style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-right:4px;">Trending:</span>' +
+    sorted.map(([t,c])=>`<span onclick="insertTag('${t}')" title="${c} posts" style="font-size:11px;font-weight:600;color:var(--accent);background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.2);border-radius:12px;padding:2px 9px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(0,112,243,0.15)'" onmouseout="this.style.background='rgba(0,112,243,0.08)'">${t} <span style="color:var(--text3);font-size:9px;">${c}</span></span>`).join('');
+}
+
+function insertTag(tag) {
+  const ta = document.getElementById('composeInput');
+  const val = ta.value;
+  const endsWithSpace = !val || val.endsWith(' ') || val.endsWith('\n');
+  ta.value = val + (endsWithSpace ? '' : ' ') + tag + ' ';
+  ta.focus();
+}
+
+function highlightHashtags(text) {
+  return text.replace(/#(\w+)/g, '<span class="htag" onclick="filterByTag(\'#$1\')">#$1</span>');
+}
+
+function filterByTag(tag) {
+  const posts = getPosts().filter(p => p.text && p.text.toLowerCase().includes(tag.toLowerCase()));
+  const container = document.getElementById('postsContainer');
+  // Show a tag filter banner
+  const liked = getLiked();
+  const pitColors = {Stocks:'var(--accent)',Crypto:'var(--gold)',Commodities:'var(--accent2)',Macro:'var(--green)',Options:'#8855ff'};
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;margin-bottom:6px;">
+      <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);">${tag}</span>
+      <span style="font-size:11px;color:var(--text3);">${posts.length} posts</span>
+      <button onclick="renderPosts()" style="margin-left:auto;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:11px;">✕ Clear filter</button>
+    </div>` +
+    (posts.length ? posts.slice().reverse().map(p => {
+      const av = p.author.slice(0,2).toUpperCase();
+      const col = getColor(p.author);
+      const pc = pitColors[p.pit] || 'var(--text3)';
+      const isLiked = liked.includes(p.id);
+      return `<div class="post-card">
+        <div class="post-header">
+          <div class="post-av" style="background:${col};">${av}</div>
+          <div><div><span class="post-author">${p.author}</span></div>
+          <div class="post-time">${new Date(p.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST</div></div>
+          ${p.pit?`<div class="post-pit" style="color:${pc};border-color:${pc}44;background:${pc}0f;">${p.pit}</div>`:''}
+        </div>
+        <div class="post-text">${highlightHashtags(p.text)}</div>
+        <div class="post-footer">
+          <button class="post-action ${isLiked?'liked':''}" onclick="likePost(${p.id},this)" ${isLiked?'disabled':''}>↑ <span class="cnt">${p.likes||0}</span></button>
+          <button class="post-action" onclick="sharePost(${p.id},event)">🔗 Share</button>
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No posts with this hashtag yet</div></div>');
 }
 
 function selectPit(el, pit) {
@@ -1072,44 +1510,213 @@ function sendChat() {
   input.value='';
 }
 
-// ── PITS PAGE ──
+// ── GROUPS / PITS ──
+const DEFAULT_GROUPS = [
+  {id:'g_equity',   name:'Equity Pit',      emoji:'🏦', desc:'Stocks, ETFs, and equity analysis.',         col:'rgba(0,112,243,0.1)',  created:'MarketPit', locked:true},
+  {id:'g_crypto',   name:'Crypto Vault',    emoji:'₿',  desc:'Bitcoin, altcoins, DeFi, and on-chain.',     col:'rgba(255,215,0,0.15)', created:'MarketPit', locked:true},
+  {id:'g_comms',    name:'Commodities Pit', emoji:'🛢️', desc:'Energy, metals, agriculture and futures.',   col:'rgba(255,107,53,0.15)', created:'MarketPit', locked:true},
+  {id:'g_macro',    name:'Macro Desk',      emoji:'🌐', desc:'Central banks, rates, FX, global macro.',    col:'rgba(0,255,136,0.15)', created:'MarketPit', locked:true},
+  {id:'g_options',  name:'Options Flow',    emoji:'📈', desc:'Unusual options activity and gamma.',         col:'rgba(150,80,255,0.15)',created:'MarketPit', locked:true},
+  {id:'g_darkpool', name:'Dark Pool Intel', emoji:'🔬', desc:'Institutional flow and block trades.',        col:'rgba(255,50,100,0.15)',created:'MarketPit', locked:true},
+];
+
+function getGroups() {
+  const custom = JSON.parse(localStorage.getItem('mp_groups') || '[]');
+  return [...DEFAULT_GROUPS, ...custom];
+}
+
+function saveCustomGroups(groups) {
+  localStorage.setItem('mp_groups', JSON.stringify(groups));
+}
+
+function getGroupMessages(gid) {
+  return JSON.parse(localStorage.getItem('mp_gmsg_' + gid) || '[]');
+}
+
+function saveGroupMessages(gid, msgs) {
+  localStorage.setItem('mp_gmsg_' + gid, JSON.stringify(msgs));
+}
+
+function getJoined() { return JSON.parse(localStorage.getItem('mp_joined') || '[]'); }
+function saveJoined(j) { localStorage.setItem('mp_joined', JSON.stringify(j)); }
+
+let _selectedEmoji = '📈';
+let _currentGroup  = null;
+
 function renderPits() {
-  const pits = [
-    {name:'Equity Pit',emoji:'🏦',desc:'Stocks, ETFs, and equity analysis.',col:'rgba(0,229,255,0.15)',key:'Stocks'},
-    {name:'Crypto Vault',emoji:'₿',desc:'Bitcoin, altcoins, DeFi, and on-chain analytics.',col:'rgba(255,215,0,0.15)',key:'Crypto'},
-    {name:'Commodities Pit',emoji:'🛢️',desc:'Energy, metals, agriculture and futures.',col:'rgba(255,107,53,0.15)',key:'Commodities'},
-    {name:'Macro Desk',emoji:'🌐',desc:'Central banks, rates, FX, and global macro.',col:'rgba(0,255,136,0.15)',key:'Macro'},
-    {name:'Options Flow',emoji:'📈',desc:'Unusual options activity and gamma analysis.',col:'rgba(150,80,255,0.15)',key:'Options'},
-    {name:'Dark Pool Intel',emoji:'🔬',desc:'Institutional flow and block trades.',col:'rgba(255,50,100,0.15)',key:''},
-  ];
-  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
-  document.getElementById('pitsGrid').innerHTML = pits.map(p=>{
-    const posts = getPosts().filter(x=>x.pit===p.key).length;
-    const isJoined = joined.includes(p.name);
+  const groups = getGroups();
+  const joined = getJoined();
+  document.getElementById('pitsGrid').innerHTML = groups.map(g => {
+    const isJoined  = joined.includes(g.id);
+    const msgCount  = getGroupMessages(g.id).length;
+    const memberKey = 'mp_members_' + g.id;
+    const members   = JSON.parse(localStorage.getItem(memberKey) || '[]');
     return `
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-      <div style="background:${p.col};padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${p.emoji} ${p.name}</div>
-      <div style="padding:12px;">
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${p.desc}</div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:10px;">${posts} posts</div>
-        <button style="width:100%;padding:7px;border-radius:8px;border:1px solid;cursor:pointer;font-weight:600;font-size:12px;transition:all 0.15s;background:${isJoined?'var(--accent)':'transparent'};color:${isJoined?'#000':'var(--text2)'};border-color:${isJoined?'var(--accent)':'var(--border)'};"
-          onclick="toggleJoin('${p.name}',this)">${isJoined?'✓ Joined':'+ Join Pit'}</button>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color 0.2s,transform 0.15s;"
+      onmouseover="this.style.borderColor='var(--border2)';this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+      <div style="background:${g.col};padding:14px 16px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;"
+        onclick="openGroup('${g.id}')">
+        <span>${g.emoji} ${g.name}</span>
+        ${!g.locked ? `<span onclick="event.stopPropagation();deleteGroup('${g.id}')" style="font-size:11px;opacity:0.6;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,0.3);">✕</span>` : ''}
+      </div>
+      <div style="padding:12px 16px;" onclick="openGroup('${g.id}')">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">${g.desc}</div>
+        <div style="display:flex;gap:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:10px;">
+          <span>💬 ${msgCount} messages</span>
+          <span>👤 ${isJoined ? 'Joined' : 'Open'}</span>
+          ${g.created !== 'MarketPit' ? `<span style="color:var(--accent);">✨ Custom</span>` : ''}
+        </div>
+        <button style="width:100%;padding:7px;border-radius:8px;border:1px solid;cursor:pointer;font-weight:600;font-size:12px;transition:all 0.15s;background:${isJoined?'var(--accent)':'transparent'};color:${isJoined?'#fff':'var(--text2)'};border-color:${isJoined?'var(--accent)':'var(--border)'};"
+          onclick="event.stopPropagation();toggleJoin('${g.id}',this)">${isJoined ? '✓ Joined' : '+ Join Pit'}</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleJoin(name, btn) {
-  const joined = JSON.parse(localStorage.getItem('mp_joined')||'[]');
-  const i = joined.indexOf(name);
-  if (i>-1) joined.splice(i,1); else joined.push(name);
-  localStorage.setItem('mp_joined', JSON.stringify(joined));
-  const isNow = joined.includes(name);
-  btn.style.background = isNow?'var(--accent)':'transparent';
-  btn.style.color = isNow?'#000':'var(--text2)';
-  btn.style.borderColor = isNow?'var(--accent)':'var(--border)';
-  btn.textContent = isNow?'✓ Joined':'+ Join Pit';
+function toggleJoin(gid, btn) {
+  const joined = getJoined();
+  const i = joined.indexOf(gid);
+  if (i > -1) joined.splice(i, 1); else joined.push(gid);
+  saveJoined(joined);
+  const isNow = joined.includes(gid);
+  btn.style.background  = isNow ? 'var(--accent)' : 'transparent';
+  btn.style.color       = isNow ? '#fff' : 'var(--text2)';
+  btn.style.borderColor = isNow ? 'var(--accent)' : 'var(--border)';
+  btn.textContent       = isNow ? '✓ Joined' : '+ Join Pit';
 }
+
+function openGroup(gid) {
+  const g = getGroups().find(x => x.id === gid);
+  if (!g) return;
+  _currentGroup = gid;
+  document.getElementById('groupsList').style.display   = 'none';
+  document.getElementById('groupDetail').style.display  = 'flex';
+  document.getElementById('groupDetailTitle').textContent = g.emoji + ' ' + g.name;
+  const msgs = getGroupMessages(gid);
+  document.getElementById('groupDetailMeta').textContent = msgs.length + ' messages';
+  renderGroupMessages(gid);
+  // Auto-join when opening
+  const joined = getJoined();
+  if (!joined.includes(gid)) { joined.push(gid); saveJoined(joined); }
+  setTimeout(() => {
+    const el = document.getElementById('groupChatMessages');
+    if (el) el.scrollTop = el.scrollHeight;
+  }, 50);
+}
+
+function closeGroup() {
+  _currentGroup = null;
+  document.getElementById('groupDetail').style.display  = 'none';
+  document.getElementById('groupsList').style.display   = 'flex';
+  renderPits();
+}
+
+function renderGroupMessages(gid) {
+  const msgs = getGroupMessages(gid);
+  const container = document.getElementById('groupChatMessages');
+  if (!msgs.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">
+      <div style="font-size:32px;margin-bottom:8px;">👋</div>
+      <div style="font-size:13px;">No messages yet. Be the first to say something!</div>
+    </div>`;
+    return;
+  }
+  container.innerHTML = msgs.map(m => {
+    const user = getUser();
+    const isMe = user && m.author === user.name;
+    return `
+    <div style="display:flex;align-items:flex-start;gap:8px;${isMe?'flex-direction:row-reverse;':''}">
+      <div class="avatar" style="width:30px;height:30px;font-size:10px;flex-shrink:0;background:${getColor(m.author)};">${m.author.slice(0,2).toUpperCase()}</div>
+      <div style="max-width:70%;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;font-family:'Space Mono',monospace;${isMe?'text-align:right;':''}">${m.author} · ${m.time}</div>
+        <div style="background:${isMe?'rgba(0,112,243,0.1)':'var(--bg3)'};border:1px solid ${isMe?'rgba(0,112,243,0.25)':'var(--border)'};border-radius:${isMe?'12px 4px 12px 12px':'4px 12px 12px 12px'};padding:8px 12px;font-size:13px;color:var(--text);line-height:1.5;">
+          ${m.text}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendGroupMessage() {
+  const user = getUser();
+  if (!user) { alert('Set your username first!'); return; }
+  const input = document.getElementById('groupChatInput');
+  const text  = input.value.trim();
+  if (!text || !_currentGroup) return;
+  const msgs = getGroupMessages(_currentGroup);
+  msgs.push({
+    author: user.name,
+    text,
+    time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata'}) + ' IST',
+    ts: Date.now()
+  });
+  saveGroupMessages(_currentGroup, msgs);
+  input.value = '';
+  renderGroupMessages(_currentGroup);
+  document.getElementById('groupDetailMeta').textContent = msgs.length + ' messages';
+}
+
+// ── CREATE GROUP ──
+function openCreateGroup() {
+  const user = getUser();
+  if (!user) { alert('Set your username first to create a group!'); return; }
+  document.getElementById('createGroupModal').style.display = 'flex';
+  document.getElementById('newGroupName').value = '';
+  document.getElementById('newGroupDesc').value = '';
+  _selectedEmoji = '📈';
+  document.querySelectorAll('#emojiPicker span').forEach(s => s.style.borderColor = 'transparent');
+  const first = document.querySelector('#emojiPicker span');
+  if (first) first.style.borderColor = 'var(--accent)';
+}
+
+function closeCreateGroup() {
+  document.getElementById('createGroupModal').style.display = 'none';
+}
+
+function pickEmoji(el, emoji) {
+  _selectedEmoji = emoji;
+  document.querySelectorAll('#emojiPicker span').forEach(s => s.style.borderColor = 'transparent');
+  el.style.borderColor = 'var(--accent)';
+}
+
+function createGroup() {
+  const name = document.getElementById('newGroupName').value.trim();
+  const desc = document.getElementById('newGroupDesc').value.trim();
+  if (!name) { alert('Please enter a group name!'); return; }
+  const user = getUser();
+  const custom = JSON.parse(localStorage.getItem('mp_groups') || '[]');
+  const colors = ['rgba(0,112,243,0.1)','rgba(255,107,53,0.15)','rgba(0,255,136,0.15)','rgba(150,80,255,0.15)','rgba(255,215,0,0.15)','rgba(255,50,100,0.15)'];
+  const newGroup = {
+    id:      'g_' + Date.now(),
+    name,
+    emoji:   _selectedEmoji,
+    desc:    desc || 'A custom trading group',
+    col:     colors[Math.floor(Math.random() * colors.length)],
+    created: user ? user.name : 'Anonymous',
+    locked:  false
+  };
+  custom.push(newGroup);
+  saveCustomGroups(custom);
+  // Auto-join the creator
+  const joined = getJoined();
+  joined.push(newGroup.id);
+  saveJoined(joined);
+  closeCreateGroup();
+  renderPits();
+  // Open the new group right away
+  setTimeout(() => openGroup(newGroup.id), 100);
+}
+
+function deleteGroup(gid) {
+  if (!confirm('Delete this group and all its messages?')) return;
+  const custom = JSON.parse(localStorage.getItem('mp_groups') || '[]');
+  saveCustomGroups(custom.filter(g => g.id !== gid));
+  localStorage.removeItem('mp_gmsg_' + gid);
+  renderPits();
+}
+
 
 // ── MESSAGES PAGE ──
 function renderMessages() {
@@ -1209,7 +1816,7 @@ function setAssetType(type, btn) {
     const b = document.getElementById('at_'+t);
     if (t === type) {
       b.style.borderColor = t==='crypto'?'var(--gold)':t==='commodities'?'var(--accent2)':'var(--accent)';
-      b.style.background  = t==='crypto'?'rgba(255,215,0,0.15)':t==='commodities'?'rgba(255,107,53,0.15)':'rgba(0,229,255,0.15)';
+      b.style.background  = t==='crypto'?'rgba(255,215,0,0.15)':t==='commodities'?'rgba(255,107,53,0.15)':'rgba(0,112,243,0.1)';
       b.style.color       = t==='crypto'?'var(--gold)':t==='commodities'?'var(--accent2)':'var(--accent)';
     } else {
       b.style.borderColor = 'var(--border)';
@@ -1363,7 +1970,7 @@ async function runScreener() {
           const cur = s.currency || (_assetType==='stocks'?'₹':'$');
           return `
           <tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;"
-            onmouseover="this.style.background='rgba(0,229,255,0.04)'" onmouseout="this.style.background=''"
+            onmouseover="this.style.background='rgba(0,112,243,0.04)'" onmouseout="this.style.background=''"
             onclick="openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')">
             <td style="padding:10px;font-family:'Space Mono',monospace;">
               <div style="font-weight:700;color:var(--text);">${s.sym}</div>
@@ -1379,7 +1986,7 @@ async function runScreener() {
             <td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:${vsMAC};">${vsMA}</td>
             <td style="padding:10px;text-align:center;">
               <button onclick="event.stopPropagation();openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')"
-                style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">
+                style="background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.25);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">
                 Analyse
               </button>
             </td>
@@ -1426,11 +2033,26 @@ document.addEventListener('keydown', e => {
 // ── INIT ──
 updateAvatars();
 renderPosts();
+renderTrendingTags();
 renderChat();
 renderLeaderboard();
 fetchLiveData();
 loadSymbols();
 setInterval(fetchLiveData, 60000);
+
+// Live clock — updates every second
+function tickClock() {
+  const el = document.getElementById('liveTs');
+  if (el) {
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'Asia/Kolkata'});
+    // Keep LIVE prefix and color, just update the time part
+    const current = el.textContent || '';
+    if (current.startsWith('LIVE')) {
+      el.textContent = 'LIVE · ' + t + ' IST';
+    }
+  }
+}
+setInterval(tickClock, 1000);
 // ── NEWS (Google News RSS via corsproxy.io) ──
 let _newsLoaded = {};
 
@@ -1460,7 +2082,7 @@ async function loadNews(cat, btn) {
     b.style.color       = 'var(--text3)';
   });
   btn.style.borderColor = 'var(--accent)';
-  btn.style.background  = 'rgba(0,229,255,0.15)';
+  btn.style.background  = 'rgba(0,112,243,0.1)';
   btn.style.color       = 'var(--accent)';
 
   const container = document.getElementById('newsContainer');
@@ -1492,7 +2114,7 @@ async function loadNews(cat, btn) {
     _newsLoaded[cat] = { ts: Date.now(), items };
     renderNews(items);
   } catch(e) {
-    container.innerHTML = '<div style="text-align:center;padding:48px;"><div style="font-size:32px;margin-bottom:12px;">📭</div><div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div><div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check internet and try again</div><button onclick="delete _newsLoaded[\'' + cat + '\'];loadNews(\'' + cat + '\',document.getElementById(\'nc_' + cat + '\'))" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button></div>';
+    container.innerHTML = '<div style="text-align:center;padding:48px;"><div style="font-size:32px;margin-bottom:12px;">📭</div><div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div><div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check internet and try again</div><button onclick="delete _newsLoaded[\'' + cat + '\'];loadNews(\'' + cat + '\',document.getElementById(\'nc_' + cat + '\'))" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button></div>';
   }
 }
 
