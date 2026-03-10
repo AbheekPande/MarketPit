@@ -1183,13 +1183,16 @@ function renderPosts() {
     const isMe = currentUser && p.author === currentUser.name;
     const avDisp = isMe ? getAvatarDisplay(currentUser) : {type:'initials', val:p.author.slice(0,2).toUpperCase(), bg:getColor(p.author)};
     const avFontSize = avDisp.type === 'emoji' ? '18px' : '11px';
+    const avHtml = avDisp.type === 'image'
+      ? `<div class="post-av" style="background:transparent;overflow:hidden;padding:0;"><img src="${avDisp.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+      : `<div class="post-av" style="background:${avDisp.bg};font-size:${avFontSize};">${avDisp.val}</div>`;
     const pitColors = {Stocks:'var(--accent)',Crypto:'var(--gold)',Commodities:'var(--accent2)',Macro:'var(--green)',Options:'#8855ff'};
     const pc = pitColors[p.pit] || 'var(--text3)';
     const isLiked = liked.includes(p.id);
     return `
     <div class="post-card">
       <div class="post-header">
-        <div class="post-av" style="background:${avDisp.bg};font-size:${avFontSize};">${avDisp.val}</div>
+        ${avHtml}
         <div>
           <div><span class="post-author">${isMe ? (currentUser.displayName || p.author) : p.author}</span><span class="post-handle">@${p.author.toLowerCase().replace(/\s/g,'')}</span></div>
           <div class="post-time">${new Date(p.time).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST · ${new Date(p.time).toLocaleDateString('en-IN')}</div>
@@ -1780,12 +1783,16 @@ const AVATAR_BIGS   = ['👤','🧑','👨','👩','🧔','👱'];
 
 function getAvatarDisplay(user) {
   if (!user) return {type:'initials', val:'?', bg:'#888'};
+  if (user.avatarImage) return {type:'image', val:user.avatarImage, bg:'transparent'};
   if (user.avatarEmoji) return {type:'emoji', val:user.avatarEmoji, bg: user.avatarColor || getColor(user.name)};
   return {type:'initials', val:user.name.slice(0,2).toUpperCase(), bg: user.avatarColor || getColor(user.name)};
 }
 
 function renderAvatarEl(user, size=36, fontSize=11) {
   const av = getAvatarDisplay(user);
+  if (av.type === 'image') {
+    return `<div class="avatar" style="width:${size}px;height:${size}px;background:transparent;flex-shrink:0;overflow:hidden;padding:0;"><img src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
+  }
   const fs = av.type==='emoji' ? Math.round(size*0.55) : fontSize;
   return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${fs}px;background:${av.bg};flex-shrink:0;">${av.val}</div>`;
 }
@@ -1815,14 +1822,14 @@ function renderProfileModal() {
 
   el.innerHTML = `
     <!-- BANNER -->
-    <div style="height:90px;background:${bannerColor};border-radius:10px;margin-bottom:-36px;position:relative;cursor:pointer;" onclick="editBanner()" title="Change banner">
+    <div style="height:90px;background:${user.bannerImage ? `url(${user.bannerImage}) center/cover no-repeat` : bannerColor};border-radius:10px;margin-bottom:-36px;position:relative;cursor:pointer;" onclick="editBanner()" title="Change banner">
       <div style="position:absolute;bottom:6px;right:10px;font-size:10px;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">✏️ Edit</div>
     </div>
 
     <!-- AVATAR + EDIT BUTTON ROW -->
     <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-bottom:12px;">
       <div style="position:relative;cursor:pointer;" onclick="editAvatar()">
-        <div style="width:72px;height:72px;border-radius:50%;background:${av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'36px':'22px'};border:4px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.15);">${av.val}</div>
+        <div style="width:72px;height:72px;border-radius:50%;background:${av.type==='image'?'transparent':av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'36px':av.type==='image'?'0':'22px'};border:4px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.15);overflow:hidden;">${av.type==='image'?`<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;">`:av.val}</div>
         <div style="position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;border:2px solid var(--bg2);">✏️</div>
       </div>
       <div style="display:flex;gap:8px;">
@@ -1874,22 +1881,61 @@ function showEditProfile() {
   const el   = document.getElementById('profileBody');
   document.getElementById('profileModalTitle').textContent = 'EDIT PROFILE';
   const av = getAvatarDisplay(user);
+  const bannerBg = user.bannerImage
+    ? `url(${user.bannerImage}) center/cover no-repeat`
+    : (user.bannerColor || 'linear-gradient(135deg,#0070f3,#00c6ff)');
 
   el.innerHTML = `
-    <!-- Avatar preview -->
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-      <div id="editAvPreview" style="width:64px;height:64px;border-radius:50%;background:${av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'32px':'20px'};border:3px solid var(--border);">${av.val}</div>
-      <div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;">Profile Picture</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="emojiAvatarPicker">
-          ${AVATAR_EMOJIS.map(e=>`<span onclick="pickProfileEmoji('${e}')" style="font-size:22px;cursor:pointer;padding:3px;border-radius:6px;border:2px solid transparent;transition:all 0.1s;" data-emoji="${e}">${e}</span>`).join('')}
+    <!-- BANNER EDIT -->
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'Space Mono',monospace;">HEADER / BANNER</div>
+    <div style="position:relative;height:100px;border-radius:12px;overflow:hidden;margin-bottom:20px;background:${bannerBg};border:2px dashed var(--border);">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,0.35);">
+        <button onclick="triggerBannerUpload()" style="padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.9);border:none;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">📁 Gallery</button>
+        <button onclick="triggerBannerCamera()" style="padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.9);border:none;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">📷 Camera</button>
+        ${user.bannerImage ? `<button onclick="removeBannerImage()" style="padding:8px 16px;border-radius:20px;background:rgba(220,50,50,0.85);border:none;font-weight:700;font-size:12px;cursor:pointer;color:#fff;">✕ Remove</button>` : ''}
+      </div>
+      <div id="bannerPreview" style="position:absolute;inset:0;background:${bannerBg};z-index:-1;"></div>
+    </div>
+    <!-- Hidden banner inputs -->
+    <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="onBannerFileSelected(this)">
+    <input type="file" id="bannerCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onBannerFileSelected(this)">
+
+    <!-- If no image: color swatches -->
+    ${!user.bannerImage ? `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="bannerColorRow">
+      ${['linear-gradient(135deg,#0070f3,#00c6ff)','linear-gradient(135deg,#e53935,#ff6b35)','linear-gradient(135deg,#00a854,#00e5ff)','linear-gradient(135deg,#9c27b0,#e91e63)','linear-gradient(135deg,#f5a623,#ff6b35)','linear-gradient(135deg,#1a1a2e,#16213e)','linear-gradient(135deg,#0f3460,#533483)','linear-gradient(135deg,#2d6a4f,#52b788)'].map(c=>`
+        <div onclick="pickBannerColor('${c}')" style="width:32px;height:32px;border-radius:8px;background:${c};cursor:pointer;border:3px solid ${(user.bannerColor||'linear-gradient(135deg,#0070f3,#00c6ff)')===c?'var(--text)':'transparent'};transition:all 0.15s;"></div>`).join('')}
+    </div>` : ''}
+
+    <!-- AVATAR EDIT -->
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'Space Mono',monospace;">PROFILE PICTURE</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+      <!-- Preview -->
+      <div style="position:relative;flex-shrink:0;">
+        <div id="editAvPreview" style="width:72px;height:72px;border-radius:50%;background:${av.type==='image'?'transparent':av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'34px':av.type==='image'?'0':'22px'};border:3px solid var(--border);overflow:hidden;">
+          ${av.type==='image' ? `<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;">` : av.val}
         </div>
       </div>
+      <!-- Upload buttons -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="triggerAvatarUpload()" style="padding:8px 18px;border-radius:20px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">📁 Upload from Gallery</button>
+        <button onclick="triggerAvatarCamera()" style="padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-weight:700;font-size:12px;cursor:pointer;">📷 Take a Photo</button>
+        ${user.avatarImage ? `<button onclick="removeAvatarImage()" style="padding:6px 18px;border-radius:20px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-weight:600;font-size:11px;cursor:pointer;">✕ Remove Photo</button>` : ''}
+      </div>
+    </div>
+    <!-- Hidden avatar inputs -->
+    <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="onAvatarFileSelected(this)">
+    <input type="file" id="avatarCameraInput" accept="image/*" capture="user" style="display:none" onchange="onAvatarFileSelected(this)">
+
+    <!-- Or pick emoji -->
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'Space Mono',monospace;">OR CHOOSE AN EMOJI AVATAR</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;background:var(--bg3);padding:10px;border-radius:10px;" id="emojiAvatarPicker">
+      ${AVATAR_EMOJIS.map(e=>`<span onclick="pickProfileEmoji('${e}')" style="font-size:22px;cursor:pointer;padding:4px 5px;border-radius:6px;border:2px solid ${(user.avatarEmoji===e&&!user.avatarImage)?'var(--accent)':'transparent'};transition:all 0.1s;" data-emoji="${e}">${e}</span>`).join('')}
     </div>
 
-    <!-- Avatar color -->
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">AVATAR COLOR</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <!-- Avatar color (only when no image) -->
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;">AVATAR BACKGROUND COLOR</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
       ${['#0070f3','#e53935','#00a854','#f5a623','#9c27b0','#00bcd4','#ff6b35','#607d8b','#e91e63','#3f51b5'].map(c=>`
         <div onclick="pickAvatarColor('${c}')" data-color="${c}" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${(user.avatarColor||getColor(user.name))===c?'var(--text)':'transparent'};transition:all 0.15s;"></div>`).join('')}
     </div>
@@ -1912,29 +1958,98 @@ function showEditProfile() {
       <button class="btn-primary" style="flex:2;" onclick="saveProfile()">Save Profile ✓</button>
     </div>`;
 
-  // Bio character counter
   document.getElementById('ep_bio').addEventListener('input', function() {
     document.getElementById('bioCount').textContent = this.value.length + '/160';
   });
 }
 
-let _editingAvatarEmoji = null;
-let _editingAvatarColor = null;
+// ── IMAGE UPLOAD HELPERS ──
+let _editingAvatarEmoji  = null;
+let _editingAvatarColor  = null;
+let _editingAvatarImage  = null; // base64
+let _editingBannerImage  = null; // base64
+let _editingBannerColor  = null;
+
+function triggerAvatarUpload()  { document.getElementById('avatarFileInput').click(); }
+function triggerAvatarCamera()  { document.getElementById('avatarCameraInput').click(); }
+function triggerBannerUpload()  { document.getElementById('bannerFileInput').click(); }
+function triggerBannerCamera()  { document.getElementById('bannerCameraInput').click(); }
+
+function onAvatarFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { showToast('⚠️ Image too large. Max 3MB.', '#e53935'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    _editingAvatarImage = e.target.result;
+    _editingAvatarEmoji = null; // clear emoji if image chosen
+    // Update preview
+    const prev = document.getElementById('editAvPreview');
+    if (prev) {
+      prev.innerHTML = `<img src="${_editingAvatarImage}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      prev.style.fontSize = '0';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function onBannerFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('⚠️ Image too large. Max 5MB.', '#e53935'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    _editingBannerImage = e.target.result;
+    // Update banner preview area
+    const prev = document.getElementById('bannerPreview');
+    if (prev) { prev.style.background = `url(${_editingBannerImage}) center/cover no-repeat`; prev.style.zIndex = '0'; }
+    // Hide color row
+    const cr = document.getElementById('bannerColorRow');
+    if (cr) cr.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function pickBannerColor(color) {
+  _editingBannerColor = color;
+  _editingBannerImage = null;
+  document.querySelectorAll('#bannerColorRow div[onclick]').forEach(el => el.style.borderColor = 'transparent');
+  event.target.style.borderColor = 'var(--text)';
+  const prev = document.getElementById('bannerPreview');
+  if (prev) { prev.style.background = color; }
+}
+
+function removeAvatarImage() {
+  _editingAvatarImage = null;
+  const user = getUser();
+  saveUser({...user, avatarImage: null});
+  showEditProfile();
+}
+
+function removeBannerImage() {
+  _editingBannerImage = null;
+  const user = getUser();
+  saveUser({...user, bannerImage: null});
+  showEditProfile();
+}
 
 function pickProfileEmoji(emoji) {
   _editingAvatarEmoji = emoji;
+  _editingAvatarImage = null;
   document.querySelectorAll('#emojiAvatarPicker span').forEach(s => s.style.borderColor = 'transparent');
-  document.querySelector(`#emojiAvatarPicker span[data-emoji="${emoji}"]`).style.borderColor = 'var(--accent)';
+  const el = document.querySelector(`#emojiAvatarPicker span[data-emoji="${emoji}"]`);
+  if (el) el.style.borderColor = 'var(--accent)';
   const preview = document.getElementById('editAvPreview');
-  if (preview) { preview.textContent = emoji; preview.style.fontSize = '32px'; }
+  if (preview) { preview.innerHTML = emoji; preview.style.fontSize = '34px'; }
 }
 
 function pickAvatarColor(color) {
   _editingAvatarColor = color;
   document.querySelectorAll('[data-color]').forEach(el => el.style.borderColor = 'transparent');
-  document.querySelector(`[data-color="${color}"]`).style.borderColor = 'var(--text)';
+  const el = document.querySelector(`[data-color="${color}"]`);
+  if (el) el.style.borderColor = 'var(--text)';
   const preview = document.getElementById('editAvPreview');
-  if (preview) preview.style.background = color;
+  if (preview && !_editingAvatarImage) preview.style.background = color;
 }
 
 function saveProfile() {
@@ -1952,45 +2067,34 @@ function saveProfile() {
     location,
     website: website && !website.startsWith('http') ? 'https://'+website : website,
   };
-  if (_editingAvatarEmoji) updated.avatarEmoji = _editingAvatarEmoji;
-  if (_editingAvatarColor) updated.avatarColor = _editingAvatarColor;
+  if (_editingAvatarImage)  { updated.avatarImage = _editingAvatarImage; updated.avatarEmoji = null; }
+  if (_editingAvatarEmoji)  { updated.avatarEmoji = _editingAvatarEmoji; updated.avatarImage = null; }
+  if (_editingAvatarColor)  updated.avatarColor = _editingAvatarColor;
+  if (_editingBannerImage)  { updated.bannerImage = _editingBannerImage; updated.bannerColor = null; }
+  if (_editingBannerColor)  { updated.bannerColor = _editingBannerColor; updated.bannerImage = null; }
 
   saveUser(updated);
   _editingAvatarEmoji = null;
   _editingAvatarColor = null;
+  _editingAvatarImage = null;
+  _editingBannerImage = null;
+  _editingBannerColor = null;
   updateAvatars();
   renderPosts();
+  showToast('✅ Profile saved!', 'var(--green)');
+  renderProfileModal();
+}
 
-  // Show success toast
+function showToast(msg, color) {
   const toast = document.createElement('div');
-  toast.textContent = '✅ Profile saved!';
-  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;z-index:9999;';
+  toast.textContent = msg;
+  toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:${color};color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;z-index:9999;animation:fadeIn 0.2s ease;`;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
-
-  renderProfileModal();
+  setTimeout(() => toast.remove(), 2500);
 }
 
-// Banner color editor
-function editBanner() {
-  const user = getUser();
-  const colors = [
-    'linear-gradient(135deg,#0070f3,#00c6ff)',
-    'linear-gradient(135deg,#e53935,#ff6b35)',
-    'linear-gradient(135deg,#00a854,#00e5ff)',
-    'linear-gradient(135deg,#9c27b0,#e91e63)',
-    'linear-gradient(135deg,#f5a623,#ff6b35)',
-    'linear-gradient(135deg,#1a1a2e,#16213e)',
-    'linear-gradient(135deg,#0f3460,#533483)',
-    'linear-gradient(135deg,#2d6a4f,#52b788)',
-  ];
-  const current = user.bannerColor || colors[0];
-  const idx = colors.indexOf(current);
-  const next = colors[(idx + 1) % colors.length];
-  saveUser({...user, bannerColor: next});
-  renderProfileModal();
-}
-
+// Banner edit now opens showEditProfile instead of cycling colors
+function editBanner() { showEditProfile(); }
 function editAvatar() { showEditProfile(); }
 
 function setUsername() {
@@ -2008,8 +2112,14 @@ function updateAvatars() {
   const av   = getAvatarDisplay(user);
   const hdr  = document.getElementById('headerAvatar');
   const cmp  = document.getElementById('composeAv');
-  if (hdr) { hdr.textContent = av.val; hdr.style.background = av.bg; hdr.style.fontSize = av.type==='emoji' ? '16px' : '11px'; }
-  if (cmp) { cmp.textContent = av.val; cmp.style.background = av.bg; cmp.style.fontSize = av.type==='emoji' ? '14px' : '11px'; }
+  if (av.type === 'image') {
+    const imgHtml = `<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    if (hdr) { hdr.innerHTML = imgHtml; hdr.style.background = 'transparent'; hdr.style.padding = '0'; hdr.style.overflow = 'hidden'; }
+    if (cmp) { cmp.innerHTML = imgHtml; cmp.style.background = 'transparent'; cmp.style.padding = '0'; cmp.style.overflow = 'hidden'; }
+  } else {
+    if (hdr) { hdr.textContent = av.val; hdr.style.background = av.bg; hdr.style.fontSize = av.type==='emoji' ? '16px' : '11px'; hdr.style.overflow = ''; }
+    if (cmp) { cmp.textContent = av.val; cmp.style.background = av.bg; cmp.style.fontSize = av.type==='emoji' ? '14px' : '11px'; cmp.style.overflow = ''; }
+  }
 }
 
 // ── SETTINGS SYSTEM ──
