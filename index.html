@@ -98,8 +98,21 @@ header {
   scrollbar-width:none;
   height:100%;
   align-items:stretch;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(to right, transparent 0px, black 12px, black calc(100% - 32px), transparent 100%);
+  -webkit-mask-image:linear-gradient(to right, transparent 0px, black 12px, black calc(100% - 32px), transparent 100%);
 }
 .nav-tabs::-webkit-scrollbar { display:none; }
+/* Scroll hint arrows */
+.nav-tabs-wrap {
+  display:flex;
+  align-items:stretch;
+  flex:1;
+  min-width:0;
+  position:relative;
+  overflow:hidden;
+}
 
 .nav-tab {
   display:inline-flex;
@@ -547,7 +560,9 @@ header {
   </div>
 
   <!-- ── NAV TABS ── -->
-  <div class="nav-tabs">
+  <div class="nav-tabs-wrap">
+  <button id="navScrollLeft" onclick="document.querySelector('.nav-tabs').scrollBy({left:-200,behavior:'smooth'})" style="display:none;position:absolute;left:0;top:0;bottom:0;width:28px;background:linear-gradient(to right,var(--bg2),transparent);border:none;cursor:pointer;z-index:10;align-items:center;justify-content:center;color:var(--text3);font-size:14px;padding:0;flex-shrink:0;">‹</button>
+  <div class="nav-tabs" onscroll="updateNavArrows()">
 
     <button class="nav-tab active" onclick="switchTab(this,'feed')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
@@ -679,6 +694,8 @@ header {
       Options P&L
     </button>
 
+  </div>
+  <button id="navScrollRight" onclick="document.querySelector('.nav-tabs').scrollBy({left:200,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(to left,var(--bg2),transparent);border:none;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;padding:0;">›</button>
   </div>
 
   <!-- ── SEARCH ── -->
@@ -1004,20 +1021,25 @@ header {
   <!-- ═══════════════════════════════════════════ -->
   <div class="main-feed" id="page-paper" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📝 PAPER TRADING</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">PAPER TRADING</div>
+        <div id="ptMarketStatus" style="font-size:10px;font-family:'Space Mono',monospace;padding:3px 8px;border-radius:20px;"></div>
+      </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:13px;color:var(--accent);font-weight:700;">₹10,00,000</div>
-        <button onclick="resetPaperPortfolio()" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;">Reset</button>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">BALANCE</div>
+          <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:15px;color:var(--accent);font-weight:700;">₹10,00,000</div>
+        </div>
+        <button onclick="resetPaperPortfolio()" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;">Reset</button>
       </div>
     </div>
-    <!-- Sub tabs -->
     <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <button onclick="switchPaperTab('trade',this)" id="pt_trade" style="flex:1;padding:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Trade</button>
-      <button onclick="switchPaperTab('holdings',this)" id="pt_holdings" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Holdings</button>
-      <button onclick="switchPaperTab('history',this)" id="pt_history" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">History</button>
-      <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">🏆 Board</button>
+      <button onclick="switchPaperTab('trade',this)" id="pt_trade" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Trade</button>
+      <button onclick="switchPaperTab('holdings',this)" id="pt_holdings" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Holdings</button>
+      <button onclick="switchPaperTab('history',this)" id="pt_history" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">History</button>
+      <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">🏆 Board</button>
     </div>
-    <div class="feed-scroll" id="paperBody"></div>
+    <div class="feed-scroll" id="paperBody" style="padding:0;"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
@@ -1376,6 +1398,8 @@ header {
         <button onclick="setChartInterval('1Y',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">1Y</button>
         <button onclick="setChartInterval('ALL',this)" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">ALL</button>
       </div>
+      <!-- Watchlist Star Button -->
+      <button id="sdWatchlistBtn" onclick="toggleModalWatchlist()" title="Add to Watchlist" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;font-size:18px;margin-right:4px;">☆</button>
       <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
     </div>
     <!-- TradingView Chart -->
@@ -1832,7 +1856,43 @@ function loadTVChart(sym, interval) {
     </iframe>`;
 }
 
+// ── MODAL WATCHLIST STAR ──
+let _modalSym = '', _modalName = '', _modalType = 'stock';
+
+function updateModalStarBtn() {
+  const btn = document.getElementById('sdWatchlistBtn');
+  if (!btn) return;
+  const wls = getWatchlists();
+  const activeWl = wls.find(w => w.id === getActiveWlId()) || wls[0];
+  const inWl = activeWl?.items?.some(i => i.sym === _modalSym);
+  btn.innerHTML = inWl ? '★' : '☆';
+  btn.style.color = inWl ? 'var(--gold)' : 'var(--text3)';
+  btn.style.borderColor = inWl ? 'var(--gold)' : 'var(--border)';
+  btn.style.background = inWl ? 'rgba(245,166,35,0.1)' : 'var(--bg3)';
+  btn.title = inWl ? 'Remove from Watchlist' : 'Add to Watchlist';
+}
+
+function toggleModalWatchlist() {
+  const wls = getWatchlists();
+  const activeWl = wls.find(w => w.id === getActiveWlId()) || wls[0];
+  if (!activeWl) { showToast('Create a watchlist first', 'var(--gold)'); return; }
+  const inWl = activeWl.items?.some(i => i.sym === _modalSym);
+  if (inWl) {
+    removeFromWatchlist(activeWl.id, _modalSym);
+  } else {
+    addToWatchlist(activeWl.id, _modalSym, _modalName, _modalType);
+  }
+  updateModalStarBtn();
+}
+
 async function openStockModal(sym, name) {
+  // Track current modal sym/name/type for watchlist
+  _modalSym  = sym;
+  _modalName = name || sym;
+  const cryptoMatch = STATIC_CRYPTO.find(s => s.sym === sym);
+  const commMatch   = STATIC_COMMODITIES.find(s => s.sym === sym);
+  _modalType = cryptoMatch ? 'crypto' : commMatch ? 'commodities' : 'stocks';
+  updateModalStarBtn();
   document.getElementById('sdSym').textContent = sym;
   document.getElementById('sdName').textContent = name;
   document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:40px;"><div class="loading-spin"></div><div style="color:var(--text3);font-size:12px;margin-top:12px;">Loading technical analysis…</div></div>`;
@@ -2218,8 +2278,21 @@ function renderPosts() {
   const container = document.getElementById('postsContainer');
   if (!filtered.length) {
     const user = getUser();
-    const emptyMsg = f === 'foryou' && (!user?.interests?.length) ? 'Sign up and pick interests to get a personalised feed!' : 'No posts yet';
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">${emptyMsg}</div><div>Be the first to share a trade idea!</div></div>`;
+    if (f === 'foryou' && !user?.interests?.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Personalise your feed</div><div>Sign up and pick your interests to get a tailored feed.</div></div>`;
+    } else {
+      container.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">The pit is empty — be first</div>
+        <div style="max-width:300px;margin:0 auto 16px;">Share a trade idea, chart analysis, or market take. Use # for hashtags.</div>
+        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
+          <span style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--text3);">#nifty50</span>
+          <span style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--text3);">#banknifty</span>
+          <span style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--text3);">#swing</span>
+          <span style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--text3);">#crypto</span>
+        </div>
+      </div>`;
+    }
     return;
   }
   container.innerHTML = filtered.slice().reverse().map(p => {
@@ -2561,7 +2634,7 @@ function renderLeaderboard() {
   const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const ranks = ['gold','silver','bronze','',''];
   const el = document.getElementById('leaderboard');
-  if (!sorted.length) { el.innerHTML = `<div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div>`; return; }
+  if (!sorted.length) { el.innerHTML = `<div style="color:var(--text3);font-size:11px;padding:4px 0;">No posts yet — be first!</div>`; return; }
   const me = getUser();
   el.innerHTML = sorted.map(([name,score],i)=>`
     <div class="lb-item">
@@ -4854,8 +4927,27 @@ async function runPatternScan(patternId, assetType, btn) {
 // ══════════════════════════════════════════
 //  WATCHLIST
 // ══════════════════════════════════════════
-const WL_KEY        = 'mp_watchlists';
+
 const WL_ACTIVE_KEY = 'mp_wl_active';
+
+// ── WATCHLIST TYPE MIGRATION — fix items saved as 'stock'/'commodity' (old bug) ──
+const WL_KEY = 'mp_watchlists';
+
+(function migrateWatchlistTypes() {
+  try {
+    const raw = localStorage.getItem(WL_KEY);
+    if (!raw) return;
+    const wls = JSON.parse(raw);
+    let changed = false;
+    wls.forEach(wl => {
+      (wl.items || []).forEach(item => {
+        if (item.type === 'stock')     { item.type = 'stocks';      changed = true; }
+        if (item.type === 'commodity') { item.type = 'commodities'; changed = true; }
+      });
+    });
+    if (changed) localStorage.setItem(WL_KEY, JSON.stringify(wls));
+  } catch(e) {}
+})();
 
 // ── Preset asset lists for search ──
 const WL_STOCKS = [
@@ -5133,10 +5225,28 @@ async function fetchWlPrice(sym, type) {
     updateWlRowPrice(sym, cached);
     return;
   }
+
+  // Show static data immediately while waiting for live
+  const allAssets = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES];
+  const staticAsset = allAssets.find(s => s.sym === sym);
+  if (staticAsset) {
+    const chgN = parseFloat(staticAsset.chg);
+    const staticData = {
+      price: staticAsset.price,
+      chg: staticAsset.chg,
+      up: chgN >= 0,
+      ts: 0  // ts=0 so live fetch still happens
+    };
+    _wlPriceCache[sym] = staticData;
+    updateWlRowPrice(sym, staticData);
+  }
+
+  // Then try live API
   try {
-    const r = await fetch(`${API_BASE}/quote/${sym}`);
+    const r = await fetch(`${API_BASE}/quote/${sym}`, { signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const d = await r.json();
+    if (!d.price) return;
     const data = { price: d.price, chg: d.chg, up: d.up, ts: Date.now() };
     _wlPriceCache[sym] = data;
     updateWlRowPrice(sym, data);
@@ -5146,12 +5256,25 @@ async function fetchWlPrice(sym, type) {
 function updateWlRowPrice(sym, data) {
   const priceEl = document.getElementById('wlp_' + sym);
   const chgEl   = document.getElementById('wlc_' + sym);
-  const cur     = (data.chg||'').includes('$') ? '$' : '';
-  if (priceEl) priceEl.textContent = (data.price ? (data.price >= 100 ? '₹' : '$') + data.price : '—');
+  if (!data.price) return;
+  const isCrypto = !!STATIC_CRYPTO.find(s => s.sym === sym);
+  const isComm   = !!STATIC_COMMODITIES.find(s => s.sym === sym);
+  const cur      = (isCrypto || isComm) ? '$' : '₹';
+  const priceStr = cur + Number(data.price).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  if (priceEl) priceEl.textContent = priceStr;
   if (chgEl)   { chgEl.textContent = data.chg || '—'; chgEl.style.color = data.up ? 'var(--green)' : 'var(--red)'; }
 }
 
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Auto-refresh paper holdings P&L every 30s ──
+setInterval(() => {
+  if (_ptTab === 'holdings') {
+    const el = document.getElementById('paperBody');
+    const d  = getPaperData();
+    if (el && d) renderPtHoldings(el, d);
+  }
+}, 30000);
 
 // ── Refresh prices every 60s when on watchlist tab ──
 setInterval(() => {
@@ -5655,7 +5778,21 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── INIT ──
+
+// ── FEED starts empty — real users post real content ──
+(function clearFakePosts() {
+  // Remove old seeded fake posts if present
+  if (localStorage.getItem('mp_seeded_v2')) {
+    const posts = JSON.parse(localStorage.getItem('mp_posts') || '[]');
+    const fakeIds = ['d1','d2','d3','d4','d5','d6','d7'];
+    const real = posts.filter(p => !fakeIds.includes(p.id));
+    localStorage.setItem('mp_posts', JSON.stringify(real));
+    localStorage.removeItem('mp_seeded_v2');
+  }
+})();
+
+// ── INIT — clear old fake calls from localStorage ──
+localStorage.removeItem && ['mp_trade_calls'].forEach(k=>{ try { const d=JSON.parse(localStorage.getItem(k)||'[]'); if(d.some&&d.some(x=>['c1','c2','c3','c4','c5','c6'].includes(x.id))) localStorage.removeItem(k); }catch(e){} });
 updateAvatars();
 renderPosts();
 renderTrendingTags();
@@ -5678,7 +5815,7 @@ function tickClock() {
   }
 }
 setInterval(tickClock, 1000);
-// ── NEWS (Google News RSS via corsproxy.io) ──
+// ── NEWS (Google News RSS via multi-proxy fallback) ──
 let _newsLoaded = {};
 
 const NEWS_URLS = {
@@ -5688,6 +5825,28 @@ const NEWS_URLS = {
   crypto:      'https://news.google.com/rss/search?q=bitcoin+crypto+cryptocurrency+today&hl=en-IN&gl=IN&ceid=IN:en',
   commodities: 'https://news.google.com/rss/search?q=gold+price+crude+oil+india+today&hl=en-IN&gl=IN&ceid=IN:en',
 };
+
+// Multiple CORS proxies — tries each in order until one works
+const CORS_PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`,
+];
+
+async function fetchViaProxy(url) {
+  for (const makeProxyUrl of CORS_PROXIES) {
+    try {
+      const proxyUrl = makeProxyUrl(url);
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(7000) });
+      if (!res.ok) continue;
+      // allorigins wraps response in JSON {contents: '...'}
+      const text = proxyUrl.includes('allorigins') ? (await res.json()).contents : await res.text();
+      if (text && text.includes('<item>')) return text;
+    } catch(e) { continue; }
+  }
+  return null;
+}
 
 function timeAgo(dateStr) {
   if (!dateStr) return '';
@@ -5717,14 +5876,13 @@ async function loadNews(cat, btn) {
     return;
   }
 
-  container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching news...</div></div>';
+  container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching latest news...</div></div>';
 
   const rssUrl = NEWS_URLS[cat];
-  const proxy  = 'https://corsproxy.io/?' + encodeURIComponent(rssUrl);
 
   try {
-    const res  = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-    const text = await res.text();
+    const text = await fetchViaProxy(rssUrl);
+    if (!text) throw new Error('all proxies failed');
     const parser = new DOMParser();
     const xml    = parser.parseFromString(text, 'text/xml');
     const items  = Array.from(xml.querySelectorAll('item')).slice(0,14).map(item => {
@@ -5739,7 +5897,13 @@ async function loadNews(cat, btn) {
     _newsLoaded[cat] = { ts: Date.now(), items };
     renderNews(items);
   } catch(e) {
-    container.innerHTML = '<div style="text-align:center;padding:48px;"><div style="font-size:32px;margin-bottom:12px;">📭</div><div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div><div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check internet and try again</div><button onclick="delete _newsLoaded[\'' + cat + '\'];loadNews(\'' + cat + '\',document.getElementById(\'nc_' + cat + '\'))" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button></div>';
+    container.innerHTML = `<div style="text-align:center;padding:48px;">
+      <div style="font-size:32px;margin-bottom:12px;">📡</div>
+      <div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">News requires an internet connection. Try refreshing.</div>
+      <button onclick="delete _newsLoaded['${cat}'];loadNews('${cat}',document.getElementById('nc_${cat}'))" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>
+      <div style="margin-top:16px;"><a href="https://economictimes.indiatimes.com/markets" target="_blank" style="color:var(--accent);font-size:12px;">Open Economic Times ↗</a></div>
+    </div>`;
   }
 }
 
@@ -5811,237 +5975,579 @@ function addPaperHistory(entry) {
 
 let _ptTab = 'trade';
 let _ptOrderType = 'BUY';
+let _ptSelectedSym = null;
+let _ptSelectedAsset = null;
+let _ptSearchQ = '';
+
+// ── Live USD/INR exchange rate ──
+let _usdInr = 84.0;
+let _usdInrLastFetch = 0;
+
+async function fetchUsdInr() {
+  if (Date.now() - _usdInrLastFetch < 300000) return;
+  try {
+    const r = await fetch(API_BASE + '/quote/USDINR', { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const d = await r.json();
+      if (d.price && d.price > 70 && d.price < 100) {
+        _usdInr = d.price; _usdInrLastFetch = Date.now(); return;
+      }
+    }
+  } catch(e) {}
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=INR', { signal: AbortSignal.timeout(5000) });
+    if (r.ok) { const d = await r.json(); if (d.rates && d.rates.INR) { _usdInr = d.rates.INR; _usdInrLastFetch = Date.now(); } }
+  } catch(e) {}
+}
+
+function toInr(usdAmt) { return usdAmt * _usdInr; }
+function fmtInr(amt)   { return '\u20b9' + Math.round(amt).toLocaleString('en-IN'); }
+
+// Market open check
+function getMarketStatus() {
+  const now = new Date();
+  // IST = UTC+5:30
+  const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+  const day = ist.getUTCDay(); // 0=Sun, 6=Sat
+  const h = ist.getUTCHours();
+  const m = ist.getUTCMinutes();
+  const mins = h * 60 + m;
+  const weekday = day >= 1 && day <= 5;
+
+  return {
+    nse:    weekday && mins >= 555 && mins < 930,   // 9:15–15:30
+    crypto: true,                                     // 24x7
+    commodity: weekday && (
+      (mins >= 600 && mins < 1440) ||                 // 10:00 AM IST – midnight
+      (mins >= 0   && mins < 23*60+30)               // up to 11:30 PM
+    ),
+    istTime: `${String(ist.getUTCHours()).padStart(2,'0')}:${String(ist.getUTCMinutes()).padStart(2,'0')} IST`
+  };
+}
+
+function isMarketOpenForSym(sym) {
+  const st = getMarketStatus();
+  const isCrypto = !!STATIC_CRYPTO.find(s => s.sym === sym);
+  const isComm   = !!STATIC_COMMODITIES.find(s => s.sym === sym);
+  if (isCrypto) return true;
+  if (isComm)   return st.commodity;
+  return st.nse;
+}
+
+function marketStatusLabel(sym) {
+  const open = isMarketOpenForSym(sym);
+  const isCrypto = !!STATIC_CRYPTO.find(s => s.sym === sym);
+  if (isCrypto) return { open: true, label: '24×7 Open', color: 'var(--green)' };
+  if (open)     return { open: true, label: '● Market Open', color: 'var(--green)' };
+  return { open: false, label: '○ Market Closed', color: 'var(--red)' };
+}
+
+function updatePtMarketBadge() {
+  const el = document.getElementById('ptMarketStatus');
+  if (!el) return;
+  const st = getMarketStatus();
+  if (st.nse) {
+    el.textContent = '● NSE Open';
+    el.style.cssText = 'font-size:10px;font-family:Space Mono,monospace;padding:3px 8px;border-radius:20px;background:rgba(0,168,84,0.12);color:var(--green);';
+  } else {
+    el.textContent = '○ NSE Closed  · Crypto 24×7';
+    el.style.cssText = 'font-size:10px;font-family:Space Mono,monospace;padding:3px 8px;border-radius:20px;background:rgba(229,57,53,0.1);color:var(--text3);';
+  }
+}
 
 function switchPaperTab(tab, btn) {
   _ptTab = tab;
   ['trade','holdings','history','leaderboard'].forEach(t => {
     const b = document.getElementById('pt_' + t);
-    if (b) { b.style.background = t===tab?'var(--accent)':'transparent'; b.style.color = t===tab?'#fff':'var(--text3)'; }
+    if (!b) return;
+    b.style.color = t === tab ? 'var(--accent)' : 'var(--text3)';
+    b.style.borderBottom = t === tab ? '2px solid var(--accent)' : '2px solid transparent';
   });
   renderPaperTrade();
 }
 
 function renderPaperTrade() {
+  fetchUsdInr();
+  updatePtMarketBadge();
   const d = getPaperData();
-  const el = document.getElementById('paperBody');
   const balEl = document.getElementById('ptBalance');
   if (balEl) balEl.textContent = '₹' + d.balance.toLocaleString('en-IN', {maximumFractionDigits:0});
+  const el = document.getElementById('paperBody');
   if (!el) return;
 
   if (_ptTab === 'trade') {
-    const allAssets = [
-      ...STATIC_STOCKS.map(s => ({...s, type:'stock', cur:'₹'})),
-      ...STATIC_CRYPTO.map(s => ({...s, type:'crypto', cur:'$'})),
-      ...STATIC_COMMODITIES.map(s => ({...s, type:'commodity', cur:'$'})),
-    ];
-    el.innerHTML = `
-      <div class="trade-form">
-        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">SELECT ASSET</div>
-        <select id="pt_asset" onchange="updatePtPrice()">
-          <optgroup label="🏦 Stocks (NSE)">${STATIC_STOCKS.map(s=>`<option value="${s.sym}" data-price="${s.price}" data-cur="₹">${s.sym} — ${s.name}</option>`).join('')}</optgroup>
-          <optgroup label="₿ Crypto">${STATIC_CRYPTO.map(s=>`<option value="${s.sym}" data-price="${s.price}" data-cur="$">${s.sym} — ${s.name}</option>`).join('')}</optgroup>
-          <optgroup label="🛢️ Commodities">${STATIC_COMMODITIES.map(s=>`<option value="${s.sym}" data-price="${s.price}" data-cur="$">${s.sym} — ${s.name}</option>`).join('')}</optgroup>
-        </select>
-
-        <div style="display:flex;gap:8px;">
-          <button onclick="setPtOrderType('BUY',this)" id="pt_buy_btn" class="buy-btn" style="flex:1;">BUY</button>
-          <button onclick="setPtOrderType('SELL',this)" id="pt_sell_btn" class="sell-btn" style="flex:1;opacity:0.4;">SELL</button>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div>
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'Space Mono',monospace;">PRICE</div>
-            <input type="number" id="pt_price" style="width:100%;box-sizing:border-box;" placeholder="Price">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'Space Mono',monospace;">QUANTITY</div>
-            <input type="number" id="pt_qty" min="1" value="1" style="width:100%;box-sizing:border-box;" oninput="updatePtTotal()">
-          </div>
-        </div>
-
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:12px;color:var(--text3);">Total Value</span>
-          <span id="pt_total" style="font-size:16px;font-weight:800;color:var(--accent);">₹0</span>
-        </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:12px;color:var(--text3);">Available Balance</span>
-          <span style="font-size:14px;font-weight:700;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
-        </div>
-        <div id="pt_msg" style="font-size:12px;text-align:center;min-height:16px;"></div>
-        <button onclick="executePaperTrade()" style="padding:14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;">
-          Execute Trade
-        </button>
-      </div>`;
-    updatePtPrice();
-
+    renderPtTrade(el, d);
   } else if (_ptTab === 'holdings') {
-    const holdings = Object.entries(d.holdings).filter(([,h]) => h.qty > 0);
-    if (!holdings.length) {
-      el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);"><div style="font-size:48px;margin-bottom:12px;">📭</div><div>No holdings yet. Make your first trade!</div></div>`;
-      return;
-    }
-    const totalInvested = holdings.reduce((a,[,h]) => a + h.avgPrice * h.qty, 0);
-    const currentValue  = holdings.reduce((a,[sym,h]) => {
-      const p = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===sym)?.price || h.avgPrice;
-      return a + p * h.qty;
-    }, 0);
-    const pnl = currentValue - totalInvested;
-    const pnlPct = totalInvested > 0 ? ((pnl/totalInvested)*100).toFixed(2) : 0;
-
-    el.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px;">
-        <div class="pt-stat"><div class="pt-stat-label">INVESTED</div><div class="pt-stat-val" style="font-size:15px;">₹${totalInvested.toLocaleString('en-IN',{maximumFractionDigits:0})}</div></div>
-        <div class="pt-stat"><div class="pt-stat-label">CURRENT</div><div class="pt-stat-val" style="font-size:15px;color:var(--accent);">₹${currentValue.toLocaleString('en-IN',{maximumFractionDigits:0})}</div></div>
-        <div class="pt-stat"><div class="pt-stat-label">P&L</div><div class="pt-stat-val" style="font-size:15px;color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}₹${Math.abs(pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}<br><span style="font-size:11px;">${pnl>=0?'+':''}${pnlPct}%</span></div></div>
-      </div>
-      ${holdings.map(([sym,h]) => {
-        const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===sym);
-        const cur   = asset?.currency || '₹';
-        const ltp   = asset?.price || h.avgPrice;
-        const pl    = (ltp - h.avgPrice) * h.qty;
-        const plPct = ((ltp - h.avgPrice)/h.avgPrice*100).toFixed(2);
-        return `<div class="pt-holding-row">
-          <div style="width:40px;height:40px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;">${sym.slice(0,4)}</div>
-          <div style="flex:1;">
-            <div style="font-weight:800;font-size:14px;">${sym}</div>
-            <div style="font-size:11px;color:var(--text3);">Avg: ${cur}${h.avgPrice.toLocaleString()} · Qty: ${h.qty}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:700;">${cur}${ltp.toLocaleString()}</div>
-            <div style="font-size:11px;font-weight:700;color:${pl>=0?'var(--green)':'var(--red)'};">${pl>=0?'+':''}₹${Math.abs(pl).toFixed(0)} (${pl>=0?'+':''}${plPct}%)</div>
-          </div>
-          <button onclick="sellPaperHolding('${sym}')" class="sell-btn" style="padding:5px 10px;font-size:11px;border-radius:6px;">SELL</button>
-        </div>`;
-      }).join('')}`;
-
+    renderPtHoldings(el, d);
   } else if (_ptTab === 'history') {
-    const h = getPaperHistory();
-    if (!h.length) { el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">No trade history yet.</div>`; return; }
-    el.innerHTML = `<div style="padding:16px;">${h.map(t => `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;">
-        <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;background:${t.type==='BUY'?'rgba(0,168,84,0.15)':'rgba(229,57,53,0.15)'};color:${t.type==='BUY'?'var(--green)':'var(--red)'};">${t.type}</span>
-        <div style="flex:1;">
-          <div style="font-weight:700;">${t.sym} × ${t.qty}</div>
-          <div style="font-size:11px;color:var(--text3);">${t.ts}</div>
-        </div>
-        <div style="text-align:right;font-weight:700;color:${t.type==='BUY'?'var(--red)':'var(--green)'};">${t.type==='BUY'?'-':'+'} ₹${(t.price*t.qty).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
-      </div>`).join('')}</div>`;
-
+    renderPtHistory(el);
   } else if (_ptTab === 'leaderboard') {
-    // Simulated leaderboard with the user's portfolio
-    const d2 = getPaperData();
-    const holdings2 = Object.entries(d2.holdings).filter(([,h])=>h.qty>0);
-    const invested2 = holdings2.reduce((a,[,h])=>a+h.avgPrice*h.qty,0);
-    const current2  = holdings2.reduce((a,[sym,h])=>{
-      const p=[...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===sym)?.price||h.avgPrice;
-      return a+p*h.qty;
-    },0);
-    const myPnl  = current2 - invested2;
-    const myPct  = invested2>0?((myPnl/invested2)*100).toFixed(2):0;
-    const fakeBoard = [
-      {name:'TradingHawk',pnl:48230,pct:4.82,trades:23},
-      {name:'BullRider99',pnl:32100,pct:3.21,trades:17},
-      {name:'NiftyKing',pnl:28750,pct:2.87,trades:31},
-      {name:'AlgoTrader',pnl:19800,pct:1.98,trades:12},
-      {name:'SwingMaster',pnl:15200,pct:1.52,trades:8},
-    ];
-    const user = getUser();
-    if (user && myPct != 0) fakeBoard.push({name:user.displayName||user.name,pnl:myPnl,pct:parseFloat(myPct),trades:getPaperHistory().length,isMe:true});
-    fakeBoard.sort((a,b)=>b.pnl-a.pnl);
-    el.innerHTML = `<div style="padding:16px;">
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">This week's top paper traders</div>
-      ${fakeBoard.map((t,i)=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${t.isMe?'rgba(0,112,243,0.06)':'var(--bg2)'};border:${t.isMe?'1.5px solid var(--accent)':'1px solid var(--border)'};border-radius:12px;margin-bottom:8px;">
-          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:800;color:${i===0?'#f5a623':i===1?'var(--text2)':i===2?'var(--accent2)':'var(--text3)'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-          <div style="flex:1;"><div style="font-weight:700;">${t.name}${t.isMe?' (You)':''}</div><div style="font-size:11px;color:var(--text3);">${t.trades} trades</div></div>
-          <div style="text-align:right;"><div style="font-weight:800;color:${t.pnl>=0?'var(--green)':'var(--red)'};">+₹${Math.abs(t.pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}</div><div style="font-size:11px;font-weight:700;color:${t.pct>=0?'var(--green)':'var(--red)'};">+${t.pct}%</div></div>
-        </div>`).join('')}
-    </div>`;
+    renderPtLeaderboard(el, d);
   }
 }
 
-function setPtOrderType(type, btn) {
+// ── All assets list for search ──
+function getAllPtAssets() {
+  return [
+    ...STATIC_STOCKS.map(s => ({...s, assetType:'stock', cur:'₹', group:'NSE Stocks'})),
+    ...STATIC_CRYPTO.map(s => ({...s, assetType:'crypto', cur:'$', group:'Crypto'})),
+    ...STATIC_COMMODITIES.map(s => ({...s, assetType:'commodity', cur:'$', group:'Commodities'})),
+  ];
+}
+
+function renderPtTrade(el, d) {
+  const assets = getAllPtAssets();
+  const asset  = _ptSelectedAsset || assets[0];
+  const st     = marketStatusLabel(asset.sym);
+  const holding = d.holdings[asset.sym];
+  const maxSell = holding?.qty || 0;
+  const isCrypto = asset.assetType === 'crypto';
+  const isComm   = asset.assetType === 'commodity';
+  const cur = (isCrypto || isComm) ? '$' : '₹';
+
+  // For paper trading — always allow regardless of market hours (it's paper!)
+  // but show the market status as info
+
+  fetchUsdInr(); // ensure rate is fresh
+  el.innerHTML = `
+  <div style="padding:16px;max-width:480px;margin:0 auto;">
+
+    <!-- Asset Search -->
+    <div style="position:relative;margin-bottom:16px;">
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1px;">SEARCH ASSET</div>
+      <input id="ptAssetSearch" class="form-input" placeholder="Search stocks, crypto, commodities…" autocomplete="off"
+        style="padding-right:36px;"
+        oninput="onPtSearch(this.value)"
+        onfocus="onPtSearch(this.value)"
+        value="${_ptSearchQ}">
+      <div id="ptSearchDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;z-index:100;max-height:240px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15);margin-top:4px;"></div>
+    </div>
+
+    <!-- Selected Asset Card -->
+    <div id="ptAssetCard" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="document.getElementById('ptAssetSearch').focus()">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${asset.sym.slice(0,4)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:15px;">${asset.sym}</div>
+        <div style="font-size:11px;color:var(--text3);">${asset.name} · ${asset.group}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:800;font-size:17px;">${cur}${Number(asset.price).toLocaleString()}</div>
+        <div style="font-size:12px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '—'}</div>
+      </div>
+    </div>
+
+    <!-- Market status info -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-size:11px;font-weight:700;color:${st.color};">${st.label}</span>
+      <span style="font-size:10px;color:var(--text3);">${getMarketStatus().istTime}</span>
+    </div>
+
+    <!-- BUY / SELL toggle -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;">
+      <button id="ptBuyBtn" onclick="setPtOrder('BUY')"
+        style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
+        background:${_ptOrderType==='BUY'?'var(--green)':'var(--bg3)'};
+        color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};">
+        ▲ BUY
+      </button>
+      <button id="ptSellBtn" onclick="setPtOrder('SELL')"
+        style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
+        background:${_ptOrderType==='SELL'?'var(--red)':'var(--bg3)'};
+        color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};">
+        ▼ SELL
+      </button>
+    </div>
+
+    <!-- Price + Qty inputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:5px;letter-spacing:0.5px;">PRICE (${cur})</div>
+        <input type="number" id="ptPrice" class="form-input" style="margin:0;font-weight:700;font-size:15px;"
+          value="${asset.price}" oninput="ptCalcTotal()" step="0.01">
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:5px;letter-spacing:0.5px;">QUANTITY</div>
+        <input type="number" id="ptQty" class="form-input" style="margin:0;font-weight:700;font-size:15px;"
+          value="1" min="1" oninput="ptCalcTotal()">
+      </div>
+    </div>
+
+    <!-- Quick qty buttons -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})" style="flex:1;padding:6px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;">${n}</button>`).join('')}
+    </div>
+
+    <!-- Summary box -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--text3);">Order Value</span>
+        <div style="text-align:right;">
+          <div id="ptTotal" style="font-size:15px;font-weight:800;color:var(--accent);">—</div>
+          <div id="ptTotalInr" style="font-size:10px;color:var(--text3);"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--text3);">Available Balance</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+      </div>
+      ${maxSell > 0 ? `<div style="display:flex;justify-content:space-between;">
+        <span style="font-size:12px;color:var(--text3);">Holdings in ${asset.sym}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text2);">${maxSell} units</span>
+      </div>` : ''}
+    </div>
+
+    <!-- Execute button -->
+    <button onclick="executePaperTrade()" id="ptExecBtn"
+      style="width:100%;padding:15px;border-radius:12px;border:none;
+      background:${_ptOrderType==='BUY'?'var(--green)':'var(--red)'};
+      color:#fff;font-weight:800;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;
+      transition:all 0.15s;letter-spacing:0.5px;">
+      ${_ptOrderType==='BUY'?'▲ BUY':'▼ SELL'} ${asset.sym}
+    </button>
+
+    <div id="ptMsg" style="font-size:12px;text-align:center;min-height:18px;margin-top:10px;font-weight:600;"></div>
+  </div>`;
+
+  ptCalcTotal();
+
+  // Close search dropdown on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function ptDropClose(e) {
+      const drop = document.getElementById('ptSearchDrop');
+      const inp  = document.getElementById('ptAssetSearch');
+      if (drop && !drop.contains(e.target) && e.target !== inp) {
+        drop.style.display = 'none';
+      }
+    }, { once: false });
+  }, 100);
+}
+
+function onPtSearch(q) {
+  _ptSearchQ = q;
+  const drop = document.getElementById('ptSearchDrop');
+  if (!drop) return;
+  const assets = getAllPtAssets();
+  const ql = q.toLowerCase().trim();
+  const filtered = ql
+    ? assets.filter(a => a.sym.toLowerCase().includes(ql) || a.name.toLowerCase().includes(ql)).slice(0,10)
+    : assets.slice(0,12);
+
+  if (!filtered.length) { drop.style.display = 'none'; return; }
+
+  drop.innerHTML = filtered.map(a => {
+    const chgN = parseFloat(a.chg) || 0;
+    const cur  = (a.assetType==='crypto'||a.assetType==='commodity') ? '$' : '₹';
+    const st   = isMarketOpenForSym(a.sym);
+    return `<div onclick="selectPtAsset('${a.sym}')"
+      style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${a.sym.slice(0,4)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;">${a.sym}</div>
+        <div style="font-size:10px;color:var(--text3);">${a.name} · <span style="color:${st?'var(--green)':'var(--text3)'};">${a.group}</span></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;font-size:13px;">${cur}${Number(a.price).toLocaleString()}</div>
+        <div style="font-size:10px;font-weight:700;color:${chgN>=0?'var(--green)':'var(--red)'};">${a.chg||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function selectPtAsset(sym) {
+  const assets = getAllPtAssets();
+  _ptSelectedAsset = assets.find(a => a.sym === sym);
+  _ptSelectedSym   = sym;
+  _ptSearchQ = '';
+  const drop = document.getElementById('ptSearchDrop');
+  if (drop) drop.style.display = 'none';
+  renderPaperTrade();
+}
+
+function setPtOrder(type) {
   _ptOrderType = type;
-  const buyBtn = document.getElementById('pt_buy_btn');
-  const sellBtn = document.getElementById('pt_sell_btn');
-  if (buyBtn)  { buyBtn.style.opacity  = type==='BUY'?'1':'0.4'; }
-  if (sellBtn) { sellBtn.style.opacity = type==='SELL'?'1':'0.4'; }
+  // Update buttons visually
+  const buyBtn  = document.getElementById('ptBuyBtn');
+  const sellBtn = document.getElementById('ptSellBtn');
+  const execBtn = document.getElementById('ptExecBtn');
+  if (buyBtn)  { buyBtn.style.background  = type==='BUY'?'var(--green)':'var(--bg3)';  buyBtn.style.color  = type==='BUY'?'#fff':'var(--text3)'; }
+  if (sellBtn) { sellBtn.style.background = type==='SELL'?'var(--red)':'var(--bg3)';   sellBtn.style.color = type==='SELL'?'#fff':'var(--text3)'; }
+  if (execBtn) { execBtn.style.background = type==='BUY'?'var(--green)':'var(--red)';  execBtn.textContent = (type==='BUY'?'▲ BUY':'▼ SELL') + ' ' + (_ptSelectedAsset?.sym || ''); }
 }
 
-function updatePtPrice() {
-  const sel = document.getElementById('pt_asset');
-  const inp = document.getElementById('pt_price');
-  if (!sel || !inp) return;
-  const opt = sel.options[sel.selectedIndex];
-  inp.value = opt?.dataset?.price || '';
-  updatePtTotal();
+function ptSetQty(n) {
+  const inp = document.getElementById('ptQty');
+  if (inp) { inp.value = n; ptCalcTotal(); }
 }
 
-function updatePtTotal() {
-  const price = parseFloat(document.getElementById('pt_price')?.value) || 0;
-  const qty   = parseInt(document.getElementById('pt_qty')?.value) || 0;
+function ptCalcTotal() {
+  const price = parseFloat(document.getElementById('ptPrice')?.value) || 0;
+  const qty   = parseFloat(document.getElementById('ptQty')?.value)  || 0;
   const total = price * qty;
-  const el    = document.getElementById('pt_total');
-  if (el) el.textContent = '₹' + total.toLocaleString('en-IN', {maximumFractionDigits:2});
+  const asset = _ptSelectedAsset || getAllPtAssets()[0];
+  const isUsd = asset.assetType==='crypto' || asset.assetType==='commodity';
+  const cur   = isUsd ? '$' : '\u20b9';
+  const el    = document.getElementById('ptTotal');
+  const elInr = document.getElementById('ptTotalInr');
+  if (el) el.textContent = cur + total.toLocaleString('en-IN', {maximumFractionDigits: isUsd ? 2 : 0});
+  if (elInr && isUsd && total > 0) {
+    elInr.textContent = '\u2248 \u20b9' + Math.round(toInr(total)).toLocaleString('en-IN') + ' (at \u20b9' + _usdInr.toFixed(1) + '/$)';
+  } else if (elInr) {
+    elInr.textContent = '';
+  }
 }
 
 function executePaperTrade() {
-  const sel   = document.getElementById('pt_asset');
-  const sym   = sel?.value;
-  const price = parseFloat(document.getElementById('pt_price')?.value);
-  const qty   = parseInt(document.getElementById('pt_qty')?.value);
-  const msg   = document.getElementById('pt_msg');
-  const d     = getPaperData();
+  const assets = getAllPtAssets();
+  const asset  = _ptSelectedAsset || assets[0];
+  const sym    = asset.sym;
+  const price  = parseFloat(document.getElementById('ptPrice')?.value);
+  const qty    = parseFloat(document.getElementById('ptQty')?.value);
+  const msg    = document.getElementById('ptMsg');
+  const d      = getPaperData();
 
-  if (!sym || !price || !qty || qty < 1) { if(msg) {msg.style.color='var(--red)'; msg.textContent='Please fill all fields';} return; }
+  const showMsg = (text, color) => {
+    if (!msg) return;
+    msg.style.color = color;
+    msg.textContent = text;
+    setTimeout(() => { if(msg) msg.textContent = ''; }, 3500);
+  };
 
-  const total = price * qty;
+  if (!sym || !price || price <= 0) { showMsg('⚠ Enter a valid price', 'var(--red)'); return; }
+  if (!qty  || qty  <= 0)           { showMsg('⚠ Enter a valid quantity', 'var(--red)'); return; }
+
+  const isCrypto = asset.assetType==='crypto' || asset.assetType==='commodity';
+  const cur      = isCrypto ? '$' : '₹';
+  const total    = price * qty;
+  // Convert to INR for balance check (approximate, use 84x for USD)
+  const totalInr = isCrypto ? toInr(total) : total;
 
   if (_ptOrderType === 'BUY') {
-    if (total > d.balance) { if(msg){msg.style.color='var(--red)';msg.textContent='Insufficient balance';} return; }
-    d.balance -= total;
-    if (!d.holdings[sym]) d.holdings[sym] = {qty:0, avgPrice:0};
+    if (totalInr > d.balance) { showMsg(`⚠ Need ₹${totalInr.toLocaleString('en-IN',{maximumFractionDigits:0})} — insufficient balance`, 'var(--red)'); return; }
+    d.balance -= totalInr;
+    if (!d.holdings[sym]) d.holdings[sym] = { qty: 0, avgPrice: 0, cur };
     const h = d.holdings[sym];
     h.avgPrice = ((h.avgPrice * h.qty) + (price * qty)) / (h.qty + qty);
     h.qty += qty;
-    addPaperHistory({type:'BUY', sym, qty, price});
-    if(msg){msg.style.color='var(--green)';msg.textContent=`✅ Bought ${qty} × ${sym} @ ₹${price}`;}
+    h.cur  = cur;
+    addPaperHistory({ type:'BUY', sym, qty, price, cur, totalInr });
+    showMsg(`✅ Bought ${qty} × ${sym} @ ${cur}${price.toLocaleString()}`, 'var(--green)');
+    showToast(`✅ Bought ${sym}`, 'var(--green)');
   } else {
     const h = d.holdings[sym];
-    if (!h || h.qty < qty) { if(msg){msg.style.color='var(--red)';msg.textContent='Not enough shares to sell';} return; }
-    d.balance += total;
+    if (!h || h.qty < qty) { showMsg(`⚠ You only have ${h?.qty || 0} units of ${sym}`, 'var(--red)'); return; }
+    d.balance += totalInr;
     h.qty -= qty;
-    addPaperHistory({type:'SELL', sym, qty, price});
-    if(msg){msg.style.color='var(--red)';msg.textContent=`✅ Sold ${qty} × ${sym} @ ₹${price}`;}
+    if (h.qty === 0) delete d.holdings[sym];
+    addPaperHistory({ type:'SELL', sym, qty, price, cur, totalInr });
+    showMsg(`✅ Sold ${qty} × ${sym} @ ${cur}${price.toLocaleString()}`, 'var(--green)');
+    showToast(`✅ Sold ${sym}`, 'var(--accent)');
   }
 
   savePaperData(d);
   const balEl = document.getElementById('ptBalance');
   if (balEl) balEl.textContent = '₹' + d.balance.toLocaleString('en-IN',{maximumFractionDigits:0});
-  setTimeout(() => { if(msg) msg.textContent=''; }, 3000);
+  // Flash button
+  const btn = document.getElementById('ptExecBtn');
+  if (btn) { btn.style.opacity = '0.6'; setTimeout(() => { if(btn) btn.style.opacity = '1'; }, 300); }
+  // Reset qty
+  const qEl = document.getElementById('ptQty');
+  if (qEl) { qEl.value = 1; ptCalcTotal(); }
 }
 
-function sellPaperHolding(sym) {
+function renderPtHoldings(el, d) {
+  fetchUsdInr();
+  const holdings = Object.entries(d.holdings).filter(([,h]) => h.qty > 0);
+  if (!holdings.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 24px;">
+      <div style="font-size:52px;margin-bottom:16px;">📭</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">No holdings yet</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Go to Trade tab and make your first paper trade!</div>
+      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))" style="padding:10px 28px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Start Trading</button>
+    </div>`;
+    return;
+  }
+
+  const totalInvested = holdings.reduce((a,[,h]) => a + (h.cur==='$'?toInr(h.avgPrice):h.avgPrice) * h.qty, 0);
+  const currentValue  = holdings.reduce((a,[sym,h]) => {
+    const asset = getAllPtAssets().find(s => s.sym === sym);
+    const ltp   = asset?.price || h.avgPrice;
+    return a + (h.cur==='$'?toInr(ltp):ltp) * h.qty;
+  }, 0);
+  const pnl    = currentValue - totalInvested;
+  const pnlPct = totalInvested > 0 ? ((pnl/totalInvested)*100).toFixed(2) : '0.00';
+
+  el.innerHTML = `
+    <!-- Rate badge + auto-refresh -->
+    <div style="padding:6px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">USD/INR: <span style="color:var(--accent);font-weight:700;">₹${_usdInr.toFixed(2)}</span></span>
+      <span style="font-size:10px;color:var(--text3);">Live P&L · updates every 30s</span>
+    </div>
+    <!-- Portfolio summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="padding:14px 16px;background:var(--bg2);">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">INVESTED</div>
+        <div style="font-weight:800;font-size:15px;">₹${totalInvested.toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--bg2);">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">CURRENT</div>
+        <div style="font-weight:800;font-size:15px;color:var(--accent);">₹${currentValue.toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--bg2);">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">P&L</div>
+        <div style="font-weight:800;font-size:15px;color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}₹${Math.abs(pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+        <div style="font-size:10px;font-weight:700;color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}${pnlPct}%</div>
+      </div>
+    </div>
+    <!-- Holdings list -->
+    <div style="padding:12px 16px;">
+      ${holdings.map(([sym, h]) => {
+        const asset   = getAllPtAssets().find(s => s.sym === sym);
+        const isUsd   = h.cur === '$';
+        const ltp     = asset?.price || h.avgPrice;
+        const ltpInr  = isUsd ? toInr(ltp) : ltp;
+        const avgInr  = isUsd ? toInr(h.avgPrice) : h.avgPrice;
+        const plInr   = (ltpInr - avgInr) * h.qty;
+        const plPct   = avgInr > 0 ? ((ltpInr - avgInr)/avgInr*100).toFixed(2) : '0.00';
+        const chgN    = parseFloat(asset?.chg) || 0;
+        const nativeCur = isUsd ? '$' : '\u20b9';
+        return `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;">
+          <div style="width:42px;height:42px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${sym.slice(0,4)}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:800;font-size:14px;">${sym}</div>
+            <div style="font-size:11px;color:var(--text3);">
+              Avg ${nativeCur}${h.avgPrice.toLocaleString(undefined,{maximumFractionDigits:2})}${isUsd?' (\u20b9'+Math.round(avgInr).toLocaleString('en-IN')+')':''} · ${h.qty} units
+            </div>
+            <div style="font-size:11px;margin-top:3px;font-weight:800;color:${plInr>=0?'var(--green)':'var(--red)'};">
+              ${plInr>=0?'+':''}\u20b9${Math.abs(Math.round(plInr)).toLocaleString('en-IN')}
+              <span style="font-weight:600;">(${plInr>=0?'+':''}${plPct}%)</span>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;font-size:13px;">${nativeCur}${Number(ltp).toLocaleString()}</div>
+            ${isUsd ? `<div style="font-size:10px;color:var(--text3);">\u20b9${Math.round(ltpInr).toLocaleString('en-IN')}</div>` : ''}
+            <div style="font-size:11px;font-weight:700;color:${chgN>=0?'var(--green)':'var(--red)'};">${asset?.chg||'—'}</div>
+            <button onclick="quickSellAll('${sym}')"
+              style="margin-top:6px;padding:4px 12px;border-radius:7px;border:none;background:rgba(229,57,53,0.12);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;">
+              Sell All
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function quickSellAll(sym) {
   const d = getPaperData();
   const h = d.holdings[sym];
   if (!h || !h.qty) return;
-  const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===sym);
+  const asset = getAllPtAssets().find(a => a.sym === sym);
   const price = asset?.price || h.avgPrice;
-  d.balance += price * h.qty;
-  addPaperHistory({type:'SELL', sym, qty:h.qty, price});
-  h.qty = 0;
+  const totalInr = (h.cur==='$'?84:1) * price * h.qty;
+  d.balance += totalInr;
+  addPaperHistory({ type:'SELL', sym, qty:h.qty, price, cur:h.cur||'₹', totalInr });
+  delete d.holdings[sym];
   savePaperData(d);
+  showToast(`✅ Sold all ${sym}`, 'var(--accent)');
   renderPaperTrade();
-  showToast(`✅ Sold all ${sym}`, 'var(--green)');
 }
+
+function renderPtHistory(el) {
+  const h = getPaperHistory();
+  if (!h.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">
+      <div style="font-size:40px;margin-bottom:12px;">📋</div>
+      <div style="font-weight:700;margin-bottom:6px;">No trade history yet</div>
+      <div style="font-size:12px;">Your executed trades will appear here.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div style="padding:12px 16px;">
+    ${h.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;">
+      <div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+        background:${t.type==='BUY'?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};
+        color:${t.type==='BUY'?'var(--green)':'var(--red)'};">
+        ${t.type==='BUY'?'▲':'▼'}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:13px;">${t.sym} <span style="font-weight:400;color:var(--text3);">× ${t.qty}</span></div>
+        <div style="font-size:10px;color:var(--text3);">${t.ts}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;font-size:13px;">${t.cur||'₹'}${Number(t.price).toLocaleString()}</div>
+        <div style="font-size:11px;font-weight:700;color:${t.type==='BUY'?'var(--red)':'var(--green)'};">
+          ${t.type==='BUY'?'−':'+'} ₹${(t.totalInr||t.price*t.qty).toLocaleString('en-IN',{maximumFractionDigits:0})}
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderPtLeaderboard(el, d) {
+  const holdings = Object.entries(d.holdings).filter(([,h])=>h.qty>0);
+  const invested = holdings.reduce((a,[,h])=>a+(h.cur==='$'?toInr(h.avgPrice):h.avgPrice)*h.qty,0);
+  const current  = holdings.reduce((a,[sym,h])=>{
+    const p = getAllPtAssets().find(s=>s.sym===sym)?.price||h.avgPrice;
+    return a+(h.cur==='$'?toInr(p):p)*h.qty;
+  },0);
+  const myPnl = current - invested;
+  const myPct = invested>0?((myPnl/invested)*100).toFixed(2):0;
+  const board = [];
+  const user  = getUser();
+  if (user && getPaperHistory().length > 0) {
+    board.push({name:user.displayName||user.name, pnl:myPnl, pct:parseFloat(myPct), trades:getPaperHistory().length, isMe:true});
+  }
+
+  el.innerHTML = `<div style="padding:16px;">
+    <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:16px;letter-spacing:1px;">YOUR PAPER PERFORMANCE</div>
+    ${!board.length
+      ? `<div style="text-align:center;padding:40px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">📊</div>
+          <div style="font-weight:700;margin-bottom:6px;">No trades yet</div>
+          <div style="font-size:12px;">Start trading to see your stats here.</div>
+        </div>`
+      : board.map((t,i)=>`
+        <div style="display:flex;align-items:center;gap:14px;padding:16px;background:rgba(0,112,243,0.05);border:1.5px solid var(--accent);border-radius:14px;margin-bottom:10px;">
+          <div style="font-size:28px;">🥇</div>
+          <div style="flex:1;">
+            <div style="font-weight:800;font-size:15px;">${t.name} (You)</div>
+            <div style="font-size:11px;color:var(--text3);">${t.trades} trades executed</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;font-size:16px;color:${t.pnl>=0?'var(--green)':'var(--red)'};">${t.pnl>=0?'+':''}₹${Math.abs(t.pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+            <div style="font-size:12px;font-weight:700;color:${t.pct>=0?'var(--green)':'var(--red)'};">${t.pct>=0?'+':''}${t.pct}%</div>
+          </div>
+        </div>`).join('')
+    }
+    <div style="margin-top:24px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">
+      <div style="font-size:11px;font-weight:700;margin-bottom:8px;">📈 PORTFOLIO SNAPSHOT</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text3);">Starting Capital</span><span style="font-weight:700;">₹10,00,000</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text3);">Current Balance</span><span style="font-weight:700;color:var(--accent);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--text3);">Total Trades</span><span style="font-weight:700;">${getPaperHistory().length}</span></div>
+    </div>
+  </div>`;
+}
+
+function sellPaperHolding(sym) { quickSellAll(sym); }
+
+function setPtOrderType(type, btn) { setPtOrder(type); }
+function updatePtPrice() {}
+function updatePtTotal() { ptCalcTotal(); }
 
 function resetPaperPortfolio() {
   if (!confirm('Reset paper portfolio and start fresh with ₹10,00,000?')) return;
   localStorage.removeItem(PT_KEY);
   localStorage.removeItem(PT_HIST_KEY);
+  _ptSelectedAsset = null;
+  _ptSelectedSym   = null;
+  _ptOrderType     = 'BUY';
   renderPaperTrade();
   showToast('Portfolio reset! Fresh start 🚀', 'var(--accent)');
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // 2. IPO TRACKER
@@ -6840,23 +7346,7 @@ function renderOptions() {
 // ══════════════════════════════════════════════════════════════
 const CALLS_KEY = 'mp_trade_calls';
 
-function getCallsData() {
-  const stored = (() => { try { return JSON.parse(localStorage.getItem(CALLS_KEY)||'[]'); } catch(e){return[];} })();
-  // Seed demo calls if empty
-  if (!stored.length) {
-    const demo = [
-      {id:'c1',user:'TradingHawk',avatar:'🦅',verified:true,type:'swing',sym:'TATAMOTORS',action:'BUY',entry:892,sl:860,t1:960,t2:1020,posted:'2 days ago',status:'active',currentPrice:945,note:'Strong breakout above 52-week resistance. EV push catalyst.',likes:48,comments:12},
-      {id:'c2',user:'NiftyKing',avatar:'👑',verified:false,type:'intraday',sym:'SBIN',action:'BUY',entry:798,sl:785,t1:820,t2:835,posted:'Today, 9:32 AM',status:'won',currentPrice:812,note:'Bank Nifty support. RBI policy positive for PSU banks.',likes:31,comments:7},
-      {id:'c3',user:'BullRider99',avatar:'🐂',verified:true,type:'swing',sym:'HCLTECH',action:'SELL',entry:1590,sl:1625,t1:1530,t2:1480,posted:'3 days ago',status:'active',currentPrice:1567,note:'IT sector weakness. MACD death cross on daily.',likes:22,comments:5},
-      {id:'c4',user:'AlgoTrader',avatar:'🤖',verified:false,type:'swing',sym:'INFY',action:'SELL',entry:1478,sl:1520,t1:1420,t2:1380,posted:'5 days ago',status:'lost',currentPrice:1456,note:'Bearish engulfing on weekly. Sector rotation away from IT.',likes:14,comments:9},
-      {id:'c5',user:'GoldTrader',avatar:'🏆',verified:true,type:'swing',sym:'GOLD',action:'BUY',entry:3020,sl:2980,t1:3120,t2:3200,posted:'1 week ago',status:'won',currentPrice:3089,note:'Fed pivot catalyst + geopolitical uncertainty = gold bullish.',likes:67,comments:18},
-      {id:'c6',user:'CryptoMaster',avatar:'₿',verified:false,type:'swing',sym:'BTC',action:'BUY',entry:79500,sl:75000,t1:88000,t2:95000,posted:'4 days ago',status:'active',currentPrice:83421,note:'Bitcoin ETF inflows accelerating. Weekly uptrend intact.',likes:89,comments:24},
-    ];
-    localStorage.setItem(CALLS_KEY, JSON.stringify(demo));
-    return demo;
-  }
-  return stored;
-}
+// getCallsData defined above — returns only real user calls from localStorage
 function saveCalls(c) { localStorage.setItem(CALLS_KEY, JSON.stringify(c)); }
 
 let _callFilter = 'all';
@@ -7037,13 +7527,7 @@ function confirmPostCall() {
 // ══════════════════════════════════════════════════════════════
 // LIVE ROOMS  (simulated live trading sessions)
 // ══════════════════════════════════════════════════════════════
-const ROOMS_DATA = [
-  {id:'r1',host:'TradingHawk',avatar:'🦅',verified:true,title:'Morning Nifty Analysis + Live Trades',viewers:234,topic:'Nifty 50 · Bank Nifty · Options',live:true,started:'9:15 AM',description:'Daily pre-market and market hours live session. Analysing Nifty levels, sharing live option trades.',tags:['nifty','options','intraday']},
-  {id:'r2',host:'CryptoMaster',avatar:'₿',verified:false,title:'Bitcoin Weekly Outlook - Bull or Bear?',viewers:89,topic:'BTC · ETH · Crypto',live:true,started:'10:30 AM',description:'Deep dive into BTC weekly chart. On-chain data analysis and key levels for the week ahead.',tags:['bitcoin','crypto','technical']},
-  {id:'r3',host:'NiftyKing',avatar:'👑',verified:true,title:'Post Market Recap — What Happened Today',viewers:0,topic:'Nifty · Sectors',live:false,scheduled:'Today, 4:30 PM',description:'Full market recap, top movers, what to watch tomorrow.',tags:['recap','nifty','sectors']},
-  {id:'r4',host:'SwingMaster',avatar:'📈',verified:false,title:'Top 5 Swing Trade Setups This Week',viewers:0,topic:'NSE Stocks · Swing',live:false,scheduled:'Tomorrow, 6:00 PM',description:'Weekly swing trade setups across Nifty 500 stocks. Detailed chart analysis.',tags:['swing','stocks','nse']},
-  {id:'r5',host:'GoldBull',avatar:'🥇',verified:true,title:'Commodities & Gold Special — March 2025',viewers:0,topic:'Gold · Silver · Crude',live:false,scheduled:'Fri, 7:00 PM',description:'Commodities outlook for the month. Gold near ATH, crude volatility, silver setup.',tags:['gold','commodities','macro']},
-];
+const ROOMS_DATA = [];
 
 function renderRooms() {
   const el = document.getElementById('roomsBody');
@@ -7131,37 +7615,7 @@ function goLive() {
 // ══════════════════════════════════════════════════════════════
 const CONTEST_KEY = 'mp_contest_entries';
 
-const CONTESTS = [
-  {
-    id:'wk11',title:'Best Stock Pick — Week of Mar 10',status:'active',ends:'Mar 17, 2025',prize:'🏅 Gold Badge + 500 Points',
-    description:'Pick ONE stock you think will give the best return this week. The most accurate pick wins!',entries:47,
-    leaderboard:[
-      {user:'TradingHawk',sym:'TATAMOTORS',entryPrice:892,change:5.94,rank:1},
-      {user:'BullRider99',sym:'SBIN',entryPrice:798,change:1.75,rank:2},
-      {user:'NiftyKing',sym:'ADANIENT',entryPrice:2280,change:1.42,rank:3},
-      {user:'AlgoTrader',sym:'NTPC',entryPrice:378,change:1.32,rank:4},
-      {user:'SwingMaster',sym:'SUNPHARMA',entryPrice:1654,change:1.15,rank:5},
-    ]
-  },
-  {
-    id:'wk10',title:'Best Crypto Call — Week of Mar 3',status:'ended',ends:'Mar 10, 2025',prize:'🥇 Platinum Badge',
-    winner:'CryptoMaster',winnerPick:'SOL',winnerReturn:'+18.4%',entries:32,
-    leaderboard:[
-      {user:'CryptoMaster',sym:'SOL',entryPrice:114,change:18.4,rank:1},
-      {user:'Web3Trader',sym:'DOGE',entryPrice:0.152,change:17.1,rank:2},
-      {user:'AltcoinKing',sym:'AVAX',entryPrice:18.2,change:14.8,rank:3},
-    ]
-  },
-  {
-    id:'wk9',title:'Best Nifty 50 Stock — Feb 24–28',status:'ended',ends:'Feb 28, 2025',prize:'🥈 Silver Badge',
-    winner:'GoldTrader',winnerPick:'TATAMOTORS',winnerReturn:'+12.1%',entries:58,
-    leaderboard:[
-      {user:'GoldTrader',sym:'TATAMOTORS',entryPrice:840,change:12.1,rank:1},
-      {user:'BullRider99',sym:'SBIN',entryPrice:756,change:8.9,rank:2},
-      {user:'TradingHawk',sym:'ADANIENT',entryPrice:2190,change:8.2,rank:3},
-    ]
-  },
-];
+const CONTESTS = [];
 
 function renderContests() {
   const el = document.getElementById('contestsBody');
@@ -7267,16 +7721,7 @@ function submitContestEntry(contestId) {
 // ══════════════════════════════════════════════════════════════
 // VERIFIED ANALYSTS
 // ══════════════════════════════════════════════════════════════
-const ANALYSTS_DATA = [
-  {id:'a1',name:'Rajesh Sharma',handle:'@rajesh_trades',avatar:'👨‍💼',sebi:'INH000012345',specialty:'equity',tags:['nifty50','swing','technicals'],followers:12400,calls:234,accuracy:73.4,avgReturn:'+3.2%',bio:'15 years in equity markets. SEBI-registered Research Analyst. Specializes in Nifty 50 swing trades.',rating:4.8,badge:'sebi'},
-  {id:'a2',name:'Priya Mehta',handle:'@priya_options',avatar:'👩‍💻',sebi:'INH000067891',specialty:'options',tags:['options','banknifty','intraday'],followers:8900,calls:412,accuracy:68.2,avgReturn:'+2.8%',bio:'Options flow specialist. 10 years in derivatives. Bank Nifty OI analysis every morning.',rating:4.6,badge:'sebi'},
-  {id:'a3',name:'TradingHawk',handle:'@tradinghawk',avatar:'🦅',sebi:null,specialty:'equity',tags:['swing','momentum','breakouts'],followers:6700,calls:189,accuracy:71.0,avgReturn:'+4.1%',bio:'Momentum trader. Focus on breakout setups on daily/weekly timeframes. Nifty 500 universe.',rating:4.5,badge:'community'},
-  {id:'a4',name:'CryptoMaster',handle:'@cryptomaster',avatar:'₿',sebi:null,specialty:'crypto',tags:['bitcoin','ethereum','defi'],followers:9200,calls:156,accuracy:65.8,avgReturn:'+8.4%',bio:'Crypto analyst since 2017. On-chain data + TA hybrid approach. Weekly BTC outlook every Sunday.',rating:4.4,badge:'community'},
-  {id:'a5',name:'Ankit Verma',handle:'@ankit_macro',avatar:'🌍',sebi:'INH000023456',specialty:'macro',tags:['fii','rbi','inflation','globalmarkets'],followers:15600,calls:78,accuracy:81.2,avgReturn:'+2.1%',bio:'Macro economist. Ex-Goldman Sachs. Tracks FII flows, RBI policy, and global macro trends.',rating:4.9,badge:'sebi'},
-  {id:'a6',name:'SwingMaster',handle:'@swingmaster_nse',avatar:'📈',sebi:null,specialty:'swing',tags:['swing','technicals','rsi'],followers:4300,calls:267,accuracy:69.5,avgReturn:'+3.7%',bio:'Pure technical analyst. RSI divergence and EMA crossover specialist. Posting 3 setups daily.',rating:4.3,badge:'community'},
-  {id:'a7',name:'Neha Kapoor',handle:'@neha_longterm',avatar:'👩‍🏫',sebi:'INH000034567',specialty:'longterm',tags:['fundamentals','dividends','largecap'],followers:7800,calls:45,accuracy:88.9,avgReturn:'+18.4%',bio:'SEBI RA. Value investor. Focus on quality companies with strong moats. Long-term 2-5 year horizon.',rating:4.7,badge:'sebi'},
-  {id:'a8',name:'AlgoTrader',handle:'@algotrader_in',avatar:'🤖',sebi:null,specialty:'options',tags:['options','quant','algo'],followers:3100,calls:892,accuracy:58.4,avgReturn:'+1.2%',bio:'Quant trader. 47 automated strategies across NSE equity & derivatives. Monthly performance reports.',rating:4.1,badge:'community'},
-];
+const ANALYSTS_DATA = [];
 
 let _analystFilter = 'all';
 let _followedAnalysts = (() => { try { return JSON.parse(localStorage.getItem('mp_followed_analysts')||'[]'); } catch(e){return[];} })();
@@ -7391,24 +7836,13 @@ function openApplyVerified() {
 }
 function submitVerification(btn) {
   btn.textContent='Submitted ✓'; btn.style.background='var(--green)'; btn.disabled=true;
-  setTimeout(()=>{ document.querySelector('div[style*="fixed"][style*="2000"]')?.remove(); showToast('✅ Application submitted! We'll review within 3–5 days.','var(--green)'); },800);
+  setTimeout(()=>{ document.querySelector('div[style*="fixed"][style*="2000"]')?.remove(); showToast('✅ Application submitted! We will review within 3-5 days.','var(--green)'); },800);
 }
 
 // ══════════════════════════════════════════════════════════════
 // DISCOVER TRADERS
 // ══════════════════════════════════════════════════════════════
-const DISCOVER_TRADERS = [
-  {id:'t1',name:'TradingHawk',handle:'@tradinghawk',avatar:'🦅',style:'swing',followers:6700,posts:234,winRate:71,specialty:'NSE Breakouts',tags:['swing','momentum','nifty500'],streak:'🔥 12-day posting streak',badge:'⭐'},
-  {id:'t2',name:'CryptoMaster',handle:'@cryptomaster',avatar:'₿',style:'crypto',followers:9200,posts:156,winRate:65,specialty:'Bitcoin & Altcoins',tags:['bitcoin','ethereum','defi'],streak:'🔥 8-day streak',badge:'⭐'},
-  {id:'t3',name:'NiftyKing',handle:'@niftyking',avatar:'👑',style:'intraday',followers:4100,posts:512,winRate:68,specialty:'Bank Nifty Options',tags:['banknifty','options','intraday'],streak:'Active today',badge:null},
-  {id:'t4',name:'BullRider99',handle:'@bullrider99',avatar:'🐂',style:'swing',followers:2800,posts:178,winRate:72,specialty:'PSU Stocks',tags:['sbin','psu','banking'],streak:'🔥 5-day streak',badge:null},
-  {id:'t5',name:'GoldBull',handle:'@goldbull',avatar:'🥇',style:'longterm',followers:3400,posts:89,winRate:84,specialty:'Gold & Commodities',tags:['gold','silver','commodities'],streak:'Active this week',badge:'⭐'},
-  {id:'t6',name:'AlgoTrader',handle:'@algotrader_in',avatar:'🤖',style:'options',followers:3100,posts:892,winRate:58,specialty:'Quant Strategies',tags:['options','quant','algo'],streak:'🤖 Posts daily',badge:null},
-  {id:'t7',name:'SwingMaster',handle:'@swingmaster_nse',avatar:'📈',style:'swing',followers:4300,posts:267,winRate:69,specialty:'RSI Divergences',tags:['swing','rsi','technicals'],streak:'🔥 20-day streak',badge:'⭐'},
-  {id:'t8',name:'IPOHunter',handle:'@ipohunter_in',avatar:'🚀',style:'longterm',followers:5600,posts:145,winRate:77,specialty:'IPO Analysis',tags:['ipo','listing','gmp'],streak:'Active today',badge:null},
-  {id:'t9',name:'ScalperPro',handle:'@scalperpro',avatar:'⚡',style:'intraday',followers:1900,posts:1240,winRate:62,specialty:'1-min Scalping',tags:['scalping','intraday','banknifty'],streak:'Active today',badge:null},
-  {id:'t10',name:'ValuePicker',handle:'@valuepicker',avatar:'💎',style:'longterm',followers:7200,posts:67,winRate:89,specialty:'Fundamental Analysis',tags:['fundamentals','dividends','largecap'],streak:'Weekly updates',badge:'⭐'},
-];
+const DISCOVER_TRADERS = [];
 
 let _discoverCat = 'all';
 let _discoverQuery = '';
@@ -8275,27 +8709,37 @@ function injectScreenerPresets() {
   const bar = document.createElement('div');
   bar.id = 'screenerPresets';
   bar.style.cssText = 'display:flex;gap:6px;padding:8px 16px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;';
-  bar.innerHTML = `<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;white-space:nowrap;display:flex;align-items:center;margin-right:4px;">PRESETS:</div>` +
-    SCREENER_PRESETS.map(p=>`<button onclick="applyScreenerPreset(${JSON.stringify(p.fn.toString())},'${p.label}')" style="padding:4px 12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:10px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all 0.15s;" onmouseover="this.style.background='rgba(0,112,243,0.1)';this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.background='transparent';this.style.color='var(--text3)';this.style.borderColor='var(--border)'">${p.icon} ${p.label}</button>`).join('');
 
-  // Insert before the results div
+  const label = document.createElement('div');
+  label.style.cssText = 'font-size:10px;color:var(--text3);font-family:Space Mono,monospace;white-space:nowrap;display:flex;align-items:center;margin-right:4px;';
+  label.textContent = 'PRESETS:';
+  bar.appendChild(label);
+
+  SCREENER_PRESETS.forEach((p, idx) => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding:4px 12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:10px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif;transition:all 0.15s;';
+    btn.textContent = p.icon + ' ' + p.label;
+    btn.onmouseover = () => { btn.style.background='rgba(0,112,243,0.1)'; btn.style.color='var(--accent)'; btn.style.borderColor='var(--accent)'; };
+    btn.onmouseout  = () => { btn.style.background='transparent'; btn.style.color='var(--text3)'; btn.style.borderColor='var(--border)'; };
+    btn.onclick = () => applyScreenerPreset(idx);
+    bar.appendChild(btn);
+  });
+
   const resultsDiv = document.getElementById('screenerResults');
   if (resultsDiv && resultsDiv.parentNode === screenerPage) {
     screenerPage.insertBefore(bar, resultsDiv);
   }
 }
 
-function applyScreenerPreset(fnStr, label) {
-  // Filter STATIC_TECH data with the preset
+function applyScreenerPreset(idx) {
+  const preset = SCREENER_PRESETS[idx];
+  if (!preset) return;
   const allData = Object.entries(STATIC_TECH).map(([sym,ta])=>{
     const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===sym);
     return {...ta,...(asset||{}),sym};
   });
-  // Rebuild preset functions
-  const presets = SCREENER_PRESETS;
-  const preset  = presets.find(p=>p.label===label);
-  if (!preset) return;
   const results = allData.filter(s => { try { return preset.fn(s); } catch(e){return false;} });
+  const label = preset.label;
   const res = document.getElementById('screenerResults');
   if (!res) return;
   // Switch to screener tab first
@@ -8490,6 +8934,17 @@ setTimeout(() => {
   updateNotifBadge();
 }, 1000);
 
+
+function updateNavArrows() {
+  const nav = document.querySelector('.nav-tabs');
+  const left = document.getElementById('navScrollLeft');
+  const right = document.getElementById('navScrollRight');
+  if (!nav || !left || !right) return;
+  left.style.display  = nav.scrollLeft > 10 ? 'flex' : 'none';
+  right.style.display = nav.scrollLeft < nav.scrollWidth - nav.clientWidth - 10 ? 'flex' : 'none';
+}
+// Run after DOM ready
+setTimeout(updateNavArrows, 800);
 
 </script>
 </body>
