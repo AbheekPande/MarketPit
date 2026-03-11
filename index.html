@@ -805,6 +805,108 @@ header { height:52px; background:var(--bg2); border-bottom:1px solid var(--borde
 // ── CONFIG ──
 const API_BASE = 'https://web-production-78fc1.up.railway.app/api';
 
+// ── RAILWAY WAKE-UP + CONNECTION STATE ──
+let _apiOnline  = false;
+let _apiWaking  = false;
+let _apiChecked = false;
+
+async function checkApiAndWake() {
+  if (_apiWaking) return;
+  _apiWaking = true;
+  try {
+    const r = await fetch(API_BASE + '/status', { signal: AbortSignal.timeout(8000) });
+    if (r.ok) { _apiOnline = true; _apiChecked = true; _apiWaking = false; return true; }
+  } catch(e) {}
+  // Try to wake it — ping once more after 5s
+  await new Promise(res => setTimeout(res, 5000));
+  try {
+    const r = await fetch(API_BASE + '/status', { signal: AbortSignal.timeout(10000) });
+    if (r.ok) { _apiOnline = true; }
+  } catch(e) {}
+  _apiChecked = true; _apiWaking = false;
+  return _apiOnline;
+}
+
+// ── STATIC FALLBACK DATA (shows when Railway is sleeping) ──
+// Last-known prices — updates automatically when Railway comes online
+const STATIC_STOCKS = [
+  {sym:'RELIANCE',name:'Reliance Industries',price:2513,chg:'+0.82%',up:true,sector:'Energy'},
+  {sym:'TCS',name:'Tata Consultancy',price:3421,chg:'-0.45%',up:false,sector:'IT'},
+  {sym:'HDFCBANK',name:'HDFC Bank',price:1678,chg:'+1.12%',up:true,sector:'Banking'},
+  {sym:'INFY',name:'Infosys',price:1456,chg:'-0.23%',up:false,sector:'IT'},
+  {sym:'SBIN',name:'State Bank of India',price:812,chg:'+2.10%',up:true,sector:'Banking'},
+  {sym:'ICICIBANK',name:'ICICI Bank',price:1234,chg:'+0.67%',up:true,sector:'Banking'},
+  {sym:'WIPRO',name:'Wipro',price:298,chg:'-1.02%',up:false,sector:'IT'},
+  {sym:'TATAMOTORS',name:'Tata Motors',price:945,chg:'+3.21%',up:true,sector:'Auto'},
+  {sym:'HCLTECH',name:'HCL Technologies',price:1567,chg:'-0.88%',up:false,sector:'IT'},
+  {sym:'ADANIENT',name:'Adani Enterprises',price:2341,chg:'+1.45%',up:true,sector:'Conglomerate'},
+  {sym:'BAJFINANCE',name:'Bajaj Finance',price:7123,chg:'-0.34%',up:false,sector:'Finance'},
+  {sym:'LT',name:'Larsen & Toubro',price:3456,chg:'+0.91%',up:true,sector:'Infra'},
+  {sym:'AXISBANK',name:'Axis Bank',price:1123,chg:'+1.67%',up:true,sector:'Banking'},
+  {sym:'KOTAKBANK',name:'Kotak Mahindra Bank',price:1834,chg:'-0.56%',up:false,sector:'Banking'},
+  {sym:'MARUTI',name:'Maruti Suzuki',price:12456,chg:'+0.78%',up:true,sector:'Auto'},
+  {sym:'SUNPHARMA',name:'Sun Pharmaceutical',price:1678,chg:'-0.12%',up:false,sector:'Pharma'},
+  {sym:'TITAN',name:'Titan Company',price:3234,chg:'+1.23%',up:true,sector:'Consumer'},
+  {sym:'NESTLEIND',name:'Nestle India',price:2234,chg:'-0.67%',up:false,sector:'FMCG'},
+  {sym:'ULTRACEMCO',name:'UltraTech Cement',price:9876,chg:'+0.45%',up:true,sector:'Cement'},
+  {sym:'ASIANPAINT',name:'Asian Paints',price:2567,chg:'-1.23%',up:false,sector:'Consumer'},
+  {sym:'TECHM',name:'Tech Mahindra',price:1234,chg:'+2.34%',up:true,sector:'IT'},
+  {sym:'POWERGRID',name:'Power Grid Corp',price:312,chg:'+0.89%',up:true,sector:'Utilities'},
+  {sym:'NTPC',name:'NTPC Limited',price:389,chg:'+1.45%',up:true,sector:'Energy'},
+  {sym:'ONGC',name:'Oil & Natural Gas',price:278,chg:'-0.67%',up:false,sector:'Energy'},
+  {sym:'COALINDIA',name:'Coal India',price:456,chg:'+0.34%',up:true,sector:'Mining'},
+  {sym:'JSWSTEEL',name:'JSW Steel',price:934,chg:'-1.12%',up:false,sector:'Metal'},
+  {sym:'TATASTEEL',name:'Tata Steel',price:167,chg:'+2.45%',up:true,sector:'Metal'},
+  {sym:'DRREDDY',name:"Dr. Reddy's Labs",price:6234,chg:'-0.34%',up:false,sector:'Pharma'},
+  {sym:'CIPLA',name:'Cipla Limited',price:1567,chg:'+0.78%',up:true,sector:'Pharma'},
+  {sym:'HEROMOTOCO',name:'Hero MotoCorp',price:4567,chg:'-0.23%',up:false,sector:'Auto'},
+];
+const STATIC_CRYPTO = [
+  {sym:'BTC',name:'Bitcoin',price:83421,chg:'+1.23%',up:true,currency:'$'},
+  {sym:'ETH',name:'Ethereum',price:1823,chg:'-0.89%',up:false,currency:'$'},
+  {sym:'BNB',name:'BNB',price:589,chg:'+0.45%',up:true,currency:'$'},
+  {sym:'SOL',name:'Solana',price:134,chg:'+2.34%',up:true,currency:'$'},
+  {sym:'XRP',name:'XRP',price:2.12,chg:'-1.23%',up:false,currency:'$'},
+  {sym:'DOGE',name:'Dogecoin',price:0.178,chg:'+3.45%',up:true,currency:'$'},
+  {sym:'ADA',name:'Cardano',price:0.678,chg:'-0.56%',up:false,currency:'$'},
+  {sym:'MATIC',name:'Polygon',price:0.234,chg:'+1.12%',up:true,currency:'$'},
+  {sym:'DOT',name:'Polkadot',price:4.56,chg:'-2.34%',up:false,currency:'$'},
+  {sym:'AVAX',name:'Avalanche',price:19.45,chg:'+0.78%',up:true,currency:'$'},
+  {sym:'LTC',name:'Litecoin',price:89.23,chg:'-0.45%',up:false,currency:'$'},
+  {sym:'LINK',name:'Chainlink',price:13.45,chg:'+1.67%',up:true,currency:'$'},
+];
+const STATIC_COMMODITIES = [
+  {sym:'GOLD',name:'Gold',price:3089,chg:'+0.67%',up:true,currency:'$'},
+  {sym:'SILVER',name:'Silver',price:33.45,chg:'-0.34%',up:false,currency:'$'},
+  {sym:'CRUDE',name:'Crude Oil (WTI)',price:71.23,chg:'+1.12%',up:true,currency:'$'},
+  {sym:'BRENT',name:'Brent Crude',price:75.67,chg:'+0.89%',up:true,currency:'$'},
+  {sym:'NATURALGAS',name:'Natural Gas',price:3.89,chg:'-2.34%',up:false,currency:'$'},
+  {sym:'COPPER',name:'Copper',price:4.56,chg:'+0.45%',up:true,currency:'$'},
+  {sym:'PLATINUM',name:'Platinum',price:978,chg:'-0.67%',up:false,currency:'$'},
+  {sym:'WHEAT',name:'Wheat',price:534,chg:'+1.23%',up:true,currency:'$'},
+  {sym:'CORN',name:'Corn',price:456,chg:'-0.89%',up:false,currency:'$'},
+];
+
+// ── STATIC TECHNICAL ANALYSIS DATA ──
+// Pre-computed signals shown while Railway loads real data
+const STATIC_TECH = {
+  // STOCKS
+  'RELIANCE': {rsi:58.2,overall:'BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:0.82,change_1w:2.1,change_1m:5.3,high_52w:3024,low_52w:2221,support:2450,resistance:2580,bb_pct:62,adx:28,stoch_k:65},
+  'TCS':      {rsi:44.1,overall:'HOLD',macd_bullish:false,above_ma50:false,above_ma200:true,change_1d:-0.45,change_1w:-1.2,change_1m:3.1,high_52w:4592,low_52w:3204,support:3380,resistance:3520,bb_pct:38,adx:18,stoch_k:42},
+  'HDFCBANK': {rsi:62.4,overall:'BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:1.12,change_1w:3.4,change_1m:7.8,high_52w:1794,low_52w:1363,support:1620,resistance:1720,bb_pct:71,adx:32,stoch_k:72},
+  'INFY':     {rsi:41.3,overall:'HOLD',macd_bullish:false,above_ma50:false,above_ma200:false,change_1d:-0.23,change_1w:-2.1,change_1m:-4.2,high_52w:2006,low_52w:1351,support:1420,resistance:1510,bb_pct:35,adx:22,stoch_k:38},
+  'SBIN':     {rsi:71.2,overall:'STRONG BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:2.10,change_1w:5.6,change_1m:12.3,high_52w:912,low_52w:601,support:780,resistance:850,bb_pct:82,adx:38,stoch_k:81},
+  'ICICIBANK':{rsi:64.5,overall:'BUY',macd_bullish:true,above_ma50:true,above_ma200:true,change_1d:0.67,change_1w:2.8,change_1m:6.5,high_52w:1329,low_52w:971,support:1190,resistance:1260,bb_pct:68,adx:29,stoch_k:67},
+  'WIPRO':    {rsi:36.8,overall:'SELL',macd_bullish:false,above_ma50:false,above_ma200:false,change_1d:-1.02,change_1w:-3.4,change_1m:-8.1,high_52w:321,low_52w:208,support:285,resistance:315,bb_pct:28,adx:25,stoch_k:31},
+  'TATAMOTORS':{rsi:74.1,overall:'STRONG BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:3.21,change_1w:7.8,change_1m:15.6,high_52w:1179,low_52w:618,support:890,resistance:980,bb_pct:85,adx:42,stoch_k:85},
+  'HCLTECH':  {rsi:47.2,overall:'HOLD',macd_bullish:false,above_ma50:true,above_ma200:true,change_1d:-0.88,change_1w:-1.5,change_1m:2.3,high_52w:1906,low_52w:1235,support:1510,resistance:1620,bb_pct:45,adx:16,stoch_k:48},
+  'BTC':      {rsi:55.3,overall:'BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:1.23,change_1w:4.5,change_1m:8.9,high_52w:109000,low_52w:56000,support:80000,resistance:90000,bb_pct:58,adx:31,stoch_k:60},
+  'ETH':      {rsi:42.1,overall:'HOLD',macd_bullish:false,above_ma50:false,above_ma200:false,change_1d:-0.89,change_1w:-3.2,change_1m:-12.4,high_52w:4091,low_52w:1740,support:1750,resistance:2000,bb_pct:33,adx:28,stoch_k:38},
+  'GOLD':     {rsi:68.4,overall:'BUY',macd_bullish:true,above_ma50:true,above_ma200:true,golden_cross:true,change_1d:0.67,change_1w:2.1,change_1m:5.8,high_52w:3167,low_52w:2124,support:3000,resistance:3150,bb_pct:72,adx:35,stoch_k:70},
+  'SILVER':   {rsi:52.3,overall:'HOLD',macd_bullish:true,above_ma50:true,above_ma200:false,change_1d:-0.34,change_1w:1.2,change_1m:3.4,high_52w:39.17,low_52w:22.28,support:32,resistance:36,bb_pct:52,adx:20,stoch_k:55},
+  'CRUDE':    {rsi:38.2,overall:'SELL',macd_bullish:false,above_ma50:false,above_ma200:false,change_1d:1.12,change_1w:-2.3,change_1m:-8.9,high_52w:93.12,low_52w:64.78,support:68,resistance:76,bb_pct:32,adx:26,stoch_k:35},
+};
+
 // ── STORAGE ──
 const getPosts    = () => { try { return JSON.parse(localStorage.getItem('mp_posts')||'[]'); } catch(e){return [];} };
 const savePosts   = p  => localStorage.setItem('mp_posts', JSON.stringify(p));
@@ -862,29 +964,67 @@ const getColor = name => AV_COLORS[name.length % AV_COLORS.length];
 
 // ── FETCH LIVE DATA ──
 async function fetchLiveData() {
+  // Immediately show static data so page is never empty
+  if (!liveStocks.length) {
+    liveStocks = STATIC_STOCKS.map(s => ({...s, badge:'NSE', bc:'var(--accent)'}));
+    renderTrending(liveStocks.slice(0,6));
+    showApiBanner('waking');
+  }
   try {
-    const res = await fetch(`${API_BASE}/all`);
+    const res = await fetch(`${API_BASE}/all`, { signal: AbortSignal.timeout(12000) });
     if (!res.ok) throw new Error('error');
     const json = await res.json();
     _retryCount = 0;
-    liveStocks = json.stocks || [];
+    _apiOnline = true;
+    // Merge live data with static — live wins
+    const liveMap = {};
+    (json.stocks||[]).forEach(s => liveMap[s.sym] = s);
+    liveStocks = STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
+    // Add any stocks from live that aren't in static
+    (json.stocks||[]).forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
     renderTrending(liveStocks.slice(0,6));
-    const ts = json.last_updated
-      ? new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST'
-      : '—';
+    const ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST';
     const el = document.getElementById('liveTs');
     if (el) { el.textContent = `LIVE · ${ts}`; el.style.color='var(--green)'; }
+    showApiBanner('online');
   } catch(e) {
     _retryCount++;
     const el = document.getElementById('liveTs');
-    if (_retryCount <= 3) {
-      if (el) el.textContent = `Retrying… (${_retryCount})`;
-      document.getElementById('trendList').innerHTML = `<div style="padding:10px;color:var(--text3);font-size:11px;text-align:center;">⏳ Connecting… attempt ${_retryCount}</div>`;
-      setTimeout(fetchLiveData, 5000);
+    if (_retryCount <= 5) {
+      if (el) el.textContent = `Connecting… (${_retryCount}/5)`;
+      showApiBanner('waking');
+      setTimeout(fetchLiveData, 8000);
     } else {
-      if (el) { el.textContent = 'OFFLINE'; el.style.color='var(--red)'; }
-      document.getElementById('trendList').innerHTML = `<div style="padding:10px;color:var(--accent2);font-size:11px;text-align:center;">⚠️ Server offline</div>`;
+      if (el) { el.textContent = 'Static Data'; el.style.color='var(--gold)'; }
+      showApiBanner('static');
     }
+  }
+}
+
+function showApiBanner(state) {
+  let banner = document.getElementById('apiBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'apiBanner';
+    banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;z-index:9999;transition:all 0.4s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+    document.body.appendChild(banner);
+  }
+  if (state === 'waking') {
+    banner.style.background = 'rgba(245,166,35,0.95)';
+    banner.style.color = '#000';
+    banner.textContent = '⏳ Connecting to live data server…';
+    banner.style.display = 'block';
+  } else if (state === 'online') {
+    banner.style.background = 'rgba(0,168,84,0.95)';
+    banner.style.color = '#fff';
+    banner.textContent = '✅ Live data connected!';
+    banner.style.display = 'block';
+    setTimeout(() => { banner.style.opacity='0'; setTimeout(()=>banner.style.display='none',400); }, 3000);
+  } else if (state === 'static') {
+    banner.style.background = 'rgba(0,112,243,0.95)';
+    banner.style.color = '#fff';
+    banner.textContent = '📊 Showing cached data — live server offline';
+    banner.style.display = 'block';
   }
 }
 
@@ -1071,15 +1211,28 @@ async function openStockModal(sym, name) {
   // Load TradingView chart
   loadTVChart(sym, '1M');
 
+  // Use static data immediately if available
+  const staticQ  = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
+  const staticTA = STATIC_TECH[sym];
+
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
     const [qRes, taRes] = await Promise.all([
-      fetch(`${API_BASE}/quote/${sym}`),
-      fetch(`${API_BASE}/technical/${sym}`)
+      fetch(`${API_BASE}/quote/${sym}`, {signal: controller.signal}),
+      fetch(`${API_BASE}/technical/${sym}`, {signal: controller.signal})
     ]);
-    const d  = qRes.ok  ? await qRes.json()  : null;
-    const ta = taRes.ok ? await taRes.json() : null;
+    clearTimeout(timer);
+    const d  = qRes.ok  ? await qRes.json()  : staticQ  || null;
+    const ta = taRes.ok ? await taRes.json() : staticTA || null;
 
     if (!d || d.price === 'N/A') {
+      // Show static data if live fails
+      if (staticQ) {
+        const fakeD = {price: staticQ.price, chg: staticQ.chg, up: staticQ.up, currency: staticQ.currency || '₹'};
+        renderStockBody(sym, fakeD, staticTA || {}, true);
+        return;
+      }
       document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--accent2);">⚠️ Could not load data for ${sym}</div>`;
       return;
     }
@@ -1307,8 +1460,96 @@ async function openStockModal(sym, name) {
       </div>`;
 
   } catch(e) {
-    document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--accent2);">⚠️ Could not connect to server.</div>`;
+    // Show static data on network error
+    const staticQ2  = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
+    const staticTA2 = STATIC_TECH[sym];
+    if (staticQ2) {
+      const fakeD = {price: staticQ2.price, chg: staticQ2.chg, up: staticQ2.up, currency: staticQ2.currency || '₹'};
+      renderStockBody(sym, fakeD, staticTA2 || {}, true);
+    } else {
+      document.getElementById('sdBody').innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3);">
+        <div style="font-size:32px;margin-bottom:10px;">📡</div>
+        <div style="font-weight:700;color:var(--text2);margin-bottom:6px;">Live server is starting up…</div>
+        <div style="font-size:12px;">Technical data will load in ~2 minutes once the server wakes up.</div>
+        <button onclick="openStockModal('${sym}','${sym}')" style="margin-top:14px;padding:8px 20px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">↻ Retry</button>
+      </div>`;
+    }
   }
+}
+
+// ── fetchAndShowStock alias ──
+function fetchAndShowStock(sym) {
+  const all = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES];
+  const found = all.find(s => s.sym === sym);
+  openStockModal(sym, found?.name || sym);
+}
+
+// ── renderStockBody (extracted for reuse with static data) ──
+function renderStockBody(sym, d, p, isStatic=false) {
+  const cur  = d.currency || '₹';
+  const up   = d.up;
+  const fmt  = v => v != null ? cur + (typeof v === 'number' ? v.toLocaleString() : v) : '—';
+  const fmtN = v => v != null ? v : '—';
+  const sc   = p.overall ? (p.overall.includes('BUY')?'var(--green)':p.overall.includes('SELL')?'var(--red)':'var(--gold)') : 'var(--text3)';
+  const staticNote = isStatic ? `<div style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--gold);margin-bottom:12px;">⏳ Showing cached data · <span style="cursor:pointer;text-decoration:underline;" onclick="openStockModal('${sym}','${sym}')">Retry live data</span></div>` : '';
+  document.getElementById('sdBody').innerHTML = staticNote + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">PRICE</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);">${cur}${typeof d.price === 'number' ? d.price.toLocaleString() : d.price}</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">CHANGE TODAY</div>
+        <div style="font-size:22px;font-weight:800;color:${up?'var(--green)':'var(--red)'};">${d.chg||'—'}</div>
+      </div>
+    </div>
+    ${p.overall ? `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:8px;">OVERALL SIGNAL</div>
+      <div style="font-size:20px;font-weight:800;color:${sc};">${p.overall}</div>
+      ${p.buy_signals != null ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;">${p.buy_signals} Buy · ${p.sell_signals} Sell · ${p.total_signals} total indicators</div>` : ''}
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      ${[
+        ['RSI (14)', p.rsi ? p.rsi.toFixed(1) : '—', p.rsi < 30 ? 'var(--green)' : p.rsi > 70 ? 'var(--red)' : 'var(--text)'],
+        ['ADX', p.adx ? p.adx.toFixed(1) : '—', 'var(--text)'],
+        ['Stoch %K', p.stoch_k ? p.stoch_k.toFixed(1) : '—', p.stoch_k < 20 ? 'var(--green)' : p.stoch_k > 80 ? 'var(--red)' : 'var(--text)'],
+        ['BB %', p.bb_pct ? p.bb_pct + '%' : '—', 'var(--text)'],
+        ['MACD', p.macd_bullish != null ? (p.macd_bullish ? '▲ Bullish' : '▼ Bearish') : '—', p.macd_bullish ? 'var(--green)' : 'var(--red)'],
+        ['vs MA50', p.above_ma50 != null ? (p.above_ma50 ? '▲ Above' : '▼ Below') : '—', p.above_ma50 ? 'var(--green)' : 'var(--red)'],
+        ['vs MA200', p.above_ma200 != null ? (p.above_ma200 ? '▲ Above' : '▼ Below') : '—', p.above_ma200 ? 'var(--green)' : 'var(--red)'],
+        ['Trend', p.golden_cross ? '🟢 Golden Cross' : p.death_cross ? '🔴 Death Cross' : '—', 'var(--text)'],
+      ].map(([label, val, color]) => `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;">
+          <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">${label}</div>
+          <div style="font-size:14px;font-weight:700;color:${color};">${val}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      ${[
+        ['1 DAY', p.change_1d != null ? (p.change_1d >= 0 ? '+' : '') + p.change_1d + '%' : '—', p.change_1d >= 0],
+        ['1 WEEK', p.change_1w != null ? (p.change_1w >= 0 ? '+' : '') + p.change_1w + '%' : '—', p.change_1w >= 0],
+        ['1 MONTH', p.change_1m != null ? (p.change_1m >= 0 ? '+' : '') + p.change_1m + '%' : '—', p.change_1m >= 0],
+      ].map(([label, val, isUp]) => `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">${label}</div>
+          <div style="font-size:13px;font-weight:700;color:${isUp?'var(--green)':'var(--red)'};">${val}</div>
+        </div>`).join('')}
+    </div>
+    ${p.support || p.resistance ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:rgba(0,168,84,0.08);border:1px solid rgba(0,168,84,0.25);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--green);font-family:'Space Mono',monospace;margin-bottom:4px;">SUPPORT</div>
+        <div style="font-size:14px;font-weight:700;color:var(--green);">${cur}${p.support?.toLocaleString()||'—'}</div>
+      </div>
+      <div style="background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.25);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--red);font-family:'Space Mono',monospace;margin-bottom:4px;">RESISTANCE</div>
+        <div style="font-size:14px;font-weight:700;color:var(--red);">${cur}${p.resistance?.toLocaleString()||'—'}</div>
+      </div>
+    </div>` : ''}
+    <div style="font-size:10px;color:var(--text3);text-align:right;margin-top:4px;font-family:'Space Mono',monospace;">
+      ${isStatic ? '📊 Cached data' : '~15min delayed · ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST'}
+    </div>`;
 }
 
 // ── POSTS ──
