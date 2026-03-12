@@ -9877,6 +9877,121 @@ setTimeout(updateNavArrows, 800);
   }
 })();
 
+
+// ── ARC BRIGHTNESS SLIDER ──
+(function() {
+  // Arc: center=(128,2), r=98
+  // t=1 = bright (start, top-left), t=0 = dim (end, bottom-right)
+  // Drag LEFT = brighter, drag RIGHT = dimmer
+  const ARC_LEN = 154;
+
+  function arcPoint(t) {
+    const deg = 180 + (1 - t) * 90;
+    const rad = deg * Math.PI / 180;
+    return {
+      x:   128 + 98 * Math.cos(rad),
+      y:     2 + 98 * Math.sin(rad),
+      rot: deg + 90
+    };
+  }
+
+  let brightness = 1.0;
+  let dragging = false, dragStartX = 0, dragStartT = 1.0;
+
+  const overlay  = document.getElementById('ambientOverlay');
+  const trail    = document.getElementById('arcTrail');
+  const handle   = document.getElementById('arcHandle');
+  const tooltip  = document.getElementById('arcTooltip');
+  const dragZone = document.getElementById('arcDragZone');
+
+  function apply(val) {
+    brightness = Math.max(0.02, Math.min(1, val));
+    const t = brightness;
+    if (trail)  trail.setAttribute('stroke-dashoffset', ((1 - t) * ARC_LEN).toFixed(1));
+    if (handle) {
+      const p = arcPoint(t);
+      handle.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) rotate(${p.rot.toFixed(1)})`);
+      const warm = Math.round(255 * (0.65 + t * 0.35));
+      handle.setAttribute('fill', `rgba(255,${warm},${Math.round(255*(1-t*0.45))},0.93)`);
+    }
+    if (overlay) overlay.style.opacity = ((1 - t) * 0.88).toFixed(3);
+    if (tooltip) tooltip.textContent = Math.round(t * 100) + '%';
+  }
+
+  function startDrag(clientX) {
+    dragging   = true;
+    dragStartX = clientX;
+    dragStartT = brightness;
+    if (tooltip) tooltip.style.opacity = '1';
+  }
+  function moveDrag(clientX) {
+    if (!dragging) return;
+    apply(dragStartT + (dragStartX - clientX) / 120);
+  }
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (tooltip) setTimeout(() => { tooltip.style.opacity = '0'; }, 1400);
+  }
+
+  if (dragZone) {
+    dragZone.addEventListener('mousedown',  e => { startDrag(e.clientX); e.preventDefault(); });
+    dragZone.addEventListener('touchstart', e => startDrag(e.touches[0].clientX), { passive: true });
+  }
+  document.addEventListener('mousemove',  e => moveDrag(e.clientX));
+  document.addEventListener('touchmove',  e => { if (dragging) moveDrag(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mouseup',    endDrag);
+  document.addEventListener('touchend',   endDrag);
+
+  const wrap = document.getElementById('ambientSliderWrap');
+  if (wrap) wrap.addEventListener('wheel', e => { e.preventDefault(); apply(brightness - e.deltaY * 0.002); }, { passive: false });
+
+  setTimeout(() => apply(1.0), 300);
+})();
 </script>
+
+<!-- ── ARC BRIGHTNESS SLIDER ── -->
+<div id="ambientSliderWrap" style="position:fixed;top:6px;right:8px;z-index:9100;user-select:none;width:130px;height:130px;pointer-events:all;">
+  <svg width="130" height="130" viewBox="0 0 130 130" style="overflow:visible;pointer-events:none;position:absolute;top:0;left:0;">
+    <defs>
+      <filter id="arcGlow2" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <linearGradient id="trailGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#7c3aed"/>
+        <stop offset="60%" stop-color="#c084fc"/>
+        <stop offset="100%" stop-color="#fbbf24"/>
+      </linearGradient>
+    </defs>
+    <path d="M 28 2 A 98 98 0 0 1 128 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" stroke-linecap="round"/>
+    <path id="arcTrail" d="M 28 2 A 98 98 0 0 1 128 100" fill="none" stroke="url(#trailGrad2)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="154" stroke-dashoffset="0" filter="url(#arcGlow2)" style="transition:stroke-dashoffset 0.07s ease;"/>
+    <!-- Dim sun -->
+    <g transform="translate(28,2)" stroke="rgba(255,255,255,0.28)" stroke-width="1.3" fill="none" stroke-linecap="round">
+      <circle r="4"/><line x1="0" y1="-7" x2="0" y2="-5.5"/><line x1="0" y1="5.5" x2="0" y2="7"/>
+      <line x1="-7" y1="0" x2="-5.5" y2="0"/><line x1="5.5" y1="0" x2="7" y2="0"/>
+      <line x1="-4.9" y1="-4.9" x2="-3.9" y2="-3.9"/><line x1="3.9" y1="3.9" x2="4.9" y2="4.9"/>
+      <line x1="4.9" y1="-4.9" x2="3.9" y2="-3.9"/><line x1="-3.9" y1="3.9" x2="-4.9" y2="4.9"/>
+    </g>
+    <!-- Bright sun -->
+    <g transform="translate(128,100)" stroke="rgba(251,191,36,0.9)" stroke-width="1.6" fill="none" stroke-linecap="round" filter="url(#arcGlow2)">
+      <circle r="5.5" fill="rgba(251,191,36,0.15)"/>
+      <line x1="0" y1="-9" x2="0" y2="-7"/><line x1="0" y1="7" x2="0" y2="9"/>
+      <line x1="-9" y1="0" x2="-7" y2="0"/><line x1="7" y1="0" x2="9" y2="0"/>
+      <line x1="-6.4" y1="-6.4" x2="-5" y2="-5"/><line x1="5" y1="5" x2="6.4" y2="6.4"/>
+      <line x1="6.4" y1="-6.4" x2="5" y2="-5"/><line x1="-5" y1="5" x2="-6.4" y2="6.4"/>
+    </g>
+    <!-- Pill handle on arc -->
+    <rect id="arcHandle" x="-13" y="-5.5" width="26" height="11" rx="5.5"
+      fill="rgba(255,255,255,0.93)" stroke="rgba(180,120,255,0.5)" stroke-width="1.2"
+      filter="url(#arcGlow2)" transform="translate(28,2) rotate(-45)"/>
+  </svg>
+  <!-- Invisible drag zone — covers the whole widget, captures all touch/mouse -->
+  <div id="arcDragZone" style="position:absolute;top:0;left:0;width:130px;height:130px;cursor:ew-resize;pointer-events:all;border-radius:0 0 0 100%;"></div>
+  <div id="arcTooltip" style="position:absolute;top:52px;left:18px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.55);padding:2px 6px;border-radius:4px;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;">100%</div>
+</div>
+<!-- Brightness overlay -->
+<div id="ambientOverlay" style="position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:8887;transition:opacity 0.1s ease;"></div>
 </body>
 </html>
