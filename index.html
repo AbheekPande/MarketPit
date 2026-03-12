@@ -1826,42 +1826,137 @@ const AV_COLORS = [
 const getColor = name => AV_COLORS[name.length % AV_COLORS.length];
 
 // ── FETCH LIVE DATA ──
+// ── YAHOO FINANCE DIRECT (no Railway needed) ──
+// Fetches live NSE stock prices directly via allorigins proxy → Yahoo Finance
+const YF_PROXY = 'https://api.allorigins.win/get?url=';
+const YF_BASE  = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+
+// Top 15 NSE stocks to keep sidebar live (Yahoo uses .NS suffix for NSE)
+const LIVE_SIDEBAR_SYMS = [
+  {sym:'RELIANCE', yf:'RELIANCE.NS', name:'Reliance Industries', sector:'Energy'},
+  {sym:'TCS',      yf:'TCS.NS',      name:'Tata Consultancy',    sector:'IT'},
+  {sym:'HDFCBANK', yf:'HDFCBANK.NS', name:'HDFC Bank',           sector:'Banking'},
+  {sym:'INFY',     yf:'INFY.NS',     name:'Infosys',             sector:'IT'},
+  {sym:'SBIN',     yf:'SBIN.NS',     name:'State Bank of India', sector:'Banking'},
+  {sym:'ICICIBANK',yf:'ICICIBANK.NS',name:'ICICI Bank',          sector:'Banking'},
+  {sym:'TATAMOTORS',yf:'TATAMOTORS.NS',name:'Tata Motors',       sector:'Auto'},
+  {sym:'WIPRO',    yf:'WIPRO.NS',    name:'Wipro',               sector:'IT'},
+  {sym:'AXISBANK', yf:'AXISBANK.NS', name:'Axis Bank',           sector:'Banking'},
+  {sym:'MARUTI',   yf:'MARUTI.NS',   name:'Maruti Suzuki',       sector:'Auto'},
+  {sym:'BAJFINANCE',yf:'BAJFINANCE.NS',name:'Bajaj Finance',     sector:'Finance'},
+  {sym:'LT',       yf:'LT.NS',       name:'Larsen & Toubro',     sector:'Infra'},
+  {sym:'HCLTECH',  yf:'HCLTECH.NS',  name:'HCL Technologies',    sector:'IT'},
+  {sym:'SUNPHARMA',yf:'SUNPHARMA.NS',name:'Sun Pharma',          sector:'Pharma'},
+  {sym:'KOTAKBANK',yf:'KOTAKBANK.NS',name:'Kotak Mahindra',      sector:'Banking'},
+];
+
+async function yfFetch(yfSym) {
+  const url   = `${YF_BASE}${yfSym}?interval=1m&range=1d`;
+  const proxy = `${YF_PROXY}${encodeURIComponent(url)}`;
+  const r    = await fetch(proxy, { signal: AbortSignal.timeout(9000) });
+  const wrap = await r.json();
+  const data = JSON.parse(wrap.contents);
+  const meta = data?.chart?.result?.[0]?.meta;
+  if (!meta) throw new Error('no meta');
+  const price = meta.regularMarketPrice;
+  const prev  = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen;
+  const chg   = prev ? ((price - prev) / prev * 100) : 0;
+  return { price, prev, chg, up: chg >= 0 };
+}
+
 async function fetchLiveData() {
-  // Immediately show static data so page is never empty
+  // Show static immediately
   if (!liveStocks.length) {
     liveStocks = STATIC_STOCKS.map(s => ({...s, badge:'NSE', bc:'var(--accent)'}));
     renderTrending(liveStocks.slice(0,6));
-    showApiBanner('waking');
   }
+
+  // ── Try Railway first (full dataset) ──
   try {
-    const res = await fetch(`${API_BASE}/all`, { signal: AbortSignal.timeout(12000) });
-    if (!res.ok) throw new Error('error');
+    const res = await fetch(`${API_BASE}/all`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error('railway-offline');
     const json = await res.json();
     _retryCount = 0;
     _apiOnline = true;
-    // Merge live data with static — live wins
     const liveMap = {};
     (json.stocks||[]).forEach(s => liveMap[s.sym] = s);
     liveStocks = STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
-    // Add any stocks from live that aren't in static
     (json.stocks||[]).forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
     renderTrending(liveStocks.slice(0,6));
+    updateTickerFromLive();
     const ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST';
     const el = document.getElementById('liveTs');
     if (el) { el.textContent = `LIVE · ${ts}`; el.style.color='var(--green)'; }
     showApiBanner('online');
-  } catch(e) {
-    _retryCount++;
-    const el = document.getElementById('liveTs');
-    if (_retryCount <= 3) {
-      if (el) el.textContent = `Connecting… (${_retryCount}/3)`;
-      showApiBanner('waking');
-      setTimeout(fetchLiveData, 6000);
-    } else {
-      if (el) { el.textContent = 'Static Data'; el.style.color='var(--gold)'; }
-      showApiBanner('static');
-    }
+    return; // Railway worked — done
+  } catch(e) {}
+
+  // ── Railway offline — fall back to Yahoo Finance direct ──
+  const el = document.getElementById('liveTs');
+  if (el) { el.textContent = '⚡ Direct feed'; el.style.color='var(--gold)'; }
+  showApiBanner('yfDirect');
+  fetchYFDirect(); // non-blocking background fetch
+}
+
+let _yfFetching = false;
+async function fetchYFDirect() {
+  if (_yfFetching) return;
+  _yfFetching = true;
+  let updated = 0;
+  // Fetch in small batches to avoid rate limits
+  const batches = [
+    LIVE_SIDEBAR_SYMS.slice(0,5),
+    LIVE_SIDEBAR_SYMS.slice(5,10),
+    LIVE_SIDEBAR_SYMS.slice(10),
+  ];
+  for (const batch of batches) {
+    await Promise.allSettled(batch.map(async item => {
+      try {
+        const { price, chg, up } = await yfFetch(item.yf);
+        const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
+        // Update liveStocks array
+        const existing = liveStocks.find(s => s.sym === item.sym);
+        if (existing) {
+          existing.price = price;
+          existing.chg   = chgStr;
+          existing.up    = up;
+        } else {
+          liveStocks.push({ ...item, price, chg: chgStr, up, badge:'NSE', bc:'var(--accent)' });
+        }
+        // Update sidebar DOM directly if visible
+        updateSidebarItem(item.sym, price, chgStr, up);
+        updated++;
+      } catch(e) {}
+    }));
+    await new Promise(r => setTimeout(r, 400)); // small pause between batches
   }
+  if (updated > 0) {
+    renderTrending(liveStocks.slice(0,6));
+    updateTickerFromLive();
+    const ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}) + ' IST';
+    const el = document.getElementById('liveTs');
+    if (el) { el.textContent = `⚡ LIVE · ${ts}`; el.style.color='var(--green)'; }
+  }
+  _yfFetching = false;
+}
+
+function updateSidebarItem(sym, price, chgStr, up) {
+  // Update any visible price elements with data-sym attribute
+  document.querySelectorAll(`[data-sym="${sym}"]`).forEach(el => {
+    const priceEl = el.querySelector('.stock-price');
+    const chgEl   = el.querySelector('.stock-chg');
+    if (priceEl) { priceEl.textContent = '₹' + price.toLocaleString('en-IN', {maximumFractionDigits:2}); priceEl.className = `stock-price ${up?'up':'dn'}`; }
+    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = `stock-chg ${up?'up':'dn'}`; }
+  });
+}
+
+function updateTickerFromLive() {
+  const track = document.getElementById('tickerTrack');
+  if (!track || !liveStocks.length) return;
+  const items = liveStocks.slice(0,20).map(s =>
+    `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-price ${s.up?'up':'dn'}">₹${(s.price||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</span><span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span></span>`
+  ).join('');
+  track.innerHTML = items + items; // double for seamless scroll
 }
 
 function showApiBanner(state) {
@@ -1872,13 +1967,19 @@ function showApiBanner(state) {
     banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;z-index:9999;transition:all 0.4s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
     document.body.appendChild(banner);
   }
-  if (state === 'waking') {
+  if (state === 'yfDirect') {
+    banner.style.background = 'rgba(0,168,84,0.92)';
+    banner.style.color = '#fff';
+    banner.textContent = '⚡ Live prices via direct feed';
+    banner.style.display = 'block';
+    banner.style.opacity = '1';
+    setTimeout(() => { banner.style.opacity='0'; setTimeout(()=>banner.style.display='none',400); }, 4000);
+  } else if (state === 'waking') {
     banner.style.background = 'rgba(245,166,35,0.95)';
     banner.style.color = '#000';
     banner.textContent = '⏳ Connecting to live data server…';
     banner.style.display = 'block';
     banner.style.opacity = '1';
-    // Auto-hide after 15s even if server never responds
     clearTimeout(banner._autoHide);
     banner._autoHide = setTimeout(() => {
       banner.style.opacity = '0';
@@ -5988,6 +6089,8 @@ renderChat();
 renderLeaderboard();
 fetchLiveData();
 loadSymbols();
+// Auto-refresh every 30s — uses Railway if up, else Yahoo Finance direct
+setInterval(() => { fetchLiveData(); }, 30000);
 setInterval(fetchLiveData, 60000);
 
 // Live clock — updates every second
@@ -9565,7 +9668,7 @@ setTimeout(updateNavArrows, 800);
 
     // Update live prices in hero
     updateHeroPrices();
-    setInterval(updateHeroPrices, 30000);
+    setInterval(updateHeroPrices, 15000);
   }
 
   function animate() {
@@ -9582,32 +9685,50 @@ setTimeout(updateNavArrows, 800);
     if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
   }
 
-  function updateHeroPrices() {
-    // Try to pull from liveStocks/liveIndices, fall back to OPT_CONFIGS spot
-    try {
-      const niftyEl = document.getElementById('heroNifty');
-      const bnEl    = document.getElementById('heroBankNifty');
-      const btcEl   = document.getElementById('heroBtc');
+  // ── LIVE HERO PRICES via Yahoo Finance (no backend needed) ──
+  const HERO_SYMBOLS = [
+    { id: 'heroNifty',      yfSym: '%5ENSEI',   label: 'NIFTY 50',    prefix: '',  color: '#0070f3', fmt: 'IN' },
+    { id: 'heroBankNifty',  yfSym: '%5ENSEBANK', label: 'BANK NIFTY',  prefix: '',  color: '#0070f3', fmt: 'IN' },
+    { id: 'heroBtc',        yfSym: 'BTC-USD',   label: 'BITCOIN',     prefix: '$', color: '#f5a623', fmt: 'US' },
+  ];
 
-      // Nifty from OPT_CONFIGS
-      if (niftyEl && typeof OPT_CONFIGS !== 'undefined') {
-        const spot = OPT_CONFIGS.NIFTY.spot;
-        niftyEl.textContent = spot.toLocaleString('en-IN');
+  async function fetchHeroPrice(sym) {
+    // Use allorigins proxy to bypass CORS on Yahoo Finance
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m&range=1d`;
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+    const json = await r.json();
+    const data = JSON.parse(json.contents);
+    const meta = data.chart.result[0].meta;
+    return {
+      price: meta.regularMarketPrice,
+      prev:  meta.previousClose || meta.chartPreviousClose,
+      open:  meta.regularMarketOpen,
+    };
+  }
+
+  async function updateHeroPrices() {
+    for (const s of HERO_SYMBOLS) {
+      const el = document.getElementById(s.id);
+      if (!el) continue;
+      try {
+        const { price, prev } = await fetchHeroPrice(s.yfSym);
+        if (!price) continue;
+        const chgPct = prev ? ((price - prev) / prev * 100) : 0;
+        const up     = chgPct >= 0;
+        const fmtPrice = s.fmt === 'IN'
+          ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+          : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        const sign = up ? '+' : '';
+        el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span><span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${sign}${chgPct.toFixed(2)}%</span>`;
+        // flash animation
+        el.style.transform = 'scale(1.08)';
+        el.style.transition = 'transform 0.2s';
+        setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+      } catch(e) {
+        // silently keep last value
       }
-      if (bnEl && typeof OPT_CONFIGS !== 'undefined') {
-        const spot = OPT_CONFIGS.BANKNIFTY.spot;
-        bnEl.textContent = spot.toLocaleString('en-IN');
-      }
-      // BTC from STATIC_CRYPTO
-      if (btcEl && typeof STATIC_CRYPTO !== 'undefined') {
-        const btc = STATIC_CRYPTO.find(s => s.sym === 'BTC');
-        if (btc) btcEl.textContent = '$' + btc.price.toLocaleString('en-US');
-      }
-      // Try live data if available
-      if (typeof liveStocks !== 'undefined' && liveStocks.length) {
-        // check for index data
-      }
-    } catch(e) {}
+    }
   }
 
   // Init after DOM ready
