@@ -24,6 +24,85 @@ body.theme-dark {
   --border:rgba(255,255,255,0.08); --border2:rgba(100,180,255,0.2);
   --text:#e7e9ea; --text2:#71767b; --text3:#536471;
 }
+
+/* ── BACKGROUND THEMES — applied to every surface ── */
+/* Each theme overrides the main bg variables so ALL panels, cards, header etc pick it up */
+body.bg-cosmos {
+  --bg:#0f0c29; --bg2:#1a1640; --bg3:#221d52; --panel:#1a1640;
+  --border:rgba(160,120,255,0.15); --text:#e2e0ff; --text2:#a89fd8; --text3:#6b5fa8;
+  background: linear-gradient(135deg,#0f0c29 0%,#302b63 60%,#24243e 100%) fixed !important;
+}
+body.bg-aurora {
+  --bg:#0d1b2a; --bg2:#112236; --bg3:#162d47; --panel:#112236;
+  --border:rgba(0,200,255,0.12); --text:#d0f0ff; --text2:#7fc8e8; --text3:#4a8fa8;
+  background: linear-gradient(135deg,#0d324d 0%,#1a2a4a 50%,#2d1b4e 100%) fixed !important;
+}
+body.bg-sunset {
+  --bg:#1a0a12; --bg2:#2a1020; --bg3:#3a1830; --panel:#2a1020;
+  --border:rgba(255,100,120,0.15); --text:#ffe4ec; --text2:#e8a0b0; --text3:#a05060;
+  background: linear-gradient(135deg,#2d0a1a 0%,#4a1535 50%,#1a0a2d 100%) fixed !important;
+}
+body.bg-forest {
+  --bg:#071a07; --bg2:#0d260d; --bg3:#133213; --panel:#0d260d;
+  --border:rgba(80,200,80,0.12); --text:#d0f0d0; --text2:#80c880; --text3:#408040;
+  background: linear-gradient(135deg,#071a07 0%,#0f2e0f 50%,#1a3a0a 100%) fixed !important;
+}
+body.bg-ocean {
+  --bg:#020d1a; --bg2:#051525; --bg3:#082035; --panel:#051525;
+  --border:rgba(0,120,255,0.15); --text:#c8e8ff; --text2:#6098c8; --text3:#305878;
+  background: linear-gradient(135deg,#020d1a 0%,#0a1a3a 50%,#051028 100%) fixed !important;
+}
+body.bg-sakura {
+  --bg:#1a0812; --bg2:#2a1020; --bg3:#3a1830; --panel:#2a1020;
+  --border:rgba(255,150,180,0.15); --text:#ffe8f0; --text2:#e8a0c0; --text3:#a05070;
+  background: linear-gradient(135deg,#2d0d1a 0%,#4a1030,#3a082a 100%) fixed !important;
+}
+body.bg-midnight {
+  --bg:#050508; --bg2:#0a0a12; --bg3:#10101e; --panel:#0a0a12;
+  --border:rgba(100,100,200,0.12); --text:#d0d0f0; --text2:#7070a0; --text3:#404060;
+  background: linear-gradient(135deg,#05050a 0%,#0a0a1e 60%,#050512 100%) fixed !important;
+}
+body.bg-gold {
+  --bg:#1a1000; --bg2:#261800; --bg3:#322000; --panel:#261800;
+  --border:rgba(255,200,0,0.15); --text:#fff8d0; --text2:#d4a820; --text3:#907020;
+  background: linear-gradient(135deg,#1a1000 0%,#2a1e00 50%,#1a0e00 100%) fixed !important;
+}
+body.bg-neon {
+  --bg:#030303; --bg2:#080810; --bg3:#0d0d18; --panel:#080810;
+  --border:rgba(0,255,136,0.12); --text:#e0ffe8; --text2:#00cc66; --text3:#006633;
+  background: linear-gradient(135deg,#030303 0%,#080818 50%,#030308 100%) fixed !important;
+}
+/* Ensure all panels use the bg variable */
+body[class*='bg-'] header,
+body[class*='bg-'] .panel,
+body[class*='bg-'] .left-panel,
+body[class*='bg-'] .right-panel,
+body[class*='bg-'] .feed-card,
+body[class*='bg-'] .card,
+body[class*='bg-'] .modal-box,
+body[class*='bg-'] .nav-tabs,
+body[class*='bg-'] #eyesBanner {
+  background: var(--bg2) !important;
+  border-color: var(--border) !important;
+}
+body[class*='bg-'] .main-layout,
+body[class*='bg-'] #mainContent,
+body[class*='bg-'] .content-area {
+  background: transparent !important;
+}
+
+/* bg-theme card hover lift in settings */
+.bg-theme-card {
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease !important;
+  cursor: pointer;
+}
+.bg-theme-card:hover {
+  transform: translateY(-8px) scale(1.06) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35) !important;
+  z-index: 10;
+  position: relative;
+}
+
 /* ACCENT COLORS */
 body.accent-blue   { --accent:#0070f3; }
 body.accent-yellow { --accent:#ffd400; }
@@ -773,8 +852,6 @@ header {
 
   </div>
 
-  <!-- Right label -->
-  <div style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;right:16px;text-transform:uppercase;">Move cursor →</div>
 </div>
 
 <!-- HEADER -->
@@ -4122,6 +4199,19 @@ const FONT_SIZES = [
   { id:'large',  label:'Aa', style:'font-size:18px', desc:'Large' },
 ];
 
+const BG_THEMES = [
+  { id:'none',     label:'Default',  emoji:'⬜', preview:'linear-gradient(135deg,#f0f4f8,#fff)' },
+  { id:'cosmos',   label:'Cosmos',   emoji:'🌌', preview:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' },
+  { id:'aurora',   label:'Aurora',   emoji:'🌠', preview:'linear-gradient(135deg,#0d324d,#7f5a83,#00c9ff)' },
+  { id:'sunset',   label:'Sunset',   emoji:'🌅', preview:'linear-gradient(135deg,#ff6e7f,#bfe9ff,#f7971e)' },
+  { id:'forest',   label:'Forest',   emoji:'🌲', preview:'linear-gradient(135deg,#0b3d0b,#1a6b1a,#56ab2f)' },
+  { id:'ocean',    label:'Ocean',    emoji:'🌊', preview:'linear-gradient(135deg,#005c97,#363795,#1a1a2e)' },
+  { id:'sakura',   label:'Sakura',   emoji:'🌸', preview:'linear-gradient(135deg,#ffb7c5,#ff6b9d,#ffecd2)' },
+  { id:'midnight', label:'Midnight', emoji:'🌃', preview:'linear-gradient(135deg,#0a0a0f,#1a1a2e,#16213e)' },
+  { id:'gold',     label:'Gold',     emoji:'✨', preview:'linear-gradient(135deg,#f7971e,#ffd200,#fff3a3)' },
+  { id:'neon',     label:'Neon',     emoji:'⚡', preview:'linear-gradient(135deg,#0d0d0d,#1a0033,#00ff88)' },
+];
+
 function applySettings(s) {
   const body = document.body;
   // Theme — light is default (no class), dim and dark get a class
@@ -4135,11 +4225,57 @@ function applySettings(s) {
   // Font
   body.classList.remove('font-small','font-normal','font-large');
   if (s.fontSize) body.classList.add('font-' + s.fontSize);
+  // Background theme
+  body.classList.remove('bg-cosmos','bg-aurora','bg-sunset','bg-forest','bg-ocean','bg-sakura','bg-midnight','bg-gold','bg-neon');
+  if (s.bgTheme && s.bgTheme !== 'none') body.classList.add('bg-' + s.bgTheme);
 }
 
 function openSettings(page) {
   openModal('settingsModal');
   renderSettings(page || 'main');
+}
+
+const BG_COLORS = {
+  none:     {bg:'#f0f4f8',card:'#ffffff',text:'#0f1923',accent:'#0070f3'},
+  cosmos:   {bg:'#0f0c29',card:'#1a1640',text:'#e2e0ff',accent:'#a78bfa'},
+  aurora:   {bg:'#0d1b2a',card:'#112236',text:'#d0f0ff',accent:'#38bdf8'},
+  sunset:   {bg:'#2d0a1a',card:'#3a1020',text:'#ffe4ec',accent:'#fb7185'},
+  forest:   {bg:'#071a07',card:'#0d260d',text:'#d0f0d0',accent:'#4ade80'},
+  ocean:    {bg:'#020d1a',card:'#051525',text:'#c8e8ff',accent:'#38bdf8'},
+  sakura:   {bg:'#2d0d1a',card:'#3a1020',text:'#ffe8f0',accent:'#f472b6'},
+  midnight: {bg:'#050508',card:'#0a0a12',text:'#d0d0f0',accent:'#818cf8'},
+  gold:     {bg:'#1a1000',card:'#261800',text:'#fff8d0',accent:'#fbbf24'},
+  neon:     {bg:'#030303',card:'#080810',text:'#e0ffe8',accent:'#00ff88'},
+};
+function renderBgCard(bg, curBg) {
+  const active = curBg === bg.id;
+  const c = BG_COLORS[bg.id] || BG_COLORS.none;
+  const border = active ? 'var(--accent)' : 'var(--border)';
+  return '<div class="bg-theme-card" onclick="setSetting(\'bgTheme\',\'' + bg.id + '\')" style="border-radius:16px;overflow:hidden;border:2px solid ' + border + ';position:relative;">' +
+    '<div style="padding:8px 8px 0 8px;background:' + c.bg + ';">' +
+      '<div style="background:' + c.card + ';border-radius:6px 6px 0 0;padding:5px 8px;display:flex;align-items:center;gap:5px;">' +
+        '<div style="width:14px;height:14px;border-radius:3px;background:' + c.accent + ';font-size:7px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;">M</div>' +
+        '<div style="flex:1;height:4px;background:rgba(128,128,128,0.15);border-radius:3px;"></div>' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:' + c.accent + ';opacity:0.8;"></div>' +
+      '</div>' +
+      '<div style="background:' + c.card + ';border-radius:0 0 6px 6px;padding:6px 8px 8px;border-top:1px solid rgba(128,128,128,0.1);">' +
+        '<div style="height:4px;width:65%;background:' + c.accent + ';border-radius:2px;margin-bottom:4px;opacity:0.9;"></div>' +
+        '<div style="height:3px;width:90%;background:rgba(128,128,128,0.2);border-radius:2px;margin-bottom:3px;"></div>' +
+        '<div style="height:3px;width:70%;background:rgba(128,128,128,0.15);border-radius:2px;margin-bottom:6px;"></div>' +
+        '<div style="display:flex;gap:4px;">' +
+          '<div style="height:14px;flex:1;background:' + c.accent + ';border-radius:4px;opacity:0.2;"></div>' +
+          '<div style="height:14px;flex:1;background:' + c.accent + ';border-radius:4px;opacity:0.2;"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="padding:8px 10px;background:' + c.card + ';display:flex;align-items:center;justify-content:space-between;">' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<span style="font-size:16px;">' + bg.emoji + '</span>' +
+        '<span style="font-size:12px;font-weight:700;color:' + c.text + ';">' + bg.label + '</span>' +
+      '</div>' +
+      (active ? '<div style="width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;">✓</div>' : '') +
+    '</div>' +
+  '</div>';
 }
 
 function renderSettings(page) {
@@ -4210,6 +4346,12 @@ function renderSettings(page) {
             <div onclick="setSetting('fontSize','${f.id}')" style="flex:1;padding:12px;text-align:center;cursor:pointer;background:${curFont===f.id?'var(--accent)':'transparent'};color:${curFont===f.id?'#fff':'var(--text2)'};${f.style};font-weight:700;transition:all 0.15s;${i<2?'border-right:1px solid var(--border)':''};">
               ${f.label}<div style="font-size:10px;margin-top:2px;opacity:0.7;">${f.desc}</div>
             </div>`).join('')}
+        </div>
+
+        <!-- BACKGROUND THEME -->
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:14px;">BACKGROUND THEME</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;">
+          ${BG_THEMES.map(bg => renderBgCard(bg, s.bgTheme||'none')).join('')}
         </div>
 
         <!-- PREVIEW -->
@@ -9878,120 +10020,10 @@ setTimeout(updateNavArrows, 800);
 })();
 
 
-// ── ARC BRIGHTNESS SLIDER ──
-(function() {
-  // Arc: center=(128,2), r=98
-  // t=1 = bright (start, top-left), t=0 = dim (end, bottom-right)
-  // Drag LEFT = brighter, drag RIGHT = dimmer
-  const ARC_LEN = 154;
-
-  function arcPoint(t) {
-    const deg = 180 + (1 - t) * 90;
-    const rad = deg * Math.PI / 180;
-    return {
-      x:   128 + 98 * Math.cos(rad),
-      y:     2 + 98 * Math.sin(rad),
-      rot: deg + 90
-    };
-  }
-
-  let brightness = 1.0;
-  let dragging = false, dragStartX = 0, dragStartT = 1.0;
-
-  const overlay  = document.getElementById('ambientOverlay');
-  const trail    = document.getElementById('arcTrail');
-  const handle   = document.getElementById('arcHandle');
-  const tooltip  = document.getElementById('arcTooltip');
-  const dragZone = document.getElementById('arcDragZone');
-
-  function apply(val) {
-    brightness = Math.max(0.02, Math.min(1, val));
-    const t = brightness;
-    if (trail)  trail.setAttribute('stroke-dashoffset', ((1 - t) * ARC_LEN).toFixed(1));
-    if (handle) {
-      const p = arcPoint(t);
-      handle.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) rotate(${p.rot.toFixed(1)})`);
-      const warm = Math.round(255 * (0.65 + t * 0.35));
-      handle.setAttribute('fill', `rgba(255,${warm},${Math.round(255*(1-t*0.45))},0.93)`);
-    }
-    if (overlay) overlay.style.opacity = ((1 - t) * 0.88).toFixed(3);
-    if (tooltip) tooltip.textContent = Math.round(t * 100) + '%';
-  }
-
-  function startDrag(clientX) {
-    dragging   = true;
-    dragStartX = clientX;
-    dragStartT = brightness;
-    if (tooltip) tooltip.style.opacity = '1';
-  }
-  function moveDrag(clientX) {
-    if (!dragging) return;
-    apply(dragStartT + (dragStartX - clientX) / 120);
-  }
-  function endDrag() {
-    if (!dragging) return;
-    dragging = false;
-    if (tooltip) setTimeout(() => { tooltip.style.opacity = '0'; }, 1400);
-  }
-
-  if (dragZone) {
-    dragZone.addEventListener('mousedown',  e => { startDrag(e.clientX); e.preventDefault(); });
-    dragZone.addEventListener('touchstart', e => startDrag(e.touches[0].clientX), { passive: true });
-  }
-  document.addEventListener('mousemove',  e => moveDrag(e.clientX));
-  document.addEventListener('touchmove',  e => { if (dragging) moveDrag(e.touches[0].clientX); }, { passive: true });
-  document.addEventListener('mouseup',    endDrag);
-  document.addEventListener('touchend',   endDrag);
-
-  const wrap = document.getElementById('ambientSliderWrap');
-  if (wrap) wrap.addEventListener('wheel', e => { e.preventDefault(); apply(brightness - e.deltaY * 0.002); }, { passive: false });
-
-  setTimeout(() => apply(1.0), 300);
-})();
 </script>
 
-<!-- ── ARC BRIGHTNESS SLIDER ── -->
-<div id="ambientSliderWrap" style="position:fixed;top:6px;right:8px;z-index:9100;user-select:none;width:130px;height:130px;pointer-events:all;">
-  <svg width="130" height="130" viewBox="0 0 130 130" style="overflow:visible;pointer-events:none;position:absolute;top:0;left:0;">
-    <defs>
-      <filter id="arcGlow2" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation="3" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <linearGradient id="trailGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7c3aed"/>
-        <stop offset="60%" stop-color="#c084fc"/>
-        <stop offset="100%" stop-color="#fbbf24"/>
-      </linearGradient>
-    </defs>
-    <path d="M 28 2 A 98 98 0 0 1 128 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" stroke-linecap="round"/>
-    <path id="arcTrail" d="M 28 2 A 98 98 0 0 1 128 100" fill="none" stroke="url(#trailGrad2)" stroke-width="8" stroke-linecap="round"
-      stroke-dasharray="154" stroke-dashoffset="0" filter="url(#arcGlow2)" style="transition:stroke-dashoffset 0.07s ease;"/>
-    <!-- Dim sun -->
-    <g transform="translate(28,2)" stroke="rgba(255,255,255,0.28)" stroke-width="1.3" fill="none" stroke-linecap="round">
-      <circle r="4"/><line x1="0" y1="-7" x2="0" y2="-5.5"/><line x1="0" y1="5.5" x2="0" y2="7"/>
-      <line x1="-7" y1="0" x2="-5.5" y2="0"/><line x1="5.5" y1="0" x2="7" y2="0"/>
-      <line x1="-4.9" y1="-4.9" x2="-3.9" y2="-3.9"/><line x1="3.9" y1="3.9" x2="4.9" y2="4.9"/>
-      <line x1="4.9" y1="-4.9" x2="3.9" y2="-3.9"/><line x1="-3.9" y1="3.9" x2="-4.9" y2="4.9"/>
-    </g>
-    <!-- Bright sun -->
-    <g transform="translate(128,100)" stroke="rgba(251,191,36,0.9)" stroke-width="1.6" fill="none" stroke-linecap="round" filter="url(#arcGlow2)">
-      <circle r="5.5" fill="rgba(251,191,36,0.15)"/>
-      <line x1="0" y1="-9" x2="0" y2="-7"/><line x1="0" y1="7" x2="0" y2="9"/>
-      <line x1="-9" y1="0" x2="-7" y2="0"/><line x1="7" y1="0" x2="9" y2="0"/>
-      <line x1="-6.4" y1="-6.4" x2="-5" y2="-5"/><line x1="5" y1="5" x2="6.4" y2="6.4"/>
-      <line x1="6.4" y1="-6.4" x2="5" y2="-5"/><line x1="-5" y1="5" x2="-6.4" y2="6.4"/>
-    </g>
-    <!-- Pill handle on arc -->
-    <rect id="arcHandle" x="-13" y="-5.5" width="26" height="11" rx="5.5"
-      fill="rgba(255,255,255,0.93)" stroke="rgba(180,120,255,0.5)" stroke-width="1.2"
-      filter="url(#arcGlow2)" transform="translate(28,2) rotate(-45)"/>
-  </svg>
-  <!-- Invisible drag zone — covers the whole widget, captures all touch/mouse -->
-  <div id="arcDragZone" style="position:absolute;top:0;left:0;width:130px;height:130px;cursor:ew-resize;pointer-events:all;border-radius:0 0 0 100%;"></div>
-  <div id="arcTooltip" style="position:absolute;top:52px;left:18px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.55);padding:2px 6px;border-radius:4px;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;">100%</div>
-</div>
+
 <!-- Brightness overlay -->
-<div id="ambientOverlay" style="position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:8887;transition:opacity 0.1s ease;"></div>
+
 </body>
 </html>
