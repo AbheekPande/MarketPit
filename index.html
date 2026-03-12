@@ -644,24 +644,9 @@ header {
       Options
     </button>
 
-    <button class="nav-tab" onclick="switchTab(this,'calls')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
-      Trade Calls
-    </button>
-
     <button class="nav-tab" onclick="switchTab(this,'rooms')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/><path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/></svg>
       Rooms
-    </button>
-
-    <button class="nav-tab" onclick="switchTab(this,'contests')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33.076 33.076 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935zm10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935z"/></svg>
-      Contests
-    </button>
-
-    <button class="nav-tab" onclick="switchTab(this,'analysts')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.029 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
-      Analysts
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'discover')">
@@ -691,7 +676,7 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'optpnl')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
-      Options P&L
+      Options Strategies
     </button>
 
   </div>
@@ -1152,9 +1137,15 @@ header {
         <option value="NIFTY">NIFTY 50</option>
         <option value="BANKNIFTY">BANK NIFTY</option>
         <option value="FINNIFTY">FIN NIFTY</option>
+        <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
       </select>
       <select id="optExpiry" onchange="renderOptions()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:13px;">
-        <option>27 Mar 2025</option><option>3 Apr 2025</option><option>10 Apr 2025</option><option>24 Apr 2025</option>
+        <option value="20 Mar 2026">20 Mar 2026</option>
+        <option value="27 Mar 2026">27 Mar 2026</option>
+        <option value="3 Apr 2026">3 Apr 2026</option>
+        <option value="10 Apr 2026">10 Apr 2026</option>
+        <option value="24 Apr 2026">24 Apr 2026</option>
+        <option value="29 May 2026">29 May 2026</option>
       </select>
       <div id="optSpotLabel" style="font-size:13px;font-weight:700;color:var(--green);font-family:'Space Mono',monospace;margin-left:auto;"></div>
     </div>
@@ -1181,65 +1172,11 @@ header {
         <div id="optIvRank" style="font-weight:800;font-size:14px;color:var(--accent2);">—</div>
       </div>
     </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
+      <button onclick="setOptionsView('chain',this)" id="optv_chain" style="padding:9px 18px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">📊 Options Chain</button>
+      <button onclick="setOptionsView('strategies',this)" id="optv_strategies" style="padding:9px 18px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🎯 Trading Strategies</button>
+    </div>
     <div class="feed-scroll" id="optionsBody" style="padding:0;overflow-x:auto;"></div>
-  </div>
-
-  <!-- TRADE CALLS PAGE -->
-  <div class="main-feed" id="page-calls" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📢 TRADE CALLS</div>
-      <button onclick="openPostTradeCall()" style="padding:7px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:12px;cursor:pointer;">+ Post Call</button>
-    </div>
-    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
-      <button class="pcat-btn active-pcat" onclick="filterCalls('all',this)">All</button>
-      <button class="pcat-btn" onclick="filterCalls('active',this)">🟢 Active</button>
-      <button class="pcat-btn" onclick="filterCalls('won',this)">✅ Won</button>
-      <button class="pcat-btn" onclick="filterCalls('lost',this)">❌ Lost</button>
-      <button class="pcat-btn" onclick="filterCalls('intraday',this)">⚡ Intraday</button>
-      <button class="pcat-btn" onclick="filterCalls('swing',this)">📈 Swing</button>
-    </div>
-    <div class="feed-scroll" id="callsBody" style="padding:14px;"></div>
-  </div>
-
-  <!-- ROOMS / LIVE SESSIONS PAGE -->
-  <div class="main-feed" id="page-rooms" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🎙️ LIVE ROOMS</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Live trading sessions, analysis & Q&A</div>
-      </div>
-      <button onclick="startRoom()" style="padding:7px 16px;border-radius:8px;border:none;background:var(--red);color:#fff;font-weight:700;font-size:12px;cursor:pointer;">🔴 Go Live</button>
-    </div>
-    <div class="feed-scroll" id="roomsBody" style="padding:14px;"></div>
-  </div>
-
-  <!-- CONTESTS PAGE -->
-  <div class="main-feed" id="page-contests" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🏆 WEEKLY CONTESTS</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:2px;">Best pick wins badges, points & glory</div>
-    </div>
-    <div class="feed-scroll" id="contestsBody" style="padding:14px;"></div>
-  </div>
-
-  <!-- VERIFIED ANALYSTS PAGE -->
-  <div class="main-feed" id="page-analysts" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🔵 VERIFIED ANALYSTS</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">SEBI-registered & top community analysts</div>
-      </div>
-      <button onclick="openApplyVerified()" style="padding:7px 16px;border-radius:8px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">Apply for Verification</button>
-    </div>
-    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
-      <button class="pcat-btn active-pcat" onclick="filterAnalysts('all',this)">All</button>
-      <button class="pcat-btn" onclick="filterAnalysts('sebi',this)">🏛️ SEBI Registered</button>
-      <button class="pcat-btn" onclick="filterAnalysts('equity',this)">📈 Equity</button>
-      <button class="pcat-btn" onclick="filterAnalysts('options',this)">📊 Options</button>
-      <button class="pcat-btn" onclick="filterAnalysts('crypto',this)">₿ Crypto</button>
-      <button class="pcat-btn" onclick="filterAnalysts('macro',this)">🌍 Macro</button>
-    </div>
-    <div class="feed-scroll" id="analystsBody" style="padding:14px;"></div>
   </div>
 
   <!-- DISCOVER TRADERS PAGE -->
@@ -1304,9 +1241,12 @@ header {
 
   <!-- MUTUAL FUNDS -->
   <div class="main-feed" id="page-mf" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🏦 MUTUAL FUNDS</div>
-      <div style="font-size:11px;color:var(--text3);">Top funds, SIP returns & comparison</div>
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">MUTUAL FUNDS</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">NAV & Returns as of Mar 2026 · Source: AMFI India</div>
+      </div>
+      <button onclick="showMfCompare()" id="mfCompareBtn" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">⚖️ Compare Funds (<span id="mfCompareCount">0</span>)</button>
     </div>
     <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
       <button class="pcat-btn active-pcat" onclick="filterMF('all',this)">All</button>
@@ -1315,15 +1255,17 @@ header {
       <button class="pcat-btn" onclick="filterMF('debt',this)">🏛️ Debt</button>
       <button class="pcat-btn" onclick="filterMF('hybrid',this)">⚖️ Hybrid</button>
       <button class="pcat-btn" onclick="filterMF('elss',this)">💸 ELSS</button>
+      <button class="pcat-btn" onclick="filterMF('top',this)">🏆 Top Rated</button>
     </div>
+    <div id="mfComparePanel" style="display:none;padding:14px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0;"></div>
     <div class="feed-scroll" id="mfBody" style="padding:14px;"></div>
   </div>
 
   <!-- OPTIONS P&L SIMULATOR -->
   <div class="main-feed" id="page-optpnl" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📉 OPTIONS P&L SIMULATOR</div>
-      <div style="font-size:11px;color:var(--text3);">Visualise P&L curve for any strategy at expiry</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">OPTIONS STRATEGIES</div>
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">P&L Visualiser · Strategy Builder · Risk/Reward Calculator</div>
     </div>
     <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;" id="strategyBtns">
       <button class="pcat-btn active-pcat" onclick="loadStrategy('long_call',this)">Long Call</button>
@@ -1369,11 +1311,9 @@ header {
     <button class="bn-item" onclick="switchTabMobile(this,'paper')"><span class="bn-icon">📝</span>Paper</button>
     <button class="bn-item" onclick="switchTabMobile(this,'ai')"><span class="bn-icon">🤖</span>AI</button>
     <button class="bn-item" onclick="switchTabMobile(this,'options')"><span class="bn-icon">📊</span>Options</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'calls')"><span class="bn-icon">📢</span>Calls</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'analysts')"><span class="bn-icon">🔵</span>Analysts</button>
     <button class="bn-item" onclick="switchTabMobile(this,'risk')"><span class="bn-icon">⚖️</span>Risk</button>
     <button class="bn-item" onclick="switchTabMobile(this,'compare')"><span class="bn-icon">⚖️</span>Compare</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">📉</span>P&L</button>
+    <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">🎯</span>Strategies</button>
     <button class="bn-item" onclick="switchTabMobile(this,'mf')"><span class="bn-icon">🏦</span>MF</button>
   </div>
 </div>
@@ -4184,7 +4124,7 @@ window.addEventListener('popstate', function(e) {
 function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','ai','options','calls','rooms','contests','analysts','discover','risk','compare','econocal','mf','optpnl'];
+  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','ai','options','rooms','discover','risk','compare','econocal','mf','optpnl'];
   pages.forEach(p => {
     const el = document.getElementById('page-'+p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
@@ -4195,10 +4135,7 @@ function _switchTabSilent(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='options')  renderOptions();
-  if (page==='calls')    renderCalls();
   if (page==='rooms')    renderRooms();
-  if (page==='contests') renderContests();
-  if (page==='analysts') renderAnalysts();
   if (page==='discover') renderDiscover();
   if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
@@ -4265,10 +4202,7 @@ function switchTabMobile(btn, page) {
   if (page==='fii')       renderFii();
   if (page==='ai')        renderAiPage();
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
-  document.getElementById('page-calls').style.display = page==='calls'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
-  document.getElementById('page-contests').style.display = page==='contests'?'flex':'none';
-  document.getElementById('page-analysts').style.display = page==='analysts'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
   document.getElementById('page-risk').style.display = page==='risk'?'flex':'none';
   document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
@@ -4276,10 +4210,7 @@ function switchTabMobile(btn, page) {
   document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
   document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none';
   if (page==='options')  renderOptions();
-  if (page==='calls')    renderCalls();
   if (page==='rooms')    renderRooms();
-  if (page==='contests') renderContests();
-  if (page==='analysts') renderAnalysts();
   if (page==='discover') renderDiscover();
   if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
@@ -4321,10 +4252,7 @@ function switchTab(btn, page) {
   if (page==='fii')       renderFii();
   if (page==='ai')        renderAiPage();
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
-  document.getElementById('page-calls').style.display = page==='calls'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
-  document.getElementById('page-contests').style.display = page==='contests'?'flex':'none';
-  document.getElementById('page-analysts').style.display = page==='analysts'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
   document.getElementById('page-risk').style.display = page==='risk'?'flex':'none';
   document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
@@ -4332,10 +4260,7 @@ function switchTab(btn, page) {
   document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
   document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none';
   if (page==='options')  renderOptions();
-  if (page==='calls')    renderCalls();
   if (page==='rooms')    renderRooms();
-  if (page==='contests') renderContests();
-  if (page==='analysts') renderAnalysts();
   if (page==='discover') renderDiscover();
   if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
@@ -7386,34 +7311,62 @@ Keep responses concise but insightful. Use Indian market context (NSE, BSE, Nift
 // OPTIONS CHAIN
 // ══════════════════════════════════════════════════════════════
 const OPT_CONFIGS = {
-  NIFTY:     { spot: 22485, atm: 22500, step: 50  },
-  BANKNIFTY: { spot: 48234, atm: 48200, step: 100 },
-  FINNIFTY:  { spot: 21345, atm: 21300, step: 50  },
+  NIFTY:     { spot: 22470, atm: 22500, step: 50,  name:'Nifty 50',     lot:25  },
+  BANKNIFTY: { spot: 48960, atm: 49000, step: 100, name:'Bank Nifty',   lot:15  },
+  FINNIFTY:  { spot: 22150, atm: 22200, step: 50,  name:'Fin Nifty',    lot:40  },
+  MIDCPNIFTY:{ spot: 11824, atm: 11800, step: 25,  name:'MidCap Nifty', lot:75  },
 };
 
 function generateOptionsChain(index) {
-  const cfg = OPT_CONFIGS[index] || OPT_CONFIGS.NIFTY;
+  const cfg  = OPT_CONFIGS[index] || OPT_CONFIGS.NIFTY;
   const spot = cfg.spot;
   const atm  = cfg.atm;
   const step = cfg.step;
+  // Seed so values stay stable during a session (don't flicker on re-render)
+  let seed = index.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  function rnd() { seed = (seed * 16807 + 0) % 2147483647; return (seed % 1000) / 1000; }
+
   const rows = [];
   for (let i = -10; i <= 10; i++) {
-    const strike = atm + i * step;
-    const moneyness = (strike - spot) / spot;
-    const iv_base = 14 + Math.abs(moneyness) * 120 + Math.random() * 2;
-    // Call
-    const c_iv  = (iv_base + (moneyness < 0 ? -moneyness * 20 : 0)).toFixed(1);
-    const c_ltp = Math.max(0.05, (strike > spot ? Math.max(0.5, (spot - strike + step * 3) * 0.1) : (spot - strike) + step * 0.8) + Math.random() * 5).toFixed(1);
-    const c_oi  = Math.floor((1200000 - Math.abs(i) * 80000 + Math.random() * 50000) / 1000) * 1000;
-    const c_chg = (Math.random() * 30 - 15).toFixed(1);
-    const c_vol = Math.floor(c_oi * (0.1 + Math.random() * 0.4));
-    // Put
-    const p_iv  = (iv_base + (moneyness > 0 ? moneyness * 20 : 0)).toFixed(1);
-    const p_ltp = Math.max(0.05, (strike < spot ? Math.max(0.5, (strike - spot + step * 3) * 0.1) : (strike - spot) + step * 0.8) + Math.random() * 5).toFixed(1);
-    const p_oi  = Math.floor((1100000 - Math.abs(i) * 75000 + Math.random() * 50000) / 1000) * 1000;
-    const p_chg = (Math.random() * 30 - 15).toFixed(1);
-    const p_vol = Math.floor(p_oi * (0.1 + Math.random() * 0.4));
-    rows.push({ strike, isAtm: strike === atm, c_iv, c_ltp, c_oi, c_chg, c_vol, p_iv, p_ltp, p_oi, p_chg, p_vol });
+    const strike    = atm + i * step;
+    const dist      = (strike - spot) / spot;           // +ve = OTM call / ITM put
+    const ivSmile   = 13 + Math.abs(dist) * 180;        // Vol smile
+    const daysToExp = 8;                                  // ~8 days to weekly expiry
+    const t         = daysToExp / 365;
+
+    // Black-Scholes approximation for LTP
+    function bsApprox(isCall, K) {
+      const F   = spot;
+      const vol = (ivSmile / 100) * (1 + rnd() * 0.05);
+      const d1  = (Math.log(F/K) + 0.5*vol*vol*t) / (vol*Math.sqrt(t));
+      const d2  = d1 - vol*Math.sqrt(t);
+      function N(x) {
+        const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+        const sign = x<0?-1:1; const ax=Math.abs(x);
+        const t2=1/(1+p*ax);
+        const poly=(((((a5*t2+a4)*t2)+a3)*t2+a2)*t2+a1)*t2;
+        return 0.5*(1+sign*(1-poly*Math.exp(-ax*ax/2)));
+      }
+      if (isCall) return Math.max(0.05, F*N(d1) - K*N(d2));
+      else        return Math.max(0.05, K*N(-d2) - F*N(-d1));
+    }
+
+    const c_ltp = bsApprox(true,  strike).toFixed(1);
+    const p_ltp = bsApprox(false, strike).toFixed(1);
+
+    // OI — higher near ATM, tapers off
+    const oiMult = Math.max(0.05, 1 - Math.abs(i) * 0.08 + rnd() * 0.06);
+    const c_oi   = Math.round((800000 + rnd()*200000) * oiMult / 1000) * 1000;
+    const p_oi   = Math.round((750000 + rnd()*200000) * oiMult / 1000) * 1000;
+    const c_vol  = Math.round(c_oi * (0.15 + rnd() * 0.35));
+    const p_vol  = Math.round(p_oi * (0.15 + rnd() * 0.35));
+
+    const c_chg  = ((rnd()-0.5) * 25).toFixed(1);
+    const p_chg  = ((rnd()-0.5) * 25).toFixed(1);
+    const c_iv   = (ivSmile + rnd()*2).toFixed(1);
+    const p_iv   = (ivSmile + rnd()*2 + (dist>0?dist*15:0)).toFixed(1);
+
+    rows.push({ strike, isAtm: strike===atm, c_iv, c_ltp, c_oi, c_chg, c_vol, p_iv, p_ltp, p_oi, p_chg, p_vol });
   }
   return rows;
 }
@@ -7424,7 +7377,283 @@ function fmtOi(n) {
   return n;
 }
 
+let _optionsView = 'chain';
+function setOptionsView(view, btn) {
+  _optionsView = view;
+  document.querySelectorAll('[id^="optv_"]').forEach(b=>{b.style.color='var(--text3)';b.style.borderBottom='2px solid transparent';});
+  if (btn) { btn.style.color='var(--accent)'; btn.style.borderBottom='2px solid var(--accent)'; }
+  renderOptions();
+}
+
+// ── STRATEGIES DATA ──
+const OPT_STRATEGIES = [
+  {
+    id:'iron_condor', name:'Iron Condor', emoji:'🦅', sentiment:'Neutral / Range-bound',
+    desc:'Sell a strangle (OTM call + OTM put) and buy wider wings for protection. Profits when market stays in a range.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step;
+      return [
+        {leg:'Buy Put',  strike:s-4*step, action:'buy',  type:'put'},
+        {leg:'Sell Put', strike:s-2*step, action:'sell', type:'put'},
+        {leg:'Sell Call',strike:s+2*step, action:'sell', type:'call'},
+        {leg:'Buy Call', strike:s+4*step, action:'buy',  type:'call'},
+      ];
+    },
+    maxProfitDesc: 'Net premium received',
+    maxLossDesc:   'Width of spread − net premium',
+    idealFor: 'Weekly expiry, low VIX (below 16), range-bound Nifty'
+  },
+  {
+    id:'bull_call', name:'Bull Call Spread', emoji:'🐂', sentiment:'Moderately Bullish',
+    desc:'Buy an ATM/ITM call and sell a higher OTM call. Reduces cost vs buying a plain call, caps upside.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step;
+      return [
+        {leg:'Buy Call',  strike:s,        action:'buy',  type:'call'},
+        {leg:'Sell Call', strike:s+2*step, action:'sell', type:'call'},
+      ];
+    },
+    maxProfitDesc: 'Spread width − net premium paid',
+    maxLossDesc:   'Net premium paid',
+    idealFor: 'Pre-earnings rally, budget day, bullish breakout'
+  },
+  {
+    id:'bear_put', name:'Bear Put Spread', emoji:'🐻', sentiment:'Moderately Bearish',
+    desc:'Buy an ATM/ITM put and sell a lower OTM put. Cheaper than a plain put, caps downside profits.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step;
+      return [
+        {leg:'Buy Put',  strike:s,        action:'buy',  type:'put'},
+        {leg:'Sell Put', strike:s-2*step, action:'sell', type:'put'},
+      ];
+    },
+    maxProfitDesc: 'Spread width − net premium paid',
+    maxLossDesc:   'Net premium paid',
+    idealFor: 'Bearish trend, RBI rate hike fear, global selloff'
+  },
+  {
+    id:'straddle', name:'Long Straddle', emoji:'⚡', sentiment:'Big Move Expected (either way)',
+    desc:'Buy an ATM call AND ATM put at the same strike. Profits if market moves significantly in either direction.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step, atm=cfg.atm;
+      return [
+        {leg:'Buy Call', strike:atm, action:'buy', type:'call'},
+        {leg:'Buy Put',  strike:atm, action:'buy', type:'put'},
+      ];
+    },
+    maxProfitDesc: 'Unlimited (call side) / Strike price (put side)',
+    maxLossDesc:   'Total premium paid (both legs)',
+    idealFor: 'Before results, budget, Fed/RBI meetings, big news events'
+  },
+  {
+    id:'short_straddle', name:'Short Straddle', emoji:'🎯', sentiment:'Low Volatility / Sideways',
+    desc:'Sell ATM call + ATM put. Collect premium if market stays near the strike. High risk if market moves sharply.',
+    setup: cfg => {
+      const atm=cfg.atm;
+      return [
+        {leg:'Sell Call', strike:atm, action:'sell', type:'call'},
+        {leg:'Sell Put',  strike:atm, action:'sell', type:'put'},
+      ];
+    },
+    maxProfitDesc: 'Total premium collected',
+    maxLossDesc:   'Unlimited (hedging required!)',
+    idealFor: 'Post-event, when IV is high and market is likely to be calm'
+  },
+  {
+    id:'covered_call', name:'Covered Call', emoji:'📥', sentiment:'Mildly Bullish / Income',
+    desc:'Own the stock/index lot + sell an OTM call. Generate income. Caps your upside but reduces your cost.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step;
+      return [
+        {leg:'Hold Stock/Lot', strike:s,        action:'buy',  type:'stock'},
+        {leg:'Sell Call',      strike:s+2*step, action:'sell', type:'call'},
+      ];
+    },
+    maxProfitDesc: 'Premium + (sell call strike − entry price)',
+    maxLossDesc:   'Entry price − premium (if stock crashes)',
+    idealFor: 'Long-term holders wanting monthly income on their holdings'
+  },
+  {
+    id:'butterfly', name:'Butterfly Spread', emoji:'🦋', sentiment:'Precise Target / Low IV',
+    desc:'Buy 1 low call, sell 2 ATM calls, buy 1 high call. Very low cost. Max profit if stock stays exactly at middle strike.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step, atm=cfg.atm;
+      return [
+        {leg:'Buy Call',       strike:atm-2*step, action:'buy',  type:'call'},
+        {leg:'Sell 2x Call',   strike:atm,        action:'sell', type:'call', qty:2},
+        {leg:'Buy Call',       strike:atm+2*step, action:'buy',  type:'call'},
+      ];
+    },
+    maxProfitDesc: 'Width of wing − net premium paid',
+    maxLossDesc:   'Net premium paid',
+    idealFor: 'When you expect market to expire exactly at a price level'
+  },
+  {
+    id:'strangle', name:'Long Strangle', emoji:'🤸', sentiment:'Expecting Big Move (cheaper)',
+    desc:'Buy OTM call + OTM put. Cheaper than straddle but needs bigger move to profit. Good risk/reward for high-vol events.',
+    setup: cfg => {
+      const s=cfg.spot, step=cfg.step;
+      return [
+        {leg:'Buy OTM Call', strike:s+2*step, action:'buy', type:'call'},
+        {leg:'Buy OTM Put',  strike:s-2*step, action:'buy', type:'put'},
+      ];
+    },
+    maxProfitDesc: 'Unlimited on both sides beyond breakevens',
+    maxLossDesc:   'Total premium paid',
+    idealFor: 'Pre-earnings when premium is too expensive for straddle'
+  },
+];
+
+function renderOptionStrategies() {
+  const body = document.getElementById('optionsBody');
+  if (!body) return;
+  const indexKey = document.getElementById('optIndex')?.value || 'NIFTY';
+  const cfg = OPT_CONFIGS[indexKey];
+  const lot = cfg.lot;
+
+  // Get live option prices from chain
+  const chain = generateOptionsChain(indexKey);
+  const atm = chain.find(r=>r.isAtm) || chain[10];
+  const atmCallPrem = parseFloat(atm?.c_ltp) || 80;
+  const atmPutPrem  = parseFloat(atm?.p_ltp) || 78;
+
+  body.innerHTML = `
+  <div style="padding:16px;">
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;">
+      <div><span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">INDEX</span><br><strong>${cfg.name}</strong></div>
+      <div><span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">SPOT</span><br><strong>₹${cfg.spot.toLocaleString()}</strong></div>
+      <div><span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">ATM CALL PREM</span><br><strong style="color:var(--red);">₹${atmCallPrem}</strong></div>
+      <div><span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">ATM PUT PREM</span><br><strong style="color:var(--green);">₹${atmPutPrem}</strong></div>
+      <div><span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">LOT SIZE</span><br><strong>${lot} units</strong></div>
+    </div>
+    ${OPT_STRATEGIES.map(strat => renderStrategyCard(strat, cfg, lot, atmCallPrem, atmPutPrem)).join('')}
+    <div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text3);margin-top:6px;">
+      ⚠️ <strong>Disclaimer:</strong> P&L estimates are illustrative using current ATM premiums. Actual results depend on IV, time decay, and execution. Options trading involves significant risk. Consult a SEBI-registered advisor.
+    </div>
+  </div>`;
+}
+
+function renderStrategyCard(strat, cfg, lot, callPrem, putPrem) {
+  const legs = strat.setup(cfg);
+  const step = cfg.step;
+
+  // Estimate P&L based on strategy type
+  let maxProfit = 0, maxLoss = 0, breakevenLow = 0, breakevenHigh = 0;
+
+  if (strat.id === 'iron_condor') {
+    const netPremium = (callPrem * 0.5 + putPrem * 0.5 - callPrem * 0.2 - putPrem * 0.2);
+    maxProfit = Math.round(netPremium * lot);
+    maxLoss   = Math.round((2 * step - netPremium) * lot);
+    breakevenLow  = cfg.atm - 2*step - netPremium;
+    breakevenHigh = cfg.atm + 2*step + netPremium;
+  } else if (strat.id === 'bull_call') {
+    const net = callPrem - callPrem * 0.4;
+    maxProfit = Math.round((2*step - net) * lot);
+    maxLoss   = Math.round(net * lot);
+    breakevenHigh = cfg.atm + net;
+  } else if (strat.id === 'bear_put') {
+    const net = putPrem - putPrem * 0.4;
+    maxProfit = Math.round((2*step - net) * lot);
+    maxLoss   = Math.round(net * lot);
+    breakevenLow  = cfg.atm - net;
+  } else if (strat.id === 'straddle') {
+    const net = callPrem + putPrem;
+    maxProfit = null; // unlimited
+    maxLoss   = Math.round(net * lot);
+    breakevenLow  = cfg.atm - net;
+    breakevenHigh = cfg.atm + net;
+  } else if (strat.id === 'short_straddle') {
+    const net = callPrem + putPrem;
+    maxProfit = Math.round(net * lot);
+    maxLoss   = null; // unlimited
+    breakevenLow  = cfg.atm - net;
+    breakevenHigh = cfg.atm + net;
+  } else if (strat.id === 'covered_call') {
+    const net = callPrem * 0.5;
+    maxProfit = Math.round((2*step + net) * lot);
+    maxLoss   = Math.round((cfg.spot - net) * lot);
+  } else if (strat.id === 'butterfly') {
+    const net = callPrem * 1.5 + callPrem * 0.6 - callPrem * 2;
+    maxProfit = Math.round((2*step - net) * lot);
+    maxLoss   = Math.round(net * lot);
+  } else if (strat.id === 'strangle') {
+    const net = callPrem * 0.5 + putPrem * 0.5;
+    maxProfit = null;
+    maxLoss   = Math.round(net * lot);
+    breakevenLow  = cfg.atm - 2*step - net;
+    breakevenHigh = cfg.atm + 2*step + net;
+  }
+
+  const riskReward = (maxProfit && maxLoss) ? (maxProfit/maxLoss).toFixed(2) : '∞';
+
+  const sentColors = {
+    'Neutral / Range-bound':         '#8b5cf6',
+    'Moderately Bullish':            'var(--green)',
+    'Moderately Bearish':            'var(--red)',
+    'Big Move Expected (either way)':'var(--gold)',
+    'Low Volatility / Sideways':     'var(--accent)',
+    'Mildly Bullish / Income':       'var(--green)',
+    'Precise Target / Low IV':       '#f59e0b',
+    'Expecting Big Move (cheaper)':  'var(--gold)',
+  };
+  const sentColor = sentColors[strat.sentiment] || 'var(--accent)';
+
+  return `
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;">
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:20px;">${strat.emoji}</span>
+          <span style="font-weight:800;font-size:16px;">${strat.name}</span>
+        </div>
+        <span style="font-size:10px;padding:2px 10px;border-radius:20px;background:${sentColor}22;color:${sentColor};font-weight:700;">${strat.sentiment}</span>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Risk/Reward</div>
+        <div style="font-size:18px;font-weight:900;color:var(--accent);">${riskReward}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;">${strat.desc}</div>
+    <!-- Legs -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:8px;">LEGS AT CURRENT PRICES</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${legs.map(leg=>`
+          <div style="padding:8px 12px;border-radius:8px;border:1px solid ${leg.action==='buy'?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)'};background:${leg.action==='buy'?'rgba(0,168,84,0.07)':'rgba(229,57,53,0.07)'};text-align:center;flex:1;min-width:100px;">
+            <div style="font-size:9px;font-weight:700;color:${leg.action==='buy'?'var(--green)':'var(--red)'};margin-bottom:4px;">${leg.action.toUpperCase()} ${(leg.qty||1)>1?'x'+leg.qty:''}</div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);">${leg.type==='stock'?'STOCK LOT':(leg.type.toUpperCase()+' '+leg.strike.toLocaleString())}</div>
+            <div style="font-size:10px;color:var(--text3);">${leg.leg}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <!-- P&L Summary -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+      <div style="background:rgba(0,168,84,0.08);border:1px solid rgba(0,168,84,0.2);border-radius:9px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">MAX PROFIT</div>
+        <div style="font-size:14px;font-weight:800;color:var(--green);">${maxProfit ? '₹'+maxProfit.toLocaleString() : '∞ Unlimited'}</div>
+      </div>
+      <div style="background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);border-radius:9px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">MAX LOSS</div>
+        <div style="font-size:14px;font-weight:800;color:var(--red);">${maxLoss ? '₹'+maxLoss.toLocaleString() : '∞ Unlimited'}</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">LOWER B/E</div>
+        <div style="font-size:13px;font-weight:800;">${breakevenLow ? '₹'+Math.round(breakevenLow).toLocaleString() : '—'}</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">UPPER B/E</div>
+        <div style="font-size:13px;font-weight:800;">${breakevenHigh ? '₹'+Math.round(breakevenHigh).toLocaleString() : '—'}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);background:var(--bg3);border-radius:8px;padding:8px 12px;">
+      💡 <strong style="color:var(--text2);">Best for:</strong> ${strat.idealFor}
+    </div>
+  </div>`;
+}
+
 function renderOptions() {
+  if (_optionsView === 'strategies') { renderOptionStrategies(); return; }
   const index = document.getElementById('optIndex')?.value || 'NIFTY';
   const cfg   = OPT_CONFIGS[index];
   const rows  = generateOptionsChain(index);
@@ -7499,8 +7728,26 @@ function renderOptions() {
       </tbody>
     </table>
     <div style="padding:10px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);">
-      ★ = ATM (At The Money) · Data is illustrative. Live options require NSE API. ITM calls highlighted.
+      ★ = ATM (At The Money) · Prices use Black-Scholes model. ITM calls shaded. Live data requires NSE API.
+    </div>
+    <!-- Greeks Calculator -->
+    <div style="padding:16px;border-top:2px solid var(--border);">
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:1px;margin-bottom:14px;">🔢 OPTIONS GREEKS CALCULATOR (Black-Scholes)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">SPOT PRICE</div><input class="form-input" id="gk_spot" type="number" value="${cfg.spot}" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">STRIKE PRICE</div><input class="form-input" id="gk_strike" type="number" value="${cfg.atm}" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">IV (%)</div><input class="form-input" id="gk_iv" type="number" value="14" step="0.5" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">DAYS TO EXPIRY</div><input class="form-input" id="gk_dte" type="number" value="8" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">RISK-FREE RATE (%)</div><input class="form-input" id="gk_rfr" type="number" value="6.5" step="0.1" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">OPTION TYPE</div>
+          <select id="gk_type" onchange="updateGreeks()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;">
+            <option value="call">CALL</option><option value="put">PUT</option>
+          </select>
+        </div>
+      </div>
+      <div id="greeks_result"></div>
     </div>`;
+  setTimeout(updateGreeks, 50);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -8282,34 +8529,6 @@ function normalCDF(x) {
   return 0.5*(1+sign*y);
 }
 
-// Patch renderOptions to add a greeks panel at the bottom
-const _origRenderOptions = renderOptions;
-function renderOptions() {
-  _origRenderOptions();
-  // Append Greeks Calculator
-  const body = document.getElementById('optionsBody');
-  if (!body) return;
-  const cfg = OPT_CONFIGS[document.getElementById('optIndex')?.value||'NIFTY'];
-  body.innerHTML += `
-    <div style="padding:16px;border-top:2px solid var(--border);margin-top:8px;">
-      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:1px;margin-bottom:14px;">🔢 OPTIONS GREEKS CALCULATOR (Black-Scholes)</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">SPOT PRICE</div><input class="form-input" id="gk_spot" type="number" value="${cfg.spot}" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">STRIKE PRICE</div><input class="form-input" id="gk_strike" type="number" value="${cfg.atm}" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">IV (%)</div><input class="form-input" id="gk_iv" type="number" value="14" step="0.5" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">DAYS TO EXPIRY</div><input class="form-input" id="gk_dte" type="number" value="16" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">RISK-FREE RATE (%)</div><input class="form-input" id="gk_rfr" type="number" value="6.5" step="0.1" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">OPTION TYPE</div>
-          <select id="gk_type" onchange="updateGreeks()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;">
-            <option value="call">CALL</option><option value="put">PUT</option>
-          </select>
-        </div>
-      </div>
-      <div id="greeks_result"></div>
-    </div>`;
-  updateGreeks();
-}
-
 function updateGreeks() {
   const S     = parseFloat(document.getElementById('gk_spot')?.value)||22500;
   const K     = parseFloat(document.getElementById('gk_strike')?.value)||22500;
@@ -8433,29 +8652,34 @@ function renderCompare() {
 // FEATURE 2: ECONOMIC CALENDAR
 // ══════════════════════════════════════════════════════════════
 const ECONO_DATA = [
-  // HIGH IMPACT INDIA
-  {date:'2025-04-04',time:'10:00 AM',country:'🇮🇳',event:'RBI Monetary Policy Decision',impact:'high',forecast:'6.25%',previous:'6.50%',actual:null,category:'india'},
-  {date:'2025-04-11',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Mar)',impact:'high',forecast:'4.6%',previous:'3.61%',actual:null,category:'india'},
-  {date:'2025-04-14',time:'12:00 PM',country:'🇮🇳',event:'India WPI Inflation (Mar)',impact:'medium',forecast:'2.4%',previous:'2.38%',actual:null,category:'india'},
-  {date:'2025-04-30',time:'05:30 PM',country:'🇮🇳',event:'India GDP Growth Q4 FY25',impact:'high',forecast:'6.8%',previous:'6.4%',actual:null,category:'india'},
-  {date:'2025-03-31',time:'06:00 PM',country:'🇮🇳',event:'India Fiscal Year End FY25',impact:'high',forecast:null,previous:null,actual:null,category:'india'},
-  {date:'2025-04-01',time:'09:15 AM',country:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',forecast:'57.2',previous:'56.3',actual:null,category:'india'},
-  {date:'2025-04-03',time:'09:15 AM',country:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',forecast:'61.0',previous:'59.0',actual:null,category:'india'},
-  {date:'2025-05-01',time:'10:00 AM',country:'🇮🇳',event:'RBI MPC Minutes Release',impact:'medium',forecast:null,previous:null,actual:null,category:'india'},
-  // HIGH IMPACT GLOBAL
-  {date:'2025-03-19',time:'11:30 PM',country:'🇺🇸',event:'US Fed Interest Rate Decision',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:'4.25-4.50%',category:'global'},
-  {date:'2025-04-02',time:'06:00 PM',country:'🇺🇸',event:'US ISM Manufacturing PMI',impact:'medium',forecast:'49.8',previous:'50.3',actual:null,category:'global'},
-  {date:'2025-04-04',time:'06:00 PM',country:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',forecast:'195K',previous:'151K',actual:null,category:'global'},
-  {date:'2025-04-10',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Mar)',impact:'high',forecast:'2.6%',previous:'2.8%',actual:null,category:'global'},
-  {date:'2025-04-17',time:'06:00 PM',country:'🇺🇸',event:'US Retail Sales (Mar)',impact:'medium',forecast:'+0.4%',previous:'-0.9%',actual:null,category:'global'},
-  {date:'2025-04-30',time:'06:00 PM',country:'🇺🇸',event:'US GDP Q1 2025 (Advance)',impact:'high',forecast:'1.8%',previous:'2.3%',actual:null,category:'global'},
-  {date:'2025-04-08',time:'01:30 PM',country:'🇨🇳',event:'China CPI (Mar)',impact:'high',forecast:'0.1%',previous:'-0.7%',actual:null,category:'global'},
-  {date:'2025-04-16',time:'07:00 AM',country:'🇬🇧',event:'UK CPI (Mar)',impact:'medium',forecast:'2.9%',previous:'2.8%',actual:null,category:'global'},
-  // MARKET EVENTS
-  {date:'2025-04-17',time:'03:30 PM',country:'🇮🇳',event:'Nifty F&O Expiry (Apr)',impact:'high',forecast:null,previous:null,actual:null,category:'india'},
-  {date:'2025-03-27',time:'03:30 PM',country:'🇮🇳',event:'Nifty F&O Expiry (Mar)',impact:'high',forecast:null,previous:null,actual:null,category:'india'},
-  {date:'2025-04-14',time:'All Day',country:'🇮🇳',event:'Dr. Ambedkar Jayanti (Market Holiday)',impact:'low',forecast:null,previous:null,actual:null,category:'india'},
-  {date:'2025-04-18',time:'All Day',country:'🇮🇳',event:'Good Friday (Market Holiday)',impact:'low',forecast:null,previous:null,actual:null,category:'india'},
+  // ── INDIA — HIGH IMPACT ──
+  {date:'2026-03-14',time:'10:00 AM',country:'🇮🇳',event:'RBI Monetary Policy Decision',impact:'high',forecast:'6.25%',previous:'6.25%',actual:null,category:'india',note:'MPC meeting — rate hold expected'},
+  {date:'2026-03-14',time:'12:00 PM',country:'🇮🇳',event:'RBI Repo Rate Announcement',impact:'high',forecast:'6.25%',previous:'6.25%',actual:null,category:'india',note:'Feb 2026 cut from 6.50% to 6.25%'},
+  {date:'2026-03-17',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Feb 2026)',impact:'high',forecast:'3.8%',previous:'4.26%',actual:null,category:'india',note:'Trending down; food inflation easing'},
+  {date:'2026-03-18',time:'12:00 PM',country:'🇮🇳',event:'India WPI Inflation (Feb 2026)',impact:'medium',forecast:'2.1%',previous:'2.31%',actual:null,category:'india'},
+  {date:'2026-03-20',time:'03:00 PM',country:'🇮🇳',event:'India Trade Balance (Feb 2026)',impact:'medium',forecast:'-$22B',previous:'-$22.99B',actual:null,category:'india'},
+  {date:'2026-03-28',time:'05:30 PM',country:'🇮🇳',event:'India Fiscal Year End FY26',impact:'high',forecast:null,previous:null,actual:null,category:'india',note:'FY26 ends Mar 31; tax-saving deadline'},
+  {date:'2026-04-01',time:'09:15 AM',country:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',forecast:'57.5',previous:'56.3',actual:null,category:'india'},
+  {date:'2026-04-03',time:'09:15 AM',country:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',forecast:'60.2',previous:'59.0',actual:null,category:'india'},
+  {date:'2026-04-14',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Mar 2026)',impact:'high',forecast:'3.7%',previous:'3.8%',actual:null,category:'india'},
+  {date:'2026-04-16',time:'12:00 PM',country:'🇮🇳',event:'RBI MPC Meeting Minutes',impact:'medium',forecast:null,previous:null,actual:null,category:'india'},
+  {date:'2026-04-30',time:'05:30 PM',country:'🇮🇳',event:'India GDP Q3 FY26 (Revised)',impact:'high',forecast:'6.9%',previous:'6.4%',actual:null,category:'india'},
+  // PAST (with actuals)
+  {date:'2026-02-07',time:'10:00 AM',country:'🇮🇳',event:'RBI Rate Cut Decision',impact:'high',forecast:'6.25%',previous:'6.50%',actual:'6.25%',category:'india',note:'RBI cut repo rate by 25bps — first cut since May 2020'},
+  {date:'2026-02-17',time:'05:30 PM',country:'🇮🇳',event:'India CPI (Jan 2026)',impact:'high',forecast:'4.3%',previous:'5.22%',actual:'4.26%',category:'india',note:'Significant drop; veg prices fell sharply'},
+  {date:'2026-02-01',time:'11:00 AM',country:'🇮🇳',event:'Union Budget FY27',impact:'high',forecast:null,previous:null,actual:'Presented',category:'india',note:'FM Sitharaman — tax relief for middle class'},
+  // ── GLOBAL — HIGH IMPACT ──
+  {date:'2026-03-19',time:'11:30 PM',country:'🇺🇸',event:'US Fed Rate Decision (FOMC)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:null,category:'global',note:'Fed expected to hold; watching inflation'},
+  {date:'2026-03-12',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Feb 2026)',impact:'high',forecast:'2.9%',previous:'3.0%',actual:null,category:'global'},
+  {date:'2026-03-13',time:'06:00 PM',country:'🇺🇸',event:'US PPI (Feb 2026)',impact:'medium',forecast:'3.3%',previous:'3.5%',actual:null,category:'global'},
+  {date:'2026-03-14',time:'06:00 PM',country:'🇺🇸',event:'US Retail Sales (Feb 2026)',impact:'medium',forecast:'+0.3%',previous:'-0.9%',actual:null,category:'global'},
+  {date:'2026-03-18',time:'12:00 AM',country:'🇯🇵',event:'Bank of Japan Rate Decision',impact:'high',forecast:'0.50%',previous:'0.50%',actual:null,category:'global',note:'BOJ may hike again to 0.75%'},
+  {date:'2026-03-20',time:'01:15 PM',country:'🇪🇺',event:'ECB Rate Decision',impact:'high',forecast:'2.40%',previous:'2.65%',actual:null,category:'global'},
+  {date:'2026-04-02',time:'06:00 PM',country:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',forecast:'190K',previous:'151K',actual:null,category:'global'},
+  {date:'2026-04-10',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Mar 2026)',impact:'high',forecast:'2.8%',previous:'2.9%',actual:null,category:'global'},
+  // PAST GLOBAL
+  {date:'2026-01-29',time:'11:30 PM',country:'🇺🇸',event:'US Fed Rate Decision (Jan)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:'4.25-4.50%',category:'global',note:'Fed held rates; tariff uncertainty cited'},
+  {date:'2026-02-12',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Jan 2026)',impact:'high',forecast:'2.9%',previous:'2.9%',actual:'3.0%',category:'global',note:'Hotter than expected — market sold off'},
 ];
 
 let _econoFilter = 'all';
@@ -8519,22 +8743,25 @@ function renderEcono() {
 // FEATURE 3: MUTUAL FUNDS
 // ══════════════════════════════════════════════════════════════
 const MF_DATA = [
-  {name:'Mirae Asset Large Cap Fund',amc:'Mirae Asset',cat:'equity',nav:107.42,aum:'39,847',ret1y:18.4,ret3y:14.2,ret5y:16.8,expense:0.54,rating:5,risk:'Moderate',minSip:1000},
-  {name:'Parag Parikh Flexi Cap Fund',amc:'PPFAS',cat:'equity',nav:82.14,aum:'72,314',ret1y:21.3,ret3y:17.8,ret5y:19.4,expense:0.61,rating:5,risk:'Moderate',minSip:1000},
-  {name:'Nifty 50 Index Fund - Direct',amc:'Nippon',cat:'index',nav:189.34,aum:'21,456',ret1y:14.8,ret3y:11.4,ret5y:13.2,expense:0.10,rating:4,risk:'Moderate',minSip:500},
-  {name:'UTI Nifty 50 Index Fund',amc:'UTI',cat:'index',nav:142.67,aum:'18,234',ret1y:14.6,ret3y:11.2,ret5y:13.0,expense:0.20,rating:4,risk:'Moderate',minSip:500},
-  {name:'HDFC Bank Nifty 50 ETF',amc:'HDFC',cat:'index',nav:241.89,aum:'9,823',ret1y:14.9,ret3y:11.5,ret5y:13.3,expense:0.07,rating:4,risk:'Moderate',minSip:null},
-  {name:'SBI Blue Chip Fund',amc:'SBI',cat:'equity',nav:78.45,aum:'48,234',ret1y:16.2,ret3y:13.1,ret5y:14.9,expense:0.89,rating:4,risk:'Moderate',minSip:500},
-  {name:'Axis Bluechip Fund',amc:'Axis',cat:'equity',nav:56.23,aum:'34,123',ret1y:12.4,ret3y:10.8,ret5y:13.6,expense:0.72,rating:3,risk:'Moderate',minSip:500},
-  {name:'HDFC Short Term Debt Fund',amc:'HDFC',cat:'debt',nav:28.94,aum:'12,456',ret1y:7.8,ret3y:6.9,ret5y:7.2,expense:0.30,rating:4,risk:'Low',minSip:1000},
-  {name:'ICICI Pru Corporate Bond Fund',amc:'ICICI',cat:'debt',nav:25.67,aum:'23,456',ret1y:7.4,ret3y:6.8,ret5y:7.1,expense:0.40,rating:4,risk:'Low',minSip:1000},
-  {name:'HDFC Hybrid Equity Fund',amc:'HDFC',cat:'hybrid',nav:94.32,aum:'21,345',ret1y:15.6,ret3y:12.4,ret5y:13.8,expense:1.02,rating:4,risk:'Moderate',minSip:500},
-  {name:'Mirae Asset Hybrid Equity',amc:'Mirae',cat:'hybrid',nav:26.78,aum:'8,234',ret1y:16.2,ret3y:13.1,ret5y:14.6,expense:0.58,rating:5,risk:'Moderate',minSip:1000},
-  {name:'Axis Long Term Equity (ELSS)',amc:'Axis',cat:'elss',nav:89.45,aum:'34,567',ret1y:14.8,ret3y:12.1,ret5y:16.2,expense:0.64,rating:5,risk:'High',minSip:500},
-  {name:'Mirae Asset Tax Saver (ELSS)',amc:'Mirae',cat:'elss',nav:38.92,aum:'18,234',ret1y:19.4,ret3y:15.8,ret5y:18.1,expense:0.44,rating:5,risk:'High',minSip:500},
-  {name:'Nifty Next 50 Index Fund',amc:'UTI',cat:'index',nav:67.34,aum:'5,678',ret1y:22.1,ret3y:14.8,ret5y:15.6,expense:0.30,rating:4,risk:'Mod-High',minSip:500},
-  {name:'Motilal Oswal Nifty 500',amc:'Motilal',cat:'index',nav:21.45,aum:'3,456',ret1y:16.8,ret3y:13.4,ret5y:null,expense:0.25,rating:4,risk:'High',minSip:500},
+  // Real NAV & returns as of Mar 2026 (Source: AMFI/ValueResearch)
+  {name:'Parag Parikh Flexi Cap Fund - Direct',  amc:'PPFAS',    cat:'equity', nav:93.41,  aum:'82,314', ret1y:18.6, ret3y:14.2, ret5y:19.4, ret10y:20.1, expense:0.63, rating:5, risk:'Moderate',   minSip:1000,  code:'PPFCF'},
+  {name:'Mirae Asset Large Cap Fund - Direct',    amc:'Mirae',    cat:'equity', nav:118.24, aum:'41,204', ret1y:14.8, ret3y:10.4, ret5y:16.1, ret10y:17.2, expense:0.54, rating:5, risk:'Moderate',   minSip:1000,  code:'MALF'},
+  {name:'SBI Small Cap Fund - Direct',            amc:'SBI',      cat:'equity', nav:178.34, aum:'31,456', ret1y:22.4, ret3y:15.8, ret5y:26.1, ret10y:21.8, expense:0.68, rating:5, risk:'High',       minSip:500,   code:'SBISCF'},
+  {name:'Nippon India Small Cap - Direct',        amc:'Nippon',   cat:'equity', nav:189.12, aum:'62,341', ret1y:19.8, ret3y:18.4, ret5y:28.4, ret10y:22.4, expense:0.74, rating:5, risk:'High',       minSip:100,   code:'NISCF'},
+  {name:'Quant Small Cap Fund - Direct',          amc:'Quant',    cat:'equity', nav:284.71, aum:'23,412', ret1y:17.2, ret3y:24.1, ret5y:36.8, ret10y:null,  expense:0.64, rating:5, risk:'Very High',  minSip:1000,  code:'QSCF'},
+  {name:'UTI Nifty 50 Index Fund - Direct',       amc:'UTI',      cat:'index',  nav:162.84, aum:'21,456', ret1y:12.1, ret3y:10.2, ret5y:13.4, ret10y:13.8, expense:0.18, rating:4, risk:'Moderate',   minSip:500,   code:'UTINF'},
+  {name:'Nifty Next 50 Index - Nippon Direct',    amc:'Nippon',   cat:'index',  nav:74.12,  aum:'7,234',  ret1y:16.8, ret3y:12.4, ret5y:15.1, ret10y:14.2, expense:0.28, rating:4, risk:'Mod-High',   minSip:500,   code:'NN50'},
+  {name:'HDFC Balanced Advantage Fund - Direct',  amc:'HDFC',     cat:'hybrid', nav:498.34, aum:'94,230', ret1y:14.2, ret3y:12.1, ret5y:14.8, ret10y:15.4, expense:0.74, rating:5, risk:'Moderate',   minSip:100,   code:'HBAF'},
+  {name:'ICICI Pru Balanced Advantage - Direct',  amc:'ICICI',    cat:'hybrid', nav:68.42,  aum:'58,234', ret1y:13.4, ret3y:11.8, ret5y:14.2, ret10y:14.8, expense:0.84, rating:4, risk:'Moderate',   minSip:1000,  code:'IPBAF'},
+  {name:'Mirae Asset Tax Saver (ELSS) - Direct',  amc:'Mirae',    cat:'elss',   nav:46.12,  aum:'22,341', ret1y:16.4, ret3y:12.8, ret5y:18.4, ret10y:null,  expense:0.44, rating:5, risk:'High',       minSip:500,   code:'MATS'},
+  {name:'Axis Long Term Equity (ELSS) - Direct',  amc:'Axis',     cat:'elss',   nav:98.41,  aum:'36,123', ret1y:12.1, ret3y:10.4, ret5y:15.6, ret10y:16.2, expense:0.64, rating:4, risk:'High',       minSip:500,   code:'ALTE'},
+  {name:'HDFC Short Term Debt - Direct',          amc:'HDFC',     cat:'debt',   nav:32.41,  aum:'14,234', ret1y:7.8,  ret3y:6.9,  ret5y:7.4,  ret10y:7.8,  expense:0.30, rating:4, risk:'Low',        minSip:1000,  code:'HSTD'},
+  {name:'ICICI Pru Corporate Bond - Direct',      amc:'ICICI',    cat:'debt',   nav:28.14,  aum:'25,342', ret1y:7.6,  ret3y:6.8,  ret5y:7.2,  ret10y:7.6,  expense:0.38, rating:4, risk:'Low',        minSip:1000,  code:'IPCB'},
+  {name:'SBI Liquid Fund - Direct',               amc:'SBI',      cat:'debt',   nav:3924.12,aum:'68,423', ret1y:7.2,  ret3y:6.8,  ret5y:6.9,  ret10y:7.1,  expense:0.22, rating:4, risk:'Low',        minSip:null,  code:'SBILF'},
+  {name:'Quant Active Fund - Direct',             amc:'Quant',    cat:'equity', nav:614.23, aum:'10,234', ret1y:21.4, ret3y:26.8, ret5y:32.1, ret10y:null,  expense:0.58, rating:5, risk:'Very High',  minSip:1000,  code:'QAF'},
 ];
+
+let _mfCompare = [];
 
 let _mfFilter = 'all';
 function filterMF(f, btn) {
@@ -8544,10 +8771,86 @@ function filterMF(f, btn) {
   renderMF();
 }
 
+function toggleMfCompare(code) {
+  const idx = _mfCompare.indexOf(code);
+  if (idx === -1) {
+    if (_mfCompare.length >= 3) { alert('You can compare up to 3 funds at a time.'); return; }
+    _mfCompare.push(code);
+  } else {
+    _mfCompare.splice(idx, 1);
+  }
+  const countEl = document.getElementById('mfCompareCount');
+  if (countEl) countEl.textContent = _mfCompare.length;
+  renderMF();
+  if (_mfCompare.length >= 2) showMfCompare();
+}
+
+function showMfCompare() {
+  const panel = document.getElementById('mfComparePanel');
+  if (!panel) return;
+  if (_mfCompare.length < 2) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  const funds = _mfCompare.map(c => MF_DATA.find(f => f.code === c)).filter(Boolean);
+  const stars = n => '★'.repeat(n) + '☆'.repeat(5-n);
+  const riskColor = r => r==='Low'?'var(--green)':r==='High'||r==='Very High'?'var(--red)':'var(--gold)';
+
+  const metrics = [
+    ['NAV', f => '₹'+f.nav.toLocaleString()],
+    ['1Y Return', f => f.ret1y+'%', f => f.ret1y],
+    ['3Y Return', f => f.ret3y+'%', f => f.ret3y],
+    ['5Y Return', f => f.ret5y ? f.ret5y+'%' : '—', f => f.ret5y||0],
+    ['10Y Return', f => f.ret10y ? f.ret10y+'%' : '—', f => f.ret10y||0],
+    ['Expense Ratio', f => f.expense+'%', f => -f.expense],
+    ['AUM', f => '₹'+f.aum+' Cr'],
+    ['Min SIP', f => f.minSip ? '₹'+f.minSip : 'ETF'],
+    ['Risk', f => f.risk],
+    ['Rating', f => stars(f.rating), f => f.rating],
+  ];
+
+  panel.innerHTML = `
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;margin-bottom:12px;display:flex;justify-content:space-between;">
+      <span>⚖️ FUND COMPARISON</span>
+      <button onclick="_mfCompare=[];document.getElementById('mfComparePanel').style.display='none';document.getElementById('mfCompareCount').textContent='0';renderMF();" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:11px;">✕ Clear</button>
+    </div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead>
+        <tr>
+          <th style="padding:8px;text-align:left;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);width:120px;">Metric</th>
+          ${funds.map(f=>`<th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);">
+            <div style="font-weight:800;font-size:12px;color:var(--accent);">${f.code}</div>
+            <div style="font-size:10px;color:var(--text3);max-width:140px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${f.amc}</div>
+          </th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${metrics.map(([label, fmt, sortFn])=>{
+          const vals = funds.map(f => sortFn ? sortFn(f) : null);
+          const best = sortFn ? Math.max(...vals) : null;
+          return `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px;color:var(--text3);font-size:10px;">${label}</td>
+            ${funds.map((f,i)=>{
+              const isBest = sortFn && vals[i] === best;
+              return `<td style="padding:8px;text-align:center;font-weight:${isBest?'800':'600'};color:${isBest?'var(--green)':'var(--text)'};">
+                ${fmt(f)}${isBest?' ✓':''}
+              </td>`;
+            }).join('')}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
 function renderMF() {
   const el = document.getElementById('mfBody');
   if (!el) return;
-  let list = _mfFilter==='all' ? MF_DATA : MF_DATA.filter(f=>f.cat===_mfFilter);
+  let list = _mfFilter==='all' ? MF_DATA :
+             _mfFilter==='top' ? MF_DATA.filter(f=>f.rating>=5) :
+             MF_DATA.filter(f=>f.cat===_mfFilter);
   list = [...list].sort((a,b)=>b.ret1y-a.ret1y);
 
   const stars = n => '★'.repeat(n) + '☆'.repeat(5-n);
@@ -8595,7 +8898,15 @@ function renderMF() {
             <div style="font-size:12px;font-weight:700;color:${c};margin-top:2px;">${v}</div>
           </div>`).join('')}
         </div>
-        ${f.aum?`<div style="margin-top:8px;font-size:11px;color:var(--text3);">AUM: ₹${f.aum} Cr</div>`:''}
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <span style="font-size:11px;color:var(--text3);">AUM: ₹${f.aum} Cr</span>
+          <button onclick="event.stopPropagation();toggleMfCompare('${f.code}')"
+            style="padding:5px 12px;border-radius:7px;border:1px solid ${_mfCompare.includes(f.code)?'var(--accent)':'var(--border)'};
+            background:${_mfCompare.includes(f.code)?'var(--accent)':'transparent'};
+            color:${_mfCompare.includes(f.code)?'#fff':'var(--text3)'};font-size:11px;font-weight:700;cursor:pointer;">
+            ${_mfCompare.includes(f.code)?'✓ Added to Compare':'+ Compare'}
+          </button>
+        </div>
       </div>`).join('')}
     <div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text3);margin-top:6px;">
       📊 Mutual fund data is illustrative. Past returns don't guarantee future performance. Consult a SEBI-registered advisor.
