@@ -386,6 +386,88 @@ header {
 .wl-search-item { padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:background 0.1s; }
 .wl-search-item:hover { background:var(--bg3); }
 
+/* ── SCROLLING NEWS TICKER ── */
+.news-ticker-wrap {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  height: 34px;
+  display: flex;
+  align-items: center;
+}
+.news-ticker-label {
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 0 14px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 2;
+  gap: 6px;
+}
+.news-ticker-label::after {
+  content: '';
+  position: absolute;
+  left: 80px;
+  top: 0; bottom: 0;
+  width: 28px;
+  background: linear-gradient(to right, var(--accent), transparent);
+  pointer-events: none;
+}
+.news-ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  animation: tickerScroll 55s linear infinite;
+  will-change: transform;
+  padding-left: 20px;
+}
+.news-ticker-track:hover { animation-play-state: paused; }
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 22px 0 0;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.ticker-item:hover { color: var(--accent); }
+.ticker-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--border);
+  display: inline-block;
+  margin-left: 22px;
+  flex-shrink: 0;
+}
+.ticker-item .t-tag {
+  font-size: 9px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.ticker-item .t-tag.bull { background: rgba(0,168,84,0.15); color: var(--green); }
+.ticker-item .t-tag.bear { background: rgba(255,68,68,0.13); color: var(--red); }
+.ticker-item .t-tag.news { background: rgba(0,112,243,0.13); color: var(--accent); }
+.ticker-item .t-tag.warn { background: rgba(245,166,35,0.15); color: var(--gold); }
+
+
 
 /* ── NEW FEATURES CSS ── */
 /* Paper Trading */
@@ -541,6 +623,145 @@ header {
 </head>
 <body>
 
+<!-- EYES BANNER -->
+<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
+
+  <!-- Soft dot pattern -->
+  <div style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;"></div>
+
+  <!-- Left label -->
+  <div style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;left:16px;text-transform:uppercase;">👀 We see the markets</div>
+
+  <!-- Characters row -->
+  <div id="eyesContainer" style="display:flex;align-items:flex-end;gap:22px;padding-bottom:4px;">
+
+    <!-- Creature 1 — round chubby pink -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <div style="display:flex;gap:4px;">
+        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
+          <div class="pupil" style="width:11px;height:11px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;">
+            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
+          <div class="pupil" style="width:11px;height:11px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;">
+            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- cheeks + smile -->
+      <div style="display:flex;gap:14px;margin-top:-2px;">
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 2 — star eyes yellow -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <div style="display:flex;gap:5px;">
+        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
+          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;">
+            <div style="color:#fff;font-size:7px;line-height:1;">✦</div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
+          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;">
+            <div style="color:#fff;font-size:7px;line-height:1;">✦</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:-1px;">
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 3 — big round blue (main mascot, tallest) -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:2px;">
+      <div style="display:flex;gap:5px;">
+        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
+          <div class="pupil" style="width:15px;height:15px;border-radius:50%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;">
+            <div style="width:5px;height:5px;border-radius:50%;background:#fff;margin:-3px -3px 0 0;"></div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
+          <div class="pupil" style="width:15px;height:15px;border-radius:50%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;">
+            <div style="width:5px;height:5px;border-radius:50%;background:#fff;margin:-3px -3px 0 0;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:18px;">
+        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
+        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 4 — sleepy half-closed green -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <div style="display:flex;gap:4px;">
+        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
+          <div class="pupil" style="width:9px;height:9px;border-radius:50%;background:#1a3a1a;display:flex;align-items:center;justify-content:center;">
+            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
+          <div class="pupil" style="width:9px;height:9px;border-radius:50%;background:#1a3a1a;display:flex;align-items:center;justify-content:center;">
+            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:1px;">
+        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
+        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 5 — sparkly purple wide eyes -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <div style="display:flex;gap:4px;">
+        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
+          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#2d1b69;display:flex;align-items:center;justify-content:center;">
+            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
+          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#2d1b69;display:flex;align-items:center;justify-content:center;">
+            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:15px;margin-top:-1px;">
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
+        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 6 — tiny cute orange dot eyes -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <div style="display:flex;gap:4px;">
+        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
+          <div class="pupil" style="width:10px;height:10px;border-radius:50%;background:#3d1500;display:flex;align-items:center;justify-content:center;">
+            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+          </div>
+        </div>
+        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
+          <div class="pupil" style="width:10px;height:10px;border-radius:50%;background:#3d1500;display:flex;align-items:center;justify-content:center;">
+            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:0px;">
+        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
+        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right label -->
+  <div style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;right:16px;text-transform:uppercase;">Move cursor →</div>
+</div>
+
 <!-- HEADER -->
 <header>
   <!-- ── LOGO ── -->
@@ -654,10 +875,6 @@ header {
       Discover
     </button>
 
-    <button class="nav-tab" onclick="switchTab(this,'risk')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
-      Risk Calc
-    </button>
 
     <button class="nav-tab" onclick="switchTab(this,'compare')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/></svg>
@@ -743,6 +960,55 @@ header {
 
   <!-- MAIN FEED -->
   <div class="main-feed" id="page-feed">
+    <!-- ── SCROLLING NEWS TICKER ── -->
+    <div class="news-ticker-wrap" id="newsTicker">
+      <div class="news-ticker-label">
+        <span style="font-size:9px;animation:pulse 1.5s ease-in-out infinite;color:#fff;">●</span>
+        LIVE
+      </div>
+      <div class="news-ticker-track" id="tickerTrack">
+        <!-- Items injected by JS -->
+      </div>
+    </div>
+
+
+    <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
+    <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
+      <!-- Grid lines background -->
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
+      <!-- Spotlight glow -->
+      <div id="spotlightGlow" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.35) 0%,rgba(0,112,243,0.12) 40%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;transition:opacity 0.3s;top:50%;left:50%;will-change:transform;"></div>
+      <!-- Secondary accent glow -->
+      <div id="spotlightGlow2" style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(120,80,255,0.4) 0%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;top:50%;left:50%;will-change:transform;"></div>
+      <!-- Custom cursor dot -->
+      <div id="spotlightCursor" style="position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 12px rgba(255,255,255,0.9);top:50%;left:50%;will-change:transform;transition:transform 0.1s;z-index:10;"></div>
+      <!-- Content -->
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
+        <div style="display:flex;gap:20px;margin-top:8px;">
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty">NIFTY —</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty">BANKNIFTY —</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc">BTC —</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
+          </div>
+        </div>
+      </div>
+      <!-- Corner decorations -->
+      <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;">NSE · BSE · CRYPTO</div>
+      <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;">● LIVE</div>
+      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;">MOVE CURSOR →</div>
+    </div>
+
     <div class="feed-filters">
       <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
       <button class="filter-btn" onclick="setFilter(this)">✨ New</button>
@@ -1200,28 +1466,6 @@ header {
   </div>
 
   <!-- RISK CALCULATOR PAGE -->
-  <div class="main-feed" id="page-risk" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">⚖️ RISK CALCULATOR</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Position sizing, risk/reward & profit calculator</div>
-    </div>
-    <div class="feed-scroll" id="riskBody" style="padding:16px;"></div>
-  </div>
-
-  <!-- STOCK COMPARISON -->
-  <div class="main-feed" id="page-compare" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">⚖️ STOCK COMPARISON</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Compare up to 3 stocks side by side</div>
-    </div>
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
-      <select id="cmp_s1" onchange="renderCompare()" style="flex:1;min-width:120px;background:var(--bg3);border:1.5px solid var(--accent);border-radius:8px;color:var(--text);padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;"></select>
-      <select id="cmp_s2" onchange="renderCompare()" style="flex:1;min-width:120px;background:var(--bg3);border:1.5px solid var(--gold);border-radius:8px;color:var(--text);padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;"></select>
-      <select id="cmp_s3" onchange="renderCompare()" style="flex:1;min-width:120px;background:var(--bg3);border:1.5px solid var(--green);border-radius:8px;color:var(--text);padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;"></select>
-    </div>
-    <div class="feed-scroll" id="compareBody" style="padding:14px;"></div>
-  </div>
-
   <!-- ECONOMIC CALENDAR -->
   <div class="main-feed" id="page-econocal" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
@@ -1311,7 +1555,6 @@ header {
     <button class="bn-item" onclick="switchTabMobile(this,'paper')"><span class="bn-icon">📝</span>Paper</button>
     <button class="bn-item" onclick="switchTabMobile(this,'ai')"><span class="bn-icon">🤖</span>AI</button>
     <button class="bn-item" onclick="switchTabMobile(this,'options')"><span class="bn-icon">📊</span>Options</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'risk')"><span class="bn-icon">⚖️</span>Risk</button>
     <button class="bn-item" onclick="switchTabMobile(this,'compare')"><span class="bn-icon">⚖️</span>Compare</button>
     <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">🎯</span>Strategies</button>
     <button class="bn-item" onclick="switchTabMobile(this,'mf')"><span class="bn-icon">🏦</span>MF</button>
@@ -4134,7 +4377,7 @@ window.addEventListener('popstate', function(e) {
 function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','ai','options','rooms','discover','risk','compare','econocal','mf','optpnl'];
+  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','ai','options','rooms','discover','compare','econocal','mf','optpnl'];
   pages.forEach(p => {
     const el = document.getElementById('page-'+p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
@@ -4147,7 +4390,6 @@ function _switchTabSilent(btn, page) {
   if (page==='options')  renderOptions();
   if (page==='rooms')    renderRooms();
   if (page==='discover') renderDiscover();
-  if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
   if (page==='mf')       renderMF();
@@ -4214,7 +4456,6 @@ function switchTabMobile(btn, page) {
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
-  document.getElementById('page-risk').style.display = page==='risk'?'flex':'none';
   document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
   document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none';
   document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
@@ -4222,7 +4463,6 @@ function switchTabMobile(btn, page) {
   if (page==='options')  renderOptions();
   if (page==='rooms')    renderRooms();
   if (page==='discover') renderDiscover();
-  if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
   if (page==='mf')       renderMF();
@@ -4264,7 +4504,6 @@ function switchTab(btn, page) {
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
-  document.getElementById('page-risk').style.display = page==='risk'?'flex':'none';
   document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
   document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none';
   document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
@@ -4272,7 +4511,6 @@ function switchTab(btn, page) {
   if (page==='options')  renderOptions();
   if (page==='rooms')    renderRooms();
   if (page==='discover') renderDiscover();
-  if (page==='risk')     renderRisk();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
   if (page==='mf')       renderMF();
@@ -8331,188 +8569,6 @@ function toggleFollowTrader(handle, id, btn) {
 // ══════════════════════════════════════════════════════════════
 // RISK CALCULATOR
 // ══════════════════════════════════════════════════════════════
-function renderRisk() {
-  const el = document.getElementById('riskBody');
-  if (!el) return;
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <!-- Position Size Calculator -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;grid-column:1/-1;">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;margin-bottom:14px;">📐 POSITION SIZE CALCULATOR</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">ACCOUNT SIZE (₹)</div>
-            <input class="form-input" id="rc_account" type="number" placeholder="e.g. 500000" value="500000" oninput="calcRisk()" style="margin:0;">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">RISK PER TRADE (%)</div>
-            <input class="form-input" id="rc_riskpct" type="number" placeholder="e.g. 1" value="1" step="0.1" oninput="calcRisk()" style="margin:0;">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">ENTRY PRICE (₹)</div>
-            <input class="form-input" id="rc_entry" type="number" placeholder="e.g. 2500" oninput="calcRisk()" style="margin:0;">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">STOP LOSS (₹)</div>
-            <input class="form-input" id="rc_sl" type="number" placeholder="e.g. 2450" oninput="calcRisk()" style="margin:0;">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">TARGET PRICE (₹)</div>
-            <input class="form-input" id="rc_target" type="number" placeholder="e.g. 2650" oninput="calcRisk()" style="margin:0;">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">BROKERAGE (₹ per trade)</div>
-            <input class="form-input" id="rc_brok" type="number" placeholder="e.g. 20" value="20" oninput="calcRisk()" style="margin:0;">
-          </div>
-        </div>
-        <!-- Results -->
-        <div id="rc_results" style="display:none;">
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
-            <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:10px;">RESULTS</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="rc_grid"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SIP Calculator -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--green);letter-spacing:1px;margin-bottom:14px;">💰 SIP / LUMPSUM CALC</div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <button onclick="setSipMode('sip',this)" id="sip_btn" style="flex:1;padding:7px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:12px;cursor:pointer;">SIP</button>
-          <button onclick="setSipMode('lump',this)" id="lump_btn" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;">Lumpsum</button>
-        </div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;" id="sip_label">MONTHLY INVESTMENT (₹)</div>
-        <input class="form-input" id="sip_amount" type="number" placeholder="e.g. 10000" value="10000" oninput="calcSip()" style="margin-bottom:8px;">
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">EXPECTED RETURN (% per year)</div>
-        <input class="form-input" id="sip_rate" type="number" placeholder="e.g. 12" value="12" step="0.5" oninput="calcSip()">
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">TIME PERIOD (years)</div>
-        <input class="form-input" id="sip_years" type="number" placeholder="e.g. 10" value="10" oninput="calcSip()">
-        <div id="sip_result" style="margin-top:4px;"></div>
-      </div>
-
-      <!-- Brokerage Calculator -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:1px;margin-bottom:14px;">🏦 BROKERAGE CALC</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">TRADE TYPE</div>
-        <select id="brok_type" class="form-input" style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;" onchange="calcBrok()">
-          <option value="intraday">Intraday Equity</option>
-          <option value="delivery">Delivery Equity</option>
-          <option value="futures">Futures</option>
-          <option value="options">Options</option>
-        </select>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">TRADE VALUE (₹)</div>
-        <input class="form-input" id="brok_val" type="number" placeholder="e.g. 100000" value="100000" oninput="calcBrok()">
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">PRICE PER SHARE</div>
-        <input class="form-input" id="brok_price" type="number" placeholder="e.g. 2500" value="2500" oninput="calcBrok()">
-        <div id="brok_result" style="margin-top:4px;"></div>
-      </div>
-    </div>
-  `;
-  calcRisk(); calcSip(); calcBrok();
-}
-
-let _sipMode = 'sip';
-function setSipMode(m, btn) {
-  _sipMode = m;
-  document.getElementById('sip_btn').style.background = m==='sip'?'var(--accent)':'transparent';
-  document.getElementById('sip_btn').style.color = m==='sip'?'#fff':'var(--text3)';
-  document.getElementById('sip_btn').style.border = m==='sip'?'none':'1px solid var(--border)';
-  document.getElementById('lump_btn').style.background = m==='lump'?'var(--accent)':'transparent';
-  document.getElementById('lump_btn').style.color = m==='lump'?'#fff':'var(--text3)';
-  document.getElementById('lump_btn').style.border = m==='lump'?'none':'1px solid var(--border)';
-  document.getElementById('sip_label').textContent = m==='sip'?'MONTHLY INVESTMENT (₹)':'LUMPSUM AMOUNT (₹)';
-  calcSip();
-}
-
-function calcRisk() {
-  const account = parseFloat(document.getElementById('rc_account')?.value)||0;
-  const riskPct = parseFloat(document.getElementById('rc_riskpct')?.value)||0;
-  const entry   = parseFloat(document.getElementById('rc_entry')?.value)||0;
-  const sl      = parseFloat(document.getElementById('rc_sl')?.value)||0;
-  const target  = parseFloat(document.getElementById('rc_target')?.value)||0;
-  const brok    = parseFloat(document.getElementById('rc_brok')?.value)||0;
-  const res     = document.getElementById('rc_results');
-  const grid    = document.getElementById('rc_grid');
-  if (!account||!riskPct||!entry||!sl||!res||!grid) return;
-
-  const riskAmt   = account * (riskPct/100);
-  const riskPerSh = Math.abs(entry - sl);
-  const qty       = riskPerSh > 0 ? Math.floor(riskAmt/riskPerSh) : 0;
-  const investAmt = qty * entry;
-  const maxLoss   = qty * riskPerSh + brok*2;
-  const maxProfit = target>0 ? qty*Math.abs(target-entry) - brok*2 : 0;
-  const rr        = maxLoss>0 ? (maxProfit/maxLoss).toFixed(2) : '—';
-  const profitPct = investAmt>0 ? ((maxProfit/investAmt)*100).toFixed(2) : 0;
-
-  res.style.display = 'block';
-  grid.innerHTML = [
-    ['SHARES TO BUY', qty, 'var(--accent)'],
-    ['INVEST AMOUNT', '₹'+investAmt.toLocaleString('en-IN',{maximumFractionDigits:0}), 'var(--text)'],
-    ['MAX RISK (₹)', '₹'+maxLoss.toLocaleString('en-IN',{maximumFractionDigits:0}), 'var(--red)'],
-    ['MAX PROFIT', maxProfit>0?'₹'+maxProfit.toLocaleString('en-IN',{maximumFractionDigits:0}):'—', 'var(--green)'],
-    ['RISK:REWARD', '1:'+rr, parseFloat(rr)>=2?'var(--green)':parseFloat(rr)>=1?'var(--gold)':'var(--red)'],
-    ['PROFIT %', maxProfit>0?'+'+profitPct+'%':'—', 'var(--green)'],
-  ].map(([l,v,c])=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
-    <div style="font-size:8px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">${l}</div>
-    <div style="font-size:13px;font-weight:800;color:${c};">${v}</div>
-  </div>`).join('');
-}
-
-function calcSip() {
-  const amount = parseFloat(document.getElementById('sip_amount')?.value)||0;
-  const rate   = parseFloat(document.getElementById('sip_rate')?.value)||0;
-  const years  = parseFloat(document.getElementById('sip_years')?.value)||0;
-  const el     = document.getElementById('sip_result');
-  if (!el||!amount||!rate||!years) return;
-
-  let maturity, invested;
-  if (_sipMode === 'sip') {
-    const r = (rate/100)/12;
-    const n = years*12;
-    maturity = amount * (((Math.pow(1+r,n)-1)/r)*(1+r));
-    invested = amount * n;
-  } else {
-    maturity = amount * Math.pow(1+rate/100, years);
-    invested = amount;
-  }
-  const gains = maturity - invested;
-  el.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;">
-    ${[['INVESTED','₹'+invested.toLocaleString('en-IN',{maximumFractionDigits:0}),'var(--text)'],
-       ['EST. RETURNS','₹'+gains.toLocaleString('en-IN',{maximumFractionDigits:0}),'var(--green)'],
-       ['TOTAL VALUE','₹'+maturity.toLocaleString('en-IN',{maximumFractionDigits:0}),'var(--accent)'],
-    ].map(([l,v,c])=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;">
-      <div style="font-size:8px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">${l}</div>
-      <div style="font-size:11px;font-weight:800;color:${c};">${v}</div>
-    </div>`).join('')}
-  </div>`;
-}
-
-function calcBrok() {
-  const type  = document.getElementById('brok_type')?.value||'intraday';
-  const val   = parseFloat(document.getElementById('brok_val')?.value)||0;
-  const price = parseFloat(document.getElementById('brok_price')?.value)||0;
-  const el    = document.getElementById('brok_result');
-  if (!el||!val) return;
-
-  // Zerodha-style charges (approx)
-  const rates = { intraday:{brok:0.0003,stt:0.00025,txn:0.0000345,gst:0.18,sebi:0.000001}, delivery:{brok:0,stt:0.001,txn:0.0000345,gst:0.18,sebi:0.000001}, futures:{brok:0.0002,stt:0.0001,txn:0.000002,gst:0.18,sebi:0.000001}, options:{brokFlat:20,stt:0.000625,txn:0.000053,gst:0.18,sebi:0.000001} };
-  const r = rates[type];
-  const brok  = type==='options' ? r.brokFlat : Math.min(val*r.brok, 20);
-  const stt   = val * r.stt;
-  const txn   = val * r.txn;
-  const gst   = (brok + txn) * r.gst;
-  const sebi  = val * r.sebi;
-  const stamp = val * 0.00003;
-  const total = brok + stt + txn + gst + sebi + stamp;
-  const qty   = price > 0 ? Math.floor(val/price) : 0;
-
-  el.innerHTML = `<div style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;">
-    ${[['Brokerage','₹'+brok.toFixed(2)],['STT','₹'+stt.toFixed(2)],['Transaction','₹'+txn.toFixed(2)],['GST','₹'+gst.toFixed(2)],['SEBI','₹'+sebi.toFixed(4)],['Stamp','₹'+stamp.toFixed(2)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);color:var(--text3);"><span>${l}</span><span>${v}</span></div>`).join('')}
-    <div style="display:flex;justify-content:space-between;padding:6px 0;font-weight:800;font-size:13px;color:var(--red);"><span>TOTAL CHARGES</span><span>₹${total.toFixed(2)}</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);"><span>Breakeven move needed</span><span style="font-weight:700;color:var(--gold);">${price>0&&qty>0?(total/qty).toFixed(2)+' per share':'—'}</span></div>
-  </div>`;
-}
-
 // ══════════════════════════════════════════════════════════════
 // ENHANCED OPTIONS GREEKS panel
 // ══════════════════════════════════════════════════════════════
@@ -8662,34 +8718,47 @@ function renderCompare() {
 // FEATURE 2: ECONOMIC CALENDAR
 // ══════════════════════════════════════════════════════════════
 const ECONO_DATA = [
-  // ── INDIA — HIGH IMPACT ──
-  {date:'2026-03-14',time:'10:00 AM',country:'🇮🇳',event:'RBI Monetary Policy Decision',impact:'high',forecast:'6.25%',previous:'6.25%',actual:null,category:'india',note:'MPC meeting — rate hold expected'},
-  {date:'2026-03-14',time:'12:00 PM',country:'🇮🇳',event:'RBI Repo Rate Announcement',impact:'high',forecast:'6.25%',previous:'6.25%',actual:null,category:'india',note:'Feb 2026 cut from 6.50% to 6.25%'},
-  {date:'2026-03-17',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Feb 2026)',impact:'high',forecast:'3.8%',previous:'4.26%',actual:null,category:'india',note:'Trending down; food inflation easing'},
-  {date:'2026-03-18',time:'12:00 PM',country:'🇮🇳',event:'India WPI Inflation (Feb 2026)',impact:'medium',forecast:'2.1%',previous:'2.31%',actual:null,category:'india'},
-  {date:'2026-03-20',time:'03:00 PM',country:'🇮🇳',event:'India Trade Balance (Feb 2026)',impact:'medium',forecast:'-$22B',previous:'-$22.99B',actual:null,category:'india'},
-  {date:'2026-03-28',time:'05:30 PM',country:'🇮🇳',event:'India Fiscal Year End FY26',impact:'high',forecast:null,previous:null,actual:null,category:'india',note:'FY26 ends Mar 31; tax-saving deadline'},
-  {date:'2026-04-01',time:'09:15 AM',country:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',forecast:'57.5',previous:'56.3',actual:null,category:'india'},
-  {date:'2026-04-03',time:'09:15 AM',country:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',forecast:'60.2',previous:'59.0',actual:null,category:'india'},
-  {date:'2026-04-14',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Mar 2026)',impact:'high',forecast:'3.7%',previous:'3.8%',actual:null,category:'india'},
-  {date:'2026-04-16',time:'12:00 PM',country:'🇮🇳',event:'RBI MPC Meeting Minutes',impact:'medium',forecast:null,previous:null,actual:null,category:'india'},
-  {date:'2026-04-30',time:'05:30 PM',country:'🇮🇳',event:'India GDP Q3 FY26 (Revised)',impact:'high',forecast:'6.9%',previous:'6.4%',actual:null,category:'india'},
-  // PAST (with actuals)
-  {date:'2026-02-07',time:'10:00 AM',country:'🇮🇳',event:'RBI Rate Cut Decision',impact:'high',forecast:'6.25%',previous:'6.50%',actual:'6.25%',category:'india',note:'RBI cut repo rate by 25bps — first cut since May 2020'},
-  {date:'2026-02-17',time:'05:30 PM',country:'🇮🇳',event:'India CPI (Jan 2026)',impact:'high',forecast:'4.3%',previous:'5.22%',actual:'4.26%',category:'india',note:'Significant drop; veg prices fell sharply'},
-  {date:'2026-02-01',time:'11:00 AM',country:'🇮🇳',event:'Union Budget FY27',impact:'high',forecast:null,previous:null,actual:'Presented',category:'india',note:'FM Sitharaman — tax relief for middle class'},
-  // ── GLOBAL — HIGH IMPACT ──
-  {date:'2026-03-19',time:'11:30 PM',country:'🇺🇸',event:'US Fed Rate Decision (FOMC)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:null,category:'global',note:'Fed expected to hold; watching inflation'},
-  {date:'2026-03-12',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Feb 2026)',impact:'high',forecast:'2.9%',previous:'3.0%',actual:null,category:'global'},
-  {date:'2026-03-13',time:'06:00 PM',country:'🇺🇸',event:'US PPI (Feb 2026)',impact:'medium',forecast:'3.3%',previous:'3.5%',actual:null,category:'global'},
-  {date:'2026-03-14',time:'06:00 PM',country:'🇺🇸',event:'US Retail Sales (Feb 2026)',impact:'medium',forecast:'+0.3%',previous:'-0.9%',actual:null,category:'global'},
-  {date:'2026-03-18',time:'12:00 AM',country:'🇯🇵',event:'Bank of Japan Rate Decision',impact:'high',forecast:'0.50%',previous:'0.50%',actual:null,category:'global',note:'BOJ may hike again to 0.75%'},
-  {date:'2026-03-20',time:'01:15 PM',country:'🇪🇺',event:'ECB Rate Decision',impact:'high',forecast:'2.40%',previous:'2.65%',actual:null,category:'global'},
-  {date:'2026-04-02',time:'06:00 PM',country:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',forecast:'190K',previous:'151K',actual:null,category:'global'},
-  {date:'2026-04-10',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Mar 2026)',impact:'high',forecast:'2.8%',previous:'2.9%',actual:null,category:'global'},
-  // PAST GLOBAL
-  {date:'2026-01-29',time:'11:30 PM',country:'🇺🇸',event:'US Fed Rate Decision (Jan)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:'4.25-4.50%',category:'global',note:'Fed held rates; tariff uncertainty cited'},
-  {date:'2026-02-12',time:'06:00 PM',country:'🇺🇸',event:'US CPI Inflation (Jan 2026)',impact:'high',forecast:'2.9%',previous:'2.9%',actual:'3.0%',category:'global',note:'Hotter than expected — market sold off'},
+  // ══ PAST EVENTS — India ══
+  {date:'2026-02-01',time:'11:00 AM',country:'🇮🇳',event:'Union Budget FY27',impact:'high',forecast:null,previous:null,actual:'Presented',category:'india',note:'FM Sitharaman — income tax relief for middle class, capex ₹11.21 lakh crore'},
+  {date:'2026-02-06',time:'10:00 AM',country:'🇮🇳',event:'RBI MPC Rate Decision (Feb)',impact:'high',forecast:'5.25%',previous:'5.50%',actual:'5.25%',category:'india',note:'RBI cut repo 25bps to 5.25%; held SDF at 5.00%, MSF at 5.50%'},
+  {date:'2026-02-17',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Jan 2026)',impact:'high',forecast:'4.3%',previous:'5.22%',actual:'4.26%',category:'india',note:'Food inflation easing sharply; veg prices fell'},
+  {date:'2026-02-28',time:'05:30 PM',country:'🇮🇳',event:'India GDP Q3 FY26 (Advance)',impact:'high',forecast:'6.8%',previous:'6.4%',actual:'8.2%',category:'india',note:'Beat estimates; strong manufacturing & services'},
+  {date:'2026-03-03',time:'09:15 AM',country:'🇮🇳',event:'India Manufacturing PMI (Feb)',impact:'medium',forecast:'57.0',previous:'57.7',actual:'56.3',category:'india',note:'Slight softening but remains firmly expansionary'},
+  {date:'2026-03-05',time:'09:15 AM',country:'🇮🇳',event:'India Services PMI (Feb)',impact:'medium',forecast:'60.0',previous:'56.5',actual:'59.0',category:'india'},
+  // ══ UPCOMING — India ══
+  {date:'2026-03-14',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Feb 2026)',impact:'high',forecast:'3.9%',previous:'4.26%',actual:null,category:'india',note:'RBI projects FY26 CPI at 2.1%; food prices key'},
+  {date:'2026-03-17',time:'12:00 PM',country:'🇮🇳',event:'India WPI Inflation (Feb 2026)',impact:'medium',forecast:'2.2%',previous:'2.31%',actual:null,category:'india'},
+  {date:'2026-03-20',time:'03:00 PM',country:'🇮🇳',event:'India Trade Balance (Feb 2026)',impact:'medium',forecast:'-$21.5B',previous:'-$22.99B',actual:null,category:'india'},
+  {date:'2026-03-25',time:'05:30 PM',country:'🇮🇳',event:'India Fiscal Deficit (Feb YTD)',impact:'medium',forecast:'82% of target',previous:'76%',actual:null,category:'india'},
+  {date:'2026-03-31',time:'09:15 AM',country:'🇮🇳',event:'FY2026 Financial Year End',impact:'high',forecast:null,previous:null,actual:null,category:'india',note:'Last day FY26 — ELSS, tax-saving deadline; advance tax'},
+  {date:'2026-04-01',time:'09:15 AM',country:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',forecast:'57.0',previous:'56.3',actual:null,category:'india'},
+  {date:'2026-04-03',time:'09:15 AM',country:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',forecast:'60.0',previous:'59.0',actual:null,category:'india'},
+  {date:'2026-04-07',time:'10:00 AM',country:'🇮🇳',event:'RBI MPC Meeting Begins (Apr)',impact:'high',forecast:'5.00%',previous:'5.25%',actual:null,category:'india',note:'25bps cut expected; GDP strong, inflation below target'},
+  {date:'2026-04-09',time:'10:00 AM',country:'🇮🇳',event:'RBI MPC Rate Decision (Apr)',impact:'high',forecast:'5.00%',previous:'5.25%',actual:null,category:'india',note:'Market pricing in another 25bps cut'},
+  {date:'2026-04-14',time:'05:30 PM',country:'🇮🇳',event:'India CPI Inflation (Mar 2026)',impact:'high',forecast:'3.8%',previous:'3.9%',actual:null,category:'india'},
+  {date:'2026-04-15',time:'12:00 PM',country:'🇮🇳',event:'India WPI Inflation (Mar 2026)',impact:'medium',forecast:'2.0%',previous:'2.2%',actual:null,category:'india'},
+  {date:'2026-04-18',time:'12:00 PM',country:'🇮🇳',event:'RBI MPC Minutes (Apr)',impact:'medium',forecast:null,previous:null,actual:null,category:'india'},
+  {date:'2026-04-30',time:'05:30 PM',country:'🇮🇳',event:'India GDP Q4 FY26 (Advance)',impact:'high',forecast:'7.0%',previous:'8.2%',actual:null,category:'india',note:'RBI FY27 GDP forecast: 6.9% Q1, 7.0% Q2'},
+  // ══ PAST EVENTS — Global ══
+  {date:'2026-01-29',time:'11:30 PM',country:'🇺🇸',event:'FOMC Rate Decision (Jan)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:'4.25-4.50%',category:'global',note:'Fed held; tariff & trade uncertainty cited'},
+  {date:'2026-02-12',time:'06:30 PM',country:'🇺🇸',event:'US CPI Inflation (Jan 2026)',impact:'high',forecast:'2.9%',previous:'2.9%',actual:'3.0%',category:'global',note:'Hotter than expected — S&P sold off 1.2%'},
+  {date:'2026-02-13',time:'06:30 PM',country:'🇺🇸',event:'US PPI (Jan 2026)',impact:'medium',forecast:'3.3%',previous:'3.3%',actual:'3.5%',category:'global',note:'Sticky producer prices; reinforces Fed hold'},
+  {date:'2026-03-07',time:'06:30 PM',country:'🇺🇸',event:'US Non-Farm Payrolls (Feb)',impact:'high',forecast:'160K',previous:'256K',actual:'151K',category:'global',note:'Miss; unemployment ticked to 4.1%'},
+  // ══ UPCOMING — Global ══
+  {date:'2026-03-12',time:'06:30 PM',country:'🇺🇸',event:'US CPI Inflation (Feb 2026)',impact:'high',forecast:'2.9%',previous:'3.0%',actual:null,category:'global',note:'TODAY — Core CPI forecast 3.2%; pivotal for FOMC'},
+  {date:'2026-03-13',time:'06:30 PM',country:'🇺🇸',event:'US PPI (Feb 2026)',impact:'medium',forecast:'3.3%',previous:'3.5%',actual:null,category:'global'},
+  {date:'2026-03-14',time:'06:30 PM',country:'🇺🇸',event:'US Retail Sales (Feb 2026)',impact:'medium',forecast:'+0.6%',previous:'-0.9%',actual:null,category:'global',note:'Bounce-back expected after Jan decline'},
+  {date:'2026-03-18',time:'01:00 PM',country:'🇯🇵',event:'Bank of Japan Rate Decision',impact:'high',forecast:'0.50%',previous:'0.50%',actual:null,category:'global',note:'Hold expected; BOJ watching JPY & inflation'},
+  {date:'2026-03-19',time:'11:30 PM',country:'🇺🇸',event:'FOMC Rate Decision (Mar)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:null,category:'global',note:'Hold near-certain; tariff uncertainty key risk'},
+  {date:'2026-03-20',time:'01:15 PM',country:'🇪🇺',event:'ECB Rate Decision (Mar)',impact:'high',forecast:'2.40%',previous:'2.65%',actual:null,category:'global',note:'25bps cut expected; eurozone growth slowing'},
+  {date:'2026-03-26',time:'06:30 PM',country:'🇺🇸',event:'US GDP Q4 2025 (Final)',impact:'high',forecast:'2.3%',previous:'2.3%',actual:null,category:'global'},
+  {date:'2026-03-28',time:'06:30 PM',country:'🇺🇸',event:'US PCE Inflation (Feb 2026)',impact:'high',forecast:'2.5%',previous:'2.5%',actual:null,category:'global',note:'Fed preferred inflation gauge'},
+  {date:'2026-04-02',time:'06:30 PM',country:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',forecast:'175K',previous:'151K',actual:null,category:'global'},
+  {date:'2026-04-10',time:'06:30 PM',country:'🇺🇸',event:'US CPI Inflation (Mar 2026)',impact:'high',forecast:'2.8%',previous:'2.9%',actual:null,category:'global'},
+  {date:'2026-04-16',time:'06:30 PM',country:'🇺🇸',event:'US Retail Sales (Mar 2026)',impact:'medium',forecast:'+0.4%',previous:'+0.6%',actual:null,category:'global'},
+  {date:'2026-04-28',time:'08:30 PM',country:'🇺🇸',event:'US GDP Q1 2026 (Advance)',impact:'high',forecast:'1.8%',previous:'2.3%',actual:null,category:'global',note:'Tariff headwinds expected to weigh on growth'},
+  {date:'2026-04-29',time:'11:30 PM',country:'🇺🇸',event:'FOMC Rate Decision (Apr)',impact:'high',forecast:'4.25-4.50%',previous:'4.25-4.50%',actual:null,category:'global',note:'No cut expected; watching Q1 GDP & PCE'},
+  {date:'2026-04-24',time:'12:00 PM',country:'🇬🇧',event:'UK CPI Inflation (Mar)',impact:'medium',forecast:'2.8%',previous:'2.8%',actual:null,category:'global'},
 ];
 
 let _econoFilter = 'all';
@@ -9428,6 +9497,224 @@ function updateNavArrows() {
 }
 // Run after DOM ready
 setTimeout(updateNavArrows, 800);
+
+
+// ── CURSOR SPOTLIGHT HERO ──
+(function() {
+  let heroEl, glow, glow2, cursor, animFrame;
+  let mouseX = 0, mouseY = 0;
+  let currentX = 0, currentY = 0;
+
+  function initSpotlight() {
+    heroEl = document.getElementById('spotlightHero');
+    glow   = document.getElementById('spotlightGlow');
+    glow2  = document.getElementById('spotlightGlow2');
+    cursor = document.getElementById('spotlightCursor');
+    if (!heroEl) return;
+
+    heroEl.addEventListener('mousemove', function(e) {
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    });
+
+    heroEl.addEventListener('mouseleave', function() {
+      // Fade out and return to centre
+      if (glow)   glow.style.opacity   = '0.3';
+      if (glow2)  glow2.style.opacity  = '0.2';
+      if (cursor) cursor.style.opacity = '0';
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+      // drift back to centre
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = rect.width  / 2;
+      mouseY = rect.height / 2;
+    });
+
+    heroEl.addEventListener('mouseenter', function() {
+      if (glow)   glow.style.opacity   = '1';
+      if (glow2)  glow2.style.opacity  = '1';
+      if (cursor) cursor.style.opacity = '1';
+    });
+
+    // Pulse animation when idle
+    heroEl.addEventListener('click', function(e) {
+      // Ripple burst on click
+      const rect = heroEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ripple = document.createElement('div');
+      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);transform:translate(-50%,-50%) scale(1);left:${x}px;top:${y}px;pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
+      heroEl.appendChild(ripple);
+      requestAnimationFrame(() => {
+        ripple.style.transform = `translate(-50%,-50%) scale(20)`;
+        ripple.style.opacity = '0';
+      });
+      setTimeout(() => ripple.remove(), 700);
+    });
+
+    // initial cursor hide
+    if (cursor) cursor.style.opacity = '0';
+
+    // Set centre as default
+    const rect = heroEl.getBoundingClientRect();
+    mouseX = currentX = rect.width  / 2;
+    mouseY = currentY = rect.height / 2;
+    updatePositions();
+
+    // Update live prices in hero
+    updateHeroPrices();
+    setInterval(updateHeroPrices, 30000);
+  }
+
+  function animate() {
+    // Lerp for smooth follow
+    currentX += (mouseX - currentX) * 0.12;
+    currentY += (mouseY - currentY) * 0.12;
+    updatePositions();
+    animFrame = requestAnimationFrame(animate);
+  }
+
+  function updatePositions() {
+    if (glow)   { glow.style.left   = currentX + 'px'; glow.style.top   = currentY + 'px'; }
+    if (glow2)  { glow2.style.left  = currentX + 'px'; glow2.style.top  = currentY + 'px'; }
+    if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
+  }
+
+  function updateHeroPrices() {
+    // Try to pull from liveStocks/liveIndices, fall back to OPT_CONFIGS spot
+    try {
+      const niftyEl = document.getElementById('heroNifty');
+      const bnEl    = document.getElementById('heroBankNifty');
+      const btcEl   = document.getElementById('heroBtc');
+
+      // Nifty from OPT_CONFIGS
+      if (niftyEl && typeof OPT_CONFIGS !== 'undefined') {
+        const spot = OPT_CONFIGS.NIFTY.spot;
+        niftyEl.textContent = spot.toLocaleString('en-IN');
+      }
+      if (bnEl && typeof OPT_CONFIGS !== 'undefined') {
+        const spot = OPT_CONFIGS.BANKNIFTY.spot;
+        bnEl.textContent = spot.toLocaleString('en-IN');
+      }
+      // BTC from STATIC_CRYPTO
+      if (btcEl && typeof STATIC_CRYPTO !== 'undefined') {
+        const btc = STATIC_CRYPTO.find(s => s.sym === 'BTC');
+        if (btc) btcEl.textContent = '$' + btc.price.toLocaleString('en-US');
+      }
+      // Try live data if available
+      if (typeof liveStocks !== 'undefined' && liveStocks.length) {
+        // check for index data
+      }
+    } catch(e) {}
+  }
+
+  // Init after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSpotlight);
+  } else {
+    setTimeout(initSpotlight, 100);
+  }
+})();
+
+// ── EYES FOLLOW CURSOR ──
+(function() {
+  let lastX = window.innerWidth / 2;
+  let lastY = 100;
+
+  function updateEyes(cx, cy) {
+    const eyeballs = document.querySelectorAll('#eyesBanner .eyeball');
+    eyeballs.forEach(eyeball => {
+      const rect   = eyeball.getBoundingClientRect();
+      const ex     = rect.left + rect.width  / 2;
+      const ey     = rect.top  + rect.height / 2;
+      const dx     = cx - ex;
+      const dy     = cy - ey;
+      const angle  = Math.atan2(dy, dx);
+      const dist   = Math.min(Math.hypot(dx, dy), 999);
+      // Max travel = 35% of eyeball radius
+      const maxTravel = Math.min(rect.width, rect.height) * 0.28;
+      const travel    = Math.min(dist / 80, 1) * maxTravel;
+      const px = Math.cos(angle) * travel;
+      const py = Math.sin(angle) * travel;
+      const pupil = eyeball.querySelector('.pupil');
+      if (pupil) {
+        pupil.style.transform = `translate(${px}px, ${py}px)`;
+        pupil.style.transition = 'transform 0.08s ease-out';
+      }
+    });
+  }
+
+  // Track mouse anywhere on page
+  document.addEventListener('mousemove', function(e) {
+    lastX = e.clientX;
+    lastY = e.clientY;
+    updateEyes(e.clientX, e.clientY);
+  });
+
+  // Also react to touch
+  document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 0) {
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      updateEyes(lastX, lastY);
+    }
+  }, { passive: true });
+
+  // Idle wander — slowly look around when no cursor
+  let wanderAngle = 0;
+  function idleWander() {
+    wanderAngle += 0.018;
+    const banner = document.getElementById('eyesBanner');
+    if (!banner) return;
+    const rect = banner.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2 + Math.cos(wanderAngle * 0.7) * 200;
+    const cy = rect.top  + rect.height / 2 + Math.sin(wanderAngle) * 80;
+    updateEyes(cx, cy);
+  }
+
+  // Use idle wander when mouse hasn't moved recently
+  let idleTimer = null;
+  let isIdle = true;
+  let wanderInterval = setInterval(idleWander, 40);
+
+  document.addEventListener('mousemove', function() {
+    isIdle = false;
+    clearInterval(wanderInterval);
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      isIdle = true;
+      wanderInterval = setInterval(idleWander, 40);
+    }, 2500);
+  });
+
+  // Blink randomly
+  function randomBlink() {
+    const eyeballs = document.querySelectorAll('#eyesBanner .eyeball');
+    // Pick 1-2 random eyeballs to blink
+    const picks = Array.from(eyeballs)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.random() > 0.5 ? 2 : 1);
+    picks.forEach(e => {
+      e.style.transform = 'scaleY(0.08)';
+      e.style.transition = 'transform 0.07s ease-in';
+      setTimeout(() => {
+        e.style.transform = 'scaleY(1)';
+        e.style.transition = 'transform 0.1s ease-out';
+      }, 100);
+    });
+    // Schedule next blink
+    setTimeout(randomBlink, 1200 + Math.random() * 3500);
+  }
+
+  // Init
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(randomBlink, 1000));
+  } else {
+    setTimeout(randomBlink, 1000);
+  }
+})();
 
 </script>
 </body>
