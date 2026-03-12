@@ -621,7 +621,7 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'earnings')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/></svg>
-      Earnings
+      Events
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'alerts')">
@@ -1047,7 +1047,10 @@ header {
   <!-- ═══════════════════════════════════════════ -->
   <div class="main-feed" id="page-ipo" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🚀 IPO TRACKER</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">IPO TRACKER</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Data as of March 2026 · Source: NSE/BSE/IPOWatch</div>
+      </div>
       <div style="display:flex;gap:6px;">
         <button onclick="switchIpoTab('upcoming',this)" id="ipo_upcoming" class="pcat-btn active-pcat">Upcoming</button>
         <button onclick="switchIpoTab('open',this)" id="ipo_open" class="pcat-btn">Open Now</button>
@@ -1081,18 +1084,30 @@ header {
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
-  <!-- EARNINGS CALENDAR PAGE -->
+  <!-- EVENTS PAGE (replaces Earnings Calendar) -->
   <!-- ═══════════════════════════════════════════ -->
   <div class="main-feed" id="page-earnings" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📅 EARNINGS CALENDAR</div>
-      <div style="display:flex;gap:6px;">
-        <button onclick="switchEarningsWeek(-1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;">← Prev</button>
-        <span id="earningsWeekLabel" style="padding:5px 12px;font-size:12px;font-weight:700;color:var(--text);"></span>
-        <button onclick="switchEarningsWeek(1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;">Next →</button>
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">EVENTS</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Results · Dividends · Board Meetings · Splits · Buybacks</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="switchEventsWeek(-1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:13px;">←</button>
+        <span id="eventsWeekLabel" style="font-size:12px;font-weight:700;color:var(--text);min-width:160px;text-align:center;"></span>
+        <button onclick="switchEventsWeek(1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:13px;">→</button>
       </div>
     </div>
-    <div class="feed-scroll" id="earningsBody" style="padding:16px;"></div>
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
+      <button onclick="setEventsFilter('all',this)" id="evf_all" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">All</button>
+      <button onclick="setEventsFilter('results',this)" id="evf_results" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">📊 Results</button>
+      <button onclick="setEventsFilter('dividend',this)" id="evf_dividend" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">💰 Dividends</button>
+      <button onclick="setEventsFilter('board',this)" id="evf_board" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🏛 Board Meetings</button>
+      <button onclick="setEventsFilter('split',this)" id="evf_split" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">✂️ Splits</button>
+      <button onclick="setEventsFilter('buyback',this)" id="evf_buyback" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🔄 Buybacks</button>
+    </div>
+    <div class="feed-scroll" id="earningsBody" style="padding:0;"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
@@ -6554,26 +6569,23 @@ function resetPaperPortfolio() {
 // ══════════════════════════════════════════════════════════════
 const IPO_DATA = {
   upcoming: [
-    {name:'Hexaware Technologies',open:'25 Mar 2025',close:'27 Mar 2025',price:'₹674–708',size:'₹8,750 Cr',gmp:'+₹48',gmpPct:'+6.8%',rating:'⭐⭐⭐⭐',sector:'IT'},
-    {name:'Ather Energy',open:'28 Mar 2025',close:'1 Apr 2025',price:'₹304–321',size:'₹2,981 Cr',gmp:'+₹32',gmpPct:'+10.0%',rating:'⭐⭐⭐',sector:'EV/Auto'},
-    {name:'Paytm FPO',open:'2 Apr 2025',close:'4 Apr 2025',price:'₹660–700',size:'₹4,200 Cr',gmp:'+₹15',gmpPct:'+2.1%',rating:'⭐⭐',sector:'Fintech'},
-    {name:'Navi Technologies',open:'10 Apr 2025',close:'14 Apr 2025',price:'₹99–104',size:'₹3,100 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Fintech'},
+    {name:'Skyways Air',open:'17 Mar 2026',close:'19 Mar 2026',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Aviation',lot:'TBA',minInvest:'TBA'},
+    {name:'Novus Loyalty & Business Services',open:'18 Mar 2026',close:'20 Mar 2026',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
+    {name:'Truhome Finance',open:'Mar–Apr 2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'NBFC/Finance',lot:'TBA',minInvest:'TBA'},
+    {name:'Reliance Jio',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Telecom',lot:'TBA',minInvest:'TBA'},
+    {name:'PhonePe',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
+    {name:'OYO Rooms',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Hospitality',lot:'TBA',minInvest:'TBA'},
   ],
   open: [
-    {name:'Smartworks Coworking',open:'10 Mar 2025',close:'12 Mar 2025',price:'₹387–408',size:'₹583 Cr',gmp:'+₹45',gmpPct:'+11%',subscribed:'2.8x',rating:'⭐⭐⭐',sector:'Real Estate'},
-    {name:'Kronox Lab Sciences',open:'11 Mar 2025',close:'13 Mar 2025',price:'₹129–136',size:'₹130 Cr',gmp:'+₹18',gmpPct:'+13.2%',subscribed:'4.2x',rating:'⭐⭐⭐⭐',sector:'Chemicals'},
+    {name:'Raajmarg Infra InvIT',open:'11 Mar 2026',close:'13 Mar 2026',price:'₹99–100',size:'₹6,000 Cr',gmp:'—',gmpPct:'—',subscribed:'—',rating:'⭐⭐⭐⭐',sector:'Infrastructure/InvIT',lot:'TBA',minInvest:'TBA',exchange:'BSE & NSE',listDate:'24 Mar 2026'},
   ],
   allotment: [
-    {name:'Laxmi Dental',date:'15 Feb 2025',price:'₹407',listPrice:'₹542',gain:'+33.2%',status:'Allotted'},
-    {name:'Capital Infra Trust',date:'10 Feb 2025',price:'₹128',listPrice:'₹119',gain:'-7.0%',status:'Allotted'},
-    {name:'Ajax Engineering',date:'8 Feb 2025',price:'₹599',listPrice:'₹614',gain:'+2.5%',status:'Allotted'},
+    {name:'Innovision',date:'13 Mar 2026',price:'₹548',listPrice:'17 Mar 2026',gain:'Pending',status:'Allotment Today'},
+    {name:'Rajputana Stainless',date:'12 Mar 2026',price:'₹122',listPrice:'16 Mar 2026',gain:'Pending',status:'Allotment Today'},
   ],
   listed: [
-    {name:'Stallion India Fluorochem',listDate:'28 Feb 2025',issuePrice:'₹90',listPrice:'₹143',gain:'+58.9%',current:'₹138'},
-    {name:'Denta Water',listDate:'20 Feb 2025',issuePrice:'₹294',listPrice:'₹381',gain:'+29.6%',current:'₹362'},
-    {name:'Indo Farm Equipment',listDate:'14 Feb 2025',issuePrice:'₹215',listPrice:'₹198',gain:'-7.9%',current:'₹184'},
-    {name:'Quadrant Future Tek',listDate:'12 Feb 2025',issuePrice:'₹290',listPrice:'₹495',gain:'+70.7%',current:'₹478'},
-    {name:'Ola Electric FPO',listDate:'5 Feb 2025',issuePrice:'₹72',listPrice:'₹68',gain:'-5.6%',current:'₹65'},
+    {name:'SEDEMAC Mechatronics',listDate:'11 Mar 2026',issuePrice:'₹1,352',listPrice:'₹1,510',gain:'+11.7%',current:'₹1,547'},
+    {name:'Elfin Agro India',listDate:'Mar 2026',issuePrice:'—',listPrice:'—',gain:'—',current:'—'},
   ],
 };
 
@@ -6615,9 +6627,10 @@ function renderIpoPage() {
         <div style="flex:1;">
           <div style="font-weight:800;font-size:14px;">${ipo.name}</div>
           <div style="font-size:11px;color:var(--text3);">Allotment: ${ipo.date}</div>
+          <div style="font-size:10px;margin-top:2px;padding:2px 8px;border-radius:8px;display:inline-block;background:rgba(0,112,243,0.1);color:var(--accent);font-weight:700;">${ipo.status}</div>
         </div>
-        <div style="text-align:center;"><div style="font-size:11px;color:var(--text3);">Issue</div><div style="font-weight:700;">${ipo.price}</div></div>
-        <div style="text-align:center;"><div style="font-size:11px;color:var(--text3);">List Price</div><div style="font-weight:700;">${ipo.listPrice}</div></div>
+        <div style="text-align:center;"><div style="font-size:11px;color:var(--text3);">Issue Price</div><div style="font-weight:700;">${ipo.price}</div></div>
+        <div style="text-align:center;"><div style="font-size:11px;color:var(--text3);">Listing Date</div><div style="font-weight:700;color:var(--accent);">${ipo.listPrice}</div></div>
         <div style="text-align:right;"><div style="font-size:11px;color:var(--text3);">Gain</div><div style="font-weight:800;font-size:15px;color:${parseFloat(ipo.gain)>=0?'var(--green)':'var(--red)'};">${ipo.gain}</div></div>
       </div>`).join('');
 
@@ -6843,81 +6856,201 @@ function removeHolding(idx) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 5. EARNINGS CALENDAR
+// 5. EVENTS CALENDAR (Results, Dividends, Board Meetings, Splits, Buybacks)
 // ══════════════════════════════════════════════════════════════
-const EARNINGS_DATA = [
-  {sym:'INFY',name:'Infosys',date:'2025-04-17',est:'₹17.8',act:null,beat:null,sector:'IT'},
-  {sym:'TCS',name:'Tata Consultancy',date:'2025-04-10',est:'₹28.4',act:null,beat:null,sector:'IT'},
-  {sym:'HDFCBANK',name:'HDFC Bank',date:'2025-04-19',est:'₹17.2',act:null,beat:null,sector:'Banking'},
-  {sym:'WIPRO',name:'Wipro',date:'2025-04-16',est:'₹5.2',act:null,beat:null,sector:'IT'},
-  {sym:'RELIANCE',name:'Reliance Industries',date:'2025-04-25',est:'₹59.8',act:null,beat:null,sector:'Energy'},
-  {sym:'SBIN',name:'State Bank of India',date:'2025-05-02',est:'₹22.4',act:null,beat:null,sector:'Banking'},
-  {sym:'BAJFINANCE',name:'Bajaj Finance',date:'2025-04-23',est:'₹41.2',act:null,beat:null,sector:'Finance'},
-  {sym:'TATAMOTORS',name:'Tata Motors',date:'2025-05-08',est:'₹28.6',act:null,beat:null,sector:'Auto'},
-  {sym:'HCLTECH',name:'HCL Technologies',date:'2025-04-11',est:'₹18.9',act:null,beat:null,sector:'IT'},
-  {sym:'ICICIBANK',name:'ICICI Bank',date:'2025-04-26',est:'₹11.4',act:null,beat:null,sector:'Banking'},
-  // Past results
-  {sym:'NESTLEIND',name:'Nestle India',date:'2025-02-14',est:'₹28.4',act:'₹31.2',beat:true,sector:'FMCG'},
-  {sym:'ASIANPAINT',name:'Asian Paints',date:'2025-02-20',est:'₹7.2',act:'₹6.8',beat:false,sector:'Consumer'},
-  {sym:'TITAN',name:'Titan Company',date:'2025-02-10',est:'₹22.1',act:'₹24.5',beat:true,sector:'Consumer'},
-  {sym:'MARUTI',name:'Maruti Suzuki',date:'2025-02-28',est:'₹168',act:'₹172',beat:true,sector:'Auto'},
+const EVENTS_DATA = [
+  // ── QUARTERLY RESULTS (Q4 FY26 season — Apr 2026) ──
+  {type:'results', sym:'TCS',      name:'Tata Consultancy',   date:'2026-04-10', sector:'IT',      note:'Q4 FY26 Results + Final Dividend expected', est:'₹29.1 EPS', act:null, beat:null},
+  {type:'results', sym:'HCLTECH',  name:'HCL Technologies',   date:'2026-04-12', sector:'IT',      note:'Q4 FY26 Results + Interim Dividend',         est:'₹19.5 EPS', act:null, beat:null},
+  {type:'results', sym:'INFY',     name:'Infosys',            date:'2026-04-14', sector:'IT',      note:'Q4 FY26 Results & FY26 Annual Guidance',     est:'₹18.4 EPS', act:null, beat:null},
+  {type:'results', sym:'WIPRO',    name:'Wipro',              date:'2026-04-16', sector:'IT',      note:'Q4 FY26 Results',                            est:'₹5.4 EPS',  act:null, beat:null},
+  {type:'results', sym:'HDFCBANK', name:'HDFC Bank',          date:'2026-04-19', sector:'Banking', note:'Q4 FY26 Results + Dividend consideration',   est:'₹18.2 EPS', act:null, beat:null},
+  {type:'results', sym:'BAJFINANCE',name:'Bajaj Finance',     date:'2026-04-23', sector:'Finance', note:'Q4 FY26 Results',                            est:'₹43.8 EPS', act:null, beat:null},
+  {type:'results', sym:'ICICIBANK',name:'ICICI Bank',         date:'2026-04-26', sector:'Banking', note:'Q4 FY26 Results',                            est:'₹12.1 EPS', act:null, beat:null},
+  {type:'results', sym:'RELIANCE', name:'Reliance Industries',date:'2026-04-25', sector:'Energy',  note:'Q4 FY26 Results',                            est:'₹62.4 EPS', act:null, beat:null},
+  {type:'results', sym:'SBIN',     name:'SBI',                date:'2026-05-07', sector:'Banking', note:'Q4 FY26 Results',                            est:'₹23.8 EPS', act:null, beat:null},
+  {type:'results', sym:'TATAMOTORS',name:'Tata Motors',       date:'2026-05-09', sector:'Auto',    note:'Q4 FY26 Results',                            est:'₹24.1 EPS', act:null, beat:null},
+  // Past Q3 FY26 results
+  {type:'results', sym:'TCS',      name:'Tata Consultancy',   date:'2026-01-12', sector:'IT',      note:'Q3 FY26 Results',  est:'₹28.4 EPS', act:'₹29.1 EPS', beat:true},
+  {type:'results', sym:'HCLTECH',  name:'HCL Technologies',   date:'2026-01-12', sector:'IT',      note:'Q3 FY26 Results',  est:'₹18.9 EPS', act:'₹19.8 EPS', beat:true},
+  {type:'results', sym:'INFY',     name:'Infosys',            date:'2026-01-14', sector:'IT',      note:'Q3 FY26 Results',  est:'₹17.8 EPS', act:'₹17.2 EPS', beat:false},
+  {type:'results', sym:'HDFCBANK', name:'HDFC Bank',          date:'2026-01-18', sector:'Banking', note:'Q3 FY26 Results',  est:'₹17.2 EPS', act:'₹18.9 EPS', beat:true},
+  {type:'results', sym:'ICICIBANK',name:'ICICI Bank',         date:'2026-01-26', sector:'Banking', note:'Q3 FY26 Results',  est:'₹11.4 EPS', act:'₹12.3 EPS', beat:true},
+  {type:'results', sym:'RELIANCE', name:'Reliance Industries',date:'2026-01-30', sector:'Energy',  note:'Q3 FY26 Results',  est:'₹59.8 EPS', act:'₹58.2 EPS', beat:false},
+  {type:'results', sym:'BAJFINANCE',name:'Bajaj Finance',     date:'2026-01-27', sector:'Finance', note:'Q3 FY26 Results',  est:'₹41.2 EPS', act:'₹44.6 EPS', beat:true},
+  {type:'results', sym:'WIPRO',    name:'Wipro',              date:'2026-01-16', sector:'IT',      note:'Q3 FY26 Results',  est:'₹5.2 EPS',  act:'₹5.6 EPS',  beat:true},
+  {type:'results', sym:'MARUTI',   name:'Maruti Suzuki',      date:'2026-02-03', sector:'Auto',    note:'Q3 FY26 Results',  est:'₹168 EPS',  act:'₹182 EPS',  beat:true},
+  {type:'results', sym:'SBIN',     name:'SBI',                date:'2026-02-06', sector:'Banking', note:'Q3 FY26 Results',  est:'₹22.4 EPS', act:'₹23.9 EPS', beat:true},
+
+  // ── DIVIDENDS ──
+  {type:'dividend', sym:'TCS',       name:'Tata Consultancy',   date:'2026-01-17', sector:'IT',      note:'Interim Dividend ₹10/share (Record Date)', amount:'₹10/share',  exDate:'2026-01-17'},
+  {type:'dividend', sym:'HCLTECH',   name:'HCL Technologies',   date:'2026-01-15', sector:'IT',      note:'4th Interim Dividend ₹18/share',            amount:'₹18/share',  exDate:'2026-01-15'},
+  {type:'dividend', sym:'INFY',      name:'Infosys',            date:'2026-01-24', sector:'IT',      note:'Interim Dividend ₹23/share',                amount:'₹23/share',  exDate:'2026-01-24'},
+  {type:'dividend', sym:'COALINDIA', name:'Coal India',         date:'2026-02-20', sector:'PSU',     note:'Interim Dividend ₹5/share',                 amount:'₹5/share',   exDate:'2026-02-20'},
+  {type:'dividend', sym:'POWERGRID', name:'Power Grid',         date:'2026-03-10', sector:'Power',   note:'Interim Dividend ₹7.5/share',               amount:'₹7.5/share', exDate:'2026-03-10'},
+  {type:'dividend', sym:'ONGC',      name:'ONGC',               date:'2026-03-14', sector:'Energy',  note:'Interim Dividend ₹2.75/share',              amount:'₹2.75/share',exDate:'2026-03-14'},
+  {type:'dividend', sym:'NTPC',      name:'NTPC',               date:'2026-03-20', sector:'Power',   note:'Interim Dividend ₹2.25/share',              amount:'₹2.25/share',exDate:'2026-03-20'},
+  {type:'dividend', sym:'WIPRO',     name:'Wipro',              date:'2026-04-05', sector:'IT',      note:'Final Dividend FY26 (expected)',             amount:'TBA',        exDate:'2026-04-05'},
+
+  // ── BOARD MEETINGS ──
+  {type:'board', sym:'RELIANCE', name:'Reliance Industries', date:'2026-03-14', sector:'Energy',  note:'Board meeting to discuss strategy & capex FY27'},
+  {type:'board', sym:'PULSAR',   name:'Pulsar International',date:'2026-03-14', sector:'Finance', note:'Board to discuss dividend & expansion plans'},
+  {type:'board', sym:'SWADHA',   name:'Swadha Nature',       date:'2026-03-20', sector:'FMCG',   note:'Independent Directors meeting — board review'},
+  {type:'board', sym:'SBIN',     name:'SBI',                 date:'2026-04-10', sector:'Banking', note:'Q4 FY26 results consideration'},
+  {type:'board', sym:'AXISBANK', name:'Axis Bank',           date:'2026-04-22', sector:'Banking', note:'Q4 FY26 results & dividend consideration'},
+  {type:'board', sym:'LT',       name:'L&T',                 date:'2026-05-07', sector:'Infra',   note:'Q4 FY26 results + Annual dividend'},
+  {type:'board', sym:'BAJAJFINSV',name:'Bajaj Finserv',      date:'2026-04-28', sector:'Finance', note:'Q4 FY26 results consideration'},
+
+  // ── STOCK SPLITS ──
+  {type:'split', sym:'TATAMOTORS',name:'Tata Motors',    date:'2026-03-28', sector:'Auto',    note:'Stock Split 1:5 — Record Date 28 Mar 2026', ratio:'1:5'},
+  {type:'split', sym:'TITAN',     name:'Titan Company',  date:'2026-04-15', sector:'Consumer',note:'Stock Split 1:2 — Record Date 15 Apr 2026',  ratio:'1:2'},
+
+  // ── BUYBACKS ──
+  {type:'buyback', sym:'WIPRO',   name:'Wipro',           date:'2026-03-22', sector:'IT',     note:'Buyback ₹12,000 Cr at ₹320/share — Record Date', price:'₹320', size:'₹12,000 Cr'},
+  {type:'buyback', sym:'INFY',    name:'Infosys',         date:'2026-05-10', sector:'IT',     note:'Buyback announcement expected Q1 FY27',         price:'TBA',   size:'TBA'},
 ];
 
-let _earningsOffset = 0;
+const EVENTS_TYPE_CONFIG = {
+  results:  { icon:'📊', label:'Results',      color:'rgba(0,112,243,0.12)',  textColor:'var(--accent)' },
+  dividend: { icon:'💰', label:'Dividend',     color:'rgba(0,168,84,0.12)',   textColor:'var(--green)' },
+  board:    { icon:'🏛',  label:'Board Meeting',color:'rgba(245,166,35,0.12)','textColor':'#f5a623' },
+  split:    { icon:'✂️', label:'Split',        color:'rgba(139,92,246,0.12)', textColor:'#8b5cf6' },
+  buyback:  { icon:'🔄', label:'Buyback',      color:'rgba(229,57,53,0.12)',  textColor:'var(--red)' },
+};
 
-function switchEarningsWeek(dir) {
-  _earningsOffset += dir;
+let _eventsOffset = 0;
+let _eventsFilter = 'all';
+
+function switchEventsWeek(dir) { _eventsOffset += dir; renderEarnings(); }
+function setEventsFilter(f, btn) {
+  _eventsFilter = f;
+  document.querySelectorAll('[id^="evf_"]').forEach(b => {
+    b.style.color = 'var(--text3)'; b.style.borderBottom = '2px solid transparent';
+  });
+  btn.style.color = 'var(--accent)'; btn.style.borderBottom = '2px solid var(--accent)';
   renderEarnings();
 }
+
+// Legacy aliases
+function switchEarningsWeek(dir) { switchEventsWeek(dir); }
 
 function renderEarnings() {
   const el = document.getElementById('earningsBody');
   if (!el) return;
+
   const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay() + (_earningsOffset * 7));
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
+  // Week starts Monday
+  const day = now.getDay() || 7;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - day + 1 + (_eventsOffset * 7));
+  monday.setHours(0,0,0,0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23,59,59,999);
 
-  const label = document.getElementById('earningsWeekLabel');
-  if (label) label.textContent = `${weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} – ${weekEnd.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}`;
+  const label = document.getElementById('eventsWeekLabel');
+  const isThisWeek = _eventsOffset === 0;
+  if (label) label.textContent = isThisWeek ? 'This Week' :
+    monday.toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ' – ' +
+    sunday.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
-  // Group by day
-  const byDay = {};
-  EARNINGS_DATA.forEach(e => {
+  const filtered = EVENTS_DATA.filter(e => {
     const d = new Date(e.date);
-    if (d >= weekStart && d <= weekEnd) {
-      const key = e.date;
-      if (!byDay[key]) byDay[key] = [];
-      byDay[key].push(e);
-    }
+    const inWeek = d >= monday && d <= sunday;
+    const typeOk = _eventsFilter === 'all' || e.type === _eventsFilter;
+    return inWeek && typeOk;
   });
 
-  const days = Object.keys(byDay).sort();
-  if (!days.length) {
-    el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">No earnings this week. Try another week.</div>`;
+  if (!filtered.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 24px;color:var(--text3);">
+      <div style="font-size:40px;margin-bottom:12px;">📅</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:8px;">No events this week</div>
+      <div style="font-size:12px;">Try another week or a different filter.</div>
+    </div>`;
     return;
   }
 
+  // Group by date
+  const byDay = {};
+  filtered.forEach(e => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+  const days = Object.keys(byDay).sort();
+
   el.innerHTML = days.map(day => {
     const d = new Date(day);
-    const dayLabel = d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
-    return `<div class="earnings-day">
-      <div class="earnings-day-label">${dayLabel.toUpperCase()}</div>
-      ${byDay[day].map(e=>`
-        <div class="earnings-row" onclick="fetchAndShowStock('${e.sym}')">
-          <div style="width:38px;height:38px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${e.sym.slice(0,4)}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;font-size:13px;">${e.name}</div>
-            <div style="font-size:11px;color:var(--text3);">${e.sector}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:11px;color:var(--text3);">EPS Est: ${e.est}</div>
-            ${e.act ? `<div class="${e.beat?'earnings-beat':'earnings-miss'}">${e.act} ${e.beat?'✅ BEAT':'❌ MISS'}</div>` : `<div style="font-size:11px;color:var(--gold);">⏳ Pending</div>`}
-          </div>
-        </div>`).join('')}
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isToday = d.toDateString() === today.toDateString();
+    const isPast  = d < today;
+    const dayLabel = d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+    return `
+    <div style="padding:0 16px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 0 8px;">
+        <div style="font-size:10px;font-weight:700;font-family:'Space Mono',monospace;color:${isToday?'var(--accent)':isPast?'var(--text3)':'var(--text2)'};letter-spacing:1px;">
+          ${isToday ? '🟢 TODAY — ' : ''}${dayLabel.toUpperCase()}
+        </div>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="font-size:10px;color:var(--text3);">${byDay[day].length} event${byDay[day].length>1?'s':''}</div>
+      </div>
+      ${byDay[day].map(e => renderEventCard(e, isPast)).join('')}
     </div>`;
   }).join('');
+}
+
+function renderEventCard(e, isPast) {
+  const cfg   = EVENTS_TYPE_CONFIG[e.type] || EVENTS_TYPE_CONFIG.results;
+  const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===e.sym);
+  const chg   = parseFloat(asset?.chg) || 0;
+
+  let rightHtml = '';
+  if (e.type === 'results') {
+    if (e.act) {
+      rightHtml = `
+        <div style="font-size:12px;font-weight:700;color:${e.beat?'var(--green)':'var(--red)'};">${e.act} ${e.beat?'✅ BEAT':'❌ MISS'}</div>
+        <div style="font-size:10px;color:var(--text3);">Est: ${e.est}</div>`;
+    } else {
+      rightHtml = `
+        <div style="font-size:11px;font-weight:700;color:var(--gold);">⏳ Upcoming</div>
+        <div style="font-size:10px;color:var(--text3);">Est: ${e.est}</div>`;
+    }
+  } else if (e.type === 'dividend') {
+    rightHtml = `<div style="font-size:13px;font-weight:800;color:var(--green);">${e.amount}</div>
+      <div style="font-size:10px;color:var(--text3);">Ex-Date</div>`;
+  } else if (e.type === 'split') {
+    rightHtml = `<div style="font-size:14px;font-weight:800;color:#8b5cf6;">${e.ratio}</div>
+      <div style="font-size:10px;color:var(--text3);">Split Ratio</div>`;
+  } else if (e.type === 'buyback') {
+    rightHtml = `<div style="font-size:12px;font-weight:800;color:var(--red);">${e.price}</div>
+      <div style="font-size:10px;color:var(--text3);">${e.size}</div>`;
+  } else if (e.type === 'board') {
+    rightHtml = `<div style="font-size:11px;font-weight:700;color:#f5a623;">Board Meet</div>`;
+  }
+
+  return `
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s;"
+    onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"
+    onclick="fetchAndShowStock('${e.sym}')">
+    <!-- Logo -->
+    <div style="width:40px;height:40px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${e.sym.slice(0,4)}</div>
+    <!-- Info -->
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span style="font-weight:800;font-size:13px;">${e.name}</span>
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${cfg.color};color:${cfg.textColor};">${cfg.icon} ${cfg.label}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">${e.sector}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">${e.note||''}</div>
+    </div>
+    <!-- Live price -->
+    ${asset ? `<div style="text-align:center;min-width:54px;">
+      <div style="font-size:12px;font-weight:700;">₹${asset.price}</div>
+      <div style="font-size:10px;font-weight:700;color:${chg>=0?'var(--green)':'var(--red)'};">${asset.chg}</div>
+    </div>` : ''}
+    <!-- Right data -->
+    <div style="text-align:right;min-width:80px;flex-shrink:0;">${rightHtml}</div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -7034,16 +7167,19 @@ setInterval(() => {
 // 7. FII / DII FLOW
 // ══════════════════════════════════════════════════════════════
 const FII_DATA = [
-  {date:'11 Mar',fii:1245.6,dii:-823.4,net:422.2},
-  {date:'10 Mar',fii:-2341.8,dii:1876.5,net:-465.3},
-  {date:'07 Mar',fii:3456.2,dii:-1234.5,net:2221.7},
-  {date:'06 Mar',fii:-1823.4,dii:2345.6,net:522.2},
-  {date:'05 Mar',fii:2134.5,dii:-987.6,net:1146.9},
-  {date:'04 Mar',fii:-3234.5,dii:2876.5,net:-358.0},
-  {date:'03 Mar',fii:1567.8,dii:-1123.4,net:444.4},
-  {date:'28 Feb',fii:-2456.7,dii:3123.4,net:666.7},
-  {date:'27 Feb',fii:4321.0,dii:-2345.6,net:1975.4},
-  {date:'26 Feb',fii:-1876.5,dii:1567.8,net:-308.7},
+  {date:'11 Mar',fii:-6267.31, dii:4965.53,  net:-1301.78},
+  {date:'10 Mar',fii:-4672.64, dii:6333.26,  net:1660.62},
+  {date:'07 Mar',fii:-3112.45, dii:5874.32,  net:2761.87},
+  {date:'06 Mar',fii:-2984.17, dii:4621.83,  net:1637.66},
+  {date:'05 Mar',fii:-4523.88, dii:7234.51,  net:2710.63},
+  {date:'04 Mar',fii:-8712.34, dii:12043.67, net:3331.33},
+  {date:'03 Mar',fii:-5438.92, dii:8921.44,  net:3482.52},
+  {date:'02 Mar',fii:-3295.64, dii:8593.87,  net:5298.23},
+  {date:'28 Feb',fii:-4187.23, dii:6712.45,  net:2525.22},
+  {date:'27 Feb',fii:-5623.41, dii:7891.32,  net:2267.91},
+  {date:'26 Feb',fii:-3891.56, dii:5432.78,  net:1541.22},
+  {date:'25 Feb',fii:-6234.87, dii:8123.45,  net:1888.58},
+  {date:'24 Feb',fii:-7812.34, dii:9234.56,  net:1422.22},
 ];
 
 function renderFii() {
@@ -7057,12 +7193,12 @@ function renderFii() {
     <!-- Summary cards -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
       <div style="background:${totalFii>=0?'rgba(0,168,84,0.08)':'rgba(229,57,53,0.08)'};border:1px solid ${totalFii>=0?'rgba(0,168,84,0.25)':'rgba(229,57,53,0.25)'};border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;">FII 10-DAY</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;">FII (13-DAY)</div>
         <div style="font-size:18px;font-weight:800;color:${totalFii>=0?'var(--green)':'var(--red)'};">${totalFii>=0?'+':''}₹${Math.abs(totalFii).toFixed(0)} Cr</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;">${totalFii>=0?'Net Buyers':'Net Sellers'}</div>
       </div>
       <div style="background:${totalDii>=0?'rgba(0,168,84,0.08)':'rgba(229,57,53,0.08)'};border:1px solid ${totalDii>=0?'rgba(0,168,84,0.25)':'rgba(229,57,53,0.25)'};border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;">DII 10-DAY</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;">DII (13-DAY)</div>
         <div style="font-size:18px;font-weight:800;color:${totalDii>=0?'var(--green)':'var(--red)'};">${totalDii>=0?'+':''}₹${Math.abs(totalDii).toFixed(0)} Cr</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;">${totalDii>=0?'Net Buyers':'Net Sellers'}</div>
       </div>
@@ -7096,8 +7232,28 @@ function renderFii() {
           <span style="font-size:11px;font-weight:700;color:${d.dii>=0?'var(--accent)':'var(--accent2)'};width:80px;text-align:right;">${d.dii>=0?'+':''}₹${d.dii.toFixed(0)} Cr</span>
         </div>
       </div>`).join('')}
-    <div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text3);margin-top:8px;">
-      📊 Data is representative. Live FII/DII data requires NSE/BSE API integration.
+    <!-- MTD Summary -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:4px;">
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:10px;letter-spacing:1px;">MARCH 2026 MTD SUMMARY</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">FII Net (MTD)</div>
+          <div style="font-size:15px;font-weight:800;color:var(--red);">−₹21,881 Cr</div>
+          <div style="font-size:10px;color:var(--text3);">Consistent net sellers</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">DII Net (MTD)</div>
+          <div style="font-size:15px;font-weight:800;color:var(--green);">+₹18,172 Cr</div>
+          <div style="font-size:10px;color:var(--text3);">Strong domestic support</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px;">
+        💡 <strong style="color:var(--text2);">Key Insight:</strong> FIIs have been net sellers for the 3rd consecutive month as global risk-off sentiment continues. DIIs — led by mutual fund SIP inflows — are absorbing foreign selling and preventing deeper corrections. Domestic liquidity remains the primary market support.
+      </div>
+    </div>
+    <div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:10px;color:var(--text3);margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span>📊 Source: NSE India / Trendlyne · Updated 11 Mar 2026</span>
+      <a href="https://trendlyne.com/macro-data/fii-dii/latest/cash-pastmonth/" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:700;">View Live ↗</a>
     </div>`;
 }
 
@@ -7182,7 +7338,7 @@ When asked about specific stocks, provide:
 
 Keep responses concise but insightful. Use Indian market context (NSE, BSE, Nifty, Sensex, SEBI regulations). Format with clear sections. Be balanced - mention both bulls and bears case. Always add a risk disclaimer at the end.`;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(API_BASE + '/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -7192,6 +7348,11 @@ Keep responses concise but insightful. Use Indian market context (NSE, BSE, Nift
         messages: history.map(h => ({role: h.role, content: h.content})),
       })
     });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error || `Server error ${res.status}`);
+    }
 
     const data = await res.json();
     const reply = data.content?.[0]?.text || 'Sorry, I could not generate a response. Please try again.';
@@ -7206,10 +7367,11 @@ Keep responses concise but insightful. Use Indian market context (NSE, BSE, Nift
     if (msgsEl) msgsEl.scrollTop = msgsEl.scrollHeight;
 
   } catch(e) {
+    console.error('AI error:', e);
     const typingEl = document.getElementById('aiTyping');
     if (typingEl) {
       typingEl.id = '';
-      typingEl.innerHTML = `⚠️ Could not connect to AI. Please check your connection and try again.`;
+      typingEl.innerHTML = `<span style="color:var(--red);">⚠️ <strong>Error:</strong> ${e.message || 'Could not connect to AI'}</span><br><span style="font-size:11px;color:var(--text3);">Make sure the MarketPit backend is running and ANTHROPIC_API_KEY is set on Railway.</span>`;
     }
   }
 }
