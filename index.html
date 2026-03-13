@@ -639,14 +639,8 @@ header {
 .fii-bar { height:100%; border-radius:8px; transition:width 0.6s ease; }
 /* AI */
 .ai-chat { display:flex; flex-direction:column; height:100%; }
-.ai-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
 .ai-msg-user { align-self:flex-end; background:var(--accent); color:#fff; padding:10px 14px; border-radius:14px 14px 4px 14px; max-width:80%; font-size:13px; }
 .ai-msg-bot { align-self:flex-start; background:var(--bg3); border:1px solid var(--border); padding:12px 16px; border-radius:4px 14px 14px 14px; max-width:88%; font-size:13px; line-height:1.6; }
-.ai-input-row { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); flex-shrink:0; }
-.ai-input-row input { flex:1; }
-.ai-send-btn { padding:10px 18px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; }
-.quick-prompt { padding:7px 14px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:11px; cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; transition:all 0.15s; }
-.quick-prompt:hover { border-color:var(--accent); color:var(--accent); }
 
 
 /* ── OPTIONS, CALLS, ROOMS, CONTESTS CSS ── */
@@ -916,22 +910,6 @@ header {
     </div>
   </div>
 
-  <!-- ── LIVE MARKET STRIP ── -->
-  <div id="navMarketStrip" style="display:flex;align-items:center;gap:14px;padding:0 14px;border-right:1px solid var(--border);flex-shrink:0;height:100%;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;" onclick="switchTab(document.querySelector('.nav-tab'),'feed')">
-      <span style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:0.5px;">NIFTY 50</span>
-      <span id="stripNifty" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">—</span>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;" onclick="switchTab(document.querySelector('.nav-tab'),'feed')">
-      <span style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:0.5px;">SENSEX</span>
-      <span id="stripSensex" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">—</span>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;" onclick="switchTab(document.querySelector('.nav-tab'),'feed')">
-      <span style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:0.5px;">BTC/USD</span>
-      <span id="stripBtc" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">—</span>
-    </div>
-  </div>
-
   <!-- ── NAV TABS ── -->
   <div class="nav-tabs-wrap">
   <button id="navScrollLeft" onclick="document.querySelector('.nav-tabs').scrollBy({left:-200,behavior:'smooth'})" style="display:none;position:absolute;left:0;top:0;bottom:0;width:28px;background:linear-gradient(to right,var(--bg2),transparent);border:none;cursor:pointer;z-index:10;align-items:center;justify-content:center;color:var(--text3);font-size:14px;padding:0;flex-shrink:0;">‹</button>
@@ -1007,10 +985,7 @@ header {
       FII / DII Flow
     </button>
 
-    <button class="nav-tab" onclick="switchTab(this,'ai')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.134z"/><path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866zM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5z"/></svg>
-      AI Analyst
-    </button>
+
 
     <button class="nav-tab" onclick="switchTab(this,'options')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
@@ -1555,42 +1530,6 @@ header {
   <!-- ═══════════════════════════════════════════ -->
   <!-- AI ANALYST PAGE -->
   <!-- ═══════════════════════════════════════════ -->
-  <div class="main-feed" id="page-ai" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🤖 AI TRADE ANALYST</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Powered by Claude · Expert Indian market analysis</div>
-      </div>
-      <button onclick="clearAiChat()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--text3);">🗑 Clear Chat</button>
-    </div>
-    <!-- Stock search bar for AI -->
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-      <input id="aiStockInput" class="form-input" placeholder="Enter stock symbol (e.g. RELIANCE, TCS, BTC)…" style="margin:0;flex:1;" onkeydown="if(event.key==='Enter')analyseStock()">
-      <button onclick="analyseStock()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">📊 Analyse</button>
-    </div>
-    <!-- TradingView chart for selected stock -->
-    <div id="aiChartContainer" style="height:300px;flex-shrink:0;border-bottom:1px solid var(--border);display:none;">
-      <div class="tradingview-widget-container" style="height:100%;">
-        <div id="aiTVChart" style="height:100%;"></div>
-      </div>
-    </div>
-    <!-- Quick prompts -->
-    <div style="padding:8px 16px;border-bottom:1px solid var(--border);overflow-x:auto;display:flex;gap:6px;flex-shrink:0;flex-wrap:nowrap;">
-      <button class="quick-prompt" onclick="sendAiMessage('Give me a full technical analysis of RELIANCE with entry, SL and target')">RELIANCE Setup</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Is Nifty 50 bullish or bearish right now? Key levels to watch')">Nifty Levels</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Top 3 NSE stocks with strong breakout potential this week')">Breakout Picks</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Analyse Bitcoin trend. Should I buy, sell or hold?')">BTC Analysis</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Which sectors are showing strength in Indian markets right now?')">Sector Strength</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Explain a bull put spread strategy with example on Nifty')">Options Strategy</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Risk management rules every trader must follow')">Risk Rules</button>
-      <button class="quick-prompt" onclick="sendAiMessage('Gold vs Silver — which is better to buy now?')">Gold vs Silver</button>
-    </div>
-    <div class="ai-messages" id="aiMessages"></div>
-    <div class="ai-input-row">
-      <input class="form-input" id="aiInput" placeholder="Ask about any stock, crypto, strategy, chart pattern…" style="margin:0;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage();}">
-      <button class="ai-send-btn" onclick="sendAiMessage()">Send ▶</button>
-    </div>
-  </div>
 
 
   <!-- OPTIONS CHAIN PAGE -->
@@ -1771,7 +1710,7 @@ header {
     <button class="bn-item" onclick="switchTabMobile(this,'news')"><span class="bn-icon">📰</span>News</button>
     <button class="bn-item" onclick="switchTabMobile(this,'messages')"><span class="bn-icon">💬</span>DMs</button>
     <button class="bn-item" onclick="switchTabMobile(this,'paper')"><span class="bn-icon">📝</span>Paper</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'ai')"><span class="bn-icon">🤖</span>AI</button>
+
     <button class="bn-item" onclick="switchTabMobile(this,'options')"><span class="bn-icon">📊</span>Options</button>
     <button class="bn-item" onclick="switchTabMobile(this,'compare')"><span class="bn-icon">⚖️</span>Compare</button>
     <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">🎯</span>Strategies</button>
@@ -5020,7 +4959,7 @@ window.addEventListener('popstate', function(e) {
 function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','ai','options','rooms','discover','compare','econocal','mf','optpnl'];
+  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','portfolio','earnings','alerts','fii','options','rooms','discover','compare','econocal','mf','optpnl'];
   pages.forEach(p => {
     const el = document.getElementById('page-'+p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
@@ -5082,7 +5021,6 @@ function switchTabMobile(btn, page) {
   document.getElementById('page-earnings').style.display = page==='earnings'?'flex':'none';
   document.getElementById('page-alerts').style.display = page==='alerts'?'flex':'none';
   document.getElementById('page-fii').style.display = page==='fii'?'flex':'none';
-  document.getElementById('page-ai').style.display = page==='ai'?'flex':'none';
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5095,7 +5033,6 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='ai')        renderAiPage();
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
@@ -5144,7 +5081,6 @@ function switchTab(btn, page) {
   document.getElementById('page-earnings').style.display = page==='earnings'?'flex':'none';
   document.getElementById('page-alerts').style.display = page==='alerts'?'flex':'none';
   document.getElementById('page-fii').style.display = page==='fii'?'flex':'none';
-  document.getElementById('page-ai').style.display = page==='ai'?'flex':'none';
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5157,7 +5093,6 @@ function switchTab(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='ai')        renderAiPage();
   document.getElementById('page-options').style.display = page==='options'?'flex':'none';
   document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
   document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
@@ -8117,221 +8052,6 @@ function renderFii() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 8. AI ANALYST
-// ══════════════════════════════════════════════════════════════
-const AI_HISTORY_KEY = 'mp_ai_chat';
-function getAiHistory() { try { return JSON.parse(localStorage.getItem(AI_HISTORY_KEY)||'[]'); } catch(e){return [];} }
-function saveAiHistory(h) { localStorage.setItem(AI_HISTORY_KEY, JSON.stringify(h.slice(-60))); }
-function clearAiChat() {
-  localStorage.removeItem(AI_HISTORY_KEY);
-  const m = document.getElementById('aiMessages');
-  if (m) m.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text3);"><div style="font-size:52px;margin-bottom:12px;">🤖</div><div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px;">AI Trade Analyst</div><div style="font-size:13px;line-height:1.6;">Powered by Claude. Ask about any stock, crypto, strategy or market trend.</div></div>';
-}
-
-// Show TradingView chart for a symbol in AI page
-function showAiChart(tvSym) {
-  const container = document.getElementById('aiChartContainer');
-  const chartDiv  = document.getElementById('aiTVChart');
-  if (!container || !chartDiv) return;
-  container.style.display = 'block';
-  chartDiv.innerHTML = '';
-  const script = document.createElement('script');
-  script.src = 'https://s3.tradingview.com/tv.js';
-  script.onload = () => {
-    new TradingView.widget({
-      container_id: 'aiTVChart',
-      symbol: tvSym,
-      interval: 'D',
-      timezone: 'Asia/Kolkata',
-      theme: document.body.classList.contains('theme-dark') || document.body.classList.contains('theme-dim') ? 'dark' : 'light',
-      style: '1',
-      locale: 'en',
-      toolbar_bg: 'transparent',
-      enable_publishing: false,
-      hide_top_toolbar: false,
-      hide_legend: false,
-      save_image: false,
-      height: 300,
-      width: '100%',
-    });
-  };
-  if (!window.TradingView) {
-    document.head.appendChild(script);
-  } else {
-    script.onload();
-  }
-}
-
-// Analyse a specific stock — pulls TradingView chart + AI analysis
-async function analyseStock() {
-  const inp = document.getElementById('aiStockInput');
-  if (!inp) return;
-  const raw = inp.value.trim().toUpperCase();
-  if (!raw) return;
-  inp.value = '';
-  // Map common names to TradingView symbols
-  const tvSymMap = {
-    'NIFTY':'NSE:NIFTY','BANKNIFTY':'NSE:BANKNIFTY','SENSEX':'BSE:SENSEX',
-    'RELIANCE':'NSE:RELIANCE','TCS':'NSE:TCS','HDFCBANK':'NSE:HDFCBANK',
-    'INFY':'NSE:INFY','SBIN':'NSE:SBIN','ICICIBANK':'NSE:ICICIBANK',
-    'WIPRO':'NSE:WIPRO','TATAMOTORS':'NSE:TATAMOTORS','HCLTECH':'NSE:HCLTECH',
-    'BAJFINANCE':'NSE:BAJFINANCE','LT':'NSE:LT','AXISBANK':'NSE:AXISBANK',
-    'KOTAKBANK':'NSE:KOTAKBANK','MARUTI':'NSE:MARUTI','SUNPHARMA':'NSE:SUNPHARMA',
-    'TITAN':'NSE:TITAN','NESTLEIND':'NSE:NESTLEIND','ASIANPAINT':'NSE:ASIANPAINT',
-    'TECHM':'NSE:TECHM','NTPC':'NSE:NTPC','ONGC':'NSE:ONGC','COALINDIA':'NSE:COALINDIA',
-    'JSWSTEEL':'NSE:JSWSTEEL','TATASTEEL':'NSE:TATASTEEL','DRREDDY':'NSE:DRREDDY',
-    'CIPLA':'NSE:CIPLA','ADANIENT':'NSE:ADANIENT','HEROMOTOCO':'NSE:HEROMOTOCO',
-    'BTC':'BINANCE:BTCUSDT','ETH':'BINANCE:ETHUSDT','BNB':'BINANCE:BNBUSDT',
-    'SOL':'BINANCE:SOLUSDT','XRP':'BINANCE:XRPUSDT','DOGE':'BINANCE:DOGEUSDT',
-    'GOLD':'COMEX:GC1!','SILVER':'COMEX:SI1!','CRUDE':'NYMEX:CL1!',
-    'BRENT':'ICEEUR:B1!','NATURALGAS':'NYMEX:NG1!',
-  };
-  const tvSym = tvSymMap[raw] || ('NSE:' + raw);
-  showAiChart(tvSym);
-  sendAiMessage('Give me a comprehensive technical analysis of ' + raw + '. Include: current trend, key support/resistance levels, RSI & MACD signals, recommended entry zone, stop loss, and price targets. Also mention any chart patterns visible. Rate the setup as Strong Buy / Buy / Neutral / Sell / Strong Sell.');
-}
-
-// Init AI page — show history or welcome
-function renderAiPage() {
-  const msgsEl = document.getElementById('aiMessages');
-  if (!msgsEl) return;
-  const history = getAiHistory();
-  if (!history.length) {
-    msgsEl.innerHTML = `
-      <div style="text-align:center;padding:40px 20px;color:var(--text3);">
-        <div style="font-size:52px;margin-bottom:12px;">🤖</div>
-        <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px;">AI Trade Analyst</div>
-        <div style="font-size:13px;line-height:1.6;max-width:320px;margin:0 auto;">Powered by Claude AI. Enter any stock symbol above or ask me anything about markets, strategies, and trade setups.</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px;">
-          ${['RELIANCE analysis','Nifty 50 outlook','BTC trend','Gold vs equity','Best IT stocks','Intraday tips'].map(s=>`<button onclick="sendAiMessage('${s}')" style="padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);font-size:12px;cursor:pointer;color:var(--text2);">${s}</button>`).join('')}
-        </div>
-      </div>`;
-  } else {
-    msgsEl.innerHTML = history.map(m =>
-      `<div class="ai-msg-${m.role==='user'?'user':'bot'}">${formatAiMsg(m.content)}</div>`
-    ).join('');
-    setTimeout(() => { msgsEl.scrollTop = msgsEl.scrollHeight; }, 50);
-  }
-}
-
-function formatAiMsg(text) {
-  // Format markdown-ish responses nicely
-  return text
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/^#{1,3} (.+)$/gm, '<div style="font-weight:800;font-size:14px;color:var(--accent);margin:10px 0 4px;">$1</div>')
-    .replace(/^[•\-] (.+)$/gm, '<div style="padding-left:12px;margin:2px 0;">• $1</div>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-}
-
-async function sendAiMessage(text) {
-  const input  = document.getElementById('aiInput');
-  const msgsEl = document.getElementById('aiMessages');
-  const msg    = text || input?.value.trim();
-  if (!msg) return;
-  if (input) input.value = '';
-
-  // Clear welcome screen on first message
-  if (msgsEl && msgsEl.querySelector('.text-center, [style*="text-align:center"]')) {
-    msgsEl.innerHTML = '';
-  }
-
-  const history = getAiHistory();
-  history.push({ role: 'user', content: msg });
-  saveAiHistory(history);
-
-  if (msgsEl) {
-    msgsEl.innerHTML += `<div class="ai-msg-user">${msg}</div>`;
-    msgsEl.innerHTML += `<div class="ai-msg-bot" id="aiTyping" style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;gap:3px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce 1s infinite;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce 1s infinite 0.15s;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce 1s infinite 0.3s;"></span></span> Analysing…</div>`;
-    msgsEl.scrollTop = msgsEl.scrollHeight;
-  }
-
-  const systemPrompt = `You are MarketPit AI — an expert Indian stock market analyst, trader, and financial educator. You have encyclopaedic knowledge of:
-- NSE/BSE listed stocks, indices (Nifty 50, Nifty Bank, Sensex, Nifty IT, Nifty Pharma etc.)
-- Technical analysis: candlestick patterns, chart patterns (H&S, flags, wedges, triangles), indicators (RSI, MACD, Bollinger Bands, EMA, SMA, ATR, ADX, Stochastic, Supertrend)
-- Fundamental analysis: P/E, P/B, ROE, debt ratios, earnings, promoter holdings
-- Options trading: Greeks, strategies (Iron Condor, Bull Call Spread, Straddle, Strangle), PCR, OI analysis, max pain
-- Cryptocurrency markets, DeFi, on-chain metrics
-- Commodities: Gold, Silver, Crude Oil, Natural Gas
-- Macro factors: RBI policy, FII/DII flows, inflation, GDP, rupee movement
-- Risk management, position sizing, trading psychology
-
-RESPONSE FORMAT:
-- Use **bold** for key terms and numbers
-- Use clear sections with ### headers
-- Be specific with price levels and percentages
-- Give actionable trade setups with Entry / Stop Loss / Target
-- Always include Risk:Reward ratio
-- End with a 1-line verdict emoji rating: 🟢 Strong Buy / 🔵 Buy / 🟡 Neutral / 🔴 Sell / ⛔ Strong Sell
-- Add brief risk disclaimer at end
-- Keep responses focused and insightful — not too long`;
-
-  try {
-    // Try Railway backend first, fall back to direct Anthropic API
-    let reply = null;
-    
-    try {
-      const res = await fetch(API_BASE + '/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(15000),
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages: history.map(h => ({ role: h.role, content: h.content })),
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        reply = data.content?.[0]?.text;
-      }
-    } catch(e) { /* try direct */ }
-
-    // Direct Anthropic API call if Railway fails
-    if (!reply) {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true',
-        },
-        signal: AbortSignal.timeout(20000),
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages: history.map(h => ({ role: h.role, content: h.content })),
-        })
-      });
-      if (!res.ok) throw new Error('API error ' + res.status);
-      const data = await res.json();
-      reply = data.content?.[0]?.text;
-    }
-
-    if (!reply) throw new Error('Empty response');
-
-    history.push({ role: 'assistant', content: reply });
-    saveAiHistory(history);
-
-    const typingEl = document.getElementById('aiTyping');
-    if (typingEl) {
-      typingEl.id = '';
-      typingEl.style.display = 'block';
-      typingEl.innerHTML = formatAiMsg(reply);
-    }
-    if (msgsEl) msgsEl.scrollTop = msgsEl.scrollHeight;
-
-  } catch(e) {
-    const typingEl = document.getElementById('aiTyping');
-    if (typingEl) {
-      typingEl.id = '';
-      typingEl.style.display = 'block';
-      typingEl.innerHTML = `<span style="color:var(--red);">⚠️ <strong>Connection Error</strong></span><br><span style="font-size:12px;color:var(--text3);">Could not reach AI. Make sure your Railway backend has <strong>ANTHROPIC_API_KEY</strong> set in environment variables.<br><a href="https://railway.app" target="_blank" style="color:var(--accent);">Open Railway Dashboard →</a></span>`;
-    }
-  }
-}
 
 
 
@@ -10200,7 +9920,7 @@ setTimeout(() => {
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-  const shortcuts = {'1':'feed','2':'pits','3':'screener','4':'news','5':'watchlist','6':'paper','7':'ai','8':'options','9':'alerts'};
+  const shortcuts = {'1':'feed','2':'pits','3':'screener','4':'news','5':'watchlist','6':'paper','7':'options','8':'options','9':'alerts'};
   if (shortcuts[e.key]) {
     const btn = document.querySelector(`[onclick*="switchTab"][onclick*="'${shortcuts[e.key]}'"]`);
     if (btn) btn.click();
@@ -10219,7 +9939,7 @@ function showKeyboardHelp() {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       ${[['/',  'Search'],['N','New Post'],['1–9','Switch Tabs'],['Shift+?','This Help'],
          ['Esc','Close Modal'],['1','Feed'],['2','Pits'],['3','Screener'],
-         ['4','News'],['5','Watchlist'],['6','Paper Trade'],['7','AI Analyst']].map(([k,d])=>`
+         ['4','News'],['5','Watchlist'],['6','Paper Trade'],['7','Options Chain']].map(([k,d])=>`
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;">
           <kbd style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);">${k}</kbd>
           <span style="font-size:12px;color:var(--text2);">${d}</span>
