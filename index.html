@@ -742,19 +742,18 @@ header {
 #eyesBanner:hover { background:#ccc8c0 !important; border-bottom-color:rgba(0,0,0,0.1) !important; }
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
-.eb-tile { flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;background:transparent;border:1px solid rgba(0,0,0,0.12);border-radius:7px;position:relative;height:52px;box-sizing:border-box; }
-.eb-sub { border-radius:3px;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.1);transition:background 0.12s,border-color 0.12s,box-shadow 0.12s,opacity 0.12s;opacity:1;min-width:0;min-height:0; }
-.eb-tile.eb-active .eb-sub { background:rgba(255,200,80,0.35);border-color:rgba(255,255,255,0.5); }
+.eb-tile { width:46px;height:46px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;background:transparent;border:none;position:relative;box-sizing:border-box; }
+.eb-sub { border-radius:3px;background:transparent;border:1px solid transparent;transition:background 0.1s,border-color 0.1s,box-shadow 0.1s;opacity:0;box-sizing:border-box; }
 
 #ebGlow { position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,40,0.9) 0%,rgba(255,100,0,0.55) 40%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:0;transition:opacity 0.3s;filter:blur(8px); }
 #eyesBanner:hover #ebGlow { opacity:1; }
-#ebTileGrid { position:absolute;left:8px;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:5px;z-index:2;opacity:0;transition:opacity 0.3s;pointer-events:all;justify-content:space-between; }
-#eyesBanner:hover #ebTileGrid { opacity:1; }
-#eyesBanner:hover .eb-sub { background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.15); }
+#ebTileGrid { position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-wrap:wrap;gap:0;z-index:2;opacity:1;pointer-events:all;align-content:center;justify-content:flex-start;padding:6px 10px;overflow:hidden; }
+/* ebTileGrid always visible */
+/* eb-sub shown only by JS */
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
   <div id="ebGlow"></div>
-  <div id="ebTileGrid" style="display:flex;gap:4px;height:52px;"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
+  <div id="ebTileGrid"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
   <!-- Soft dot pattern -->
   <div class="eb-dot-bg" style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;transition:opacity 0.4s;"></div>
 
@@ -1990,8 +1989,10 @@ const COMM_LIST = [
 let allStockSymbols = [];
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s})),
-  ...STATIC_CRYPTO.map(s => ({...s})),        // crypto seeded — updated by CoinGecko
-  ...STATIC_COMMODITIES.map(s => ({...s})),   // commodities seeded — updated by Yahoo Finance
+  // Crypto: seed with name/sym but NO price — show live only, never stale static
+  ...STATIC_CRYPTO.map(s => ({...s, price: null, chg: null, _loading: true})),
+  // Commodities: same — no static price shown, wait for live fetch
+  ...STATIC_COMMODITIES.map(s => ({...s, price: null, chg: null, _loading: true})),
 ];
 
 // ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
@@ -2643,7 +2644,19 @@ function renderTrending(data) {
   const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,6);
 
   function stockRow(s, cur) {
-    const price = s.price ? Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0}) : '—';
+    // Show loading state if price not yet fetched
+    if (!s.price) {
+      return `<div class="stock-item" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);">
+        <div style="min-width:0;">
+          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
+          <div style="font-size:10px;color:var(--text3);">${s.name||''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:10px;color:var(--text3);animation:livePulse 1.2s infinite;">fetching…</div>
+        </div>
+      </div>`;
+    }
+    const price = Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0});
     const chg   = s.chg || '';
     const up    = s.up !== undefined ? s.up : (chg && !chg.startsWith('-'));
     const color = up ? 'var(--green)' : 'var(--red)';
@@ -10397,8 +10410,8 @@ setTimeout(fetchPriorityStocks, 2000);
 // Re-fetch every 30s
 setInterval(fetchPriorityStocks, 30000);
 
-// Fetch crypto from CoinGecko immediately on load (separate from Railway)
-setTimeout(fetchCryptoLive, 1500);
+// Fetch crypto from CoinGecko immediately on load — no delay
+fetchCryptoLive();
 
 setTimeout(() => {
   buildGlobalTicker(); // rebuild after DOM settles
@@ -10703,77 +10716,86 @@ setTimeout(updateNavArrows, 800);
   }
 })();
 
-// ── GLASSMORPHISM GLOW TRACKER ──
+// ── CUBE HOVER TRACKER ──
 (function() {
   const banner = document.getElementById('eyesBanner');
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
-  let _lastActive = null;
+  let _lastSub  = null;
+  let _lastTile = null;
 
   function getColor(pct) {
     let r,g,b;
     if (pct < 0.5) {
       const t = pct * 2;
-      r = 255; g = Math.round(100 + 115*t); b = 0;
+      r = 255; g = Math.round(80 + 135*t); b = 20;
     } else {
       const t = (pct-0.5)*2;
-      r = Math.round(255-255*t); g = Math.round(215-85*t); b = Math.round(204*t);
+      r = Math.round(255-200*t); g = Math.round(215-85*t); b = Math.round(180*t);
     }
     return {r,g,b};
   }
 
-  function clearAll() {
-    banner.querySelectorAll('.eb-sub').forEach(s => {
-      s.style.background = '';
-      s.style.borderColor = '';
-      s.style.boxShadow = 'none';
-    });
-    _lastActive = null;
+  function applySubStyle(sub, r, g, b) {
+    // Figure out which quadrant (0=TL,1=TR,2=BL,3=BR) inside its tile
+    const idx = Array.from(sub.parentElement.children).indexOf(sub);
+    const isTop   = idx < 2;
+    const isLeft  = idx % 2 === 0;
+    // 3D face effect — top/left faces brighter, bottom/right darker
+    const face   = `rgba(${r},${g},${b},0.72)`;
+    const light  = `rgba(255,255,255,0.28)`;
+    const shadow = `rgba(0,0,0,0.35)`;
+    sub.style.opacity    = '1';
+    sub.style.background = face;
+    sub.style.borderTop    = isTop  ? `1px solid ${light}` : `1px solid ${shadow}`;
+    sub.style.borderLeft   = isLeft ? `1px solid ${light}` : `1px solid ${shadow}`;
+    sub.style.borderBottom = isTop  ? `1px solid ${shadow}` : `1px solid rgba(0,0,0,0.5)`;
+    sub.style.borderRight  = isLeft ? `1px solid ${shadow}` : `1px solid rgba(0,0,0,0.5)`;
+    sub.style.boxShadow  = `inset 0 1px 3px rgba(255,255,255,0.3), inset 0 -1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(${r},${g},${b},0.6)`;
+  }
+
+  function clearSub(sub) {
+    if (!sub) return;
+    sub.style.opacity      = '0';
+    sub.style.background   = '';
+    sub.style.border       = '';
+    sub.style.boxShadow    = '';
   }
 
   banner.addEventListener('mousemove', function(e) {
     const rect = banner.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x   = e.clientX - rect.left;
+    const y   = e.clientY - rect.top;
     const pct = x / rect.width;
     const {r,g,b} = getColor(pct);
 
-    // Move the glow dot
-    glow.style.left = x + 'px';
-    glow.style.top  = y + 'px';
-    glow.style.background = `radial-gradient(circle, rgba(${r},${g},${b},0.9) 0%, rgba(${Math.round(r*0.7)},${Math.round(g*0.5)},${Math.round(b*0.3)},0.5) 40%, transparent 70%)`;
+    // Move glow
+    glow.style.left       = x + 'px';
+    glow.style.top        = y + 'px';
+    glow.style.background = `radial-gradient(circle, rgba(${r},${g},${b},0.85) 0%, rgba(${r},${Math.round(g*0.6)},0,0.4) 50%, transparent 70%)`;
 
-    // Use elementFromPoint to find exactly which sub-cube the cursor is over
-    // Temporarily disable pointer-events on glow so it doesn't intercept
+    // Find sub under cursor via elementFromPoint
     glow.style.pointerEvents = 'none';
-    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const el  = document.elementFromPoint(e.clientX, e.clientY);
     glow.style.pointerEvents = '';
-
-    // Walk up to find .eb-sub if cursor is over a child element
     const sub = el && (el.classList.contains('eb-sub') ? el : el.closest?.('.eb-sub'));
 
-    if (sub === _lastActive) return; // same quad — no DOM update needed
+    if (sub === _lastSub) return;
 
-    // Reset previous sub to dim state
-    if (_lastActive) {
-      _lastActive.style.background = '';
-      _lastActive.style.borderColor = '';
-      _lastActive.style.boxShadow = 'none';
-    }
+    clearSub(_lastSub);
+    _lastSub = null;
 
-    // Light up the sub under cursor
-    if (sub && sub.classList.contains('eb-sub')) {
-      sub.style.background = `rgba(${r},${g},${b},0.65)`;
-      sub.style.borderColor = `rgba(255,255,255,0.85)`;
-      sub.style.boxShadow = `0 0 10px rgba(${r},${g},${b},0.9), inset 0 0 6px rgba(255,255,255,0.2)`;
-      _lastActive = sub;
-    } else {
-      _lastActive = null;
+    if (sub?.classList.contains('eb-sub')) {
+      applySubStyle(sub, r, g, b);
+      _lastSub = sub;
     }
   });
 
-  banner.addEventListener('mouseleave', clearAll);
+  banner.addEventListener('mouseleave', function() {
+    clearSub(_lastSub);
+    _lastSub = null;
+  });
 })();
 
 
