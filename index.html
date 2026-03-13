@@ -1627,7 +1627,7 @@ header {
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">MUTUAL FUNDS</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">NAV & Returns as of Mar 2026 · Source: AMFI India</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;" id="mfNavStatus">NAV from AMFI India · <span style="color:var(--text3);">loading…</span></div>
       </div>
       <button onclick="showMfCompare()" id="mfCompareBtn" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">⚖️ Compare Funds (<span id="mfCompareCount">0</span>)</button>
     </div>
@@ -2118,7 +2118,7 @@ async function yfFetch(yfSym) {
 let _cgCache = null;
 let _cgCacheTime = 0;
 async function cgFetchAll() {
-  if (_cgCache && Date.now() - _cgCacheTime < 60000) return _cgCache;
+  if (_cgCache && Date.now() - _cgCacheTime < 25000) return _cgCache; // 25s TTL — fresh on every 30s tick
   const ids = Object.values(CG_IDS).join(',');
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
   const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -2221,6 +2221,44 @@ async function fetchPriorityStocks() {
   onLiveDataUpdate(); // single call updates everything
 }
 
+// ── CRYPTO LIVE UPDATER — runs every 30s regardless of Railway status ──
+let _cryptoFetching = false;
+async function fetchCryptoLive() {
+  if (_cryptoFetching) return;
+  _cryptoFetching = true;
+  try {
+    const cgData = await cgFetchAll();
+    let updated = 0;
+    for (const [sym, id] of Object.entries(CG_IDS)) {
+      const coin = cgData[id];
+      if (!coin?.usd) continue;
+      const price  = coin.usd;
+      const chg    = coin.usd_24h_change || 0;
+      const up     = chg >= 0;
+      const chgStr = (up ? '+' : '') + Math.abs(chg).toFixed(2) + '%';
+      const existing = liveStocks.find(s => s.sym === sym);
+      if (existing) {
+        existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true;
+      } else {
+        const staticEntry = STATIC_CRYPTO.find(s => s.sym === sym);
+        liveStocks.push({ ...(staticEntry || {sym, name:sym, currency:'$'}), price, chg: chgStr, up, _live: true });
+      }
+      updated++;
+    }
+    if (updated > 0) {
+      renderTrending(liveStocks.slice(0, 6));
+      buildGlobalTicker();
+      updateWhatsMoving();
+      if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
+      console.log(`[CoinGecko] Updated ${updated} crypto prices`);
+    }
+  } catch(e) {
+    console.warn('[CoinGecko] Failed:', e.message);
+  } finally {
+    _cryptoFetching = false;
+  }
+}
+
 async function fetchLiveData() {
   // Show static fallback immediately so UI isn't blank
   if (!liveStocks.length) {
@@ -2229,6 +2267,9 @@ async function fetchLiveData() {
     updateWhatsMoving();
     setLiveStatus('fetching', '⏳ Connecting…');
   }
+
+  // ── ALWAYS: Fetch crypto from CoinGecko in parallel (free, fast, no Railway needed) ──
+  fetchCryptoLive(); // non-blocking — runs every time regardless of Railway status
 
   // ── Layer 1: Try Railway backend (full fresh dataset) ──
   try {
@@ -5187,7 +5228,7 @@ function _switchTabSilent(btn, page) {
   if (page==='discover') renderDiscover();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
-  if (page==='mf')       renderMF();
+  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')   renderOptPnl();
 }
 
@@ -5257,7 +5298,7 @@ function switchTabMobile(btn, page) {
   if (page==='discover') renderDiscover();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
-  if (page==='mf')       renderMF();
+  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')   renderOptPnl();
   if (page==='tv')       renderTVPage();
 }
@@ -5315,7 +5356,7 @@ function switchTab(btn, page) {
   if (page==='discover') renderDiscover();
   if (page==='compare')  renderCompare();
   if (page==='econocal') renderEcono();
-  if (page==='mf')       renderMF();
+  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')   renderOptPnl();
   if (page==='tv')       renderTVPage();
 }
@@ -9603,24 +9644,92 @@ function renderEcono() {
 // ══════════════════════════════════════════════════════════════
 // FEATURE 3: MUTUAL FUNDS
 // ══════════════════════════════════════════════════════════════
+// ── MUTUAL FUND DATA — NAV auto-fetched live from mfapi.in (AMFI India) ──
+// schemeCode = AMFI scheme code used to fetch live NAV from https://api.mfapi.in/mf/<code>
 const MF_DATA = [
-  // Real NAV & returns as of Mar 2026 (Source: AMFI/ValueResearch)
-  {name:'Parag Parikh Flexi Cap Fund - Direct',  amc:'PPFAS',    cat:'equity', nav:93.41,  aum:'82,314', ret1y:18.6, ret3y:14.2, ret5y:19.4, ret10y:20.1, expense:0.63, rating:5, risk:'Moderate',   minSip:1000,  code:'PPFCF'},
-  {name:'Mirae Asset Large Cap Fund - Direct',    amc:'Mirae',    cat:'equity', nav:118.24, aum:'41,204', ret1y:14.8, ret3y:10.4, ret5y:16.1, ret10y:17.2, expense:0.54, rating:5, risk:'Moderate',   minSip:1000,  code:'MALF'},
-  {name:'SBI Small Cap Fund - Direct',            amc:'SBI',      cat:'equity', nav:178.34, aum:'31,456', ret1y:22.4, ret3y:15.8, ret5y:26.1, ret10y:21.8, expense:0.68, rating:5, risk:'High',       minSip:500,   code:'SBISCF'},
-  {name:'Nippon India Small Cap - Direct',        amc:'Nippon',   cat:'equity', nav:189.12, aum:'62,341', ret1y:19.8, ret3y:18.4, ret5y:28.4, ret10y:22.4, expense:0.74, rating:5, risk:'High',       minSip:100,   code:'NISCF'},
-  {name:'Quant Small Cap Fund - Direct',          amc:'Quant',    cat:'equity', nav:284.71, aum:'23,412', ret1y:17.2, ret3y:24.1, ret5y:36.8, ret10y:null,  expense:0.64, rating:5, risk:'Very High',  minSip:1000,  code:'QSCF'},
-  {name:'UTI Nifty 50 Index Fund - Direct',       amc:'UTI',      cat:'index',  nav:162.84, aum:'21,456', ret1y:12.1, ret3y:10.2, ret5y:13.4, ret10y:13.8, expense:0.18, rating:4, risk:'Moderate',   minSip:500,   code:'UTINF'},
-  {name:'Nifty Next 50 Index - Nippon Direct',    amc:'Nippon',   cat:'index',  nav:74.12,  aum:'7,234',  ret1y:16.8, ret3y:12.4, ret5y:15.1, ret10y:14.2, expense:0.28, rating:4, risk:'Mod-High',   minSip:500,   code:'NN50'},
-  {name:'HDFC Balanced Advantage Fund - Direct',  amc:'HDFC',     cat:'hybrid', nav:498.34, aum:'94,230', ret1y:14.2, ret3y:12.1, ret5y:14.8, ret10y:15.4, expense:0.74, rating:5, risk:'Moderate',   minSip:100,   code:'HBAF'},
-  {name:'ICICI Pru Balanced Advantage - Direct',  amc:'ICICI',    cat:'hybrid', nav:68.42,  aum:'58,234', ret1y:13.4, ret3y:11.8, ret5y:14.2, ret10y:14.8, expense:0.84, rating:4, risk:'Moderate',   minSip:1000,  code:'IPBAF'},
-  {name:'Mirae Asset Tax Saver (ELSS) - Direct',  amc:'Mirae',    cat:'elss',   nav:46.12,  aum:'22,341', ret1y:16.4, ret3y:12.8, ret5y:18.4, ret10y:null,  expense:0.44, rating:5, risk:'High',       minSip:500,   code:'MATS'},
-  {name:'Axis Long Term Equity (ELSS) - Direct',  amc:'Axis',     cat:'elss',   nav:98.41,  aum:'36,123', ret1y:12.1, ret3y:10.4, ret5y:15.6, ret10y:16.2, expense:0.64, rating:4, risk:'High',       minSip:500,   code:'ALTE'},
-  {name:'HDFC Short Term Debt - Direct',          amc:'HDFC',     cat:'debt',   nav:32.41,  aum:'14,234', ret1y:7.8,  ret3y:6.9,  ret5y:7.4,  ret10y:7.8,  expense:0.30, rating:4, risk:'Low',        minSip:1000,  code:'HSTD'},
-  {name:'ICICI Pru Corporate Bond - Direct',      amc:'ICICI',    cat:'debt',   nav:28.14,  aum:'25,342', ret1y:7.6,  ret3y:6.8,  ret5y:7.2,  ret10y:7.6,  expense:0.38, rating:4, risk:'Low',        minSip:1000,  code:'IPCB'},
-  {name:'SBI Liquid Fund - Direct',               amc:'SBI',      cat:'debt',   nav:3924.12,aum:'68,423', ret1y:7.2,  ret3y:6.8,  ret5y:6.9,  ret10y:7.1,  expense:0.22, rating:4, risk:'Low',        minSip:null,  code:'SBILF'},
-  {name:'Quant Active Fund - Direct',             amc:'Quant',    cat:'equity', nav:614.23, aum:'10,234', ret1y:21.4, ret3y:26.8, ret5y:32.1, ret10y:null,  expense:0.58, rating:5, risk:'Very High',  minSip:1000,  code:'QAF'},
+  {name:'Parag Parikh Flexi Cap Fund - Direct',  amc:'PPFAS',  cat:'equity', nav:93.41,   aum:'82,314', ret1y:18.6, ret3y:14.2, ret5y:19.4, ret10y:20.1, expense:0.63, rating:5, risk:'Moderate',  minSip:1000, code:'PPFCF',  schemeCode:122639},
+  {name:'Mirae Asset Large Cap Fund - Direct',   amc:'Mirae',  cat:'equity', nav:118.24,  aum:'41,204', ret1y:14.8, ret3y:10.4, ret5y:16.1, ret10y:17.2, expense:0.54, rating:5, risk:'Moderate',  minSip:1000, code:'MALF',   schemeCode:118834},
+  {name:'SBI Small Cap Fund - Direct',           amc:'SBI',    cat:'equity', nav:178.34,  aum:'31,456', ret1y:22.4, ret3y:15.8, ret5y:26.1, ret10y:21.8, expense:0.68, rating:5, risk:'High',      minSip:500,  code:'SBISCF', schemeCode:125497},
+  {name:'Nippon India Small Cap - Direct',       amc:'Nippon', cat:'equity', nav:189.12,  aum:'62,341', ret1y:19.8, ret3y:18.4, ret5y:28.4, ret10y:22.4, expense:0.74, rating:5, risk:'High',      minSip:100,  code:'NISCF',  schemeCode:118778},
+  {name:'Quant Small Cap Fund - Direct',         amc:'Quant',  cat:'equity', nav:284.71,  aum:'23,412', ret1y:17.2, ret3y:24.1, ret5y:36.8, ret10y:null,  expense:0.64, rating:5, risk:'Very High', minSip:1000, code:'QSCF',   schemeCode:120842},
+  {name:'UTI Nifty 50 Index Fund - Direct',      amc:'UTI',    cat:'index',  nav:162.84,  aum:'21,456', ret1y:12.1, ret3y:10.2, ret5y:13.4, ret10y:13.8, expense:0.18, rating:4, risk:'Moderate',  minSip:500,  code:'UTINF',  schemeCode:120716},
+  {name:'Nifty Next 50 Index - Nippon Direct',   amc:'Nippon', cat:'index',  nav:74.12,   aum:'7,234',  ret1y:16.8, ret3y:12.4, ret5y:15.1, ret10y:14.2, expense:0.28, rating:4, risk:'Mod-High',  minSip:500,  code:'NN50',   schemeCode:120503},
+  {name:'HDFC Balanced Advantage Fund - Direct', amc:'HDFC',   cat:'hybrid', nav:498.34,  aum:'94,230', ret1y:14.2, ret3y:12.1, ret5y:14.8, ret10y:15.4, expense:0.74, rating:5, risk:'Moderate',  minSip:100,  code:'HBAF',   schemeCode:119291},
+  {name:'ICICI Pru Balanced Advantage - Direct', amc:'ICICI',  cat:'hybrid', nav:68.42,   aum:'58,234', ret1y:13.4, ret3y:11.8, ret5y:14.2, ret10y:14.8, expense:0.84, rating:4, risk:'Moderate',  minSip:1000, code:'IPBAF',  schemeCode:120586},
+  {name:'Mirae Asset Tax Saver (ELSS) - Direct', amc:'Mirae',  cat:'elss',   nav:46.12,   aum:'22,341', ret1y:16.4, ret3y:12.8, ret5y:18.4, ret10y:null,  expense:0.44, rating:5, risk:'High',      minSip:500,  code:'MATS',   schemeCode:118835},
+  {name:'Axis Long Term Equity (ELSS) - Direct', amc:'Axis',   cat:'elss',   nav:98.41,   aum:'36,123', ret1y:12.1, ret3y:10.4, ret5y:15.6, ret10y:16.2, expense:0.64, rating:4, risk:'High',       minSip:500,  code:'ALTE',   schemeCode:115775},
+  {name:'HDFC Short Term Debt - Direct',         amc:'HDFC',   cat:'debt',   nav:32.41,   aum:'14,234', ret1y:7.8,  ret3y:6.9,  ret5y:7.4,  ret10y:7.8,  expense:0.30, rating:4, risk:'Low',        minSip:1000, code:'HSTD',   schemeCode:119293},
+  {name:'ICICI Pru Corporate Bond - Direct',     amc:'ICICI',  cat:'debt',   nav:28.14,   aum:'25,342', ret1y:7.6,  ret3y:6.8,  ret5y:7.2,  ret10y:7.6,  expense:0.38, rating:4, risk:'Low',        minSip:1000, code:'IPCB',   schemeCode:120590},
+  {name:'SBI Liquid Fund - Direct',              amc:'SBI',    cat:'debt',   nav:3924.12, aum:'68,423', ret1y:7.2,  ret3y:6.8,  ret5y:6.9,  ret10y:7.1,  expense:0.22, rating:4, risk:'Low',        minSip:null, code:'SBILF',  schemeCode:125494},
+  {name:'Quant Active Fund - Direct',            amc:'Quant',  cat:'equity', nav:614.23,  aum:'10,234', ret1y:21.4, ret3y:26.8, ret5y:32.1, ret10y:null,  expense:0.58, rating:5, risk:'Very High',  minSip:1000, code:'QAF',    schemeCode:120843},
 ];
+
+// ── LIVE NAV FETCHER — mfapi.in (free, uses AMFI data, updated daily) ──
+let _mfNavCache = {};      // { schemeCode: { nav, date, fetched } }
+let _mfFetching = false;
+let _mfLastFetch = 0;
+
+async function fetchLiveMFNavs() {
+  if (_mfFetching) return;
+  // NAVs update once per day — don't re-fetch more than once per 30 min
+  if (Date.now() - _mfLastFetch < 30 * 60 * 1000 && Object.keys(_mfNavCache).length > 0) {
+    renderMF(); return;
+  }
+  _mfFetching = true;
+  const mfEl = document.getElementById('mfNavStatus');
+  if (mfEl) mfEl.textContent = '⏳ Fetching live NAVs…';
+
+  // Fetch all funds in parallel — mfapi.in is fast & free, no key needed
+  const results = await Promise.allSettled(
+    MF_DATA.filter(f => f.schemeCode).map(async f => {
+      try {
+        // Try mfapi.in first — it mirrors AMFI data daily
+        const r = await fetch(`https://api.mfapi.in/mf/${f.schemeCode}`, {
+          signal: AbortSignal.timeout(8000)
+        });
+        if (!r.ok) throw new Error('mfapi error');
+        const d = await r.json();
+        const latestNav = d?.data?.[0];
+        if (!latestNav?.nav) throw new Error('no nav');
+        const nav = parseFloat(latestNav.nav);
+        const navDate = latestNav.date;
+        // Calculate 1-day change if yesterday's data available
+        const prevNav = d?.data?.[1] ? parseFloat(d.data[1].nav) : null;
+        const chg1d = prevNav ? ((nav - prevNav) / prevNav * 100) : null;
+        _mfNavCache[f.schemeCode] = { nav, navDate, chg1d, fetched: Date.now() };
+        return { code: f.code, nav, navDate, chg1d };
+      } catch(e) {
+        return null; // keep static nav
+      }
+    })
+  );
+
+  const updated = results.filter(r => r.status === 'fulfilled' && r.value).length;
+  _mfLastFetch = Date.now();
+  _mfFetching = false;
+
+  if (mfEl) {
+    const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    mfEl.innerHTML = updated > 0
+      ? `<span style="color:var(--green)">● ${updated} NAVs live · AMFI · ${ts}</span>`
+      : `<span style="color:var(--text3)">📊 Using cached NAVs</span>`;
+  }
+  renderMF(); // re-render with live NAVs
+}
+
+// Returns live NAV for a fund, falls back to static
+function getMFNav(f) {
+  const cached = f.schemeCode && _mfNavCache[f.schemeCode];
+  return cached ? cached.nav : f.nav;
+}
+function getMFNavDate(f) {
+  const cached = f.schemeCode && _mfNavCache[f.schemeCode];
+  return cached ? cached.navDate : 'Mar 2026';
+}
+function getMFChg1d(f) {
+  const cached = f.schemeCode && _mfNavCache[f.schemeCode];
+  return cached ? cached.chg1d : null;
+}
 
 let _mfCompare = [];
 
@@ -9730,7 +9839,15 @@ function renderMF() {
       </div>`).join('')}
     </div>
     <!-- Fund list -->
-    ${list.map(f=>`
+    ${list.map(f=>{
+      const liveNav  = getMFNav(f);
+      const navDate  = getMFNavDate(f);
+      const chg1d    = getMFChg1d(f);
+      const navColor = chg1d === null ? 'var(--text)' : chg1d >= 0 ? 'var(--green)' : 'var(--red)';
+      const chgBadge = chg1d !== null
+        ? `<span style="font-size:10px;color:${navColor};font-weight:700;">${chg1d>=0?'▲':'▼'} ${Math.abs(chg1d).toFixed(2)}%</span>`
+        : '';
+      return `
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
           <div style="flex:1;min-width:0;">
@@ -9743,8 +9860,9 @@ function renderMF() {
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:11px;color:var(--text3);">NAV</div>
-            <div style="font-weight:800;font-size:15px;">₹${f.nav}</div>
+            <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">NAV · ${navDate}</div>
+            <div style="font-weight:800;font-size:16px;color:${navColor};">₹${liveNav.toFixed ? liveNav.toFixed(2) : liveNav}</div>
+            ${chgBadge}
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
@@ -9768,7 +9886,8 @@ function renderMF() {
             ${_mfCompare.includes(f.code)?'✓ Added to Compare':'+ Compare'}
           </button>
         </div>
-      </div>`).join('')}
+      </div>`;
+    }).join('')}
     <div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text3);margin-top:6px;">
       📊 Mutual fund data is illustrative. Past returns don't guarantee future performance. Consult a SEBI-registered advisor.
     </div>`;
@@ -10276,6 +10395,9 @@ updateWhatsMoving();
 setTimeout(fetchPriorityStocks, 2000);
 // Re-fetch every 30s
 setInterval(fetchPriorityStocks, 30000);
+
+// Fetch crypto from CoinGecko immediately on load (separate from Railway)
+setTimeout(fetchCryptoLive, 1500);
 
 setTimeout(() => {
   buildGlobalTicker(); // rebuild after DOM settles
