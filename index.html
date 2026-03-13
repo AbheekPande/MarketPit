@@ -2392,7 +2392,7 @@ function buildGlobalTicker() {
     const isIndex  = s.isIndex;
     const cur      = (isCrypto || isComm) ? '$' : '₹';
     const p        = s.price;
-    if (!p) return ''; // skip if no price yet
+    if (!p && !s.price) return ''; // skip only if truly no price
 
     const fmtP = cur === '₹'
       ? '₹' + Number(p).toLocaleString('en-IN', {maximumFractionDigits: 0})
@@ -2419,10 +2419,12 @@ function buildGlobalTicker() {
   // Double for seamless infinite scroll
   track.innerHTML = html + html;
 
-  // Adjust animation speed based on item count
+  // Reset animation so it restarts cleanly with new content
   const count = allAssets.filter(s => s.price).length;
-  const speed = Math.max(40, count * 3);
-  track.style.animationDuration = speed + 's';
+  const speed = Math.max(50, count * 2.5);
+  track.style.animation = 'none';
+  track.offsetHeight; // force reflow
+  track.style.animation = `tickerScroll ${speed}s linear infinite`;
 }
 
 function showApiBanner(state) {
@@ -10147,6 +10149,8 @@ function injectThemeToggle() {
 // INIT ALL INJECTED FEATURES
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  // Build ticker immediately with static data — no waiting for API
+  buildGlobalTicker();
   setTimeout(() => {
     injectTickerTape();
     injectWhatsMoving();
@@ -10163,12 +10167,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 });
 // Also try immediately in case DOM is already ready
+// Build ticker immediately — no delay needed, all data is in-memory
+buildGlobalTicker();
+updateWhatsMoving();
+
 setTimeout(() => {
+  buildGlobalTicker(); // rebuild after DOM settles
   injectTickerTape();
   injectWhatsMoving();
   injectScreenerPresets();
   updateNotifBadge();
-}, 1000);
+}, 500);
 
 
 function updateNavArrows() {
