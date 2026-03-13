@@ -507,15 +507,7 @@ header {
   z-index: 2;
   gap: 6px;
 }
-.news-ticker-label::after {
-  content: '';
-  position: absolute;
-  left: 80px;
-  top: 0; bottom: 0;
-  width: 28px;
-  background: linear-gradient(to right, var(--accent), transparent);
-  pointer-events: none;
-}
+
 .news-ticker-track {
   display: flex;
   align-items: center;
@@ -1091,10 +1083,7 @@ header {
   <div class="main-feed" id="page-feed">
     <!-- ── SCROLLING NEWS TICKER ── -->
     <div class="news-ticker-wrap" id="newsTicker">
-      <div class="news-ticker-label">
-        <span style="font-size:9px;animation:pulse 1.5s ease-in-out infinite;color:#fff;">●</span>
-        LIVE
-      </div>
+
       <div class="news-ticker-track" id="tickerTrack">
         <!-- Items injected by JS -->
       </div>
