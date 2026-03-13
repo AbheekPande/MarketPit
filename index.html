@@ -409,6 +409,10 @@ header {
 @keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes spin { to{transform:rotate(360deg)} }
+@keyframes livePulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.3; }
+}
 @keyframes bounce { 0%,80%,100%{transform:scale(0);opacity:0.4} 40%{transform:scale(1);opacity:1} }
 @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 .loading-spin { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
@@ -2216,9 +2220,7 @@ async function fetchPriorityStocks() {
       if (s) { s.price = price; s.chg = chgStr; s.up = up; }
     } catch(e) {}
   }));
-  updateWhatsMoving();
-  updateTickerTape();
-  refreshHeatmapFromLive();
+  onLiveDataUpdate(); // single call updates everything
 }
 
 async function fetchLiveData() {
@@ -2255,7 +2257,7 @@ async function fetchLiveData() {
     }
     renderTrending(liveStocks.slice(0,6));
     updateTickerFromLive();
-    updateWhatsMoving(); // refresh What's Moving with fresh Railway data
+    onLiveDataUpdate(); // update all visible tabs with fresh Railway data
     const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
     setLiveStatus('live', `● LIVE · ${ts}`);
     showApiBanner('online');
@@ -2346,7 +2348,7 @@ async function fetchYFDirect() {
   if (total > 0) {
     renderTrending(liveStocks.slice(0,6));
     updateTickerFromLive();
-    updateWhatsMoving(); // refresh What's Moving with real live data
+    onLiveDataUpdate(); // update all visible tabs with live YF/CoinGecko data
     const ts = new Date().toLocaleTimeString('en-IN', {
       hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'
     }) + ' IST';
@@ -2482,6 +2484,14 @@ function buildGlobalTicker() {
   track.style.animation = 'none';
   track.offsetHeight; // force reflow
   track.style.animation = `tickerScroll ${speed}s linear infinite`;
+
+  // Update the LIVE label with current IST time
+  const lbl = document.getElementById('globalTickerLiveLabel');
+  if (lbl && count > 0) {
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    lbl.innerHTML = `<span style="animation:livePulse 2s infinite;display:inline-block;">●</span>&nbsp;${ts}`;
+    lbl.style.color = 'var(--green)';
+  }
 }
 
 function showApiBanner(state) {
@@ -6189,6 +6199,9 @@ async function fetchWlPrice(sym, type) {
     const data = { price: d.price, chg: d.chg, up: d.up, ts: Date.now() };
     _wlPriceCache[sym] = data;
     updateWlRowPrice(sym, data);
+    // Sync into liveStocks so portfolio/alerts/heatmap also get the fresh price
+    const ls = liveStocks.find(s => s.sym === sym);
+    if (ls) { ls.price = d.price; ls.chg = d.chg; ls.up = d.up; }
   } catch(e) {}
 }
 
@@ -7679,7 +7692,19 @@ function renderHeatmap() {
     <div style="margin-top:16px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">
       <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:8px;">NIFTY INDICES</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">
-        ${[['NIFTY 50',0.82],['BANK NIFTY',1.23],['NIFTY IT',-0.45],['NIFTY AUTO',1.67],['NIFTY PHARMA',0.34],['NIFTY METAL',0.78],['NIFTY FMCG',-0.12],['NIFTY ENERGY',0.91]].map(([n,c])=>`
+        ${(()=>{
+          const idx = window._liveIndices || {};
+          return [
+            ['NIFTY 50',   idx['NIFTY']?.chg_pct    ?? 0.82],
+            ['BANK NIFTY', idx['BANKNIFTY']?.chg_pct ?? 1.23],
+            ['NIFTY IT',   idx['CNXIT']?.chg_pct     ?? -0.45],
+            ['NIFTY AUTO', idx['CNXAUTO']?.chg_pct   ?? 1.67],
+            ['NIFTY PHARMA',idx['CNXPHARMA']?.chg_pct ?? 0.34],
+            ['NIFTY METAL', idx['CNXMETAL']?.chg_pct  ?? 0.78],
+            ['NIFTY FMCG',  idx['CNXFMCG']?.chg_pct  ?? -0.12],
+            ['NIFTY ENERGY',idx['CNXENERGY']?.chg_pct ?? 0.91],
+          ];
+        })().map(([n,c])=>`
           <div style="background:${c>=0?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};border:1px solid ${c>=0?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)'};border-radius:8px;padding:8px;text-align:center;">
             <div style="font-size:10px;color:var(--text3);">${n}</div>
             <div style="font-weight:800;color:${c>=0?'var(--green)':'var(--red)'};">${c>=0?'+':''}${c}%</div>
@@ -10789,8 +10814,8 @@ function refreshHeatmapFromLive() {
 
 // Portfolio: update current prices from liveStocks
 function refreshPortfolioFromLive() {
-  if (false) return; // portfolio removed
-  renderPortfolio(); // re-render uses liveStocks prices
+  if (_activePage !== 'portfolio') return;
+  renderPortfolio(); // re-render uses getLivePrice() for all holdings
 }
 
 // Alerts: check if any alert is now triggered
@@ -10833,14 +10858,12 @@ function showAlertFired(sym, condition, target, ltp) {
 function refreshPaperTradeFromLive() {
   if (_activePage !== 'paper') return;
   const paper = getPaper();
-  if (!paper.positions || !paper.positions.length) return;
+  if (!paper.holdings) return;
   let changed = false;
-  paper.positions.forEach(pos => {
-    const live = liveStocks.find(s => s.sym === pos.sym)
-              || STATIC_CRYPTO.find(s => s.sym === pos.sym)
-              || STATIC_COMMODITIES.find(s => s.sym === pos.sym);
-    if (live?.price && live.price !== pos.ltp) {
-      pos.ltp = live.price;
+  Object.entries(paper.holdings).forEach(([sym, h]) => {
+    const lp = getLivePrice(sym);
+    if (lp && lp !== h.ltp) {
+      h.ltp = lp;
       changed = true;
     }
   });
@@ -10854,32 +10877,20 @@ function refreshPaperTradeFromLive() {
 function refreshWatchlistFromLive() {
   if (_activePage !== 'watchlist') return;
   liveStocks.forEach(s => {
-    if (_wlPriceCache[s.sym]) {
-      _wlPriceCache[s.sym] = { price: s.price, chg: s.chg, up: s.up };
-    }
-  });
-  // Update DOM directly for items already showing
-  liveStocks.forEach(s => {
-    const priceEl = document.querySelector(`[data-wl-sym="${s.sym}"] .wl-price-val`);
-    const chgEl   = document.querySelector(`[data-wl-sym="${s.sym}"] .wl-chg`);
-    if (priceEl) {
-      const isCrypto = !!STATIC_CRYPTO.find(c => c.sym === s.sym);
-      const cur = isCrypto ? '$' : '₹';
-      priceEl.textContent = cur + Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0});
-    }
-    if (chgEl) {
-      chgEl.textContent = s.chg || '';
-      chgEl.style.color = s.up ? 'var(--green)' : 'var(--red)';
-    }
+    if (!s.price) return;
+    // Update price cache
+    _wlPriceCache[s.sym] = { price: s.price, chg: s.chg, up: s.up, ts: Date.now() };
+    // Update DOM via updateWlRowPrice (handles ₹/$ formatting correctly)
+    updateWlRowPrice(s.sym, { price: s.price, chg: s.chg, up: s.up });
   });
 }
 
 
 // ── UPDATE NAV MARKET STRIP ──
 function updateNavStrip() {
-  const indices = (typeof liveIndices !== 'undefined') ? liveIndices : {};
-  const btcLive = (typeof STATIC_CRYPTO !== 'undefined') ? STATIC_CRYPTO.find(s=>s.sym==='BTC') : null;
-  const btcStock = liveStocks ? liveStocks.find(s=>s.sym==='BTC-USD'||s.sym==='BTC') : null;
+  const indices = (window._liveIndices) ? window._liveIndices : {};
+  const btcLive = liveStocks ? liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD') : null;
+  const btcStock = btcLive;
 
   function fmt(price, chg, up, prefix) {
     if (!price) return '—';
@@ -10903,13 +10914,24 @@ function updateNavStrip() {
 
 // Master refresh: called every time liveStocks updates
 function onLiveDataUpdate() {
-  updateNavStrip();
-  refreshHeatmapFromLive();
-  refreshPortfolioFromLive();
-  checkAlertsFromLive();
-  refreshPaperTradeFromLive();
-  refreshWatchlistFromLive();
+  // Global updates — always run regardless of which page is visible
   updateWhatsMoving();
+  buildGlobalTicker();
+  updateNavStrip();
+  checkAlertsFromLive(); // check alerts silently on every update
+
+  // Page-specific updates — only runs when that tab is active
+  const p = _activePage;
+  if (p === 'heatmap')   refreshHeatmapFromLive();
+  if (p === 'portfolio') refreshPortfolioFromLive();
+  if (p === 'paper')     refreshPaperTradeFromLive();
+  if (p === 'watchlist') refreshWatchlistFromLive();
+  if (p === 'alerts')    renderAlerts();
+  if (p === 'screener')  { /* screener auto-updates via its own data binding */ }
+  if (p === 'compare')   renderCompare();
+
+  // Update live-bar timestamp on the active page
+  updateLiveBarTs(`page-${p}`);
 }
 
 // Add per-page live status bar — shows last updated time on each tab
@@ -10918,15 +10940,25 @@ function addLiveStatusBar(pageId, label) {
   if (!page || document.getElementById(`live-bar-${pageId}`)) return;
   const bar = document.createElement('div');
   bar.id = `live-bar-${pageId}`;
-  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0;';
+  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:5px 16px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0;';
   bar.innerHTML = `
     <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">${label}</span>
-    <span id="live-ts-${pageId}" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--green);">● LIVE</span>`;
-  // Insert after the first child (header)
+    <span id="live-ts-page-${pageId}" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--green);">● LIVE</span>`;
   const header = page.querySelector('div');
   if (header && header.nextSibling) {
     page.insertBefore(bar, header.nextSibling);
+  } else if (header) {
+    header.after(bar);
   }
+}
+
+// Called every 30s to update the ● timestamp on the current tab
+function updateLiveBarTs(pageId) {
+  const el = document.getElementById(`live-ts-page-${pageId}`);
+  if (!el) return;
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+  el.innerHTML = `<span style="animation:livePulse 1.5s ease-in-out">●</span> ${ts} IST`;
+  el.style.color = 'var(--green)';
 }
 
 // FII live fetch — runs once on page load and every 60 min
@@ -10994,14 +11026,17 @@ function updateNewsLiveStatus() {
 
 // Inject live status bars on page load (after DOM is ready)
 function injectLiveStatusBars() {
-  addLiveStatusBar('page-news',      'Auto-refreshes every 5 min');
-  addLiveStatusBar('page-fii',       'FII/DII data from NSE India');
-  addLiveStatusBar('page-heatmap',   'Updates from live stock prices');
-  addLiveStatusBar('page-alerts',    'Checked every 30 seconds');
-  addLiveStatusBar('page-watchlist', 'Prices refresh every 30 seconds');
-  addLiveStatusBar('page-paper',     'P&L updates with live prices');
-  addLiveStatusBar('page-ipo',       'Data updated weekly');
-  addLiveStatusBar('page-mf',        'NAV data from AMFI India');
+  addLiveStatusBar('page-news',      'News auto-refreshes every 5 min');
+  addLiveStatusBar('page-fii',       'FII/DII · Updates daily');
+  addLiveStatusBar('page-heatmap',   'Live prices · Updates every 30s');
+  addLiveStatusBar('page-portfolio', 'P&L live · Updates every 30s');
+  addLiveStatusBar('page-alerts',    'Alerts checked every 30s');
+  addLiveStatusBar('page-watchlist', 'Live prices · Updates every 30s');
+  addLiveStatusBar('page-paper',     'P&L live · Updates every 30s');
+  addLiveStatusBar('page-screener',  'Live prices · Updates every 30s');
+  addLiveStatusBar('page-compare',   'Live prices · Updates every 30s');
+  addLiveStatusBar('page-ipo',       'Updated weekly');
+  addLiveStatusBar('page-mf',        'NAV from AMFI India');
 }
 
 
@@ -11027,13 +11062,8 @@ async function fetchLiveNiftySpot() {
   } catch(e) {}
 }
 
-// ── Wire up onLiveDataUpdate to fire after fetchLiveData succeeds ──
-// Patch fetchLiveData to call onLiveDataUpdate at the end of successful fetches
-const _origFetchLiveData = fetchLiveData;
-async function fetchLiveData() {
-  await _origFetchLiveData();
-  onLiveDataUpdate();
-}
+// onLiveDataUpdate is now called directly inside fetchLiveData and fetchYFDirect
+// so no wrapping needed here — just call it from injectLiveStatusBars init
 
 // Start everything once DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
