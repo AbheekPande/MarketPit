@@ -2313,7 +2313,8 @@ async function fetchCryptoLive() {
     }
     if (updated > 0) {
       renderTrending(liveStocks.slice(0, 6));
-          updateWhatsMoving();
+      buildGlobalTicker();
+      updateWhatsMoving();
       if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
       console.log(`[CoinGecko] Updated ${updated} crypto prices`);
     }
@@ -5289,9 +5290,11 @@ window.addEventListener('popstate', function(e) {
 function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const pages = ['feed','pits','messages','screener','news','trending','watchlist','paper','ipo','heatmap','earnings','alerts','fii','options','rooms','discover','compare','econocal','mf','optpnl'];
-  pages.forEach(p => {
-    const el = document.getElementById('page-'+p);
+  const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
+    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','discover',
+    'compare','econocal','mf','optpnl','tv'];
+  ALL_PAGES.forEach(p => {
+    const el = document.getElementById('page-' + p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
   });
   if (page==='pits')      renderPits();
@@ -5299,13 +5302,13 @@ function _switchTabSilent(btn, page) {
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
-  if (page==='options')  renderOptions();
-  if (page==='rooms')    renderRooms();
-  if (page==='discover') renderDiscover();
-  if (page==='compare')  renderCompare();
-  if (page==='econocal') renderEcono();
-  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
-  if (page==='optpnl')   renderOptPnl();
+  if (page==='options')   renderOptions();
+  if (page==='rooms')     renderRooms();
+  if (page==='discover')  renderDiscover();
+  if (page==='compare')   renderCompare();
+  if (page==='econocal')  renderEcono();
+  if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='optpnl')    renderOptPnl();
 }
 
 function _switchScreenerTabSilent(tab) {
@@ -5334,22 +5337,19 @@ function _switchScreenerTabSilent(tab) {
 
 function switchTabMobile(btn, page) {
   navPush({ type: 'tab', page });
+  _activePage = page;
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // reuse the desktop nav tab logic — just find the matching nav-tab or call directly
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  if (btn) btn.classList.add('active');
+
+  const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
+    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','discover',
+    'compare','econocal','mf','optpnl','tv'];
+
+  ALL_PAGES.forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if (el) el.style.display = p === page ? 'flex' : 'none';
+  });
+
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5361,39 +5361,41 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')  renderOptions();
-  if (page==='rooms')    renderRooms();
-  if (page==='discover') renderDiscover();
-  if (page==='compare')  renderCompare();
-  if (page==='econocal') renderEcono();
-  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
-  if (page==='optpnl')   renderOptPnl();
-  if (page==='tv')       renderTVPage();
+  if (page==='options')   renderOptions();
+  if (page==='rooms')     renderRooms();
+  if (page==='discover')  renderDiscover();
+  if (page==='compare')   renderCompare();
+  if (page==='econocal')  renderEcono();
+  if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='optpnl')    renderOptPnl();
+  if (page==='tv')        renderTVPage();
 }
 
 function switchTab(btn, page) {
   navPush({ type: 'tab', page });
-  _activePage = page; // track active page for live updates
-  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  // Smooth fade-in for new page
-  const incoming = document.getElementById('page-' + page);
-  if (incoming) {
-    incoming.style.opacity = '0';
-    incoming.style.transform = 'translateY(5px)';
-    requestAnimationFrame(() => {
-      incoming.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
-      incoming.style.opacity = '1';
-      incoming.style.transform = 'translateY(0)';
-    });
-  }
-  // Safe page switching — guards against missing divs
-  ['feed','pits','messages','screener','news','trending','watchlist','paper',
-   'ipo','heatmap','earnings','alerts','fii','options','rooms','discover',
-   'compare','econocal','mf','optpnl','tv','portfolio'].forEach(p => {
+  _activePage = page;
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
+    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','discover',
+    'compare','econocal','mf','optpnl','tv'];
+
+  ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
-    if (el) el.style.display = p === page ? 'flex' : 'none';
+    if (!el) return;
+    el.style.display = p === page ? 'flex' : 'none';
+    if (p === page) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(5px)';
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      });
+    }
   });
+
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5405,22 +5407,14 @@ function switchTab(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  (document.getElementById('page-options')||{}).style && (document.getElementById('page-options').style.display = page==='options'?'flex':'none');
-  (document.getElementById('page-rooms')||{}).style && (document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none');
-  (document.getElementById('page-discover')||{}).style && (document.getElementById('page-discover').style.display = page==='discover'?'flex':'none');
-  (document.getElementById('page-compare')||{}).style && (document.getElementById('page-compare').style.display = page==='compare'?'flex':'none');
-  (document.getElementById('page-econocal')||{}).style && (document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none');
-  (document.getElementById('page-mf')||{}).style && (document.getElementById('page-mf').style.display = page==='mf'?'flex':'none');
-  (document.getElementById('page-optpnl')||{}).style && (document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none');
-  (document.getElementById('page-tv')||{}).style && (document.getElementById('page-tv').style.display = page==='tv'?'flex':'none');
-  if (page==='options')  renderOptions();
-  if (page==='rooms')    renderRooms();
-  if (page==='discover') renderDiscover();
-  if (page==='compare')  renderCompare();
-  if (page==='econocal') renderEcono();
-  if (page==='mf')       { renderMF(); fetchLiveMFNavs(); }
-  if (page==='optpnl')   renderOptPnl();
-  if (page==='tv')       renderTVPage();
+  if (page==='options')   renderOptions();
+  if (page==='rooms')     renderRooms();
+  if (page==='discover')  renderDiscover();
+  if (page==='compare')   renderCompare();
+  if (page==='econocal')  renderEcono();
+  if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='optpnl')    renderOptPnl();
+  if (page==='tv')        renderTVPage();
 }
 
 
@@ -10652,40 +10646,32 @@ function injectThemeToggle() {
 // INIT ALL INJECTED FEATURES
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Build ticker immediately with static data — no waiting for API
-  setTimeout(() => {
-    injectWhatsMoving();
-  // Re-apply TradingView widget theme when settings change
+  // Rebuild ticker on theme change
   document.addEventListener('marketpit-theme-change', () => {
     const wm = document.getElementById('whatsMoving');
-    if (wm) { wm.remove(); }
-    // Re-render custom trending list on theme change
-    if (liveStocks && liveStocks.length) renderTrending(liveStocks.slice(0,6));
+    if (wm) wm.remove();
+    if (liveStocks && liveStocks.length) renderTrending(liveStocks.slice(0, 6));
     setTimeout(injectWhatsMoving, 200);
   });
+
+  buildGlobalTicker();
+  setTimeout(() => {
+    injectWhatsMoving();
     injectScreenerPresets();
     updateNotifBadge();
   }, 500);
 });
-// Also try immediately in case DOM is already ready
+
 // Populate ticker immediately with static data
 updateTickerFromLive();
 updateWhatsMoving();
 
 // Fetch live prices for key stocks immediately (2s delay to let DOM settle)
 setTimeout(fetchPriorityStocks, 2000);
-// Re-fetch every 30s
 setInterval(fetchPriorityStocks, 30000);
 
-// Fetch crypto from CoinGecko immediately on load — no delay
+// Fetch crypto from CoinGecko immediately on load
 fetchCryptoLive();
-
-setTimeout(() => {
-  buildGlobalTicker(); // rebuild after DOM settles
-  injectWhatsMoving();
-  injectScreenerPresets();
-  updateNotifBadge();
-}, 500);
 
 
 function updateNavArrows() {
@@ -11394,7 +11380,7 @@ function refreshHeatmapFromLive() {
 
 // Portfolio: update current prices from liveStocks
 function refreshPortfolioFromLive() {
-  if (false) return; // portfolio page removed
+  if (_activePage !== 'portfolio') return;
   renderPortfolio(); // re-render uses getLivePrice() for all holdings
 }
 
@@ -11496,6 +11482,7 @@ function updateNavStrip() {
 function onLiveDataUpdate() {
   // Global updates — always run regardless of which page is visible
   updateWhatsMoving();
+  buildGlobalTicker();
   updateNavStrip();
   checkAlertsFromLive(); // check alerts silently on every update
   // Re-render trending list with live prices (sidebar always visible)
