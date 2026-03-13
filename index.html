@@ -1987,15 +1987,19 @@ const COMM_LIST = [
 ];
 
 let allStockSymbols = [];
-let liveStocks = STATIC_STOCKS.map(s => ({...s}));
+let liveStocks = [
+  ...STATIC_STOCKS.map(s => ({...s})),
+  ...STATIC_CRYPTO.map(s => ({...s})),        // crypto seeded — updated by CoinGecko
+  ...STATIC_COMMODITIES.map(s => ({...s})),   // commodities seeded — updated by Yahoo Finance
+];
 
 // ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
 // Single source of truth for all price lookups across the app
 function getLiveAsset(sym) {
-  // 1. Check liveStocks first (updated from Railway every 30s)
+  // liveStocks contains all assets (stocks + crypto + commodities) — always check here first
   const live = liveStocks.find(s => s.sym === sym);
-  if (live && live.price && live.price !== '—') return live;
-  // 2. Fallback to static data
+  if (live) return live;
+  // Fallback: check static arrays in case sym wasn't seeded yet
   return [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
 }
 function getLivePrice(sym) {
@@ -2009,14 +2013,8 @@ function getLiveChg(sym) {
   return a?.chg || '0%';
 }
 function getAllLiveAssets() {
-  // Returns all assets with live prices merged in
-  const liveMap = {};
-  liveStocks.forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
-  return [
-    ...STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
-    ...STATIC_CRYPTO.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
-    ...STATIC_COMMODITIES.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
-  ];
+  // liveStocks now contains NSE stocks + crypto + commodities all together
+  return liveStocks.filter(s => s.price && s.price !== '—');
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -2244,10 +2242,10 @@ async function fetchLiveData() {
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
     const railwaySyms = Object.keys(liveMap);
     console.log(`[Railway] Got ${railwaySyms.length} stocks:`, railwaySyms.join(', '));
-    // Update existing liveStocks entries with live data
+    // Update ALL liveStocks entries (stocks + crypto + commodities) with Railway data
     liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
     window._hasLiveData = true;
-    // Add any new stocks Railway returned that aren't in STATIC_STOCKS
+    // Add any new assets Railway returned that aren't already in liveStocks
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—' && !liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
     // Store indices for ticker + options
     if (json.indices && json.indices.length) {
@@ -2292,6 +2290,9 @@ async function fetchYFDirect() {
       const existing = liveStocks.find(s => s.sym === sym);
       if (existing) {
         existing.price = price; existing.chg = chgStr; existing.up = up;
+      } else {
+        const staticEntry = STATIC_CRYPTO.find(s => s.sym === sym);
+        liveStocks.push({ ...(staticEntry||{sym,name:sym,currency:'$'}), price, chg: chgStr, up });
       }
       updateSidebarItem(sym, price, chgStr, up, '$');
       cryptoUpdated++;
@@ -2340,7 +2341,12 @@ async function fetchYFDirect() {
       const { price, chg, up } = await yfFetch(item.yf);
       const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
       const existing = liveStocks.find(s => s.sym === item.sym);
-      if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; }
+      if (existing) {
+        existing.price = price; existing.chg = chgStr; existing.up = up;
+      } else {
+        const staticEntry = STATIC_COMMODITIES.find(s => s.sym === item.sym);
+        liveStocks.push({ ...(staticEntry||{sym:item.sym,name:item.sym,currency:'$'}), price, chg: chgStr, up });
+      }
     } catch(e) {}
   }));
 
@@ -2551,22 +2557,13 @@ function renderTrending(data) {
   // Tab state
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  const CRYPTO_SYMS = ['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK'];
-  const COMM_SYMS   = ['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC'];
+  const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
+  const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
 
-  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.includes(s.sym) && !COMM_SYMS.includes(s.sym)).slice(0,12);
-
-  // Merge STATIC_CRYPTO with live prices from liveStocks (updated by CoinGecko every 30s)
-  const cryptoList = (typeof STATIC_CRYPTO !== 'undefined' ? STATIC_CRYPTO : []).map(s => {
-    const live = liveStocks.find(x => x.sym === s.sym);
-    return live && live.price ? { ...s, price: live.price, chg: live.chg, up: live.up } : s;
-  }).slice(0,8);
-
-  // Merge STATIC_COMMODITIES with live prices from liveStocks (updated by Yahoo Finance every 30s)
-  const commList = (typeof STATIC_COMMODITIES !== 'undefined' ? STATIC_COMMODITIES : []).map(s => {
-    const live = liveStocks.find(x => x.sym === s.sym);
-    return live && live.price ? { ...s, price: live.price, chg: live.chg, up: live.up } : s;
-  }).slice(0,6);
+  // All three lists pull directly from liveStocks — crypto + commodities seeded at startup
+  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,12);
+  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,8);
+  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,6);
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0}) : '—';
