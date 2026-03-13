@@ -742,20 +742,20 @@ header {
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
 
-/* Tile: slim, well-spaced, not chunky */
+/* Tile: well-proportioned, not chunky */
 .eb-tile {
-  width:36px; height:36px; flex-shrink:0;
+  width:48px; height:48px; flex-shrink:0;
   display:grid;
   grid-template-columns:1fr 1fr;
   grid-template-rows:1fr 1fr;
-  gap:3px; padding:1px;
+  gap:4px; padding:2px;
   background:transparent; border:none;
   box-sizing:border-box;
 }
 
-/* Sub: razor-thin borders, generous border-radius for gem feel */
+/* Sub: refined border-radius, glass feel */
 .eb-sub {
-  border-radius:3px;
+  border-radius:4px;
   background:transparent;
   border-top:1px solid transparent;
   border-left:1px solid transparent;
@@ -774,13 +774,13 @@ header {
   will-change: opacity, background;
 }
 
-/* Soft ambient glow — smaller, more refined */
+/* Soft ambient glow — sized to tiles */
 #ebGlow {
-  position:absolute; width:90px; height:90px; border-radius:50%;
+  position:absolute; width:110px; height:110px; border-radius:50%;
   transform:translate(-50%,-50%); pointer-events:none; z-index:1;
   opacity:0;
   transition:opacity 0.3s ease;
-  filter:blur(18px);
+  filter:blur(20px);
 }
 #eyesBanner:hover #ebGlow { opacity:0.7; }
 
@@ -792,7 +792,7 @@ header {
   padding:8px 10px; overflow:hidden;
 }
 </style>
-<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:68px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
+<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
   <div id="ebGlow"></div>
   <div id="ebTileGrid"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
   <!-- Soft dot pattern -->
