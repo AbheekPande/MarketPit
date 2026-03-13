@@ -2313,8 +2313,7 @@ async function fetchCryptoLive() {
     }
     if (updated > 0) {
       renderTrending(liveStocks.slice(0, 6));
-      buildGlobalTicker();
-      updateWhatsMoving();
+          updateWhatsMoving();
       if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
       console.log(`[CoinGecko] Updated ${updated} crypto prices`);
     }
@@ -5338,19 +5337,19 @@ function switchTabMobile(btn, page) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   // reuse the desktop nav tab logic — just find the matching nav-tab or call directly
-  document.getElementById('page-feed').style.display      = page==='feed'?'flex':'none';
-  document.getElementById('page-pits').style.display      = page==='pits'?'flex':'none';
-  document.getElementById('page-messages').style.display  = page==='messages'?'flex':'none';
-  document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
-  document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
-  document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
-  document.getElementById('page-watchlist').style.display  = page==='watchlist'?'flex':'none';
-  document.getElementById('page-paper').style.display = page==='paper'?'flex':'none';
-  document.getElementById('page-ipo').style.display = page==='ipo'?'flex':'none';
-  document.getElementById('page-heatmap').style.display = page==='heatmap'?'flex':'none';
-  document.getElementById('page-earnings').style.display = page==='earnings'?'flex':'none';
-  document.getElementById('page-alerts').style.display = page==='alerts'?'flex':'none';
-  document.getElementById('page-fii').style.display = page==='fii'?'flex':'none';
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5362,14 +5361,6 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  document.getElementById('page-options').style.display = page==='options'?'flex':'none';
-  document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
-  document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
-  document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
-  document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none';
-  document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
-  document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none';
-  document.getElementById('page-tv').style.display = page==='tv'?'flex':'none';
   if (page==='options')  renderOptions();
   if (page==='rooms')    renderRooms();
   if (page==='discover') renderDiscover();
@@ -5396,19 +5387,13 @@ function switchTab(btn, page) {
       incoming.style.transform = 'translateY(0)';
     });
   }
-  document.getElementById('page-feed').style.display      = page==='feed'?'flex':'none';
-  document.getElementById('page-pits').style.display      = page==='pits'?'flex':'none';
-  document.getElementById('page-messages').style.display  = page==='messages'?'flex':'none';
-  document.getElementById('page-screener').style.display  = page==='screener'?'flex':'none';
-  document.getElementById('page-news').style.display      = page==='news'?'flex':'none';
-  document.getElementById('page-trending').style.display  = page==='trending'?'flex':'none';
-  document.getElementById('page-watchlist').style.display = page==='watchlist'?'flex':'none';
-  document.getElementById('page-paper').style.display = page==='paper'?'flex':'none';
-  document.getElementById('page-ipo').style.display = page==='ipo'?'flex':'none';
-  document.getElementById('page-heatmap').style.display = page==='heatmap'?'flex':'none';
-  document.getElementById('page-earnings').style.display = page==='earnings'?'flex':'none';
-  document.getElementById('page-alerts').style.display = page==='alerts'?'flex':'none';
-  document.getElementById('page-fii').style.display = page==='fii'?'flex':'none';
+  // Safe page switching — guards against missing divs
+  ['feed','pits','messages','screener','news','trending','watchlist','paper',
+   'ipo','heatmap','earnings','alerts','fii','options','rooms','discover',
+   'compare','econocal','mf','optpnl','tv','portfolio'].forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if (el) el.style.display = p === page ? 'flex' : 'none';
+  });
   if (page==='pits')      renderPits();
   if (page==='messages')  renderMessages();
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
@@ -5420,14 +5405,14 @@ function switchTab(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  document.getElementById('page-options').style.display = page==='options'?'flex':'none';
-  document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none';
-  document.getElementById('page-discover').style.display = page==='discover'?'flex':'none';
-  document.getElementById('page-compare').style.display = page==='compare'?'flex':'none';
-  document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none';
-  document.getElementById('page-mf').style.display = page==='mf'?'flex':'none';
-  document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none';
-  document.getElementById('page-tv').style.display = page==='tv'?'flex':'none';
+  (document.getElementById('page-options')||{}).style && (document.getElementById('page-options').style.display = page==='options'?'flex':'none');
+  (document.getElementById('page-rooms')||{}).style && (document.getElementById('page-rooms').style.display = page==='rooms'?'flex':'none');
+  (document.getElementById('page-discover')||{}).style && (document.getElementById('page-discover').style.display = page==='discover'?'flex':'none');
+  (document.getElementById('page-compare')||{}).style && (document.getElementById('page-compare').style.display = page==='compare'?'flex':'none');
+  (document.getElementById('page-econocal')||{}).style && (document.getElementById('page-econocal').style.display = page==='econocal'?'flex':'none');
+  (document.getElementById('page-mf')||{}).style && (document.getElementById('page-mf').style.display = page==='mf'?'flex':'none');
+  (document.getElementById('page-optpnl')||{}).style && (document.getElementById('page-optpnl').style.display = page==='optpnl'?'flex':'none');
+  (document.getElementById('page-tv')||{}).style && (document.getElementById('page-tv').style.display = page==='tv'?'flex':'none');
   if (page==='options')  renderOptions();
   if (page==='rooms')    renderRooms();
   if (page==='discover') renderDiscover();
@@ -10668,7 +10653,6 @@ function injectThemeToggle() {
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   // Build ticker immediately with static data — no waiting for API
-  buildGlobalTicker();
   setTimeout(() => {
     injectWhatsMoving();
   // Re-apply TradingView widget theme when settings change
@@ -11410,7 +11394,7 @@ function refreshHeatmapFromLive() {
 
 // Portfolio: update current prices from liveStocks
 function refreshPortfolioFromLive() {
-  if (_activePage !== 'portfolio') return;
+  if (false) return; // portfolio page removed
   renderPortfolio(); // re-render uses getLivePrice() for all holdings
 }
 
@@ -11512,7 +11496,6 @@ function updateNavStrip() {
 function onLiveDataUpdate() {
   // Global updates — always run regardless of which page is visible
   updateWhatsMoving();
-  buildGlobalTicker();
   updateNavStrip();
   checkAlertsFromLive(); // check alerts silently on every update
   // Re-render trending list with live prices (sidebar always visible)
@@ -11523,7 +11506,6 @@ function onLiveDataUpdate() {
   // Page-specific updates — only runs when that tab is active
   const p = _activePage;
   if (p === 'heatmap')   refreshHeatmapFromLive();
-  if (p === 'portfolio') refreshPortfolioFromLive();
   if (p === 'paper')     refreshPaperTradeFromLive();
   if (p === 'watchlist') refreshWatchlistFromLive();
   if (p === 'alerts')    renderAlerts();
@@ -11629,7 +11611,6 @@ function injectLiveStatusBars() {
   addLiveStatusBar('page-news',      'News auto-refreshes every 5 min');
   addLiveStatusBar('page-fii',       'FII/DII · Updates daily');
   addLiveStatusBar('page-heatmap',   'Live prices · Updates every 30s');
-  addLiveStatusBar('page-portfolio', 'P&L live · Updates every 30s');
   addLiveStatusBar('page-alerts',    'Alerts checked every 30s');
   addLiveStatusBar('page-watchlist', 'Live prices · Updates every 30s');
   addLiveStatusBar('page-paper',     'P&L live · Updates every 30s');
