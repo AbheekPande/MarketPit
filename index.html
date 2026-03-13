@@ -2274,37 +2274,72 @@ const CG_IDS = {
 
 // Yahoo Finance symbol map for NSE stocks
 const YF_STOCK_MAP = {
-  // Banking
-  'HDFCBANK':'HDFCBANK.NS','SBIN':'SBIN.NS','ICICIBANK':'ICICIBANK.NS',
+  // ═══ NIFTY 50 ═══
+  'HDFCBANK':'HDFCBANK.NS','ICICIBANK':'ICICIBANK.NS','SBIN':'SBIN.NS',
   'AXISBANK':'AXISBANK.NS','KOTAKBANK':'KOTAKBANK.NS','INDUSINDBK':'INDUSINDBK.NS',
-  // IT
   'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','HCLTECH':'HCLTECH.NS',
   'TECHM':'TECHM.NS','LTIM':'LTIM.NS',
-  // Auto
-  'TATAMOTORS':'TATAMOTORS.NS','MARUTI':'MARUTI.NS','HEROMOTOCO':'HEROMOTOCO.NS',
-  'EICHERMOT':'EICHERMOT.NS','M&M':'M%26M.NS',
-  // Pharma
+  'TATAMOTORS':'TATAMOTORS.NS','MARUTI':'MARUTI.NS','M&M':'M%26M.NS',
+  'HEROMOTOCO':'HEROMOTOCO.NS','EICHERMOT':'EICHERMOT.NS','BAJAJ-AUTO':'BAJAJ-AUTO.NS',
   'SUNPHARMA':'SUNPHARMA.NS','DRREDDY':'DRREDDY.NS','CIPLA':'CIPLA.NS',
   'DIVISLAB':'DIVISLAB.NS','APOLLOHOSP':'APOLLOHOSP.NS',
-  // Energy
   'RELIANCE':'RELIANCE.NS','ONGC':'ONGC.NS','BPCL':'BPCL.NS',
-  'IOC':'IOC.NS','NTPC':'NTPC.NS',
-  // Metals
+  'IOC':'IOC.NS','NTPC':'NTPC.NS','POWERGRID':'POWERGRID.NS',
   'TATASTEEL':'TATASTEEL.NS','JSWSTEEL':'JSWSTEEL.NS',
   'HINDALCO':'HINDALCO.NS','COALINDIA':'COALINDIA.NS',
-  // FMCG
   'NESTLEIND':'NESTLEIND.NS','BRITANNIA':'BRITANNIA.NS',
-  'ITC':'ITC.NS','HINDUNILVR':'HINDUNILVR.NS',
-  // Infra/Utilities
-  'LT':'LT.NS','POWERGRID':'POWERGRID.NS',
-  'ADANIENT':'ADANIENT.NS','ULTRACEMCO':'ULTRACEMCO.NS',
-  // Finance/Consumer
+  'ITC':'ITC.NS','HINDUNILVR':'HINDUNILVR.NS','TATACONSUM':'TATACONSUM.NS',
   'BAJFINANCE':'BAJFINANCE.NS','BAJAJFINSV':'BAJAJFINSV.NS',
   'TITAN':'TITAN.NS','ASIANPAINT':'ASIANPAINT.NS',
-  'DMART':'DMART.NS','JUBLFOOD':'JUBLFOOD.NS',
-  // Indices
+  'DMART':'DMART.NS','LT':'LT.NS',
+  'ADANIENT':'ADANIENT.NS','ULTRACEMCO':'ULTRACEMCO.NS',
+  'GRASIM':'GRASIM.NS','BHARTIARTL':'BHARTIARTL.NS',
+  'JUBLFOOD':'JUBLFOOD.NS','SHRIRAMFIN':'SHRIRAMFIN.NS',
+  // ═══ NIFTY NEXT 50 ═══
+  'ADANIPORTS':'ADANIPORTS.NS','ADANIPOWER':'ADANIPOWER.NS',
+  'AMBUJACEM':'AMBUJACEM.NS','BANKBARODA':'BANKBARODA.NS',
+  'BERGEPAINT':'BERGEPAINT.NS','BEL':'BEL.NS','BHEL':'BHEL.NS',
+  'BOSCHLTD':'BOSCHLTD.NS','CANBK':'CANBK.NS','CHOLAFIN':'CHOLAFIN.NS',
+  'COLPAL':'COLPAL.NS','DLF':'DLF.NS','GAIL':'GAIL.NS',
+  'GODREJCP':'GODREJCP.NS','HAL':'HAL.NS','HAVELLS':'HAVELLS.NS',
+  'HDFCLIFE':'HDFCLIFE.NS','HINDPETRO':'HINDPETRO.NS',
+  'INDUSTOWER':'INDUSTOWER.NS','IRCTC':'IRCTC.NS','JSWENERGY':'JSWENERGY.NS',
+  'LICI':'LICI.NS','LUPIN':'LUPIN.NS','MARICO':'MARICO.NS',
+  'MUTHOOTFIN':'MUTHOOTFIN.NS','NAUKRI':'NAUKRI.NS','NMDC':'NMDC.NS',
+  'OFSS':'OFSS.NS','PERSISTENT':'PERSISTENT.NS','PETRONET':'PETRONET.NS',
+  'PIDILITIND':'PIDILITIND.NS','PNB':'PNB.NS','RECLTD':'RECLTD.NS',
+  'SAIL':'SAIL.NS','SBICARD':'SBICARD.NS','SBILIFE':'SBILIFE.NS',
+  'SHREECEM':'SHREECEM.NS','SIEMENS':'SIEMENS.NS',
+  'TORNTPHARM':'TORNTPHARM.NS','TRENT':'TRENT.NS','TVSMOTOR':'TVSMOTOR.NS',
+  'UPL':'UPL.NS','VEDL':'VEDL.NS','ZOMATO':'ZOMATO.NS','ZYDUSLIFE':'ZYDUSLIFE.NS',
+  // ═══ MID-CAPS ═══
+  'ABCAPITAL':'ABCAPITAL.NS','ALKEM':'ALKEM.NS',
+  'AUBANK':'AUBANK.NS','AUROPHARMA':'AUROPHARMA.NS',
+  'BANDHANBNK':'BANDHANBNK.NS','BIOCON':'BIOCON.NS',
+  'COFORGE':'COFORGE.NS','DEEPAKNTR':'DEEPAKNTR.NS','DIXON':'DIXON.NS',
+  'FEDERALBNK':'FEDERALBNK.NS','FORTIS':'FORTIS.NS',
+  'GLENMARK':'GLENMARK.NS','GODREJPROP':'GODREJPROP.NS',
+  'HDFCAMC':'HDFCAMC.NS','IDFCFIRSTB':'IDFCFIRSTB.NS',
+  'INDHOTEL':'INDHOTEL.NS','JINDALSTEL':'JINDALSTEL.NS',
+  'LAURUSLABS':'LAURUSLABS.NS','LICHSGFIN':'LICHSGFIN.NS',
+  'LTTS':'LTTS.NS','MANAPPURAM':'MANAPPURAM.NS',
+  'MOTHERSON':'MOTHERSON.NS','MPHASIS':'MPHASIS.NS','MRF':'MRF.NS',
+  'NYKAA':'FSN.NS','PAGEIND':'PAGEIND.NS','PAYTM':'PAYTM.NS',
+  'PHOENIXLTD':'PHOENIXLTD.NS','PIIND':'PIIND.NS',
+  'POLYCAB':'POLYCAB.NS','PRESTIGE':'PRESTIGE.NS',
+  'PVRINOX':'PVRINOX.NS','SOLARINDS':'SOLARINDS.NS','SRF':'SRF.NS',
+  'SYNGENE':'SYNGENE.NS','TATAELXSI':'TATAELXSI.NS',
+  'TATACHEM':'TATACHEM.NS','TATACOMM':'TATACOMM.NS',
+  'TORNTPOWER':'TORNTPOWER.NS','UNIONBANK':'UNIONBANK.NS',
+  'VARUNBEV':'VARUNBEV.NS','VOLTAS':'VOLTAS.NS',
+  'YESBANK':'YESBANK.NS','ZEEL':'ZEEL.NS',
+  'POLICYBZR':'POLICYBZR.NS','DELHIVERY':'DELHIVERY.NS',
+  'RVNL':'RVNL.NS','IRFC':'IRFC.NS',
+  'COCHINSHIP':'COCHINSHIP.NS','HUDCO':'HUDCO.NS',
+  'KAYNES':'KAYNES.NS','RAILTEL':'RAILTEL.NS',
+  // ═══ Indices ═══
   'NIFTY':'%5ENSEI','BANKNIFTY':'%5ENSEBANK','SENSEX':'%5EBSESN',
-  // Commodities
+  // ═══ Commodities ═══
   'GOLD':'GC=F','SILVER':'SI=F','CRUDE':'CL=F','BRENT':'BZ=F',
   'NATURALGAS':'NG=F','COPPER':'HG=F','PLATINUM':'PL=F','WHEAT':'ZW=F','CORN':'ZC=F',
 };
@@ -2481,7 +2516,11 @@ async function fetchCryptoLive() {
 async function fetchLiveData() {
   // Show static fallback immediately so UI isn't blank
   if (!liveStocks.length) {
-    liveStocks = STATIC_STOCKS.map(s => ({...s, badge:'NSE', bc:'var(--accent)'}));
+    // Initialise with sector/name info but NULL prices — nothing shows until live data arrives
+    liveStocks = STATIC_STOCKS.map(s => ({...s, price: null, chg: null, up: true, badge:'NSE', bc:'var(--accent)'}));
+    // Also seed crypto + commodity slots
+    STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, price:null, chg:null}); });
+    STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, price:null, chg:null}); });
     renderTrending(liveStocks.slice(0,6));
     updateWhatsMoving();
     setLiveStatus('fetching', '⏳ Connecting…');
@@ -2502,8 +2541,14 @@ async function fetchLiveData() {
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
     const railwaySyms = Object.keys(liveMap);
     console.log(`[Railway] Got ${railwaySyms.length} assets:`, railwaySyms.join(', '));
-    // Update ALL liveStocks entries (stocks + crypto + commodities) with Railway data
-    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
+    // Update ALL liveStocks entries with Railway data (preserve sector from static if Railway doesn't send it)
+    liveStocks = liveStocks.map(s => {
+      if (liveMap[s.sym]) {
+        const r = liveMap[s.sym];
+        return {...s, ...r, sector: r.sector || s.sector, _live: true};
+      }
+      return s;
+    });
     window._hasLiveData = true;
     // Add any new assets Railway returned that aren't already in liveStocks
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—' && !liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
@@ -2575,36 +2620,35 @@ async function fetchYFDirect() {
     }
   } catch(e) { console.warn('CoinGecko failed:', e.message); }
 
-  // ── 2. Fetch NSE stocks via Yahoo Finance in batches (all 46) ──
-  const batches = [
-    LIVE_SIDEBAR_SYMS.slice(0,6),
-    LIVE_SIDEBAR_SYMS.slice(6,12),
-    LIVE_SIDEBAR_SYMS.slice(12,18),
-    LIVE_SIDEBAR_SYMS.slice(18,24),
-    LIVE_SIDEBAR_SYMS.slice(24,30),
-    LIVE_SIDEBAR_SYMS.slice(30,38),
-    LIVE_SIDEBAR_SYMS.slice(38),
-  ];
-  for (const batch of batches) {
+  // ── 2. Fetch ALL NSE stocks via Yahoo Finance in batches of 8 ──
+  // Uses all stocks from liveStocks that have a YF_STOCK_MAP entry
+  const allNseItems = STATIC_STOCKS.map(s => ({ sym: s.sym, name: s.name }))
+    .filter(s => YF_STOCK_MAP[s.sym]);
+  const BATCH_SIZE = 8;
+  for (let i = 0; i < allNseItems.length; i += BATCH_SIZE) {
+    const batch = allNseItems.slice(i, i + BATCH_SIZE);
     await Promise.allSettled(batch.map(async item => {
       const yfSym = YF_STOCK_MAP[item.sym];
       if (!yfSym) return;
       try {
         const { price, chg, up } = await yfFetch(yfSym);
+        if (!price) return;
         const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
         const existing = liveStocks.find(s => s.sym === item.sym);
         if (existing) {
-          existing.price = price; existing.chg = chgStr; existing.up = up;
+          existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true;
         } else {
-          liveStocks.push({ ...item, price, chg: chgStr, up, badge:'NSE', bc:'var(--accent)' });
+          const st = STATIC_STOCKS.find(s => s.sym === item.sym);
+          liveStocks.push({ ...(st||item), price, chg: chgStr, up, badge:'NSE', bc:'var(--accent)', _live: true });
         }
-        updateSidebarItem(item.sym, price, chgStr, up, '₹');
         stocksUpdated++;
       } catch(e) {}
     }));
+    // After each batch: update UI so prices appear progressively
     updateWhatsMoving();
     refreshHeatmapFromLive();
-    await new Promise(r => setTimeout(r, 300));
+    onLiveDataUpdate();
+    await new Promise(r => setTimeout(r, 200));
   }
 
   // ── 3. Fetch ALL commodity prices via Yahoo Finance ──
@@ -7009,8 +7053,14 @@ async function runScreener() {
   // Build base list depending on asset type
   let stocks = [];
   if (_assetType === 'stocks') {
-    stocks = liveStocks.length ? [...liveStocks] : [];
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Scanning NSE stocks…</div></div>`;
+    // Only include stocks with live prices
+    const liveNse = liveStocks.filter(s => s.price && s.price !== '—' && !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym));
+    if (!liveNse.length) {
+      resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:13px;font-weight:600;">Fetching live prices…</div><div style="font-size:11px;margin-top:6px;">Connecting to Railway backend</div></div>`;
+      return;
+    }
+    stocks = liveNse;
+    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Scanning ${liveNse.length} NSE stocks…</div></div>`;
   } else if (_assetType === 'crypto') {
     resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching crypto prices…</div></div>`;
     stocks = await Promise.all(CRYPTO_LIST.map(async c => {
@@ -8822,36 +8872,25 @@ function renderIpoPage() {
 // HEATMAP_DATA is now built dynamically from liveStocks + STATIC_STOCKS sector info
 // This means ALL 150+ stocks automatically appear in the heatmap grouped by sector
 function buildHeatmapData() {
-  // Merge live prices with sector info from STATIC_STOCKS
   const sectorMap = {};
-  const allStocks = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym));
+  // Only use stocks that have live prices
+  const liveNse = liveStocks.filter(s =>
+    !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) &&
+    s.price && s.price !== '—'
+  );
 
-  allStocks.forEach(s => {
-    // Get sector from live data (if server sends it) or fall back to STATIC_STOCKS
+  liveNse.forEach(s => {
     let sector = s.sector;
     if (!sector) {
       const st = STATIC_STOCKS.find(x => x.sym === s.sym);
       sector = st ? st.sector : 'Other';
     }
-    const chgRaw = s.chg ? parseFloat(s.chg.replace('%','').replace('+','')) : 0;
+    const chgRaw = s.chg ? parseFloat((s.chg+'').replace('%','').replace('+','')) : 0;
     if (isNaN(chgRaw)) return;
     if (!sectorMap[sector]) sectorMap[sector] = [];
     sectorMap[sector].push({ sym: s.sym, name: s.name || s.sym, chg: chgRaw });
   });
 
-  // If liveStocks is empty/partial, fall back to STATIC_STOCKS
-  if (Object.keys(sectorMap).length < 3) {
-    STATIC_STOCKS.forEach(s => {
-      const sector = s.sector || 'Other';
-      const chgRaw = parseFloat((s.chg||'0').replace('%','').replace('+','')) || 0;
-      if (!sectorMap[sector]) sectorMap[sector] = [];
-      if (!sectorMap[sector].find(x => x.sym === s.sym)) {
-        sectorMap[sector].push({ sym: s.sym, name: s.name, chg: chgRaw });
-      }
-    });
-  }
-
-  // Sort sectors: biggest movers first within each sector
   return Object.entries(sectorMap)
     .sort((a,b) => a[0].localeCompare(b[0]))
     .map(([sector, stocks]) => ({
@@ -8865,6 +8904,15 @@ function renderHeatmap() {
 
   const data = buildHeatmapData();
   const total = data.reduce((a,s)=>a+s.stocks.length, 0);
+
+  if (!total) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);">
+      <div class="loading-spin" style="margin:0 auto 16px;"></div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);">Loading live prices…</div>
+      <div style="font-size:12px;margin-top:6px;">Fetching ${STATIC_STOCKS.length}+ stocks from Railway</div>
+    </div>`;
+    return;
+  }
 
   el.innerHTML = `
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
@@ -8921,6 +8969,285 @@ function renderHeatmap() {
     </div>`;
 }
 
+
+
+
+// ── CURSOR SPOTLIGHT HERO ──
+(function() {
+  let heroEl, glow, glow2, cursor, animFrame;
+  let mouseX = 0, mouseY = 0;
+  let currentX = 0, currentY = 0;
+
+  function initSpotlight() {
+    heroEl = document.getElementById('spotlightHero');
+    glow   = document.getElementById('spotlightGlow');
+    glow2  = document.getElementById('spotlightGlow2');
+    cursor = document.getElementById('spotlightCursor');
+    if (!heroEl) return;
+
+    heroEl.addEventListener('mousemove', function(e) {
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    });
+
+    heroEl.addEventListener('mouseleave', function() {
+      if (glow)   glow.style.opacity   = '0.3';
+      if (glow2)  glow2.style.opacity  = '0.2';
+      if (cursor) cursor.style.opacity = '0';
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = rect.width  / 2;
+      mouseY = rect.height / 2;
+    });
+
+    heroEl.addEventListener('mouseenter', function() {
+      if (glow)   glow.style.opacity   = '1';
+      if (glow2)  glow2.style.opacity  = '1';
+      if (cursor) cursor.style.opacity = '1';
+    });
+
+    heroEl.addEventListener('click', function(e) {
+      const rect = heroEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ripple = document.createElement('div');
+      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);transform:translate(-50%,-50%) scale(1);left:${x}px;top:${y}px;pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
+      heroEl.appendChild(ripple);
+      requestAnimationFrame(() => {
+        ripple.style.transform = `translate(-50%,-50%) scale(20)`;
+        ripple.style.opacity = '0';
+      });
+      setTimeout(() => ripple.remove(), 700);
+    });
+
+    if (cursor) cursor.style.opacity = '0';
+    const rect = heroEl.getBoundingClientRect();
+    mouseX = currentX = rect.width  / 2;
+    mouseY = currentY = rect.height / 2;
+    updatePositions();
+    updateHeroPrices();
+    setInterval(updateHeroPrices, 15000);
+  }
+
+  function animate() {
+    currentX += (mouseX - currentX) * 0.12;
+    currentY += (mouseY - currentY) * 0.12;
+    updatePositions();
+    animFrame = requestAnimationFrame(animate);
+  }
+
+  function updatePositions() {
+    if (glow)   { glow.style.left   = currentX + 'px'; glow.style.top   = currentY + 'px'; }
+    if (glow2)  { glow2.style.left  = currentX + 'px'; glow2.style.top  = currentY + 'px'; }
+    if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
+  }
+
+  const HERO_SYMBOLS = [
+    { id: 'heroNifty',     yfSym: '%5ENSEI',    label: 'NIFTY 50',   prefix: '',  color: '#0070f3', fmt: 'IN' },
+    { id: 'heroBankNifty', yfSym: '%5ENSEBANK', label: 'BANK NIFTY', prefix: '',  color: '#0070f3', fmt: 'IN' },
+    { id: 'heroBtc',       yfSym: 'BTC-USD',    label: 'BITCOIN',    prefix: '$', color: '#f5a623', fmt: 'US' },
+  ];
+
+  const HERO_PROXIES = [
+    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
+
+  async function fetchHeroPrice(sym) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m&range=1d`;
+    for (const proxyFn of HERO_PROXIES) {
+      try {
+        const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(7000) });
+        if (!r.ok) continue;
+        const raw = await r.text();
+        let parsed;
+        try { const wrap = JSON.parse(raw); parsed = wrap.contents ? JSON.parse(wrap.contents) : wrap; }
+        catch(e) { parsed = JSON.parse(raw); }
+        const meta = parsed?.chart?.result?.[0]?.meta;
+        if (!meta?.regularMarketPrice) continue;
+        return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen };
+      } catch(e) { continue; }
+    }
+    throw new Error('all proxies failed');
+  }
+
+  function renderHeroItem(el, s, price, chgPct, up) {
+    if (!el || !price) return;
+    const fmtPrice = s.fmt === 'IN'
+      ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+      : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    const sign = up ? '+' : '';
+    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span><span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${sign}${chgPct.toFixed(2)}%</span>`;
+    el.style.transform = 'scale(1.06)';
+    el.style.transition = 'transform 0.2s';
+    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+  }
+
+  function updateHeroFromLiveStocks() {
+    const idx = window._liveIndices || {};
+    const niftyEl  = document.getElementById('heroNifty');
+    const niftyData = idx['NIFTY 50'] || idx['NIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='NIFTY'||s.sym==='NIFTY50'));
+    if (niftyEl && niftyData?.price) {
+      const c = parseFloat((niftyData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(c)?0:c, niftyData.up!==false);
+    }
+    const bankEl   = document.getElementById('heroBankNifty');
+    const bankData  = idx['NIFTY BANK'] || idx['BANKNIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BANKNIFTY'));
+    if (bankEl && bankData?.price) {
+      const c = parseFloat((bankData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(c)?0:c, bankData.up!==false);
+    }
+    const btcEl    = document.getElementById('heroBtc');
+    const btcData   = (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD'));
+    if (btcEl && btcData?.price) {
+      const c = parseFloat((btcData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(c)?0:c, btcData.up!==false);
+    }
+    return !!(niftyData?.price && btcData?.price);
+  }
+
+  async function updateHeroPrices() {
+    const gotLive = updateHeroFromLiveStocks();
+    if (gotLive) return;
+    for (const s of HERO_SYMBOLS) {
+      const el = document.getElementById(s.id);
+      if (!el) continue;
+      try {
+        const { price, prev } = await fetchHeroPrice(s.yfSym);
+        if (!price) continue;
+        const chgPct = prev ? ((price - prev) / prev * 100) : 0;
+        renderHeroItem(el, s, price, chgPct, chgPct >= 0);
+      } catch(e) {}
+    }
+  }
+
+  window.updateHeroPrices = updateHeroPrices;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSpotlight);
+  } else {
+    setTimeout(initSpotlight, 100);
+  }
+})();
+
+// ── CUBE HOVER TRACKER (Eyes Banner) ──
+(function() {
+  const banner = document.getElementById('eyesBanner');
+  const glow   = document.getElementById('ebGlow');
+  if (!banner || !glow) return;
+
+  // Pre-cache all subs with their bounding rects + quadrant index
+  let subCache = []; // [{el, rect, qi}, ...]
+
+  function buildCache() {
+    subCache = [];
+    banner.querySelectorAll('.eb-tile').forEach(tile => {
+      tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
+        subCache.push({ el: sub, rect: sub.getBoundingClientRect(), qi });
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildCache);
+  } else {
+    setTimeout(buildCache, 100);
+  }
+  window.addEventListener('resize', buildCache);
+
+  let _activeSub = null;
+
+  // Color gradient: orange(left) → gold(mid) → violet(right)
+  function getColor(pct) {
+    const p = Math.max(0, Math.min(1, pct));
+    let r, g, b;
+    if (p < 0.5) {
+      const t = p * 2;
+      r = 255;
+      g = Math.round(90  + 130 * t);
+      b = Math.round(10  +  80 * t);
+    } else {
+      const t = (p - 0.5) * 2;
+      r = Math.round(255 - 120 * t);
+      g = Math.round(220 -  80 * t);
+      b = Math.round(90  + 165 * t);
+    }
+    return { r, g, b };
+  }
+
+  // Light from top-left: TL brightest → BR darkest
+  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
+
+  function showSub(sub, qi, r, g, b) {
+    const br = BRIGHTNESS[qi] ?? 0.7;
+    const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
+    const isTop  = qi < 2, isLeft = qi % 2 === 0;
+    const hi = 'rgba(255,255,255,0.38)';
+    const sh = 'rgba(0,0,0,0.50)';
+    sub.style.opacity           = '1';
+    sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
+    sub.style.borderTopColor    = isTop  ? hi : sh;
+    sub.style.borderLeftColor   = isLeft ? hi : sh;
+    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
+    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
+    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),`
+                                + `inset 0 -2px 5px rgba(0,0,0,0.38),`
+                                + `0 0 8px rgba(${r},${g},${b},0.45)`;
+  }
+
+  function hideSub(sub) {
+    if (!sub) return;
+    sub.style.opacity           = '0';
+    sub.style.background        = 'transparent';
+    sub.style.borderTopColor    = 'transparent';
+    sub.style.borderLeftColor   = 'transparent';
+    sub.style.borderBottomColor = 'transparent';
+    sub.style.borderRightColor  = 'transparent';
+    sub.style.boxShadow         = 'none';
+  }
+
+  function findSub(cx, cy) {
+    for (let i = 0; i < subCache.length; i++) {
+      const { el, rect, qi } = subCache[i];
+      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+        return { el, qi };
+      }
+    }
+    return null;
+  }
+
+  banner.addEventListener('mousemove', function(e) {
+    const rect = banner.getBoundingClientRect();
+    const pct  = (e.clientX - rect.left) / rect.width;
+    const { r, g, b } = getColor(pct);
+
+    glow.style.left       = (e.clientX - rect.left) + 'px';
+    glow.style.top        = (e.clientY - rect.top)  + 'px';
+    glow.style.background = `radial-gradient(circle,`
+      + `rgba(${r},${g},${b},0.88) 0%,`
+      + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
+      + `transparent 72%)`;
+
+    const hit   = findSub(e.clientX, e.clientY);
+    const hitEl = hit ? hit.el : null;
+    if (hitEl === _activeSub) return;
+    hideSub(_activeSub);
+    _activeSub = null;
+    if (hit) {
+      showSub(hit.el, hit.qi, r, g, b);
+      _activeSub = hit.el;
+    }
+  });
+
+  banner.addEventListener('mouseleave', function() {
+    hideSub(_activeSub);
+    _activeSub = null;
+  });
+})();
 
 </script>
 
