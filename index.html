@@ -2211,7 +2211,8 @@ async function fetchLiveData() {
     const railwaySyms = Object.keys(liveMap);
     console.log(`[Railway] Got ${railwaySyms.length} stocks:`, railwaySyms.join(', '));
     // Update existing liveStocks entries with live data
-    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
+    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
+    window._hasLiveData = true;
     // Add any new stocks Railway returned that aren't in STATIC_STOCKS
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—' && !liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
     // Store indices for ticker + options
@@ -7021,10 +7022,23 @@ function renderPaperTrade() {
 
 // ── All assets list for search ──
 function getAllPtAssets() {
+  // Build a live price map from liveStocks
+  const liveMap = {};
+  (liveStocks || []).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
+
   return [
-    ...STATIC_STOCKS.map(s => ({...s, assetType:'stock', cur:'₹', group:'NSE Stocks'})),
-    ...STATIC_CRYPTO.map(s => ({...s, assetType:'crypto', cur:'$', group:'Crypto'})),
-    ...STATIC_COMMODITIES.map(s => ({...s, assetType:'commodity', cur:'$', group:'Commodities'})),
+    ...STATIC_STOCKS.map(s => {
+      const live = liveMap[s.sym];
+      return {...s, ...(live||{}), assetType:'stock', cur:'₹', group:'NSE Stocks'};
+    }),
+    ...STATIC_CRYPTO.map(s => {
+      const live = liveMap[s.sym];
+      return {...s, ...(live||{}), assetType:'crypto', cur:'$', group:'Crypto'};
+    }),
+    ...STATIC_COMMODITIES.map(s => {
+      const live = liveMap[s.sym];
+      return {...s, ...(live||{}), assetType:'commodity', cur:'$', group:'Commodities'};
+    }),
   ];
 }
 
@@ -9886,6 +9900,14 @@ function updateWhatsMoving() {
 
   // Update last-updated time
   const wm = document.getElementById('whatsMoving');
+  // Update LIVE indicator colour based on data freshness
+  const wmTag = document.getElementById('wmLiveTag');
+  if (wmTag) {
+    const hasLive = liveStocks.some(s => s._live);
+    wmTag.style.color = hasLive ? 'var(--green)' : 'var(--text3)';
+    wmTag.textContent  = hasLive ? '● LIVE' : '○ STATIC';
+  }
+
   let tsEl = wm?.querySelector('.wm-ts');
   if (wm && !tsEl) {
     tsEl = document.createElement('div');
@@ -10983,11 +11005,8 @@ async function fetchLiveData() {
 
 // Start everything once DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  // Render sidebar immediately with static data so it's never blank
-  if (typeof STATIC_STOCKS !== 'undefined') {
-    liveStocks = STATIC_STOCKS.map(s => ({...s, badge:'NSE', bc:'var(--accent)'}));
-    renderTrending(liveStocks);
-  }
+  // Sidebar will render from liveStocks which is already initialised from STATIC_STOCKS
+  renderTrending(liveStocks.slice(0,6));
   setTimeout(injectLiveStatusBars, 1000);
   startNewsRefresh();
   // Fetch FII data from Railway on load
