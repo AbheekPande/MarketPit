@@ -742,14 +742,50 @@ header {
 #eyesBanner:hover { background:#ccc8c0 !important; border-bottom-color:rgba(0,0,0,0.1) !important; }
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
-.eb-tile { width:46px;height:46px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;background:transparent;border:none;position:relative;box-sizing:border-box; }
-.eb-sub { border-radius:3px;background:transparent;border:1px solid transparent;transition:background 0.1s,border-color 0.1s,box-shadow 0.1s;opacity:0;box-sizing:border-box; }
-
-#ebGlow { position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,40,0.9) 0%,rgba(255,100,0,0.55) 40%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:0;transition:opacity 0.3s;filter:blur(8px); }
+.eb-tile {
+  width:44px; height:44px; flex-shrink:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:2px; padding:2px;
+  background:transparent; border:none;
+  box-sizing:border-box;
+}
+/* Use border-top/left/right/bottom separately — shorthand breaks individual transitions */
+.eb-sub {
+  border-radius:2px;
+  background:transparent;
+  border-top:1px solid transparent;
+  border-left:1px solid transparent;
+  border-bottom:1px solid transparent;
+  border-right:1px solid transparent;
+  opacity:0;
+  box-sizing:border-box;
+  transition:
+    opacity 0.13s ease,
+    background 0.13s ease,
+    box-shadow 0.13s ease,
+    border-top-color 0.13s ease,
+    border-left-color 0.13s ease,
+    border-bottom-color 0.13s ease,
+    border-right-color 0.13s ease;
+  will-change: opacity, background;
+}
+#ebGlow {
+  position:absolute; width:120px; height:120px; border-radius:50%;
+  transform:translate(-50%,-50%); pointer-events:none; z-index:1;
+  opacity:0;
+  transition:opacity 0.25s ease;
+  filter:blur(12px);
+}
 #eyesBanner:hover #ebGlow { opacity:1; }
-#ebTileGrid { position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-wrap:wrap;gap:0;z-index:2;opacity:1;pointer-events:all;align-content:center;justify-content:flex-start;padding:6px 10px;overflow:hidden; }
-/* ebTileGrid always visible */
-/* eb-sub shown only by JS */
+#ebTileGrid {
+  position:absolute; left:0; right:0; top:0; bottom:0;
+  display:flex; flex-wrap:wrap; gap:0; z-index:2;
+  pointer-events:all;
+  align-content:center; justify-content:flex-start;
+  padding:7px 6px; overflow:hidden;
+}
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
   <div id="ebGlow"></div>
@@ -10722,79 +10758,120 @@ setTimeout(updateNavArrows, 800);
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
-  let _lastSub  = null;
-  let _lastTile = null;
+  // Pre-cache all subs with their bounding rects + quadrant index
+  // Recalculate on resize so rects are always fresh
+  let subCache = []; // [{el, rect, qi}, ...]
 
+  function buildCache() {
+    subCache = [];
+    banner.querySelectorAll('.eb-tile').forEach(tile => {
+      tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
+        subCache.push({ el: sub, rect: sub.getBoundingClientRect(), qi });
+      });
+    });
+  }
+
+  // Rebuild on load and resize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildCache);
+  } else {
+    setTimeout(buildCache, 100);
+  }
+  window.addEventListener('resize', buildCache);
+
+  let _activeSub = null;
+
+  // Color gradient: orange(left) → gold(mid) → violet(right)
   function getColor(pct) {
-    let r,g,b;
-    if (pct < 0.5) {
-      const t = pct * 2;
-      r = 255; g = Math.round(80 + 135*t); b = 20;
+    const p = Math.max(0, Math.min(1, pct));
+    let r, g, b;
+    if (p < 0.5) {
+      const t = p * 2;
+      r = 255;
+      g = Math.round(90  + 130 * t);
+      b = Math.round(10  +  80 * t);
     } else {
-      const t = (pct-0.5)*2;
-      r = Math.round(255-200*t); g = Math.round(215-85*t); b = Math.round(180*t);
+      const t = (p - 0.5) * 2;
+      r = Math.round(255 - 120 * t);
+      g = Math.round(220 -  80 * t);
+      b = Math.round(90  + 165 * t);
     }
-    return {r,g,b};
+    return { r, g, b };
   }
 
-  function applySubStyle(sub, r, g, b) {
-    // Figure out which quadrant (0=TL,1=TR,2=BL,3=BR) inside its tile
-    const idx = Array.from(sub.parentElement.children).indexOf(sub);
-    const isTop   = idx < 2;
-    const isLeft  = idx % 2 === 0;
-    // 3D face effect — top/left faces brighter, bottom/right darker
-    const face   = `rgba(${r},${g},${b},0.72)`;
-    const light  = `rgba(255,255,255,0.28)`;
-    const shadow = `rgba(0,0,0,0.35)`;
-    sub.style.opacity    = '1';
-    sub.style.background = face;
-    sub.style.borderTop    = isTop  ? `1px solid ${light}` : `1px solid ${shadow}`;
-    sub.style.borderLeft   = isLeft ? `1px solid ${light}` : `1px solid ${shadow}`;
-    sub.style.borderBottom = isTop  ? `1px solid ${shadow}` : `1px solid rgba(0,0,0,0.5)`;
-    sub.style.borderRight  = isLeft ? `1px solid ${shadow}` : `1px solid rgba(0,0,0,0.5)`;
-    sub.style.boxShadow  = `inset 0 1px 3px rgba(255,255,255,0.3), inset 0 -1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(${r},${g},${b},0.6)`;
+  // Light from top-left: TL brightest → BR darkest
+  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
+
+  function showSub(sub, qi, r, g, b) {
+    const br = BRIGHTNESS[qi] ?? 0.7;
+    const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
+    const isTop  = qi < 2, isLeft = qi % 2 === 0;
+    const hi = 'rgba(255,255,255,0.38)';
+    const sh = 'rgba(0,0,0,0.50)';
+    sub.style.opacity           = '1';
+    sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
+    sub.style.borderTopColor    = isTop  ? hi : sh;
+    sub.style.borderLeftColor   = isLeft ? hi : sh;
+    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
+    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
+    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),`
+                                + `inset 0 -2px 5px rgba(0,0,0,0.38),`
+                                + `0 0 8px rgba(${r},${g},${b},0.45)`;
   }
 
-  function clearSub(sub) {
+  function hideSub(sub) {
     if (!sub) return;
-    sub.style.opacity      = '0';
-    sub.style.background   = '';
-    sub.style.border       = '';
-    sub.style.boxShadow    = '';
+    sub.style.opacity           = '0';
+    sub.style.background        = 'transparent';
+    sub.style.borderTopColor    = 'transparent';
+    sub.style.borderLeftColor   = 'transparent';
+    sub.style.borderBottomColor = 'transparent';
+    sub.style.borderRightColor  = 'transparent';
+    sub.style.boxShadow         = 'none';
+  }
+
+  // Find sub under (cx, cy) using cached rects — no pointer-events hacks
+  function findSub(cx, cy) {
+    for (let i = 0; i < subCache.length; i++) {
+      const { el, rect, qi } = subCache[i];
+      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+        return { el, qi };
+      }
+    }
+    return null;
   }
 
   banner.addEventListener('mousemove', function(e) {
     const rect = banner.getBoundingClientRect();
-    const x   = e.clientX - rect.left;
-    const y   = e.clientY - rect.top;
-    const pct = x / rect.width;
-    const {r,g,b} = getColor(pct);
+    const pct  = (e.clientX - rect.left) / rect.width;
+    const { r, g, b } = getColor(pct);
 
-    // Move glow
-    glow.style.left       = x + 'px';
-    glow.style.top        = y + 'px';
-    glow.style.background = `radial-gradient(circle, rgba(${r},${g},${b},0.85) 0%, rgba(${r},${Math.round(g*0.6)},0,0.4) 50%, transparent 70%)`;
+    // Move glow — position set directly, CSS only transitions opacity
+    glow.style.left       = (e.clientX - rect.left) + 'px';
+    glow.style.top        = (e.clientY - rect.top)  + 'px';
+    glow.style.background = `radial-gradient(circle,`
+      + `rgba(${r},${g},${b},0.88) 0%,`
+      + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
+      + `transparent 72%)`;
 
-    // Find sub under cursor via elementFromPoint
-    glow.style.pointerEvents = 'none';
-    const el  = document.elementFromPoint(e.clientX, e.clientY);
-    glow.style.pointerEvents = '';
-    const sub = el && (el.classList.contains('eb-sub') ? el : el.closest?.('.eb-sub'));
+    // Hit-test against cached rects
+    const hit = findSub(e.clientX, e.clientY);
+    const hitEl = hit ? hit.el : null;
 
-    if (sub === _lastSub) return;
+    if (hitEl === _activeSub) return; // same cell, nothing to do
 
-    clearSub(_lastSub);
-    _lastSub = null;
+    hideSub(_activeSub);
+    _activeSub = null;
 
-    if (sub?.classList.contains('eb-sub')) {
-      applySubStyle(sub, r, g, b);
-      _lastSub = sub;
+    if (hit) {
+      showSub(hit.el, hit.qi, r, g, b);
+      _activeSub = hit.el;
     }
   });
 
   banner.addEventListener('mouseleave', function() {
-    clearSub(_lastSub);
-    _lastSub = null;
+    hideSub(_activeSub);
+    _activeSub = null;
   });
 })();
 
