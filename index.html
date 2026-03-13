@@ -10581,7 +10581,7 @@ async function fetchFiiFromRailway() {
       return json.data;
     }
   } catch(e) {}
-  return null; // Railway doesn't have FII endpoint yet — keep static data
+  return null; // Falls back to static FII_DATA if Railway unreachable
 }
 
 // Heatmap: rebuilds from liveStocks when live data updates
@@ -10744,6 +10744,35 @@ function addLiveStatusBar(pageId, label) {
 }
 
 // FII live fetch — runs once on page load and every 60 min
+
+// ── LIVE EARNINGS FETCH FROM RAILWAY ──
+async function fetchEarningsFromRailway() {
+  try {
+    const res = await fetch(`${API_BASE}/earnings`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error('no earnings endpoint');
+    const json = await res.json();
+    if (json.data && json.data.length) return json.data;
+  } catch(e) {}
+  return null;
+}
+
+async function refreshEarningsData() {
+  const data = await fetchEarningsFromRailway();
+  if (data && data.length) {
+    // Merge live data into EVENTS_DATA — replace results/dividend entries, keep static ones like splits/bonus
+    const liveTypes = new Set(['results','dividend']);
+    // Remove old results/dividend entries
+    const staticOnly = EVENTS_DATA.filter(e => !liveTypes.has(e.type));
+    // Add live entries
+    EVENTS_DATA.splice(0, EVENTS_DATA.length, ...data, ...staticOnly);
+    if (_activePage === 'earnings') renderEarnings();
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    const el = document.getElementById('live-ts-page-earnings');
+    if (el) el.textContent = '● Updated ' + ts;
+    console.log(`[Earnings] Loaded ${data.length} live events from Railway`);
+  }
+}
+
 async function refreshFiiData() {
   const data = await fetchFiiFromRailway();
   // If Railway returns data, update FII_DATA and re-render if on fii tab
@@ -10809,6 +10838,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(refreshFiiData, 3000);
   // Refresh FII every hour
   setInterval(refreshFiiData, 60 * 60 * 1000);
+  // Fetch live earnings/events from Railway on load
+  setTimeout(refreshEarningsData, 5000);
+  // Refresh earnings every 6 hours
+  setInterval(refreshEarningsData, 6 * 60 * 60 * 1000);
   // Alert check every 30s even when not on alerts page
   setInterval(checkAlertsFromLive, 30000);
 });
