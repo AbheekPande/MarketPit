@@ -744,7 +744,7 @@ header {
 
 /* Tile: well-proportioned, not chunky */
 .eb-tile {
-  width:58px; height:58px; flex-shrink:0;
+  width:64px; height:64px; flex-shrink:0;
   display:grid;
   grid-template-columns:1fr 1fr;
   grid-template-rows:1fr 1fr;
@@ -792,7 +792,7 @@ header {
   padding:8px 10px; overflow:hidden;
 }
 </style>
-<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:78px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
+<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
   <div id="ebGlow"></div>
   <div id="ebTileGrid"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
   <!-- Soft dot pattern -->
@@ -10763,140 +10763,140 @@ setTimeout(updateNavArrows, 800);
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
-  // Pre-cache all subs with their bounding rects + quadrant index
-  // Recalculate on resize so rects are always fresh
-  // Pre-store element refs + qi only — NO cached rects (stale on scroll/resize)
-  let subEls = []; // [{el, qi}, ...]
+  let subEls = []; // [{el, qi, rect}, ...] — rects refreshed on mouseenter
 
   function buildRefs() {
     subEls = [];
     banner.querySelectorAll('.eb-tile').forEach(tile => {
       tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
-        subEls.push({ el: sub, qi });
+        subEls.push({ el: sub, qi, rect: null });
       });
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildRefs);
-  } else {
-    setTimeout(buildRefs, 50);
+  function refreshRects() {
+    subEls.forEach(s => { s.rect = s.el.getBoundingClientRect(); });
   }
-  window.addEventListener('resize', buildRefs);
 
-  // Refresh rects on mouseenter so they're always fresh for this hover session
-  let _sessionRects = null;
-  banner.addEventListener('mouseenter', function() {
-    _sessionRects = subEls.map(({ el, qi }) => ({ el, qi, rect: el.getBoundingClientRect() }));
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { buildRefs(); refreshRects(); });
+  } else {
+    setTimeout(() => { buildRefs(); refreshRects(); }, 60);
+  }
+  window.addEventListener('resize', refreshRects);
+  banner.addEventListener('mouseenter', refreshRects);
 
   let _activeSub = null;
+  let _prevX = null, _prevY = null;
 
-  // Color gradient: orange(left) → gold(mid) → violet(right)
+  // Color gradient: warm orange → gold → soft violet
   function getColor(pct) {
     const p = Math.max(0, Math.min(1, pct));
     let r, g, b;
     if (p < 0.5) {
       const t = p * 2;
-      r = 255;
-      g = Math.round(90  + 130 * t);
-      b = Math.round(10  +  80 * t);
+      r = 255; g = Math.round(90 + 130*t); b = Math.round(10 + 80*t);
     } else {
       const t = (p - 0.5) * 2;
-      r = Math.round(255 - 120 * t);
-      g = Math.round(220 -  80 * t);
-      b = Math.round(90  + 165 * t);
+      r = Math.round(255 - 120*t); g = Math.round(220 - 80*t); b = Math.round(90 + 165*t);
     }
     return { r, g, b };
   }
 
-  // Light from top-left: TL brightest → BR darkest
-  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
+  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50]; // TL, TR, BL, BR
 
   function showSub(sub, qi, r, g, b) {
-    // Elegant: lower opacity fill, crisp specular top-left highlight
     const br = BRIGHTNESS[qi] ?? 0.7;
-    const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
-    const isTop  = qi < 2, isLeft = qi % 2 === 0;
-    // Highlight edge: bright crisp line; shadow edge: very subtle
+    const fr = Math.round(r*br), fg = Math.round(g*br), fb = Math.round(b*br);
+    const isTop = qi < 2, isLeft = qi % 2 === 0;
     const hi = isTop && isLeft ? 'rgba(255,255,255,0.55)'
              : (isTop || isLeft) ? 'rgba(255,255,255,0.30)'
              : 'rgba(255,255,255,0.10)';
     const sh = 'rgba(0,0,0,0.28)';
     sub.style.opacity           = '1';
-    // Translucent glass face — not solid
-    sub.style.background        = `rgba(${fr},${fg},${fb},0.52)`;
+    sub.style.background        = `rgba(${fr},${fg},${fb},0.55)`;
     sub.style.borderTopColor    = isTop  ? hi : sh;
     sub.style.borderLeftColor   = isLeft ? hi : sh;
     sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.38)';
     sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.38)';
-    // Soft inner glow only on TL face; clean shadow on BR
     sub.style.boxShadow         = `inset 0 1px 3px rgba(255,255,255,0.18),`
                                 + `inset 0 -1px 3px rgba(0,0,0,0.22),`
-                                + `0 2px 8px rgba(${r},${g},${b},0.28)`;
+                                + `0 2px 10px rgba(${r},${g},${b},0.30)`;
   }
 
   function hideSub(sub) {
     if (!sub) return;
-    sub.style.opacity           = '0';
-    sub.style.background        = 'transparent';
-    sub.style.borderTopColor    = 'transparent';
-    sub.style.borderLeftColor   = 'transparent';
-    sub.style.borderBottomColor = 'transparent';
-    sub.style.borderRightColor  = 'transparent';
-    sub.style.boxShadow         = 'none';
+    sub.style.opacity = '0';
+    sub.style.background = 'transparent';
+    sub.style.borderTopColor = sub.style.borderLeftColor =
+    sub.style.borderBottomColor = sub.style.borderRightColor = 'transparent';
+    sub.style.boxShadow = 'none';
   }
 
-  // Find sub under (cx, cy) using session rects (refreshed on mouseenter)
-  function findSub(cx, cy) {
-    if (!_sessionRects) return null;
-    for (let i = 0; i < _sessionRects.length; i++) {
-      const { el, rect, qi } = _sessionRects[i];
-      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+  // Find sub whose rect contains point (cx, cy)
+  function hitTest(cx, cy) {
+    for (let i = 0; i < subEls.length; i++) {
+      const { el, qi, rect } = subEls[i];
+      if (rect && cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom)
         return { el, qi };
-      }
     }
     return null;
   }
 
+  // Sample N evenly-spaced points along a line from (x0,y0)→(x1,y1)
+  // and return all unique subs hit — handles fast cursor movement
+  function sweepHit(x0, y0, x1, y1) {
+    const dx = x1 - x0, dy = y1 - y0;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    // Sample every ~8px — fine enough to never skip a 27px sub cell
+    const steps = Math.max(1, Math.ceil(dist / 8));
+    const seen = new Set();
+    const hits = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const hit = hitTest(x0 + dx*t, y0 + dy*t);
+      if (hit && !seen.has(hit.el)) {
+        seen.add(hit.el);
+        hits.push(hit);
+      }
+    }
+    return hits; // ordered from prev→current position
+  }
+
   banner.addEventListener('mousemove', function(e) {
-    const rect = banner.getBoundingClientRect();
-    const pct  = (e.clientX - rect.left) / rect.width;
+    const bRect = banner.getBoundingClientRect();
+    const cx = e.clientX, cy = e.clientY;
+    const pct = (cx - bRect.left) / bRect.width;
     const { r, g, b } = getColor(pct);
 
-    // Move glow — position set directly, CSS only transitions opacity
-    glow.style.left       = (e.clientX - rect.left) + 'px';
-    glow.style.top        = (e.clientY - rect.top)  + 'px';
-    glow.style.background = `radial-gradient(circle,`
-      + `rgba(${r},${g},${b},0.88) 0%,`
-      + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
-      + `transparent 72%)`;
+    // Glow follows cursor
+    glow.style.left       = (cx - bRect.left) + 'px';
+    glow.style.top        = (cy - bRect.top)  + 'px';
+    glow.style.background = `radial-gradient(circle,rgba(${r},${g},${b},0.88) 0%,`
+      + `rgba(${r},${Math.round(g*0.6)},${Math.round(b*0.3)},0.38) 50%,transparent 72%)`;
 
-    // Fast path: use e.target directly (most accurate when pointer lands on sub)
-    let hit = null;
-    const t = e.target;
-    if (t.classList.contains('eb-sub')) {
-      const qi = subEls.findIndex(s => s.el === t);
-      if (qi >= 0) hit = { el: t, qi: subEls[qi].qi };
-    }
-    // Fallback: gap between subs — scan session rects
-    if (!hit) hit = findSub(e.clientX, e.clientY);
-    const hitEl = hit ? hit.el : null;
+    // Sweep from previous position to current — catches fast movement
+    const fromX = _prevX ?? cx, fromY = _prevY ?? cy;
+    _prevX = cx; _prevY = cy;
 
-    if (hitEl === _activeSub) return; // same cell, nothing to do
+    const hits = sweepHit(fromX, fromY, cx, cy);
+    const finalHit = hits[hits.length - 1] ?? null;
 
-    hideSub(_activeSub);
-    _activeSub = null;
-
-    if (hit) {
-      showSub(hit.el, hit.qi, r, g, b);
-      _activeSub = hit.el;
+    // Light up the final sub (the one under cursor now)
+    if (finalHit?.el !== _activeSub) {
+      hideSub(_activeSub);
+      _activeSub = null;
+      if (finalHit) {
+        showSub(finalHit.el, finalHit.qi, r, g, b);
+        _activeSub = finalHit.el;
+      }
     }
   });
 
   banner.addEventListener('mouseleave', function() {
     hideSub(_activeSub);
     _activeSub = null;
+    _prevX = null; _prevY = null;
   });
 })();
 
