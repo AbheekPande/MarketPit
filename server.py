@@ -26,16 +26,60 @@ CORS(app)
 
 # ── Indian Stock Symbols (NSE via Yahoo Finance) ──
 INDIAN_STOCKS = [
-    {"sym": "RELIANCE",   "yf": "RELIANCE.NS",   "name": "Reliance Industries"},
-    {"sym": "TCS",        "yf": "TCS.NS",         "name": "Tata Consultancy"},
+    # Banking
     {"sym": "HDFCBANK",   "yf": "HDFCBANK.NS",    "name": "HDFC Bank"},
-    {"sym": "INFY",       "yf": "INFY.NS",         "name": "Infosys"},
-    {"sym": "ICICIBANK",  "yf": "ICICIBANK.NS",    "name": "ICICI Bank"},
-    {"sym": "HINDUNILVR", "yf": "HINDUNILVR.NS",   "name": "Hindustan Unilever"},
-    {"sym": "ITC",        "yf": "ITC.NS",          "name": "ITC Ltd"},
     {"sym": "SBIN",       "yf": "SBIN.NS",         "name": "State Bank of India"},
-    {"sym": "BAJFINANCE", "yf": "BAJFINANCE.NS",   "name": "Bajaj Finance"},
+    {"sym": "ICICIBANK",  "yf": "ICICIBANK.NS",    "name": "ICICI Bank"},
+    {"sym": "AXISBANK",   "yf": "AXISBANK.NS",     "name": "Axis Bank"},
+    {"sym": "KOTAKBANK",  "yf": "KOTAKBANK.NS",    "name": "Kotak Mahindra Bank"},
+    {"sym": "INDUSINDBK", "yf": "INDUSINDBK.NS",   "name": "IndusInd Bank"},
+    # IT
+    {"sym": "TCS",        "yf": "TCS.NS",          "name": "Tata Consultancy"},
+    {"sym": "INFY",       "yf": "INFY.NS",         "name": "Infosys"},
     {"sym": "WIPRO",      "yf": "WIPRO.NS",        "name": "Wipro Ltd"},
+    {"sym": "HCLTECH",    "yf": "HCLTECH.NS",      "name": "HCL Technologies"},
+    {"sym": "TECHM",      "yf": "TECHM.NS",        "name": "Tech Mahindra"},
+    {"sym": "LTIM",       "yf": "LTIM.NS",         "name": "LTIMindtree"},
+    # Auto
+    {"sym": "TATAMOTORS", "yf": "TATAMOTORS.NS",   "name": "Tata Motors"},
+    {"sym": "MARUTI",     "yf": "MARUTI.NS",       "name": "Maruti Suzuki"},
+    {"sym": "M&M",        "yf": "M%26M.NS",        "name": "Mahindra & Mahindra"},
+    {"sym": "HEROMOTOCO", "yf": "HEROMOTOCO.NS",   "name": "Hero MotoCorp"},
+    {"sym": "EICHERMOT",  "yf": "EICHERMOT.NS",    "name": "Eicher Motors"},
+    # Pharma
+    {"sym": "SUNPHARMA",  "yf": "SUNPHARMA.NS",    "name": "Sun Pharmaceutical"},
+    {"sym": "DRREDDY",    "yf": "DRREDDY.NS",      "name": "Dr. Reddy's Labs"},
+    {"sym": "CIPLA",      "yf": "CIPLA.NS",        "name": "Cipla"},
+    {"sym": "DIVISLAB",   "yf": "DIVISLAB.NS",     "name": "Divi's Laboratories"},
+    {"sym": "APOLLOHOSP", "yf": "APOLLOHOSP.NS",   "name": "Apollo Hospitals"},
+    # Energy
+    {"sym": "RELIANCE",   "yf": "RELIANCE.NS",     "name": "Reliance Industries"},
+    {"sym": "ONGC",       "yf": "ONGC.NS",         "name": "ONGC"},
+    {"sym": "BPCL",       "yf": "BPCL.NS",         "name": "BPCL"},
+    {"sym": "IOC",        "yf": "IOC.NS",          "name": "Indian Oil Corp"},
+    {"sym": "NTPC",       "yf": "NTPC.NS",         "name": "NTPC"},
+    # Metals
+    {"sym": "TATASTEEL",  "yf": "TATASTEEL.NS",    "name": "Tata Steel"},
+    {"sym": "JSWSTEEL",   "yf": "JSWSTEEL.NS",     "name": "JSW Steel"},
+    {"sym": "HINDALCO",   "yf": "HINDALCO.NS",     "name": "Hindalco"},
+    {"sym": "COALINDIA",  "yf": "COALINDIA.NS",    "name": "Coal India"},
+    # FMCG
+    {"sym": "NESTLEIND",  "yf": "NESTLEIND.NS",    "name": "Nestle India"},
+    {"sym": "BRITANNIA",  "yf": "BRITANNIA.NS",    "name": "Britannia"},
+    {"sym": "ITC",        "yf": "ITC.NS",          "name": "ITC Ltd"},
+    {"sym": "HINDUNILVR", "yf": "HINDUNILVR.NS",   "name": "Hindustan Unilever"},
+    # Infra / Utilities
+    {"sym": "LT",         "yf": "LT.NS",           "name": "Larsen & Toubro"},
+    {"sym": "POWERGRID",  "yf": "POWERGRID.NS",    "name": "Power Grid Corp"},
+    {"sym": "ADANIENT",   "yf": "ADANIENT.NS",     "name": "Adani Enterprises"},
+    {"sym": "ULTRACEMCO", "yf": "ULTRACEMCO.NS",   "name": "UltraTech Cement"},
+    # Finance / Consumer
+    {"sym": "BAJFINANCE", "yf": "BAJFINANCE.NS",   "name": "Bajaj Finance"},
+    {"sym": "BAJAJFINSV", "yf": "BAJAJFINSV.NS",   "name": "Bajaj Finserv"},
+    {"sym": "TITAN",      "yf": "TITAN.NS",        "name": "Titan Company"},
+    {"sym": "ASIANPAINT", "yf": "ASIANPAINT.NS",   "name": "Asian Paints"},
+    {"sym": "DMART",      "yf": "DMART.NS",        "name": "DMart"},
+    {"sym": "JUBLFOOD",   "yf": "JUBLFOOD.NS",     "name": "Jubilant Foodworks"},
 ]
 
 # ── Index Symbols ──
