@@ -2217,14 +2217,20 @@ async function fetchLiveData() {
     const json = await res.json();
     _retryCount = 0;
     _apiOnline = true;
+    // Merge ALL stocks from Railway into liveStocks
     const liveMap = {};
-    (json.stocks||[]).forEach(s => liveMap[s.sym] = s);
-    liveStocks = STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
-    (json.stocks||[]).forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
-    // Also store indices for ticker bar
+    (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
+    const railwaySyms = Object.keys(liveMap);
+    console.log(`[Railway] Got ${railwaySyms.length} stocks:`, railwaySyms.join(', '));
+    // Update existing liveStocks entries with live data
+    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
+    // Add any new stocks Railway returned that aren't in STATIC_STOCKS
+    (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—' && !liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
+    // Store indices for ticker + options
     if (json.indices && json.indices.length) {
       window._liveIndices = {};
       json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
+      console.log('[Railway] Indices:', json.indices.map(i=>i.sym+' '+i.price).join(', '));
     }
     renderTrending(liveStocks.slice(0,6));
     updateTickerFromLive();
@@ -9819,88 +9825,7 @@ function renderOptPnl() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// FEATURE 5: TICKER TAPE (scrolling prices at top)
 // ══════════════════════════════════════════════════════════════
-function injectTickerTape() {
-  if (document.getElementById('tickerTape')) return;
-  const tape = document.createElement('div');
-  tape.id = 'tickerTape';
-  tape.style.cssText = 'width:100%;background:var(--bg3);border-bottom:1px solid var(--border);overflow:hidden;height:28px;display:flex;align-items:center;flex-shrink:0;position:relative;';
-  tape.innerHTML = `<div id="tickerInner" style="display:flex;gap:0;white-space:nowrap;animation:tickerScroll 60s linear infinite;will-change:transform;"></div>`;
-
-  const style = document.createElement('style');
-  style.textContent = `@keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-    #tickerTape:hover #tickerInner { animation-play-state:paused; }
-    .ticker-item { display:inline-flex;align-items:center;gap:5px;padding:0 16px;font-family:'Space Mono',monospace;font-size:10px;border-right:1px solid var(--border);cursor:pointer;height:28px; }
-    .ticker-item:hover { background:rgba(0,112,243,0.08); }`;
-  document.head.appendChild(style);
-
-  const header = document.querySelector('.header');
-  if (header) header.parentNode.insertBefore(tape, header.nextSibling);
-
-  updateTickerTape();
-  setInterval(updateTickerTape, 15000);
-}
-
-function updateTickerTape() {
-  const inner = document.getElementById('tickerInner');
-  if (!inner) return;
-
-  // Use liveStocks (updated from Railway/Yahoo every 30s) with static fallbacks
-  const stocks = (liveStocks && liveStocks.length >= 5) ? liveStocks : STATIC_STOCKS;
-  const tickers = [
-    // Indices first
-    {sym:'NIFTY',  name:'Nifty 50',   price:22470, chg:'+0.82', currency:'₹', up:true},
-    {sym:'SENSEX', name:'Sensex',      price:74119, chg:'+0.67', currency:'₹', up:true},
-    {sym:'BNIFTY', name:'Bank Nifty',  price:48960, chg:'+0.54', currency:'₹', up:true},
-    // Live stocks
-    ...stocks.slice(0,20),
-    // Crypto & commodities
-    ...STATIC_CRYPTO.slice(0,5),
-    ...STATIC_COMMODITIES.slice(0,4),
-  ];
-
-  // Merge live index prices if available
-  if (window._liveIndices) {
-    const ni = window._liveIndices['NIFTY 50'] || window._liveIndices['NIFTY'];
-    const se = window._liveIndices['SENSEX'];
-    const bk = window._liveIndices['NIFTY BANK'] || window._liveIndices['BANKNIFTY'];
-    if (ni) { tickers[0].price = parseFloat(String(ni.price).replace(/,/g,'')); tickers[0].chg = ni.chg; }
-    if (se) { tickers[1].price = parseFloat(String(se.price).replace(/,/g,'')); tickers[1].chg = se.chg; }
-    if (bk) { tickers[2].price = parseFloat(String(bk.price).replace(/,/g,'')); tickers[2].chg = bk.chg; }
-  }
-
-  const items = tickers.map(t => {
-    if (!t.price) return '';
-    const chgStr = String(t.chg || '0').replace('%','').replace('+','');
-    const chgN   = parseFloat(chgStr) || 0;
-    const up     = t.up !== undefined ? t.up : chgN >= 0;
-    const cur    = t.currency || '₹';
-    const pNum   = typeof t.price === 'string' ? parseFloat(t.price.replace(/,/g,'')) : t.price;
-    const pFmt   = cur === '₹'
-      ? '₹' + pNum.toLocaleString('en-IN', {maximumFractionDigits:0})
-      : '$' + pNum.toLocaleString('en-US', {maximumFractionDigits: pNum < 1 ? 4 : pNum < 100 ? 2 : 0});
-    const chgFmt = (up ? '▲' : '▼') + ' ' + Math.abs(chgN).toFixed(2) + '%';
-    return `<div class="ticker-item" onclick="fetchAndShowStock('${t.sym}')">
-      <div style="display:flex;flex-direction:column;gap:1px;">
-        <span style="font-weight:800;color:var(--text);font-size:10px;">${t.sym}</span>
-        ${t.name && t.name !== t.sym ? `<span style="font-size:8px;color:var(--text3);">${t.name}</span>` : ''}
-      </div>
-      <span style="color:${up?'var(--green)':'var(--red)'};">${pFmt}</span>
-      <span style="color:${up?'var(--green)':'var(--red)'};">${chgFmt}</span>
-    </div>`;
-  }).filter(Boolean).join('');
-  inner.innerHTML = items + items;
-
-  // Restart animation cleanly
-  const innerEl = document.getElementById('tickerInner');
-  if (innerEl) {
-    innerEl.style.animation = 'none';
-    innerEl.offsetHeight;
-    innerEl.style.animation = 'tickerScroll 60s linear infinite';
-  }
-}
-
 // ══════════════════════════════════════════════════════════════
 // FEATURE 6: WHAT'S MOVING SIDEBAR WIDGET
 // ══════════════════════════════════════════════════════════════
@@ -10206,7 +10131,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Build ticker immediately with static data — no waiting for API
   buildGlobalTicker();
   setTimeout(() => {
-    injectTickerTape();
     injectWhatsMoving();
   // Re-apply TradingView widget theme when settings change
   document.addEventListener('marketpit-theme-change', () => {
@@ -10232,7 +10156,6 @@ setInterval(fetchPriorityStocks, 30000);
 
 setTimeout(() => {
   buildGlobalTicker(); // rebuild after DOM settles
-  injectTickerTape();
   injectWhatsMoving();
   injectScreenerPresets();
   updateNotifBadge();

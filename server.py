@@ -94,7 +94,7 @@ INDICES = [
 # ── Cache ──
 _cache = {"stocks": [], "indices": [], "last_updated": None}
 _cache_lock = threading.Lock()
-CACHE_TTL = 60  # seconds
+CACHE_TTL = 30  # seconds — refresh every 30s
 
 # ── FII/DII Cache ──
 _fii_cache = {"data": [], "last_updated": None}
@@ -141,27 +141,41 @@ def fetch_quote(symbol_yf):
 
 
 def refresh_cache():
-    """Fetch all stock/index quotes and update cache."""
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Refreshing stock quotes...")
-    stocks_data  = []
-    for s in INDIAN_STOCKS:
+    """Fetch all stock/index quotes in parallel and update cache."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Refreshing quotes (parallel)...")
+
+    def fetch_one(s):
         q = fetch_quote(s["yf"])
-        stocks_data.append({"sym": s["sym"], "name": s["name"],
-                             "price": q["price"], "chg": q["chg"], "up": q["up"]})
-        print(f"  {s['sym']:14} ₹{q['price']:>12}  {q['chg']}")
+        return {"sym": s["sym"], "name": s["name"],
+                "price": q["price"], "chg": q["chg"], "up": q["up"]}
+
+    stocks_data = []
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        futures = {ex.submit(fetch_one, s): s for s in INDIAN_STOCKS}
+        for f in as_completed(futures):
+            try:
+                stocks_data.append(f.result())
+            except Exception as e:
+                print(f"  Stock fetch error: {e}")
+
+    order = {s["sym"]: i for i, s in enumerate(INDIAN_STOCKS)}
+    stocks_data.sort(key=lambda x: order.get(x["sym"], 999))
 
     indices_data = []
-    for idx in INDICES:
-        q = fetch_quote(idx["yf"])
-        indices_data.append({"sym": idx["sym"], "name": idx["name"],
-                              "price": q["price"], "chg": q["chg"], "up": q["up"]})
-        print(f"  {idx['sym']:14}  {q['price']:>12}  {q['chg']}")
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        futures = {ex.submit(fetch_one, idx): idx for idx in INDICES}
+        for f in as_completed(futures):
+            try:
+                indices_data.append(f.result())
+            except Exception as e:
+                print(f"  Index fetch error: {e}")
 
     with _cache_lock:
         _cache["stocks"]       = stocks_data
         _cache["indices"]      = indices_data
         _cache["last_updated"] = datetime.now().isoformat()
-    print(f"  ✓ Stocks updated\n")
+    print(f"  ✓ {len(stocks_data)} stocks + {len(indices_data)} indices updated\n")
 
 
 # ════════════════════════════════════════════════════════
