@@ -2551,12 +2551,22 @@ function renderTrending(data) {
   // Tab state
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  const CRYPTO_SYMS = ['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA'];
-  const COMM_SYMS   = ['GOLD','SILVER','CRUDE','BRENT','NATURALGAS'];
+  const CRYPTO_SYMS = ['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK'];
+  const COMM_SYMS   = ['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC'];
 
   const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.includes(s.sym) && !COMM_SYMS.includes(s.sym)).slice(0,12);
-  const cryptoList = (typeof STATIC_CRYPTO !== 'undefined' ? STATIC_CRYPTO : []).slice(0,6);
-  const commList   = (typeof STATIC_COMMODITIES !== 'undefined' ? STATIC_COMMODITIES : []).slice(0,5);
+
+  // Merge STATIC_CRYPTO with live prices from liveStocks (updated by CoinGecko every 30s)
+  const cryptoList = (typeof STATIC_CRYPTO !== 'undefined' ? STATIC_CRYPTO : []).map(s => {
+    const live = liveStocks.find(x => x.sym === s.sym);
+    return live && live.price ? { ...s, price: live.price, chg: live.chg, up: live.up } : s;
+  }).slice(0,8);
+
+  // Merge STATIC_COMMODITIES with live prices from liveStocks (updated by Yahoo Finance every 30s)
+  const commList = (typeof STATIC_COMMODITIES !== 'undefined' ? STATIC_COMMODITIES : []).map(s => {
+    const live = liveStocks.find(x => x.sym === s.sym);
+    return live && live.price ? { ...s, price: live.price, chg: live.chg, up: live.up } : s;
+  }).slice(0,6);
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0}) : '—';
@@ -10374,7 +10384,52 @@ setTimeout(updateNavArrows, 800);
     throw new Error('all proxies failed');
   }
 
+  function renderHeroItem(el, s, price, chgPct, up) {
+    if (!el || !price) return;
+    const fmtPrice = s.fmt === 'IN'
+      ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+      : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    const sign = up ? '+' : '';
+    const chgStr = sign + chgPct.toFixed(2) + '%';
+    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span><span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${chgStr}</span>`;
+    el.style.transform = 'scale(1.06)';
+    el.style.transition = 'transform 0.2s';
+    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+  }
+
+  // Try liveStocks/_liveIndices first — already updated every 30s by fetchLiveData
+  function updateHeroFromLiveStocks() {
+    const idx = window._liveIndices || {};
+    // NIFTY
+    const niftyEl = document.getElementById('heroNifty');
+    const niftyData = idx['NIFTY 50'] || idx['NIFTY'] || liveStocks.find(s=>s.sym==='NIFTY'||s.sym==='NIFTY50');
+    if (niftyEl && niftyData?.price) {
+      const chgPct = parseFloat((niftyData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(chgPct)?0:chgPct, niftyData.up!==false);
+    }
+    // BANK NIFTY
+    const bankEl = document.getElementById('heroBankNifty');
+    const bankData = idx['NIFTY BANK'] || idx['BANKNIFTY'] || liveStocks.find(s=>s.sym==='BANKNIFTY');
+    if (bankEl && bankData?.price) {
+      const chgPct = parseFloat((bankData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(chgPct)?0:chgPct, bankData.up!==false);
+    }
+    // BTC
+    const btcEl = document.getElementById('heroBtc');
+    const btcData = liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD') || (typeof STATIC_CRYPTO!=='undefined' && STATIC_CRYPTO.find(s=>s.sym==='BTC'));
+    if (btcEl && btcData?.price) {
+      const chgPct = parseFloat((btcData.chg||'0').replace('%','').replace('+',''));
+      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(chgPct)?0:chgPct, btcData.up!==false);
+    }
+    return !!(niftyData?.price && btcData?.price);
+  }
+
   async function updateHeroPrices() {
+    // Layer 1: Try already-live data from liveStocks/_liveIndices (free, instant)
+    const gotLive = updateHeroFromLiveStocks();
+    if (gotLive) return; // already have fresh data — no need for extra fetch
+
+    // Layer 2: Fall back to direct Yahoo Finance fetch if liveStocks not ready yet
     for (const s of HERO_SYMBOLS) {
       const el = document.getElementById(s.id);
       if (!el) continue;
@@ -10382,24 +10437,8 @@ setTimeout(updateNavArrows, 800);
         const { price, prev } = await fetchHeroPrice(s.yfSym);
         if (!price) continue;
         const chgPct = prev ? ((price - prev) / prev * 100) : 0;
-        const up     = chgPct >= 0;
-        const fmtPrice = s.fmt === 'IN'
-          ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-          : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
-        const sign = up ? '+' : '';
-        el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span><span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${sign}${chgPct.toFixed(2)}%</span>`;
-        // flash animation
-        el.style.transform = 'scale(1.08)';
-        el.style.transition = 'transform 0.2s';
-        setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
-        // Update nav strip with the same live data
-        const chgStr = sign + chgPct.toFixed(2) + '%';
-        if (s.id === 'heroNifty')     { const el2 = document.getElementById('stripNifty');  if(el2) el2.innerHTML = `<span style="color:${up?'var(--green)':'var(--red)'}">${s.prefix}${fmtPrice} <span style="font-size:9px;">${up?'▲':'▼'}${chgStr}</span></span>`; }
-        if (s.id === 'heroBankNifty') { const el2 = document.getElementById('stripSensex'); if(el2) el2.innerHTML = `<span style="color:${up?'var(--green)':'var(--red)'}">BNK ${fmtPrice} <span style="font-size:9px;">${up?'▲':'▼'}${chgStr}</span></span>`; }
-        if (s.id === 'heroBtc')       { const el2 = document.getElementById('stripBtc');    if(el2) el2.innerHTML = `<span style="color:${up?'var(--green)':'var(--red)'}">${s.prefix}${fmtPrice} <span style="font-size:9px;">${up?'▲':'▼'}${chgStr}</span></span>`; }
-      } catch(e) {
-        // silently keep last value
-      }
+        renderHeroItem(el, s, price, chgPct, chgPct >= 0);
+      } catch(e) { /* silently keep last value */ }
     }
   }
 
@@ -10919,6 +10958,10 @@ function onLiveDataUpdate() {
   buildGlobalTicker();
   updateNavStrip();
   checkAlertsFromLive(); // check alerts silently on every update
+  // Re-render trending list with live prices (sidebar always visible)
+  renderTrending(liveStocks.slice(0, 6));
+  // Update hero banner prices from liveStocks (no extra fetch needed)
+  if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
 
   // Page-specific updates — only runs when that tab is active
   const p = _activePage;
