@@ -1145,22 +1145,6 @@ header {
     <!-- TradingView Market Overview — live NSE stock prices in sidebar -->
     <div id="trendList" style="padding:0 4px 8px;"></div>
 
-    <!-- TOP GAINERS & LOSERS -->
-    <div id="whatsMoving" class="sidebar-section" style="padding:10px 10px 8px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:11px;font-weight:700;color:var(--text);letter-spacing:0.5px;text-transform:uppercase;">📊 Market Movers</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div>
-          <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
-          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
-        </div>
-        <div>
-          <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
-          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- MAIN FEED -->
@@ -1808,6 +1792,24 @@ header {
 
   <!-- RIGHT SIDEBAR -->
   <div class="right-sidebar">
+
+    <!-- TOP MOVERS & LOSERS -->
+    <div id="whatsMoving" style="padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;">📊 Market Movers</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
+          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
+          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="chat-header">
       <div class="chat-title"><span class="online-dot"></span>LIVE FLOOR CHAT</div>
     </div>
