@@ -113,12 +113,26 @@ def refresh_cache():
 
 
 def background_refresher():
-    """Background thread: refresh cache every CACHE_TTL seconds."""
+    """Background thread: refresh cache every CACHE_TTL seconds + self-ping to stay awake."""
+    import urllib.request
+    self_ping_interval = 8 * 60  # ping self every 8 min to prevent Railway sleep
+    last_ping = 0
     while True:
         try:
             refresh_cache()
         except Exception as e:
             print(f"Background refresh error: {e}")
+        # Self-ping to keep Railway alive
+        now = time.time()
+        if now - last_ping > self_ping_interval:
+            try:
+                port = int(os.environ.get("PORT", 5000))
+                url  = f"http://localhost:{port}/api/status"
+                urllib.request.urlopen(url, timeout=5)
+                last_ping = now
+                print("[keep-alive] self-ping ok")
+            except Exception as pe:
+                print(f"[keep-alive] ping failed: {pe}")
         time.sleep(CACHE_TTL)
 
 
