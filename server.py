@@ -662,7 +662,11 @@ def api_nifty_spot():
     })
 
 
-
+@app.route("/api/status")
+def api_status():
+    with _cache_lock:
+        last_up      = _cache["last_updated"]
+        stock_count  = len(_cache["stocks"])
     with _fii_lock:
         fii_updated = _fii_cache["last_updated"]
         fii_count   = len(_fii_cache["data"])
@@ -670,14 +674,14 @@ def api_nifty_spot():
         earn_updated = _earnings_cache["last_updated"]
         earn_count   = len(_earnings_cache["data"])
     return jsonify({
-        "status":              "running",
-        "last_updated":        _cache["last_updated"],
-        "cached_stocks":       len(_cache["stocks"]),
-        "cache_ttl_seconds":   CACHE_TTL,
-        "fii_last_updated":    fii_updated,
-        "fii_days_cached":     fii_count,
+        "status":                "running",
+        "last_updated":          last_up,
+        "cached_stocks":         stock_count,
+        "cache_ttl_seconds":     CACHE_TTL,
+        "fii_last_updated":      fii_updated,
+        "fii_days_cached":       fii_count,
         "earnings_last_updated": earn_updated,
-        "earnings_count":      earn_count,
+        "earnings_count":        earn_count,
     })
 
 
