@@ -824,7 +824,7 @@ header {
   <div id="ebLeftLabel" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;left:16px;text-transform:uppercase;transition:color 0.4s;z-index:2;">👀 We see the markets</div>
 
   <!-- Characters row -->
-  <div id="eyesContainer" style="display:flex;align-items:flex-end;gap:22px;padding-bottom:4px;position:relative;z-index:2;">
+  <div id="eyesContainer" style="display:flex;align-items:flex-end;gap:22px;padding-bottom:4px;position:relative;z-index:2;pointer-events:none;">
 
     <!-- Creature 1 — round chubby pink -->
     <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
@@ -9212,26 +9212,30 @@ function renderHeatmap() {
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
-  // Pre-cache all subs with their bounding rects + quadrant index
-  let subCache = []; // [{el, rect, qi}, ...]
-
-  function buildCache() {
-    subCache = [];
+  // Build a fresh list of sub elements (no cached rects — always live)
+  function getAllSubs() {
+    const result = [];
     banner.querySelectorAll('.eb-tile').forEach(tile => {
       tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
-        subCache.push({ el: sub, rect: sub.getBoundingClientRect(), qi });
+        result.push({ el: sub, qi });
       });
     });
+    return result;
+  }
+
+  let _allSubs = [];
+  let _activeSub = null;
+
+  function init() {
+    _allSubs = getAllSubs();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildCache);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    setTimeout(buildCache, 100);
+    init();
   }
-  window.addEventListener('resize', buildCache);
-
-  let _activeSub = null;
+  window.addEventListener('resize', init);
 
   // Color gradient: orange(left) → gold(mid) → violet(right)
   function getColor(pct) {
@@ -9282,9 +9286,11 @@ function renderHeatmap() {
     sub.style.boxShadow         = 'none';
   }
 
+  // Use live getBoundingClientRect() on every move — no stale cache
   function findSub(cx, cy) {
-    for (let i = 0; i < subCache.length; i++) {
-      const { el, rect, qi } = subCache[i];
+    for (let i = 0; i < _allSubs.length; i++) {
+      const { el, qi } = _allSubs[i];
+      const rect = el.getBoundingClientRect();
       if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
         return { el, qi };
       }
@@ -9292,32 +9298,67 @@ function renderHeatmap() {
     return null;
   }
 
-  banner.addEventListener('mousemove', function(e) {
-    const rect = banner.getBoundingClientRect();
-    const pct  = (e.clientX - rect.left) / rect.width;
-    const { r, g, b } = getColor(pct);
+  // ── Pupil tracking ──
+  function trackPupils(cx, cy) {
+    banner.querySelectorAll('.eyeball').forEach(eyeball => {
+      const pupil = eyeball.querySelector('.pupil');
+      if (!pupil) return;
+      const er = eyeball.getBoundingClientRect();
+      const ex = er.left + er.width  / 2;
+      const ey = er.top  + er.height / 2;
+      const dx = cx - ex;
+      const dy = cy - ey;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      // Max travel: 3px
+      const maxTravel = 3;
+      const travel = Math.min(dist, maxTravel);
+      const angle = Math.atan2(dy, dx);
+      const ox = Math.cos(angle) * travel;
+      const oy = Math.sin(angle) * travel;
+      pupil.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px)`;
+    });
+  }
 
-    glow.style.left       = (e.clientX - rect.left) + 'px';
-    glow.style.top        = (e.clientY - rect.top)  + 'px';
+  function resetPupils() {
+    banner.querySelectorAll('.pupil').forEach(p => {
+      p.style.transform = 'translate(0,0)';
+    });
+  }
+
+  // Global cursor tracking — works no matter where on the page the cursor is
+  document.addEventListener('mousemove', function(e) {
+    const bannerRect = banner.getBoundingClientRect();
+    const pct = (e.clientX - bannerRect.left) / bannerRect.width;
+    const { r, g, b } = getColor(Math.max(0, Math.min(1, pct)));
+
+    // Move glow (only visible when cursor is over banner via CSS opacity rule)
+    glow.style.left       = (e.clientX - bannerRect.left) + 'px';
+    glow.style.top        = (e.clientY - bannerRect.top)  + 'px';
     glow.style.background = `radial-gradient(circle,`
       + `rgba(${r},${g},${b},0.88) 0%,`
       + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
       + `transparent 72%)`;
 
-    const hit   = findSub(e.clientX, e.clientY);
-    const hitEl = hit ? hit.el : null;
-    if (hitEl === _activeSub) return;
-    hideSub(_activeSub);
-    _activeSub = null;
-    if (hit) {
-      showSub(hit.el, hit.qi, r, g, b);
-      _activeSub = hit.el;
+    // Light up tile sub only when cursor is physically over the banner
+    const overBanner = e.clientX >= bannerRect.left && e.clientX <= bannerRect.right
+                    && e.clientY >= bannerRect.top  && e.clientY <= bannerRect.bottom;
+    if (overBanner) {
+      const hit   = findSub(e.clientX, e.clientY);
+      const hitEl = hit ? hit.el : null;
+      if (hitEl !== _activeSub) {
+        hideSub(_activeSub);
+        _activeSub = null;
+        if (hit) {
+          showSub(hit.el, hit.qi, r, g, b);
+          _activeSub = hit.el;
+        }
+      }
+    } else {
+      if (_activeSub) { hideSub(_activeSub); _activeSub = null; }
     }
-  });
 
-  banner.addEventListener('mouseleave', function() {
-    hideSub(_activeSub);
-    _activeSub = null;
+    // Pupils follow cursor from ANYWHERE on the page
+    trackPupils(e.clientX, e.clientY);
   });
 })();
 
