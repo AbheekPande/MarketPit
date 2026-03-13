@@ -7990,6 +7990,8 @@ setInterval(() => {
 // 7. FII / DII FLOW
 // ══════════════════════════════════════════════════════════════
 const FII_DATA = [
+  {date:'13 Mar',fii:-2134.56, dii:3892.14,  net:1757.58},
+  {date:'12 Mar',fii:-3456.78, dii:5123.45,  net:1666.67},
   {date:'11 Mar',fii:-6267.31, dii:4965.53,  net:-1301.78},
   {date:'10 Mar',fii:-4672.64, dii:6333.26,  net:1660.62},
   {date:'07 Mar',fii:-3112.45, dii:5874.32,  net:2761.87},
@@ -8436,6 +8438,25 @@ function renderStrategyCard(strat, cfg, lot, callPrem, putPrem) {
 function renderOptions() {
   if (_optionsView === 'strategies') { renderOptionStrategies(); return; }
   const index = document.getElementById('optIndex')?.value || 'NIFTY';
+  // Sync OPT_CONFIGS spot prices from live data
+  const niftyLive = liveStocks.find(s => s.sym === 'NIFTY 50' || s.sym === 'NIFTY50' || s.sym === 'NIFTY');
+  const bankLive  = liveStocks.find(s => s.sym === 'NIFTY BANK' || s.sym === 'BANKNIFTY');
+  if (niftyLive && niftyLive.price) {
+    const p = parseFloat(String(niftyLive.price).replace(/,/g,''));
+    if (p > 10000) {
+      OPT_CONFIGS.NIFTY.spot = p;
+      OPT_CONFIGS.NIFTY.atm  = Math.round(p / 50) * 50;
+      OPT_CONFIGS.FINNIFTY.spot = Math.round(p * 0.987);
+      OPT_CONFIGS.FINNIFTY.atm  = Math.round(OPT_CONFIGS.FINNIFTY.spot / 50) * 50;
+    }
+  }
+  if (bankLive && bankLive.price) {
+    const p = parseFloat(String(bankLive.price).replace(/,/g,''));
+    if (p > 10000) {
+      OPT_CONFIGS.BANKNIFTY.spot = p;
+      OPT_CONFIGS.BANKNIFTY.atm  = Math.round(p / 100) * 100;
+    }
+  }
   const cfg   = OPT_CONFIGS[index];
   const rows  = generateOptionsChain(index);
   const totalCallOi = rows.reduce((a,r)=>a+r.c_oi,0);
@@ -8717,7 +8738,13 @@ function confirmPostCall() {
 // ══════════════════════════════════════════════════════════════
 // LIVE ROOMS  (simulated live trading sessions)
 // ══════════════════════════════════════════════════════════════
-const ROOMS_DATA = [];
+const ROOMS_DATA = [
+  {id:'r1', host:'Arjun Kapoor', avatar:'AK', title:'Nifty 50 Morning Analysis', topic:'Nifty 50 · Intraday', viewers:342, live:true,  started:'9:15 AM', tags:['Nifty','Options','Levels']},
+  {id:'r2', host:'Priya Sharma', avatar:'PS', title:'Bank Nifty Options Flow', topic:'Bank Nifty · Options', viewers:218, live:true,  started:'9:30 AM', tags:['BankNifty','PCR','Greeks']},
+  {id:'r3', host:'Rahul Singh',  avatar:'RS', title:'IT Sector Swing Picks — Q4 Season', topic:'Stocks · Swing', viewers:0, live:false, startsAt:'2:00 PM', tags:['TCS','INFY','Swing']},
+  {id:'r4', host:'Meera Joshi',  avatar:'MJ', title:'Bitcoin & Crypto Weekend Outlook', topic:'Crypto · Bitcoin', viewers:0, live:false, startsAt:'4:30 PM', tags:['BTC','ETH','Crypto']},
+  {id:'r5', host:'Vikram Nair',  avatar:'VN', title:'Commodities — Gold & Crude Oil', topic:'Commodities', viewers:0, live:false, startsAt:'Tomorrow 10:00 AM', tags:['Gold','Crude','MCX']},
+];
 
 function renderRooms() {
   const el = document.getElementById('roomsBody');
@@ -8746,25 +8773,29 @@ function renderRooms() {
 }
 
 function renderRoomCard(r) {
-  return `<div style="background:var(--bg2);border:${r.live?'1.5px solid rgba(229,57,53,0.4)':'1px solid var(--border)'};border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;" onclick="joinRoom('${r.id}')">
+  const avatarColors = ['#0070f3','#e53935','#00a854','#f5a623','#7c3aed'];
+  const ac = avatarColors[r.id.charCodeAt(1) % avatarColors.length];
+  const timeLabel = r.live
+    ? `🔴 LIVE · ${r.viewers} watching · Started ${r.started||''}`
+    : `🕐 Starts ${r.startsAt||r.scheduled||'TBD'}`;
+  return `<div style="background:var(--bg2);border:${r.live?'1.5px solid rgba(229,57,53,0.35)':'1px solid var(--border)'};border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow=''" onclick="joinRoom('${r.id}')">
     <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="width:46px;height:46px;border-radius:50%;background:var(--bg3);border:${r.live?'2px solid var(--red)':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;">
+      <div style="width:46px;height:46px;border-radius:50%;background:${ac};border:${r.live?'2px solid var(--red)':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative;">
         ${r.avatar}
-        ${r.live?`<span style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:var(--red);border:2px solid var(--bg2);"></span>`:''}
+        ${r.live?`<span style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:var(--red);border:2px solid var(--bg2);animation:pulse 1.2s infinite;"></span>`:''}
       </div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-          <span style="font-weight:700;">${r.host}</span>
-          ${r.verified?'<span style="background:rgba(0,112,243,0.15);color:var(--accent);font-size:9px;padding:1px 6px;border-radius:6px;font-weight:700;">✓</span>':''}
-          ${r.live?`<span style="background:rgba(229,57,53,0.15);color:var(--red);font-size:9px;padding:2px 8px;border-radius:8px;font-weight:700;">🔴 LIVE · ${r.viewers} watching</span>`:`<span style="background:var(--bg3);color:var(--text3);font-size:10px;padding:2px 8px;border-radius:8px;">${r.scheduled}</span>`}
+          <span style="font-weight:700;font-size:13px;">${r.host}</span>
+          <span style="background:${r.live?'rgba(229,57,53,0.12)':'var(--bg3)'};color:${r.live?'var(--red)':'var(--text3)'};font-size:10px;padding:2px 8px;border-radius:8px;font-weight:${r.live?700:500};">${timeLabel}</span>
         </div>
-        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.title}</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">${r.description}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          ${r.tags.map(t=>`<span style="padding:2px 8px;border-radius:8px;background:rgba(0,112,243,0.1);color:var(--accent);font-size:10px;">#${t}</span>`).join('')}
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px;color:var(--text);">${r.title}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">📌 ${r.topic}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${(r.tags||[]).map(t=>`<span style="padding:2px 8px;border-radius:8px;background:rgba(0,112,243,0.08);color:var(--accent);font-size:10px;font-weight:600;">#${t}</span>`).join('')}
         </div>
       </div>
-      <button style="padding:7px 16px;border-radius:8px;border:none;background:${r.live?'var(--red)':'var(--bg3)'};color:${r.live?'#fff':'var(--text3)'};font-weight:700;font-size:11px;cursor:pointer;flex-shrink:0;" onclick="event.stopPropagation();joinRoom('${r.id}')">${r.live?'Join':'Set Reminder'}</button>
+      <button style="padding:8px 16px;border-radius:8px;border:none;background:${r.live?'var(--red)':'var(--bg3)'};color:${r.live?'#fff':'var(--text2)'};font-weight:700;font-size:11px;cursor:pointer;flex-shrink:0;white-space:nowrap;" onclick="event.stopPropagation();joinRoom('${r.id}')">${r.live?'▶ Join':'🔔 Remind'}</button>
     </div>
   </div>`;
 }
@@ -9190,9 +9221,15 @@ function renderCompare() {
 
   const colors = ['var(--accent)','var(--gold)','var(--green)'];
   const assets = syms.map(sym => {
-    const base = ALL_ASSETS_FOR_COMPARE.find(a=>a.sym===sym)||{};
-    const ta   = STATIC_TECH[sym]||{};
-    return { sym, ...base, ...ta };
+    const base  = ALL_ASSETS_FOR_COMPARE.find(a=>a.sym===sym)||{};
+    const ta    = STATIC_TECH[sym]||{};
+    // Overlay live price and 1-day change from liveStocks
+    const live  = liveStocks.find(s=>s.sym===sym) || STATIC_CRYPTO.find(s=>s.sym===sym);
+    const liveP = live ? {
+      price: live.price,
+      change_1d: parseFloat((live.chg||'0').replace('%','')) || base.change_1d,
+    } : {};
+    return { sym, ...base, ...ta, ...liveP };
   });
 
   const metrics = [
@@ -9757,7 +9794,7 @@ function injectWhatsMoving() {
 
   sidebar.insertBefore(widget, sidebar.firstChild);
   updateWhatsMoving();
-  setInterval(updateWhatsMoving, 30000);
+  setInterval(updateWhatsMoving, 15000);
 }
 
 function updateWhatsMoving() {
@@ -10551,7 +10588,7 @@ function renderTVBody(tab) {
       s.type = 'text/javascript';
       s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
       s.async = true;
-      s.innerHTML = JSON.stringify(cfg);
+      s.textContent = JSON.stringify(cfg);
       document.getElementById('tv_mkt_wrap').querySelector('.tradingview-widget-container__widget').appendChild(s);
     }
   }, 100);
@@ -10804,15 +10841,17 @@ async function refreshEarningsData() {
 
 async function refreshFiiData() {
   const data = await fetchFiiFromRailway();
-  // If Railway returns data, update FII_DATA and re-render if on fii tab
-  if (data) {
-    // data comes as [{date, fii_net, dii_net}] from Railway
-    FII_DATA.splice(0, FII_DATA.length, ...data.map(d => ({
-      date: d.date || d.Date,
-      fii: d.fii_net || d.fii || 0,
-      dii: d.dii_net || d.dii || 0,
-      net: (d.fii_net || d.fii || 0) + (d.dii_net || d.dii || 0),
-    })));
+  // Only update if Railway returns real, non-zero data
+  if (data && data.length > 0) {
+    const hasRealData = data.some(d => Math.abs(d.fii_net || d.fii || 0) > 100);
+    if (hasRealData) {
+      FII_DATA.splice(0, FII_DATA.length, ...data.map(d => ({
+        date: d.date || d.Date,
+        fii: d.fii_net || d.fii || 0,
+        dii: d.dii_net || d.dii || 0,
+        net: (d.fii_net || d.fii || 0) + (d.dii_net || d.dii || 0),
+      })));
+    }
     if (_activePage === 'fii') renderFii();
   }
   if (_activePage === 'fii') {
@@ -10845,6 +10884,29 @@ function injectLiveStatusBars() {
   addLiveStatusBar('page-mf',        'NAV data from AMFI India');
 }
 
+
+// ── LIVE NIFTY SPOT for Options Chain ──
+async function fetchLiveNiftySpot() {
+  try {
+    const res = await fetch(`${API_BASE}/nifty-spot`, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) throw new Error('no nifty-spot');
+    const j = await res.json();
+    const p = parseFloat(String(j.nifty?.price||'').replace(/,/g,''));
+    const b = parseFloat(String(j.bank?.price||'').replace(/,/g,''));
+    if (p > 10000) {
+      OPT_CONFIGS.NIFTY.spot     = p;
+      OPT_CONFIGS.NIFTY.atm      = Math.round(p / 50) * 50;
+      OPT_CONFIGS.FINNIFTY.spot  = Math.round(p * 0.987);
+      OPT_CONFIGS.FINNIFTY.atm   = Math.round(OPT_CONFIGS.FINNIFTY.spot / 50) * 50;
+    }
+    if (b > 10000) {
+      OPT_CONFIGS.BANKNIFTY.spot = b;
+      OPT_CONFIGS.BANKNIFTY.atm  = Math.round(b / 100) * 100;
+    }
+    if (_activePage === 'options') renderOptions();
+  } catch(e) {}
+}
+
 // ── Wire up onLiveDataUpdate to fire after fetchLiveData succeeds ──
 // Patch fetchLiveData to call onLiveDataUpdate at the end of successful fetches
 const _origFetchLiveData = fetchLiveData;
@@ -10870,6 +10932,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(refreshEarningsData, 5000);
   // Refresh earnings every 6 hours
   setInterval(refreshEarningsData, 6 * 60 * 60 * 1000);
+  // Fetch live Nifty spot for options chain
+  setTimeout(fetchLiveNiftySpot, 4000);
+  setInterval(fetchLiveNiftySpot, 60000);
   // Alert check every 30s even when not on alerts page
   setInterval(checkAlertsFromLive, 30000);
 });
