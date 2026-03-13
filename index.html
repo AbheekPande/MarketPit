@@ -1984,6 +1984,38 @@ const COMM_LIST = [
 
 let allStockSymbols = [];
 let liveStocks = STATIC_STOCKS.map(s => ({...s}));
+
+// ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
+// Single source of truth for all price lookups across the app
+function getLiveAsset(sym) {
+  // 1. Check liveStocks first (updated from Railway every 30s)
+  const live = liveStocks.find(s => s.sym === sym);
+  if (live && live.price && live.price !== '—') return live;
+  // 2. Fallback to static data
+  return [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
+}
+function getLivePrice(sym) {
+  const a = getLiveAsset(sym);
+  if (!a) return null;
+  const p = typeof a.price === 'string' ? parseFloat(a.price.replace(/,/g,'')) : a.price;
+  return isNaN(p) ? null : p;
+}
+function getLiveChg(sym) {
+  const a = getLiveAsset(sym);
+  return a?.chg || '0%';
+}
+function getAllLiveAssets() {
+  // Returns all assets with live prices merged in
+  const liveMap = {};
+  liveStocks.forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
+  return [
+    ...STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
+    ...STATIC_CRYPTO.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
+    ...STATIC_COMMODITIES.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s),
+  ];
+}
+// ─────────────────────────────────────────────────────────────
+
 let _retryCount = 0;
 let _currentFilter = '';
 let _selectedPit = '';
@@ -2758,7 +2790,7 @@ async function openStockModal(sym, name) {
   loadTVChart(sym, '1M');
 
   // Use static data immediately if available
-  const staticQ  = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
+  const staticQ  = getLiveAsset(sym);
   const staticTA = STATIC_TECH[sym];
 
   try {
@@ -3007,7 +3039,7 @@ async function openStockModal(sym, name) {
 
   } catch(e) {
     // Show static data on network error
-    const staticQ2  = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES].find(s => s.sym === sym);
+    const staticQ2  = getLiveAsset(sym);
     const staticTA2 = STATIC_TECH[sym];
     if (staticQ2) {
       const fakeD = {price: staticQ2.price, chg: staticQ2.chg, up: staticQ2.up, currency: staticQ2.currency || '₹'};
@@ -3025,7 +3057,7 @@ async function openStockModal(sym, name) {
 
 // ── fetchAndShowStock alias ──
 function fetchAndShowStock(sym) {
-  const all = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES];
+  const all = getAllLiveAssets();
   const found = all.find(s => s.sym === sym);
   openStockModal(sym, found?.name || sym);
 }
@@ -6134,7 +6166,7 @@ async function fetchWlPrice(sym, type) {
   }
 
   // Show static data immediately while waiting for live
-  const allAssets = [...STATIC_STOCKS, ...STATIC_CRYPTO, ...STATIC_COMMODITIES];
+  const allAssets = getAllLiveAssets();
   const staticAsset = allAssets.find(s => s.sym === sym);
   if (staticAsset) {
     const chgN = parseFloat(staticAsset.chg);
@@ -7680,7 +7712,7 @@ function renderPortfolio() {
 
   const totalInv = pf.reduce((a,h)=>a+h.avgPrice*h.qty,0);
   const totalCur = pf.reduce((a,h)=>{
-    const p = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===h.sym)?.price||h.avgPrice;
+    const p = getLivePrice(h.sym) || h.avgPrice;
     return a+p*h.qty;
   },0);
   const pnl = totalCur - totalInv;
@@ -7689,9 +7721,9 @@ function renderPortfolio() {
   // Sector allocation
   const sectors = {};
   pf.forEach(h => {
-    const asset = STATIC_STOCKS.find(s=>s.sym===h.sym);
+    const asset = getLiveAsset(h.sym);
     const cat = asset ? (asset.sector||'Stocks') : STATIC_CRYPTO.find(s=>s.sym===h.sym) ? 'Crypto' : 'Commodities';
-    const val = (STATIC_STOCKS.concat(STATIC_CRYPTO,STATIC_COMMODITIES).find(s=>s.sym===h.sym)?.price||h.avgPrice)*h.qty;
+    const val = (getLivePrice(h.sym) || h.avgPrice) * h.qty;
     sectors[cat] = (sectors[cat]||0) + val;
   });
 
@@ -7722,7 +7754,7 @@ function renderPortfolio() {
     <!-- Holdings list -->
     <div style="border-top:1px solid var(--border);">
       ${pf.map((h,idx) => {
-        const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===h.sym);
+        const asset = getLiveAsset(h.sym);
         const ltp   = asset?.price || h.avgPrice;
         const cur   = asset?.currency||'₹';
         const pl    = (ltp-h.avgPrice)*h.qty;
@@ -7933,7 +7965,7 @@ function renderEarnings() {
 
 function renderEventCard(e, isPast) {
   const cfg   = EVENTS_TYPE_CONFIG[e.type] || EVENTS_TYPE_CONFIG.results;
-  const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===e.sym);
+  const asset = getLiveAsset(e.sym);
   const chg   = parseFloat(asset?.chg) || 0;
 
   let rightHtml = '';
@@ -8008,7 +8040,7 @@ function renderAlerts() {
   }
 
   el.innerHTML = alerts.map((a, idx) => {
-    const asset = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===a.sym);
+    const asset = getLiveAsset(a.sym);
     const cur = asset?.currency||'₹';
     const ltp = asset?.price || 0;
     const dist = ltp ? (((a.target - ltp)/ltp)*100).toFixed(1) : null;
@@ -8690,7 +8722,7 @@ function renderCalls() {
   if (!calls.length) { el.innerHTML=`<div style="text-align:center;padding:48px;color:var(--text3);">No calls found.</div>`; return; }
 
   el.innerHTML = calls.map(c => {
-    const ltp    = [...STATIC_STOCKS,...STATIC_CRYPTO,...STATIC_COMMODITIES].find(s=>s.sym===c.sym)?.price || c.currentPrice;
+    const ltp    = getLivePrice(c.sym) || c.currentPrice;
     const cur    = STATIC_CRYPTO.find(s=>s.sym===c.sym) ? '$' : STATIC_COMMODITIES.find(s=>s.sym===c.sym) ? '$' : '₹';
     const isLong = c.action === 'BUY';
     const pnlPct = (((isLong ? ltp-c.entry : c.entry-ltp)/c.entry)*100).toFixed(2);
@@ -9017,7 +9049,7 @@ function enterContest(contestId) {
     <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Pick your best stock for this week</div>
     <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">YOUR PICK</div>
     <select id="ctSym" class="form-input">
-      ${STATIC_STOCKS.map(s=>`<option value="${s.sym}" data-price="${s.price}">${s.sym} — ${s.name}</option>`).join('')}
+      ${getAllLiveAssets().filter(a=>a.assetType!=='crypto'&&a.assetType!=='commodity').map(s=>`<option value="${s.sym}" data-price="${getLivePrice(s.sym)||s.price}">${s.sym} — ${s.name}</option>`).join('')}
     </select>
     <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">ENTRY PRICE (current)</div>
     <input id="ctPrice" type="number" class="form-input" style="margin-bottom:6px;">
