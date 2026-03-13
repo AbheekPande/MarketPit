@@ -2047,6 +2047,10 @@ const COMM_LIST = [
 ];
 
 let allStockSymbols = [];
+// Global symbol sets used across multiple functions
+const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
+const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
+
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s})),
   // Crypto: seed with name/sym but NO price — show live only, never stale static
@@ -2695,8 +2699,7 @@ function renderTrending(data) {
   // Tab state
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
-  const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
+  // CRYPTO_SYMS and COMM_SYMS are now global
 
   // All three lists pull directly from liveStocks — crypto + commodities seeded at startup
   const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,12);
