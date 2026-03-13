@@ -722,6 +722,124 @@ def api_ipo():
     return jsonify(static_data)
 
 
+
+# ── Options chain cache ──
+_options_cache = {}
+_options_lock  = threading.Lock()
+
+def fetch_nse_option_chain(symbol="NIFTY"):
+    """
+    Fetch live option chain from NSE India public API.
+    symbol: NIFTY | BANKNIFTY | FINNIFTY | MIDCPNIFTY
+    """
+    try:
+        import requests as r
+        # NSE requires a session cookie — first hit the base page
+        session = r.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+        })
+        # Hit base URL to get cookies
+        session.get("https://www.nseindia.com", timeout=8)
+        session.get("https://www.nseindia.com/option-chain", timeout=5)
+        session.headers.update({
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://www.nseindia.com/option-chain",
+        })
+        url = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
+        resp = session.get(url, timeout=10)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        records = data.get("records", {})
+        spot_price = records.get("underlyingValue", 0)
+        expiry_dates = records.get("expiryDates", [])
+        option_data  = records.get("data", [])
+        if not option_data:
+            return None
+        # Group by strike for the nearest expiry
+        nearest_expiry = expiry_dates[0] if expiry_dates else None
+        strikes = {}
+        for item in option_data:
+            if nearest_expiry and item.get("expiryDate") != nearest_expiry:
+                continue
+            strike = item.get("strikePrice", 0)
+            if strike not in strikes:
+                strikes[strike] = {"strike": strike, "CE": {}, "PE": {}}
+            for otype in ["CE", "PE"]:
+                if otype in item:
+                    d = item[otype]
+                    strikes[strike][otype] = {
+                        "ltp":    d.get("lastPrice", 0),
+                        "chg":    round(d.get("change", 0), 2),
+                        "chgPct": round(d.get("pChange", 0), 2),
+                        "oi":     d.get("openInterest", 0),
+                        "oiChg":  d.get("changeinOpenInterest", 0),
+                        "vol":    d.get("totalTradedVolume", 0),
+                        "iv":     round(d.get("impliedVolatility", 0), 2),
+                        "bid":    d.get("bidprice", 0),
+                        "ask":    d.get("askPrice", 0),
+                        "delta":  round(d.get("delta", 0), 3) if "delta" in d else None,
+                    }
+        # Sort by strike and return ATM ±10 strikes
+        all_strikes = sorted(strikes.keys())
+        atm = min(all_strikes, key=lambda x: abs(x - spot_price))
+        atm_idx = all_strikes.index(atm)
+        window = all_strikes[max(0, atm_idx-10): atm_idx+11]
+        result_rows = [strikes[s] for s in window]
+        # PCR
+        total_put_oi  = sum(strikes[s]["PE"].get("oi",0) for s in all_strikes if "PE" in strikes[s])
+        total_call_oi = sum(strikes[s]["CE"].get("oi",0) for s in all_strikes if "CE" in strikes[s])
+        pcr = round(total_put_oi / total_call_oi, 2) if total_call_oi else 1.0
+        return {
+            "symbol":      symbol,
+            "spot":        spot_price,
+            "atm":         atm,
+            "expiry":      nearest_expiry,
+            "expiryDates": expiry_dates[:8],
+            "rows":        result_rows,
+            "pcr":         pcr,
+            "last_updated": datetime.now().isoformat(),
+            "source":      "NSE India",
+        }
+    except Exception as e:
+        print(f"[Options] NSE fetch failed: {e}")
+        return None
+
+
+@app.route("/api/options")
+def api_options():
+    """Live option chain from NSE India. ?symbol=NIFTY|BANKNIFTY|FINNIFTY|MIDCPNIFTY"""
+    symbol = request.args.get("symbol", "NIFTY").upper()
+    if symbol not in ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"):
+        symbol = "NIFTY"
+
+    with _options_lock:
+        cached = _options_cache.get(symbol)
+    # Cache for 60 seconds
+    if cached and (datetime.now() - datetime.fromisoformat(cached["last_updated"])).seconds < 60:
+        return jsonify(cached)
+
+    data = fetch_nse_option_chain(symbol)
+    if data:
+        with _options_lock:
+            _options_cache[symbol] = data
+        return jsonify(data)
+
+    # Return cached even if stale rather than error
+    with _options_lock:
+        stale = _options_cache.get(symbol)
+    if stale:
+        stale["stale"] = True
+        return jsonify(stale)
+
+    return jsonify({"error": "NSE option chain unavailable", "symbol": symbol}), 503
+
+
 @app.route("/api/nifty-spot")
 def api_nifty_spot():
     """Returns live Nifty 50 and Bank Nifty spot prices."""

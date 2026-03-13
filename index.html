@@ -1616,7 +1616,7 @@ header {
   <div class="main-feed" id="page-options" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📊 OPTIONS CHAIN</div>
-      <select id="optIndex" onchange="renderOptions()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:13px;">
+      <select id="optIndex" onchange="fetchLiveOptionsChain(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:13px;">
         <option value="NIFTY">NIFTY 50</option>
         <option value="BANKNIFTY">BANK NIFTY</option>
         <option value="FINNIFTY">FIN NIFTY</option>
@@ -5349,7 +5349,7 @@ function _switchTabSilent(btn, page) {
   if (page==='news')      loadNews('markets', document.getElementById('nc_markets'));
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
-  if (page==='options')   renderOptions();
+  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='discover')  renderDiscover();
   if (page==='compare')   renderCompare();
@@ -5405,7 +5405,7 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   renderOptions();
+  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='discover')  renderDiscover();
   if (page==='compare')   renderCompare();
@@ -5446,7 +5446,7 @@ function switchTab(btn, page) {
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   renderOptions();
+  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='discover')  renderDiscover();
   if (page==='compare')   renderCompare();
@@ -9363,59 +9363,54 @@ const OPT_CONFIGS = {
   MIDCPNIFTY:{ spot: 11824, atm: 11800, step: 25,  name:'MidCap Nifty', lot:75,  pcr:0.78, ivrank:22 },
 };
 
-function generateOptionsChain(index) {
-  const cfg  = OPT_CONFIGS[index] || OPT_CONFIGS.NIFTY;
-  const spot = cfg.spot;
-  const atm  = cfg.atm;
-  const step = cfg.step;
-  // Seed so values stay stable during a session (don't flicker on re-render)
-  let seed = index.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
-  function rnd() { seed = (seed * 16807 + 0) % 2147483647; return (seed % 1000) / 1000; }
 
-  const rows = [];
-  for (let i = -10; i <= 10; i++) {
-    const strike    = atm + i * step;
-    const dist      = (strike - spot) / spot;           // +ve = OTM call / ITM put
-    const ivSmile   = 13 + Math.abs(dist) * 180;        // Vol smile
-    const daysToExp = 8;                                  // ~8 days to weekly expiry
-    const t         = daysToExp / 365;
+// ── LIVE OPTIONS CHAIN ─────────────────────────────────────────
+let _optChainData   = {};   // symbol → live data from /api/options
+let _optChainLoading = false;
+let _optExpiry      = null; // selected expiry (null = first/nearest)
 
-    // Black-Scholes approximation for LTP
-    function bsApprox(isCall, K) {
-      const F   = spot;
-      const vol = (ivSmile / 100) * (1 + rnd() * 0.05);
-      const d1  = (Math.log(F/K) + 0.5*vol*vol*t) / (vol*Math.sqrt(t));
-      const d2  = d1 - vol*Math.sqrt(t);
-      function N(x) {
-        const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
-        const sign = x<0?-1:1; const ax=Math.abs(x);
-        const t2=1/(1+p*ax);
-        const poly=(((((a5*t2+a4)*t2)+a3)*t2+a2)*t2+a1)*t2;
-        return 0.5*(1+sign*(1-poly*Math.exp(-ax*ax/2)));
-      }
-      if (isCall) return Math.max(0.05, F*N(d1) - K*N(d2));
-      else        return Math.max(0.05, K*N(-d2) - F*N(-d1));
+async function fetchLiveOptionsChain(index) {
+  if (_optChainLoading) return;
+  _optChainLoading = true;
+  const loadEl = document.getElementById('optionsLoadMsg');
+  if (loadEl) loadEl.style.display = 'flex';
+  try {
+    const res = await fetch(`${API_BASE}/options?symbol=${index}`, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) throw new Error('NSE options unavailable');
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    _optChainData[index] = json;
+    // Update OPT_CONFIGS spot from live data
+    if (json.spot > 1000) {
+      OPT_CONFIGS[index] = OPT_CONFIGS[index] || {};
+      OPT_CONFIGS[index].spot = json.spot;
+      OPT_CONFIGS[index].atm  = json.atm;
+      OPT_CONFIGS[index].pcr  = json.pcr;
     }
-
-    const c_ltp = bsApprox(true,  strike).toFixed(1);
-    const p_ltp = bsApprox(false, strike).toFixed(1);
-
-    // OI — higher near ATM, tapers off
-    const oiMult = Math.max(0.05, 1 - Math.abs(i) * 0.08 + rnd() * 0.06);
-    const c_oi   = Math.round((800000 + rnd()*200000) * oiMult / 1000) * 1000;
-    const p_oi   = Math.round((750000 + rnd()*200000) * oiMult / 1000) * 1000;
-    const c_vol  = Math.round(c_oi * (0.15 + rnd() * 0.35));
-    const p_vol  = Math.round(p_oi * (0.15 + rnd() * 0.35));
-
-    const c_chg  = ((rnd()-0.5) * 25).toFixed(1);
-    const p_chg  = ((rnd()-0.5) * 25).toFixed(1);
-    const c_iv   = (ivSmile + rnd()*2).toFixed(1);
-    const p_iv   = (ivSmile + rnd()*2 + (dist>0?dist*15:0)).toFixed(1);
-
-    rows.push({ strike, isAtm: strike===atm, c_iv, c_ltp, c_oi, c_chg, c_vol, p_iv, p_ltp, p_oi, p_chg, p_vol });
+    // Populate expiry dropdown
+    const expiryEl = document.getElementById('optExpiry');
+    if (expiryEl && json.expiryDates?.length) {
+      const cur = expiryEl.value;
+      expiryEl.innerHTML = json.expiryDates.map(d =>
+        `<option value="${d}" ${d===cur?'selected':''}>${d}</option>`
+      ).join('');
+      if (!cur || !json.expiryDates.includes(cur)) _optExpiry = json.expiryDates[0];
+    }
+    // Update live status bar
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    const lsEl = document.getElementById('live-ts-page-options');
+    if (lsEl) lsEl.textContent = (json.stale ? '⚠ Stale · ' : '● NSE live · ') + 'Updated ' + ts + ' IST';
+  } catch(e) {
+    const lsEl = document.getElementById('live-ts-page-options');
+    if (lsEl) lsEl.textContent = '⚠ NSE data unavailable — showing estimated prices';
+    console.warn('[Options] fetch failed:', e.message);
+  } finally {
+    _optChainLoading = false;
+    if (loadEl) loadEl.style.display = 'none';
+    if (_activePage === 'options') renderOptions();
   }
-  return rows;
 }
+
 
 function fmtOi(n) {
   if (n >= 1000000) return (n/1000000).toFixed(2)+'M';
@@ -9700,50 +9695,79 @@ function renderStrategyCard(strat, cfg, lot, callPrem, putPrem) {
 
 function renderOptions() {
   if (_optionsView === 'strategies') { renderOptionStrategies(); return; }
-  const index = document.getElementById('optIndex')?.value || 'NIFTY';
-  // Sync OPT_CONFIGS spot prices from live data
-  const niftyLive = liveStocks.find(s => s.sym === 'NIFTY 50' || s.sym === 'NIFTY50' || s.sym === 'NIFTY');
-  const bankLive  = liveStocks.find(s => s.sym === 'NIFTY BANK' || s.sym === 'BANKNIFTY');
-  if (niftyLive && niftyLive.price) {
-    const p = parseFloat(String(niftyLive.price).replace(/,/g,''));
-    if (p > 10000) {
-      OPT_CONFIGS.NIFTY.spot = p;
-      OPT_CONFIGS.NIFTY.atm  = Math.round(p / 50) * 50;
-      OPT_CONFIGS.FINNIFTY.spot = Math.round(p * 0.987);
-      OPT_CONFIGS.FINNIFTY.atm  = Math.round(OPT_CONFIGS.FINNIFTY.spot / 50) * 50;
-    }
+  const index  = document.getElementById('optIndex')?.value || 'NIFTY';
+  const expiry = document.getElementById('optExpiry')?.value || _optExpiry;
+  const cfg    = OPT_CONFIGS[index] || OPT_CONFIGS.NIFTY;
+
+  // Try to use live NSE data
+  const liveData = _optChainData[index];
+  let rows, spot, atm, pcr, source;
+
+  if (liveData && liveData.rows && liveData.rows.length) {
+    // Filter by selected expiry if data has per-expiry rows (current impl already filtered)
+    rows   = liveData.rows;
+    spot   = liveData.spot;
+    atm    = liveData.atm;
+    pcr    = liveData.pcr || 1.0;
+    source = liveData.stale ? '⚠ Stale NSE data' : '✓ NSE India live';
+  } else {
+    // No live data yet — show loading skeleton and trigger fetch
+    const body = document.getElementById('optionsBody');
+    if (body) body.innerHTML = `
+      <div id="optionsLoadMsg" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;gap:16px;">
+        <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <div style="font-size:13px;color:var(--text3);">Fetching live option chain from NSE…</div>
+      </div>`;
+    fetchLiveOptionsChain(index);
+    return;
   }
-  if (bankLive && bankLive.price) {
-    const p = parseFloat(String(bankLive.price).replace(/,/g,''));
-    if (p > 10000) {
-      OPT_CONFIGS.BANKNIFTY.spot = p;
-      OPT_CONFIGS.BANKNIFTY.atm  = Math.round(p / 100) * 100;
-    }
-  }
-  const cfg   = OPT_CONFIGS[index];
-  const rows  = generateOptionsChain(index);
-  const totalCallOi = rows.reduce((a,r)=>a+r.c_oi,0);
-  const totalPutOi  = rows.reduce((a,r)=>a+r.p_oi,0);
-  const pcr   = (totalPutOi/totalCallOi).toFixed(2);
-  const maxOiStrike = rows.reduce((mx,r)=>(r.c_oi+r.p_oi>mx.oi?{oi:r.c_oi+r.p_oi,strike:r.strike}:mx),{oi:0,strike:0});
-  // Use config-defined PCR & IV Rank (stable, not random)
-  const displayPcr    = cfg.pcr || pcr;
-  const displayIvRank = cfg.ivrank || 28;
+
+  // Map rows to our row format
+  const fmtRow = r => {
+    const ce = r.CE || {};
+    const pe = r.PE || {};
+    return {
+      strike: r.strike,
+      isAtm:  r.strike === atm,
+      c_ltp:  ce.ltp  != null ? ce.ltp.toFixed(2)  : '—',
+      c_chg:  ce.chgPct != null ? ce.chgPct.toFixed(2) : '—',
+      c_oi:   ce.oi   || 0,
+      c_vol:  ce.vol  || 0,
+      c_iv:   ce.iv   != null ? ce.iv.toFixed(1) : '—',
+      p_ltp:  pe.ltp  != null ? pe.ltp.toFixed(2)  : '—',
+      p_chg:  pe.chgPct != null ? pe.chgPct.toFixed(2) : '—',
+      p_oi:   pe.oi   || 0,
+      p_vol:  pe.vol  || 0,
+      p_iv:   pe.iv   != null ? pe.iv.toFixed(1) : '—',
+    };
+  };
+  const tableRows   = rows.map(fmtRow);
+  const totalCallOi = tableRows.reduce((a,r)=>a+(r.c_oi||0),0);
+  const totalPutOi  = tableRows.reduce((a,r)=>a+(r.p_oi||0),0);
+  const maxPainRow  = tableRows.reduce((mx,r)=>(r.c_oi+r.p_oi>mx.oi?{oi:r.c_oi+r.p_oi,strike:r.strike}:mx),{oi:0,strike:atm});
+  const maxOi       = Math.max(...tableRows.map(r=>Math.max(r.c_oi||0,r.p_oi||0)), 1);
 
   const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl) spotEl.textContent = index + ' SPOT: ' + cfg.spot.toLocaleString('en-IN');
+  if (spotEl) spotEl.textContent = cfg.name + ' SPOT: ' + Number(spot).toLocaleString('en-IN');
   const el = (s,v) => { const e=document.getElementById(s); if(e) e.textContent=v; };
-  el('optMaxPain', maxOiStrike.strike.toLocaleString('en-IN'));
-  el('optPcr',     displayPcr.toFixed ? displayPcr.toFixed(2) : displayPcr);
+  el('optMaxPain', maxPainRow.strike.toLocaleString('en-IN'));
+  el('optPcr',     pcr.toFixed ? pcr.toFixed(2) : pcr);
   el('optCallOi',  fmtOi(totalCallOi));
   el('optPutOi',   fmtOi(totalPutOi));
-  el('optIvRank',  displayIvRank + '%');
-
-  const maxOi = Math.max(...rows.map(r=>Math.max(r.c_oi,r.p_oi)));
+  el('optIvRank',  cfg.ivrank ? cfg.ivrank+'%' : '—');
 
   const body = document.getElementById('optionsBody');
   if (!body) return;
   body.innerHTML = `
+    <div id="optionsLoadMsg" style="display:none;align-items:center;justify-content:center;padding:20px;gap:10px;">
+      <div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <span style="font-size:12px;color:var(--text3);">Refreshing…</span>
+    </div>
+    <div style="padding:6px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">${source} · Expiry: ${liveData.expiry || '—'}</span>
+      <button onclick="fetchLiveOptionsChain('${index}')" style="font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--accent);cursor:pointer;font-family:'Space Mono',monospace;">↻ Refresh</button>
+    </div>
+    <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'Space Mono',monospace;min-width:700px;">
       <thead>
         <tr style="background:var(--bg3);border-bottom:2px solid var(--border);">
@@ -9755,35 +9779,39 @@ function renderOptions() {
           <th style="padding:6px 8px;text-align:right;border-right:1px solid var(--border);">OI</th>
           <th style="padding:6px 8px;text-align:right;">VOL</th>
           <th style="padding:6px 8px;text-align:right;">IV%</th>
-          <th style="padding:6px 8px;text-align:right;">CHG</th>
+          <th style="padding:6px 8px;text-align:right;">CHG%</th>
           <th style="padding:6px 8px;text-align:right;border-right:2px solid var(--border);">LTP</th>
           <th style="padding:6px 8px;text-align:center;color:var(--gold);font-weight:800;">STRIKE</th>
           <th style="padding:6px 8px;text-align:left;border-left:2px solid var(--border);">LTP</th>
-          <th style="padding:6px 8px;text-align:left;">CHG</th>
+          <th style="padding:6px 8px;text-align:left;">CHG%</th>
           <th style="padding:6px 8px;text-align:left;">IV%</th>
           <th style="padding:6px 8px;text-align:left;">VOL</th>
           <th style="padding:6px 8px;text-align:left;">OI</th>
         </tr>
       </thead>
       <tbody>
-        ${rows.map(r => {
+        ${tableRows.map(r => {
           const atmStyle = r.isAtm ? 'background:rgba(245,166,35,0.08);border-top:1px solid rgba(245,166,35,0.4);border-bottom:1px solid rgba(245,166,35,0.4);' : '';
-          const cOiBar = Math.round(r.c_oi/maxOi*100);
-          const pOiBar = Math.round(r.p_oi/maxOi*100);
-          const cItm = r.strike < cfg.spot;
-          const pItm = r.strike > cfg.spot;
-          return `<tr style="${atmStyle}${cItm?'background:rgba(229,57,53,0.04);':''}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${r.isAtm?'rgba(245,166,35,0.08)':cItm?'rgba(229,57,53,0.04)':''}'">
+          const cOiBar   = Math.round((r.c_oi||0)/maxOi*100);
+          const pOiBar   = Math.round((r.p_oi||0)/maxOi*100);
+          const cItm     = r.strike < spot;
+          const pItm     = r.strike > spot;
+          const cChgNum  = parseFloat(r.c_chg);
+          const pChgNum  = parseFloat(r.p_chg);
+          return `<tr style="${atmStyle}${cItm?'background:rgba(229,57,53,0.04);':''}"
+            onmouseover="this.style.background='var(--bg3)'"
+            onmouseout="this.style.background='${r.isAtm?'rgba(245,166,35,0.08)':cItm?'rgba(229,57,53,0.04)':''}'">
             <td style="padding:7px 8px;text-align:right;border-right:1px solid var(--border);color:var(--text3);position:relative;">
               <div style="position:absolute;right:0;top:0;bottom:0;width:${cOiBar}%;background:rgba(229,57,53,0.12);z-index:0;"></div>
               <span style="position:relative;">${fmtOi(r.c_oi)}</span>
             </td>
             <td style="padding:7px 8px;text-align:right;color:var(--text3);">${fmtOi(r.c_vol)}</td>
             <td style="padding:7px 8px;text-align:right;color:var(--accent2);">${r.c_iv}</td>
-            <td style="padding:7px 8px;text-align:right;color:${parseFloat(r.c_chg)>=0?'var(--green)':'var(--red)'};">${parseFloat(r.c_chg)>=0?'+':''}${r.c_chg}</td>
+            <td style="padding:7px 8px;text-align:right;color:${!isNaN(cChgNum)?(cChgNum>=0?'var(--green)':'var(--red)'):'var(--text3)'};">${!isNaN(cChgNum)?(cChgNum>=0?'+':'')+r.c_chg : r.c_chg}</td>
             <td style="padding:7px 8px;text-align:right;font-weight:700;color:var(--red);border-right:2px solid var(--border);">${r.c_ltp}</td>
-            <td style="padding:7px 12px;text-align:center;font-weight:800;font-size:12px;color:${r.isAtm?'var(--gold)':r.strike>cfg.spot?'var(--text)':'var(--text)'};border-left:1px solid rgba(245,166,35,0.2);border-right:1px solid rgba(245,166,35,0.2);">${r.strike.toLocaleString()}${r.isAtm?' ★':''}</td>
+            <td style="padding:7px 12px;text-align:center;font-weight:800;font-size:12px;color:${r.isAtm?'var(--gold)':'var(--text)'};border-left:1px solid rgba(245,166,35,0.2);border-right:1px solid rgba(245,166,35,0.2);">${r.strike.toLocaleString()}${r.isAtm?' ★':''}</td>
             <td style="padding:7px 8px;text-align:left;font-weight:700;color:var(--green);border-left:2px solid var(--border);">${r.p_ltp}</td>
-            <td style="padding:7px 8px;text-align:left;color:${parseFloat(r.p_chg)>=0?'var(--green)':'var(--red)'};">${parseFloat(r.p_chg)>=0?'+':''}${r.p_chg}</td>
+            <td style="padding:7px 8px;text-align:left;color:${!isNaN(pChgNum)?(pChgNum>=0?'var(--green)':'var(--red)'):'var(--text3)'};">${!isNaN(pChgNum)?(pChgNum>=0?'+':'')+r.p_chg : r.p_chg}</td>
             <td style="padding:7px 8px;text-align:left;color:var(--accent2);">${r.p_iv}</td>
             <td style="padding:7px 8px;text-align:left;color:var(--text3);">${fmtOi(r.p_vol)}</td>
             <td style="padding:7px 8px;text-align:left;position:relative;color:var(--text3);">
@@ -9794,15 +9822,16 @@ function renderOptions() {
         }).join('')}
       </tbody>
     </table>
+    </div>
     <div style="padding:10px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);">
-      ★ = ATM (At The Money) · Prices use Black-Scholes model. ITM calls shaded. Live data requires NSE API.
+      ★ = ATM · OI bars show relative open interest · Data: ${source}
     </div>
     <!-- Greeks Calculator -->
     <div style="padding:16px;border-top:2px solid var(--border);">
       <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:1px;margin-bottom:14px;">🔢 OPTIONS GREEKS CALCULATOR (Black-Scholes)</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">SPOT PRICE</div><input class="form-input" id="gk_spot" type="number" value="${cfg.spot}" oninput="updateGreeks()" style="margin:0;"></div>
-        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">STRIKE PRICE</div><input class="form-input" id="gk_strike" type="number" value="${cfg.atm}" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">SPOT PRICE</div><input class="form-input" id="gk_spot" type="number" value="${spot}" oninput="updateGreeks()" style="margin:0;"></div>
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">STRIKE PRICE</div><input class="form-input" id="gk_strike" type="number" value="${atm}" oninput="updateGreeks()" style="margin:0;"></div>
         <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">IV (%)</div><input class="form-input" id="gk_iv" type="number" value="14" step="0.5" oninput="updateGreeks()" style="margin:0;"></div>
         <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">DAYS TO EXPIRY</div><input class="form-input" id="gk_dte" type="number" value="8" oninput="updateGreeks()" style="margin:0;"></div>
         <div><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">RISK-FREE RATE (%)</div><input class="form-input" id="gk_rfr" type="number" value="6.5" step="0.1" oninput="updateGreeks()" style="margin:0;"></div>
@@ -9816,6 +9845,7 @@ function renderOptions() {
     </div>`;
   setTimeout(updateGreeks, 50);
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // TRADE CALLS  (community trade call tracker with P&L)
@@ -10003,98 +10033,318 @@ function confirmPostCall() {
 // ══════════════════════════════════════════════════════════════
 // LIVE ROOMS  (simulated live trading sessions)
 // ══════════════════════════════════════════════════════════════
-const ROOMS_DATA = [
-  {id:'r1', host:'Arjun Kapoor', avatar:'AK', title:'Nifty 50 Morning Analysis', topic:'Nifty 50 · Intraday', viewers:342, live:true,  started:'9:15 AM', tags:['Nifty','Options','Levels']},
-  {id:'r2', host:'Priya Sharma', avatar:'PS', title:'Bank Nifty Options Flow', topic:'Bank Nifty · Options', viewers:218, live:true,  started:'9:30 AM', tags:['BankNifty','PCR','Greeks']},
-  {id:'r3', host:'Rahul Singh',  avatar:'RS', title:'IT Sector Swing Picks — Q4 Season', topic:'Stocks · Swing', viewers:0, live:false, startsAt:'2:00 PM', tags:['TCS','INFY','Swing']},
-  {id:'r4', host:'Meera Joshi',  avatar:'MJ', title:'Bitcoin & Crypto Weekend Outlook', topic:'Crypto · Bitcoin', viewers:0, live:false, startsAt:'4:30 PM', tags:['BTC','ETH','Crypto']},
-  {id:'r5', host:'Vikram Nair',  avatar:'VN', title:'Commodities — Gold & Crude Oil', topic:'Commodities', viewers:0, live:false, startsAt:'Tomorrow 10:00 AM', tags:['Gold','Crude','MCX']},
-];
+// ── LIVE ROOMS — real user-created, localStorage-backed ──────────────────────
+const ROOMS_KEY     = 'mp_rooms_v2';
+const ROOM_MSG_KEY  = 'mp_room_msgs_v2';
+
+function getRooms() {
+  try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveRooms(rooms) {
+  localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
+}
+function getRoomMessages(roomId) {
+  try {
+    const all = JSON.parse(localStorage.getItem(ROOM_MSG_KEY) || '{}');
+    return all[roomId] || [];
+  } catch(e) { return []; }
+}
+function saveRoomMessage(roomId, msg) {
+  try {
+    const all  = JSON.parse(localStorage.getItem(ROOM_MSG_KEY) || '{}');
+    const msgs = all[roomId] || [];
+    msgs.push(msg);
+    // Keep last 200 messages per room
+    all[roomId] = msgs.slice(-200);
+    localStorage.setItem(ROOM_MSG_KEY, JSON.stringify(all));
+  } catch(e) {}
+}
+function endRoom(roomId) {
+  const rooms = getRooms().map(r => r.id === roomId ? {...r, live:false, ended: new Date().toISOString()} : r);
+  saveRooms(rooms);
+  renderRooms();
+}
+
+let _activeRoomId = null;
+let _roomRefreshTimer = null;
 
 function renderRooms() {
   const el = document.getElementById('roomsBody');
   if (!el) return;
-  const live     = ROOMS_DATA.filter(r=>r.live);
-  const upcoming = ROOMS_DATA.filter(r=>!r.live);
+
+  // Clear any room-view refresh timer
+  if (_roomRefreshTimer) { clearInterval(_roomRefreshTimer); _roomRefreshTimer = null; }
+
+  const rooms   = getRooms();
+  const me      = getUser();
+  const live    = rooms.filter(r => r.live);
+  const ended   = rooms.filter(r => !r.live).slice(0, 5);
+
+  // Market context from live prices for the "context bar"
+  const niftyStock = liveStocks.find(s => s.sym === 'NIFTY' || s.sym === 'NIFTY 50' || s.sym === 'NIFTY50');
+  const bankStock  = liveStocks.find(s => s.sym === 'BANKNIFTY' || s.sym === 'NIFTY BANK');
+  const niftyStr   = niftyStock ? `NIFTY ${Number(niftyStock.price||0).toLocaleString('en-IN')} (${niftyStock.chg||'—'})` : 'NIFTY —';
+  const bankStr    = bankStock  ? `BANKNIFTY ${Number(bankStock.price||0).toLocaleString('en-IN')} (${bankStock.chg||'—'})` : 'BANKNIFTY —';
+  const niftyPos   = parseFloat(niftyStock?.chg) >= 0;
+  const bankPos    = parseFloat(bankStock?.chg)  >= 0;
 
   el.innerHTML = `
+    <!-- Live market ticker bar -->
+    <div style="padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex-shrink:0;">
+      <span style="font-size:10px;font-family:'Space Mono',monospace;font-weight:700;color:${niftyPos?'var(--green)':'var(--red)'};">${niftyStr}</span>
+      <span style="font-size:10px;font-family:'Space Mono',monospace;font-weight:700;color:${bankPos?'var(--green)':'var(--red)'};">${bankStr}</span>
+      <span style="margin-left:auto;font-size:10px;color:var(--text3);">Rooms update live via your browser</span>
+    </div>
+
+    <div style="padding:14px;">
+    ${live.length === 0 && ended.length === 0 ? `
+      <!-- Empty state -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;">
+        <div style="width:72px;height:72px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;">🎙️</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:8px;">No rooms yet</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:24px;max-width:260px;line-height:1.6;">Be the first to go live! Share your market analysis with the community.</div>
+        <button onclick="startRoom()" style="padding:12px 28px;border-radius:12px;border:none;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 16px rgba(229,57,53,0.35);">🔴 Start First Room</button>
+      </div>
+    ` : ''}
+
     ${live.length ? `
       <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         <span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;animation:pulse 1.2s infinite;"></span>
-        LIVE NOW
+        LIVE NOW (${live.length})
       </div>
-      ${live.map(r=>renderRoomCard(r)).join('')}
+      ${live.map(r => renderRoomCard(r, me)).join('')}
     ` : ''}
 
-    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:2px;margin:16px 0 10px;">UPCOMING SESSIONS</div>
-    ${upcoming.map(r=>renderRoomCard(r)).join('')}
+    ${ended.length ? `
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:2px;margin:${live.length?'20px':0} 0 10px;">RECENT SESSIONS</div>
+      ${ended.map(r => renderRoomCard(r, me)).join('')}
+    ` : ''}
 
-    <div style="margin-top:20px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:8px;">🎙️</div>
-      <div style="font-weight:700;margin-bottom:6px;">Start your own room</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Share your analysis live with the MarketPit community</div>
-      <button onclick="startRoom()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--red);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">🔴 Go Live Now</button>
+    <!-- Start room CTA (only when some rooms exist) -->
+    ${(live.length + ended.length > 0) ? `
+      <div style="margin-top:16px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:28px;">🎙️</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;margin-bottom:3px;">Host a room</div>
+          <div style="font-size:12px;color:var(--text3);">Share your live analysis with the MarketPit community</div>
+        </div>
+        <button onclick="startRoom()" style="padding:9px 18px;border-radius:9px;border:none;background:var(--red);color:#fff;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap;">🔴 Go Live</button>
+      </div>
+    ` : ''}
     </div>`;
 }
 
-function renderRoomCard(r) {
-  const avatarColors = ['#0070f3','#e53935','#00a854','#f5a623','#7c3aed'];
-  const ac = avatarColors[r.id.charCodeAt(1) % avatarColors.length];
-  const timeLabel = r.live
-    ? `🔴 LIVE · ${r.viewers} watching · Started ${r.started||''}`
-    : `🕐 Starts ${r.startsAt||r.scheduled||'TBD'}`;
-  return `<div style="background:var(--bg2);border:${r.live?'1.5px solid rgba(229,57,53,0.35)':'1px solid var(--border)'};border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow=''" onclick="joinRoom('${r.id}')">
-    <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="width:46px;height:46px;border-radius:50%;background:${ac};border:${r.live?'2px solid var(--red)':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative;">
-        ${r.avatar}
+function renderRoomCard(r, me) {
+  const avatarColors = ['#0070f3','#e53935','#00a854','#f5a623','#7c3aed','#0891b2','#d97706'];
+  const ac   = avatarColors[(r.hostName||'').charCodeAt(0) % avatarColors.length];
+  const init = (r.hostName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const isMe = me && (r.hostId === me.id || r.hostName === me.name);
+  const ago  = r.startedAt ? (() => {
+    const d = Math.floor((Date.now() - new Date(r.startedAt).getTime()) / 60000);
+    return d < 1 ? 'Just now' : d < 60 ? d + 'm ago' : Math.floor(d/60) + 'h ago';
+  })() : '';
+  const msgCount = getRoomMessages(r.id).length;
+
+  return `<div style="background:var(--bg2);border:${r.live?'1.5px solid rgba(229,57,53,0.3)':'1px solid var(--border)'};border-radius:14px;overflow:hidden;margin-bottom:12px;transition:border-color 0.15s,box-shadow 0.15s;"
+    onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
+    <div style="padding:16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;" onclick="joinRoom('${r.id}')">
+      <!-- Avatar -->
+      <div style="width:46px;height:46px;border-radius:50%;background:${ac};border:${r.live?'2.5px solid var(--red)':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative;">
+        ${init}
         ${r.live?`<span style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:var(--red);border:2px solid var(--bg2);animation:pulse 1.2s infinite;"></span>`:''}
       </div>
+      <!-- Info -->
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-          <span style="font-weight:700;font-size:13px;">${r.host}</span>
-          <span style="background:${r.live?'rgba(229,57,53,0.12)':'var(--bg3)'};color:${r.live?'var(--red)':'var(--text3)'};font-size:10px;padding:2px 8px;border-radius:8px;font-weight:${r.live?700:500};">${timeLabel}</span>
+          <span style="font-weight:700;font-size:13px;">${r.hostName || 'Anonymous'}</span>
+          ${isMe?`<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,112,243,0.12);color:var(--accent);font-weight:700;">YOU</span>`:''}
+          <span style="background:${r.live?'rgba(229,57,53,0.12)':'var(--bg3)'};color:${r.live?'var(--red)':'var(--text3)'};font-size:10px;padding:2px 8px;border-radius:8px;font-weight:${r.live?700:500};">
+            ${r.live ? '🔴 LIVE · ' + ago : '⏹ Ended · ' + ago}
+          </span>
         </div>
-        <div style="font-weight:800;font-size:14px;margin-bottom:6px;color:var(--text);">${r.title}</div>
+        <div style="font-weight:800;font-size:14px;margin-bottom:5px;">${r.title}</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">📌 ${r.topic}</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
           ${(r.tags||[]).map(t=>`<span style="padding:2px 8px;border-radius:8px;background:rgba(0,112,243,0.08);color:var(--accent);font-size:10px;font-weight:600;">#${t}</span>`).join('')}
+          ${msgCount ? `<span style="font-size:10px;color:var(--text3);margin-left:4px;">💬 ${msgCount}</span>` : ''}
         </div>
       </div>
-      <button style="padding:8px 16px;border-radius:8px;border:none;background:${r.live?'var(--red)':'var(--bg3)'};color:${r.live?'#fff':'var(--text2)'};font-weight:700;font-size:11px;cursor:pointer;flex-shrink:0;white-space:nowrap;" onclick="event.stopPropagation();joinRoom('${r.id}')">${r.live?'▶ Join':'🔔 Remind'}</button>
+      <!-- Action buttons -->
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+        <button style="padding:7px 14px;border-radius:8px;border:none;background:${r.live?'var(--red)':'var(--bg3)'};color:${r.live?'#fff':'var(--text2)'};font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;"
+          onclick="event.stopPropagation();joinRoom('${r.id}')">${r.live?'▶ Join':'📖 View'}</button>
+        ${isMe && r.live ? `<button style="padding:5px 10px;border-radius:7px;border:1px solid rgba(229,57,53,0.3);background:rgba(229,57,53,0.08);color:var(--red);font-size:10px;font-weight:700;cursor:pointer;" onclick="event.stopPropagation();endRoom('${r.id}')">■ End</button>` : ''}
+      </div>
     </div>
   </div>`;
 }
 
 function joinRoom(id) {
-  const r = ROOMS_DATA.find(x=>x.id===id);
+  const rooms = getRooms();
+  const r = rooms.find(x => x.id === id);
   if (!r) return;
-  showToast(r.live ? `🎙️ Joining ${r.host}'s room…` : `🔔 Reminder set for ${r.title}`, 'var(--accent)');
+  _activeRoomId = id;
+  openRoomChat(r);
+}
+
+function openRoomChat(r) {
+  const me = getUser();
+  const overlay = document.createElement('div');
+  overlay.id = 'roomChatOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:3000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);';
+
+  const renderMsgs = () => {
+    const msgs = getRoomMessages(r.id);
+    const box  = document.getElementById('roomMsgBox');
+    if (!box) return;
+    if (!msgs.length) {
+      box.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;">No messages yet. Say something!</div>`;
+      return;
+    }
+    box.innerHTML = msgs.map(m => {
+      const isMe = me && m.userId === me.id;
+      const avatarColors2 = ['#0070f3','#e53935','#00a854','#f5a623','#7c3aed','#0891b2'];
+      const ac2 = avatarColors2[(m.userName||'A').charCodeAt(0) % avatarColors2.length];
+      const init2 = (m.userName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return `<div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;${isMe?'flex-direction:row-reverse;':''}">
+        <div style="width:30px;height:30px;border-radius:50%;background:${ac2};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;">${init2}</div>
+        <div style="max-width:75%;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;${isMe?'text-align:right;':''}">${m.userName} · ${m.time}</div>
+          <div style="background:${isMe?'var(--accent)':'var(--bg3)'};color:${isMe?'#fff':'var(--text)'};padding:9px 12px;border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};font-size:13px;line-height:1.45;word-break:break-word;">${m.text}</div>
+        </div>
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  };
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;width:min(520px,96vw);height:min(620px,90vh);display:flex;flex-direction:column;overflow:hidden;animation:modalIn 0.2s ease;">
+      <!-- Header -->
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+            ${r.live?`<span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;animation:pulse 1.2s infinite;flex-shrink:0;"></span>`:''}
+            <span style="font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.title}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">by ${r.hostName} · ${r.topic}${r.live?' · 🔴 Live':' · Ended'}</div>
+        </div>
+        <button onclick="document.getElementById('roomChatOverlay').remove();clearInterval(window._roomPoll);"
+          style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+      </div>
+      <!-- Market context bar -->
+      <div style="padding:7px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;">
+        ${liveStocks.slice(0,4).filter(s=>s.price).map(s=>`<span style="font-size:10px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(s.chg)>=0?'var(--green)':'var(--red)'};">${s.sym} ${s.chg||'—'}</span>`).join('')}
+      </div>
+      <!-- Messages -->
+      <div id="roomMsgBox" style="flex:1;overflow-y:auto;padding:16px;"></div>
+      <!-- Input -->
+      ${r.live ? `
+      <div style="padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
+        <input id="roomMsgInput" class="form-input" placeholder="Share your analysis…" style="flex:1;margin:0;font-size:13px;"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendRoomMsg('${r.id}');}">
+        <button onclick="sendRoomMsg('${r.id}')" style="padding:0 18px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-size:13px;flex-shrink:0;">Send</button>
+      </div>` : `<div style="padding:10px 14px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text3);flex-shrink:0;">This room has ended. Messages are read-only.</div>`}
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); clearInterval(window._roomPoll); } });
+  document.body.appendChild(overlay);
+  renderMsgs();
+  // Poll for new messages every 3s
+  window._roomPoll = setInterval(renderMsgs, 3000);
+}
+
+function sendRoomMsg(roomId) {
+  const me = getUser();
+  const inputEl = document.getElementById('roomMsgInput');
+  const text = inputEl?.value.trim();
+  if (!text) return;
+  const msg = {
+    id:       Date.now(),
+    userId:   me?.id   || 'anon_' + Math.random().toString(36).slice(2,8),
+    userName: me?.name || 'Anonymous',
+    text:     text,
+    time:     new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}),
+  };
+  saveRoomMessage(roomId, msg);
+  if (inputEl) inputEl.value = '';
+  // Re-render messages
+  const msgs = getRoomMessages(roomId);
+  const box  = document.getElementById('roomMsgBox');
+  if (!box) return;
+  const me2 = me;
+  const avatarColors3 = ['#0070f3','#e53935','#00a854','#f5a623','#7c3aed','#0891b2'];
+  box.innerHTML = msgs.map(m => {
+    const isMe = me2 && m.userId === me2.id;
+    const ac3  = avatarColors3[(m.userName||'A').charCodeAt(0) % avatarColors3.length];
+    const init3= (m.userName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;${isMe?'flex-direction:row-reverse;':''}">
+      <div style="width:30px;height:30px;border-radius:50%;background:${ac3};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;">${init3}</div>
+      <div style="max-width:75%;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;${isMe?'text-align:right;':''}">${m.userName} · ${m.time}</div>
+        <div style="background:${isMe?'var(--accent)':'var(--bg3)'};color:${isMe?'#fff':'var(--text)'};padding:9px 12px;border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};font-size:13px;line-height:1.45;word-break:break-word;">${m.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
 }
 
 function startRoom() {
+  const me = getUser();
   const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
-  overlay.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(400px,92vw);text-align:center;animation:modalIn 0.2s ease;">
-    <div style="font-size:52px;margin-bottom:12px;">🎙️</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:8px;">GO LIVE</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:20px;">Share your screen and analysis live with the MarketPit community.</div>
-    <input id="roomTitle" class="form-input" placeholder="Room title e.g. Morning Nifty Analysis" style="margin-bottom:10px;">
-    <select id="roomTopic" class="form-input" style="margin-bottom:20px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);">
-      <option>Nifty 50 · Intraday</option><option>Bank Nifty · Options</option><option>Stocks · Swing</option><option>Crypto · Bitcoin</option><option>Commodities</option>
-    </select>
-    <button onclick="goLive()" style="width:100%;padding:14px;border-radius:10px;border:none;background:var(--red);color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px;">🔴 Start Broadcasting</button>
-    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;cursor:pointer;">Cancel</button>
-  </div>`;
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:3000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);';
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:28px;width:min(400px,92vw);animation:modalIn 0.2s ease;">
+      <div style="text-align:center;font-size:40px;margin-bottom:12px;">🎙️</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;text-align:center;margin-bottom:6px;letter-spacing:1.5px;">START A LIVE ROOM</div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px;">Your session will be visible to all MarketPit users on this device</div>
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:5px;">ROOM TITLE</div>
+      <input id="roomTitle" class="form-input" placeholder="e.g. Nifty levels for today" style="margin-bottom:12px;">
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:5px;">TOPIC</div>
+      <select id="roomTopic" class="form-input" style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        <option>Nifty 50 · Intraday</option>
+        <option>Bank Nifty · Options</option>
+        <option>Stocks · Swing Trading</option>
+        <option>Crypto · Bitcoin</option>
+        <option>Commodities · MCX</option>
+        <option>F&O · Futures</option>
+        <option>General Market</option>
+      </select>
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:5px;">TAGS (comma-separated)</div>
+      <input id="roomTags" class="form-input" placeholder="Nifty, Options, Levels" style="margin-bottom:20px;">
+      <button onclick="goLive()" style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--red);color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px;box-shadow:0 4px 16px rgba(229,57,53,0.3);">🔴 Go Live Now</button>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;cursor:pointer;">Cancel</button>
+    </div>`;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
 
 function goLive() {
   const title = document.getElementById('roomTitle')?.value.trim();
-  if (!title) { showToast('Please enter a room title','var(--red)'); return; }
-  document.querySelector('div[style*="fixed"][style*="2000"]')?.remove();
-  showToast('🔴 You are now live! (Coming soon: real streaming)', 'var(--red)');
+  const topic = document.getElementById('roomTopic')?.value || 'General Market';
+  const tagsRaw = document.getElementById('roomTags')?.value || '';
+  if (!title) { showToast('Please enter a room title', 'var(--red)'); return; }
+  const me = getUser();
+  const room = {
+    id:        'r_' + Date.now(),
+    hostId:    me?.id   || 'anon',
+    hostName:  me?.name || 'Anonymous',
+    title,
+    topic,
+    tags:      tagsRaw.split(',').map(t=>t.trim()).filter(Boolean).slice(0,5),
+    live:      true,
+    startedAt: new Date().toISOString(),
+  };
+  const rooms = getRooms();
+  rooms.unshift(room);
+  saveRooms(rooms);
+  // Close modal
+  document.querySelector('div[style*="position:fixed"][style*="3000"]')?.remove();
+  renderRooms();
+  // Open the chat right away
+  openRoomChat(room);
+  showToast('🔴 You are now live!', 'var(--red)');
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // WEEKLY CONTESTS
@@ -12368,6 +12618,7 @@ function injectLiveStatusBars() {
   addLiveStatusBar('page-screener',  'Live prices · Updates every 30s');
   addLiveStatusBar('page-compare',   'Live prices · Updates every 30s');
   addLiveStatusBar('page-ipo',       'Live · Auto-refreshes every 10 min');
+  addLiveStatusBar('page-options',    'NSE India live · Auto-refreshes every 60s');
   addLiveStatusBar('page-earnings',  'Live · Auto-refreshes every 5 min');
   addLiveStatusBar('page-mf',        'NAV from AMFI India');
 }
@@ -12418,6 +12669,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch live Nifty spot for options chain
   setTimeout(fetchLiveNiftySpot, 4000);
   setInterval(fetchLiveNiftySpot, 60000);
+  // Auto-refresh live option chain every 60s when on options page
+  setInterval(() => {
+    if (_activePage === 'options') {
+      const idx = document.getElementById('optIndex')?.value || 'NIFTY';
+      fetchLiveOptionsChain(idx);
+    }
+  }, 60000);
   // Alert check every 30s even when not on alerts page
   setInterval(checkAlertsFromLive, 30000);
 });
