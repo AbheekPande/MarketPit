@@ -134,7 +134,7 @@ def fetch_quote(symbol_yf):
             chg_pct = round((chg_val / prev) * 100, 2)
             up      = chg_val >= 0
             chg_str = f"+{chg_pct}%" if up else f"{chg_pct}%"
-            return {"price": f"{price:,.2f}", "chg": chg_str, "up": up, "chg_raw": chg_pct}
+            return {"price": price, "chg": chg_str, "up": up, "chg_raw": chg_pct}  # price as float
     except Exception as e:
         print(f"  Error fetching {symbol_yf}: {e}")
     return {"price": "—", "chg": "—", "up": True, "chg_raw": 0}

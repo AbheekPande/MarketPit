@@ -1840,7 +1840,7 @@ async function checkApiAndWake() {
 // ── STATIC FALLBACK DATA (shows when Railway is sleeping) ──
 // Last-known prices — updates automatically when Railway comes online
 const STATIC_STOCKS = [
-  // Fallback prices — live data fetched from Railway/Yahoo Finance on load
+  // ALL 46 NSE stocks — prices updated live from Railway/Yahoo Finance
   {sym:'RELIANCE',  name:'Reliance Industries',  price:1198, chg:'-0.72%',up:false,sector:'Energy'},
   {sym:'TCS',       name:'Tata Consultancy',      price:3389, chg:'-0.31%',up:false,sector:'IT'},
   {sym:'HDFCBANK',  name:'HDFC Bank',             price:1745, chg:'+0.28%',up:true, sector:'Banking'},
@@ -1868,40 +1868,39 @@ const STATIC_STOCKS = [
   {sym:'COALINDIA', name:'Coal India',            price:389,  chg:'+0.28%',up:true, sector:'Mining'},
   {sym:'JSWSTEEL',  name:'JSW Steel',             price:912,  chg:'-0.98%',up:false,sector:'Metal'},
   {sym:'TATASTEEL', name:'Tata Steel',            price:142,  chg:'+1.98%',up:true, sector:'Metal'},
-  {sym:'DRREDDY',   name:"Dr. Reddy's Labs",      price:6123, chg:'-0.28%',up:false,sector:'Pharma'},
   {sym:'CIPLA',     name:'Cipla Limited',         price:1534, chg:'+0.65%',up:true, sector:'Pharma'},
   {sym:'HEROMOTOCO',name:'Hero MotoCorp',         price:4234, chg:'-0.19%',up:false,sector:'Auto'},
+  {sym:'APOLLOHOSP',name:'Apollo Hospitals',      price:6712, chg:'+0.45%',up:true, sector:'Healthcare'},
+  {sym:'BAJAJFINSV',name:'Bajaj Finserv',         price:1934, chg:'+0.67%',up:true, sector:'Finance'},
+  {sym:'BPCL',      name:'BPCL',                  price:278,  chg:'+0.34%',up:true, sector:'Energy'},
+  {sym:'BRITANNIA', name:'Britannia Industries',  price:4823, chg:'+0.28%',up:true, sector:'FMCG'},
+  {sym:'DIVISLAB',  name:"Divi's Laboratories",   price:5634, chg:'+1.12%',up:true, sector:'Pharma'},
+  {sym:'DMART',     name:'DMart',                 price:3987, chg:'+0.89%',up:true, sector:'Consumer'},
+  {sym:'DRREDDY',   name:"Dr. Reddy's Labs",      price:6123, chg:'-0.28%',up:false,sector:'Pharma'},
+  {sym:'EICHERMOT', name:'Eicher Motors',         price:4567, chg:'+0.56%',up:true, sector:'Auto'},
+  {sym:'HINDALCO',  name:'Hindalco Industries',   price:623,  chg:'+0.78%',up:true, sector:'Metal'},
+  {sym:'HINDUNILVR',name:'Hindustan Unilever',    price:2234, chg:'-0.34%',up:false,sector:'FMCG'},
+  {sym:'INDUSINDBK',name:'IndusInd Bank',         price:978,  chg:'-1.23%',up:false,sector:'Banking'},
+  {sym:'IOC',       name:'Indian Oil Corp',       price:134,  chg:'+0.45%',up:true, sector:'Energy'},
+  {sym:'ITC',       name:'ITC Ltd',               price:421,  chg:'+1.23%',up:true, sector:'FMCG'},
+  {sym:'JUBLFOOD',  name:'Jubilant Foodworks',    price:634,  chg:'-0.89%',up:false,sector:'Consumer'},
+  {sym:'LTIM',      name:'LTIMindtree',           price:4978, chg:'+0.45%',up:true, sector:'IT'},
+  {sym:'M&M',       name:'Mahindra & Mahindra',   price:2678, chg:'+1.45%',up:true, sector:'Auto'},
 ];
 const STATIC_CRYPTO = [
-  // Live prices fetched via TradingView widget & Railway backend
-  {sym:'APOLLOHOSP',name:'Apollo Hospitals',    price:6712, chg:'+0.45%',up:true, sector:'Healthcare'},
-  {sym:'BAJAJFINSV',name:'Bajaj Finserv',        price:1934, chg:'+0.67%',up:true, sector:'Finance'},
-  {sym:'BPCL',      name:'BPCL',                 price:278,  chg:'+0.34%',up:true, sector:'Energy'},
-  {sym:'BRITANNIA', name:'Britannia Industries', price:4823, chg:'+0.28%',up:true, sector:'FMCG'},
-  {sym:'DIVISLAB',  name:"Divi's Laboratories",  price:5634, chg:'+1.12%',up:true, sector:'Pharma'},
-  {sym:'DMART',     name:'DMart (Avenue Super)', price:3987, chg:'+0.89%',up:true, sector:'Consumer'},
-  {sym:'DRREDDY',   name:"Dr. Reddy's Labs",     price:6123, chg:'-0.28%',up:false,sector:'Pharma'},
-  {sym:'EICHERMOT', name:'Eicher Motors',        price:4567, chg:'+0.56%',up:true, sector:'Auto'},
-  {sym:'HINDALCO',  name:'Hindalco Industries',  price:623,  chg:'+0.78%',up:true, sector:'Metal'},
-  {sym:'HINDUNILVR',name:'Hindustan Unilever',   price:2234, chg:'-0.34%',up:false,sector:'FMCG'},
-  {sym:'INDUSINDBK',name:'IndusInd Bank',        price:978,  chg:'-1.23%',up:false,sector:'Banking'},
-  {sym:'IOC',       name:'Indian Oil Corp',      price:134,  chg:'+0.45%',up:true, sector:'Energy'},
-  {sym:'ITC',       name:'ITC Ltd',              price:421,  chg:'+1.23%',up:true, sector:'FMCG'},
-  {sym:'JUBLFOOD',  name:'Jubilant Foodworks',   price:634,  chg:'-0.89%',up:false,sector:'Consumer'},
-  {sym:'LTIM',      name:'LTIMindtree',          price:4978, chg:'+0.45%',up:true, sector:'IT'},
-  {sym:'M&M',       name:'Mahindra & Mahindra',  price:2678, chg:'+1.45%',up:true, sector:'Auto'},
-  {sym:'BTC',  name:'Bitcoin',       price:81456,  chg:'-2.14%',up:false,currency:'$'},
-  {sym:'ETH',  name:'Ethereum',      price:1867,   chg:'-2.89%',up:false,currency:'$'},
-  {sym:'BNB',  name:'BNB',           price:589,    chg:'+0.34%',up:true, currency:'$'},
-  {sym:'SOL',  name:'Solana',        price:123,    chg:'-4.12%',up:false,currency:'$'},
-  {sym:'XRP',  name:'XRP',           price:2.18,   chg:'+0.89%',up:true, currency:'$'},
-  {sym:'DOGE', name:'Dogecoin',      price:0.156,  chg:'-5.23%',up:false,currency:'$'},
-  {sym:'ADA',  name:'Cardano',       price:0.678,  chg:'-2.34%',up:false,currency:'$'},
-  {sym:'MATIC',name:'Polygon',       price:0.198,  chg:'-3.12%',up:false,currency:'$'},
-  {sym:'DOT',  name:'Polkadot',      price:3.87,   chg:'-4.12%',up:false,currency:'$'},
-  {sym:'AVAX', name:'Avalanche',     price:17.34,  chg:'-3.45%',up:false,currency:'$'},
-  {sym:'LTC',  name:'Litecoin',      price:89.45,  chg:'+0.34%',up:true, currency:'$'},
-  {sym:'LINK', name:'Chainlink',     price:13.67,  chg:'+1.23%',up:true, currency:'$'},
+  // Crypto only — currency:'$' marks these as non-INR
+  {sym:'BTC',  name:'Bitcoin',    price:81456, chg:'-2.14%',up:false,currency:'$'},
+  {sym:'ETH',  name:'Ethereum',   price:1867,  chg:'-2.89%',up:false,currency:'$'},
+  {sym:'BNB',  name:'BNB',        price:589,   chg:'+0.34%',up:true, currency:'$'},
+  {sym:'SOL',  name:'Solana',     price:123,   chg:'-4.12%',up:false,currency:'$'},
+  {sym:'XRP',  name:'XRP',        price:2.18,  chg:'+0.89%',up:true, currency:'$'},
+  {sym:'DOGE', name:'Dogecoin',   price:0.156, chg:'-5.23%',up:false,currency:'$'},
+  {sym:'ADA',  name:'Cardano',    price:0.678, chg:'-2.34%',up:false,currency:'$'},
+  {sym:'MATIC',name:'Polygon',    price:0.198, chg:'-3.12%',up:false,currency:'$'},
+  {sym:'DOT',  name:'Polkadot',   price:3.87,  chg:'-4.12%',up:false,currency:'$'},
+  {sym:'AVAX', name:'Avalanche',  price:17.34, chg:'-3.45%',up:false,currency:'$'},
+  {sym:'LTC',  name:'Litecoin',   price:89.45, chg:'+0.34%',up:true, currency:'$'},
+  {sym:'LINK', name:'Chainlink',  price:13.67, chg:'+1.23%',up:true, currency:'$'},
 ];
 const STATIC_COMMODITIES = [
   // Live prices via TradingView widget
@@ -2361,26 +2360,39 @@ function updateSidebarItem(sym, price, chgStr, up, currency) {
 }
 
 function updateTickerFromLive() {
-  // Old news ticker (inside feed page) — keep for compatibility
   const track = document.getElementById('tickerTrack');
-  if (track && liveStocks.length) {
-    const items = liveStocks.slice(0,25).map(s => {
-      const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
-      const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
-      const cur = (isCrypto || isComm) ? '$' : '₹';
-      const p   = s.price || 0;
-      const fmtP = cur === '₹'
-        ? '₹' + Number(p).toLocaleString('en-IN',{maximumFractionDigits:0})
-        : '$' + Number(p).toLocaleString('en-US',{maximumFractionDigits: p < 1 ? 4 : p < 100 ? 2 : 0});
-      return `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-price ${s.up?'up':'dn'}">${fmtP}</span><span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span></span>`;
-    }).join('');
-    track.innerHTML = items + items;
-  }
-  // Also update global top ticker bar
-  buildGlobalTicker();
+  if (!track) return;
+  // Always use liveStocks (pre-populated from STATIC_STOCKS so never empty)
+  const source = (liveStocks && liveStocks.length) ? liveStocks : STATIC_STOCKS;
+  const allItems = [
+    // Indices with live fallback prices
+    {sym:'NIFTY',  price: (window._liveIndices?.['NIFTY 50']?.price)  || 22470, chg:'+0.82%', up:true},
+    {sym:'SENSEX', price: (window._liveIndices?.['SENSEX']?.price)     || 74119, chg:'+0.67%', up:true},
+    {sym:'BNIFTY', price: (window._liveIndices?.['NIFTY BANK']?.price) || 48960, chg:'+0.54%', up:true},
+    ...source.slice(0, 25),
+    ...STATIC_CRYPTO.slice(0, 5),
+    ...STATIC_COMMODITIES.slice(0, 4),
+  ];
+  const items = allItems.map(s => {
+    const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
+    const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
+    const cur  = (isCrypto || isComm) ? '$' : '₹';
+    const pRaw = typeof s.price === 'string' ? parseFloat(s.price.replace(/,/g,'')) : (s.price || 0);
+    if (!pRaw) return '';
+    const fmtP = cur === '₹'
+      ? '₹' + pRaw.toLocaleString('en-IN', {maximumFractionDigits:0})
+      : '$' + pRaw.toLocaleString('en-US', {maximumFractionDigits: pRaw < 1 ? 4 : pRaw < 100 ? 2 : 0});
+    const chgStr = String(s.chg||'').replace('+','');
+    return `<span class="ticker-item" onclick="fetchAndShowStock('${s.sym}')">
+      <span class="ticker-sym">${s.sym}</span>
+      <span class="ticker-price ${s.up?'up':'dn'}">${fmtP}</span>
+      <span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span>
+    </span>`;
+  }).filter(Boolean).join('');
+  if (items) track.innerHTML = items + items;
 }
 
-// ── GLOBAL TOP TICKER BAR ── uses liveStocks + STATIC_CRYPTO + STATIC_COMMODITIES
+
 function buildGlobalTicker() {
   const track = document.getElementById('globalTickerTrack');
   if (!track) return;
@@ -9854,20 +9866,21 @@ function injectWhatsMoving() {
 function updateWhatsMoving() {
   // Use live data if available, otherwise fall back to static
   const source = (liveStocks && liveStocks.length >= 10) ? liveStocks : STATIC_STOCKS;
-  // Only use NSE stocks (exclude crypto/commodities which have $ prefix)
-  const stocks = source.filter(s => !STATIC_CRYPTO.find(c=>c.sym===s.sym) && !STATIC_COMMODITIES.find(c=>c.sym===s.sym));
+  // Only NSE stocks — exclude anything with $ currency (crypto/commodities)
+  const stocks = source.filter(s => !s.currency || s.currency === '₹');
   const sorted = [...stocks].sort((a,b) => {
-    const av = parseFloat((a.chg||'0').replace('%',''));
-    const bv = parseFloat((b.chg||'0').replace('%',''));
+    const av = parseFloat(String(a.chg||'0').replace('%','').replace('+','')) || 0;
+    const bv = parseFloat(String(b.chg||'0').replace('%','').replace('+','')) || 0;
     return bv - av;
   });
-  const gainers = sorted.filter(s => parseFloat((s.chg||'0').replace('%','')) > 0).slice(0,3);
-  const losers  = sorted.filter(s => parseFloat((s.chg||'0').replace('%','')) < 0).slice(-3).reverse();
+  const gainers = sorted.filter(s => (parseFloat(String(s.chg||'0').replace('%','').replace('+',''))||0) > 0).slice(0,3);
+  const losers  = sorted.filter(s => (parseFloat(String(s.chg||'0').replace('%','').replace('+',''))||0) < 0).slice(-3).reverse();
 
   const renderItem = (s, isGainer) => {
-    const chgVal = parseFloat((s.chg||'0').replace('%',''));
-    const chgDisplay = (chgVal >= 0 ? '+' : '') + chgVal.toFixed(2) + '%';
-    const priceDisplay = s.price ? (s.currency === '$' ? '$' + s.price.toLocaleString() : '₹' + Number(s.price).toLocaleString('en-IN')) : '';
+    const chgVal = parseFloat(String(s.chg||'0').replace('%','').replace('+',''));
+    const chgDisplay = (chgVal >= 0 ? '+' : '') + Math.abs(chgVal).toFixed(2) + '%';
+    const pNum = typeof s.price === 'string' ? parseFloat(s.price.replace(/,/g,'')) : s.price;
+    const priceDisplay = pNum && !isNaN(pNum) ? (s.currency === '$' ? '$' + pNum.toLocaleString('en-US',{maximumFractionDigits:2}) : '₹' + pNum.toLocaleString('en-IN',{maximumFractionDigits:0})) : '';
     return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;cursor:pointer;border-bottom:1px solid var(--border);" onclick="fetchAndShowStock('${s.sym}')">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:11px;color:var(--text);letter-spacing:0.3px;">${s.sym}</div>
@@ -10145,8 +10158,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 });
 // Also try immediately in case DOM is already ready
-// Build ticker immediately — no delay needed, all data is in-memory
-buildGlobalTicker();
+// Populate ticker immediately with static data
+updateTickerFromLive();
 updateWhatsMoving();
 
 // Fetch live prices for key stocks immediately (2s delay to let DOM settle)
