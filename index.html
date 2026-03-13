@@ -1051,11 +1051,11 @@ header {
 </header>
 
 <!-- ── TRADINGVIEW TICKER TAPE — shows on all pages ── -->
-<!-- ── CUSTOM LIVE TICKER BAR — top of every page ── -->
-<div id="globalTickerBar" style="width:100%;height:40px;border-bottom:1px solid var(--border);flex-shrink:0;overflow:hidden;display:flex;align-items:center;background:var(--bg2);position:relative;">
+<!-- ── CUSTOM LIVE TICKER BAR — full width above layout ── -->
+<div id="globalTickerBar" style="width:100%;height:36px;border-bottom:1px solid var(--border);overflow:hidden;display:flex;align-items:center;background:var(--bg2);flex-shrink:0;z-index:90;">
   <div style="padding:0 10px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;letter-spacing:1px;flex-shrink:0;">● LIVE</div>
   <div style="flex:1;overflow:hidden;position:relative;">
-    <div id="globalTickerTrack" style="display:flex;align-items:center;gap:0;animation:tickerScroll 60s linear infinite;white-space:nowrap;width:max-content;">
+    <div id="globalTickerTrack" style="display:inline-flex;align-items:center;gap:0;white-space:nowrap;">
       <!-- filled by JS -->
     </div>
   </div>
@@ -2366,8 +2366,8 @@ function buildGlobalTicker() {
   // All assets to show in order: indices first, then NSE stocks, then crypto, then commodities
   const allAssets = [
     // Indices (from Railway /indices or static fallback)
-    {sym:'NIFTY 50',  name:'Nifty 50',       price:null, chg:null, up:true,  isIndex:true},
-    {sym:'BANK NIFTY',name:'Bank Nifty',      price:null, chg:null, up:true,  isIndex:true},
+    {sym:'NIFTY',     name:'Nifty 50',       price:null, chg:null, up:true,  isIndex:true},
+    {sym:'BANKNIFTY', name:'Bank Nifty',      price:null, chg:null, up:true,  isIndex:true},
     {sym:'SENSEX',    name:'Sensex',           price:null, chg:null, up:true,  isIndex:true},
     // NSE stocks from liveStocks
     ...liveStocks.slice(0, 20),
@@ -2379,9 +2379,9 @@ function buildGlobalTicker() {
 
   // Merge index data from Railway /indices response OR use static fallback prices
   const idxSrc = window._liveIndices || {};
-  const niftyL = idxSrc['NIFTY 50']   || {price:'22,470', chg:'+0.82%', up:true};
-  const bankL  = idxSrc['NIFTY BANK'] || {price:'48,960', chg:'+0.54%', up:true};
-  const sensL  = idxSrc['SENSEX']     || {price:'74,119', chg:'+0.67%', up:true};
+  const niftyL = idxSrc['NIFTY 50']   || idxSrc['NIFTY']   || {price:22470, chg:'+0.82%', up:true};
+  const bankL  = idxSrc['NIFTY BANK'] || idxSrc['BANKNIFTY']|| {price:48960, chg:'+0.54%', up:true};
+  const sensL  = idxSrc['SENSEX']     || {price:74119, chg:'+0.67%', up:true};
   allAssets[0].price = niftyL.price; allAssets[0].chg = niftyL.chg; allAssets[0].up = niftyL.up !== false;
   allAssets[1].price = bankL.price;  allAssets[1].chg = bankL.chg;  allAssets[1].up = bankL.up  !== false;
   allAssets[2].price = sensL.price;  allAssets[2].chg = sensL.chg;  allAssets[2].up = sensL.up  !== false;
@@ -2394,9 +2394,10 @@ function buildGlobalTicker() {
     const p        = s.price;
     if (!p && !s.price) return ''; // skip only if truly no price
 
+    const pNum = typeof p === 'string' ? parseFloat(p.replace(/,/g,'')) : p;
     const fmtP = cur === '₹'
-      ? '₹' + Number(p).toLocaleString('en-IN', {maximumFractionDigits: 0})
-      : '$' + Number(p).toLocaleString('en-US', {maximumFractionDigits: p < 1 ? 4 : p < 100 ? 2 : 0});
+      ? '₹' + (isNaN(pNum) ? p : pNum.toLocaleString('en-IN', {maximumFractionDigits: 0}))
+      : '$' + (isNaN(pNum) ? p : pNum.toLocaleString('en-US', {maximumFractionDigits: pNum < 1 ? 4 : pNum < 100 ? 2 : 0}));
 
     const chgVal  = s.chg || '';
     const upClass = s.up ? 'up' : 'dn';
