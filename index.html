@@ -2402,80 +2402,68 @@ async function loadSymbols() {
 }
 
 // ── RENDER TRENDING ──
-let _tvSidebarLoaded = false;
 function renderTrending(data) {
-  // Replace the stock list with TradingView Market Overview widget
-  // (called once; widget auto-updates from TradingView's own feed)
-  if (_tvSidebarLoaded) return;
-  _tvSidebarLoaded = true;
-  injectTVSidebarWidget();
-}
-
-function getTVTheme() {
-  const b = document.body;
-  if (b.classList.contains('theme-dark') || b.classList.contains('theme-dim')) return 'dark';
-  const bgClass = [...b.classList].find(c => c.startsWith('bg-'));
-  const darkBgs = ['bg-cosmos','bg-midnight','bg-neon'];
-  if (bgClass && darkBgs.includes(bgClass)) return 'dark';
-  return 'light';
-}
-
-function injectTVSidebarWidget() {
   const el = document.getElementById('trendList');
   if (!el) return;
-  const theme = getTVTheme();
+  if (!data || !data.length) return;
 
-  const cfg = {
-    colorTheme: theme,
-    dateRange: "1D",
-    showChart: false,
-    locale: "en",
-    width: "100%",
-    height: 390,
-    largeChartUrl: "",
-    isTransparent: true,
-    showSymbolLogo: false,
-    showFloatingTooltip: true,
-    tabs: [
-      { title:"NSE", symbols:[
-        {s:"NSE:RELIANCE",d:"Reliance"},
-        {s:"NSE:TCS",d:"TCS"},
-        {s:"NSE:HDFCBANK",d:"HDFC Bank"},
-        {s:"NSE:INFY",d:"Infosys"},
-        {s:"NSE:SBIN",d:"SBI"},
-        {s:"NSE:ICICIBANK",d:"ICICI Bank"},
-        {s:"NSE:WIPRO",d:"Wipro"},
-        {s:"NSE:BAJFINANCE",d:"Bajaj Fin"},
-        {s:"NSE:LT",d:"L&T"},
-        {s:"NSE:TATAMOTORS",d:"Tata Motors"},
-        {s:"NSE:HCLTECH",d:"HCL Tech"},
-        {s:"NSE:AXISBANK",d:"Axis Bank"},
-      ]},
-      { title:"Crypto", symbols:[
-        {s:"BINANCE:BTCUSDT",d:"Bitcoin"},
-        {s:"BINANCE:ETHUSDT",d:"Ethereum"},
-        {s:"BINANCE:BNBUSDT",d:"BNB"},
-        {s:"BINANCE:SOLUSDT",d:"Solana"},
-        {s:"BINANCE:XRPUSDT",d:"XRP"},
-        {s:"BINANCE:DOGEUSDT",d:"Dogecoin"},
-      ]},
-      { title:"Commodities", symbols:[
-        {s:"COMEX:GC1!",d:"Gold"},
-        {s:"COMEX:SI1!",d:"Silver"},
-        {s:"NYMEX:CL1!",d:"Crude Oil"},
-        {s:"ICEEUR:B1!",d:"Brent Crude"},
-        {s:"NYMEX:NG1!",d:"Natural Gas"},
-      ]},
-    ]
-  };
+  // Tab state
+  if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  el.innerHTML = '<div class="tradingview-widget-container" id="tvSidebarInner"><div class="tradingview-widget-container__widget"></div></div>';
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
-  script.async = true;
-  script.textContent = JSON.stringify(cfg);
-  el.querySelector('.tradingview-widget-container__widget').appendChild(script);
+  const CRYPTO_SYMS = ['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA'];
+  const COMM_SYMS   = ['GOLD','SILVER','CRUDE','BRENT','NATURALGAS'];
+
+  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.includes(s.sym) && !COMM_SYMS.includes(s.sym)).slice(0,12);
+  const cryptoList = (typeof STATIC_CRYPTO !== 'undefined' ? STATIC_CRYPTO : []).slice(0,6);
+  const commList   = (typeof STATIC_COMMODITIES !== 'undefined' ? STATIC_COMMODITIES : []).slice(0,5);
+
+  function stockRow(s, cur) {
+    const price = s.price ? Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0}) : '—';
+    const chg   = s.chg || '';
+    const up    = s.up !== undefined ? s.up : (chg && !chg.startsWith('-'));
+    const color = up ? 'var(--green)' : 'var(--red)';
+    const arrow = up ? '▲' : '▼';
+    return `<div class="stock-item" onclick="openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;">
+      <div style="min-width:0;">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.sym}</div>
+        <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">${s.name||''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${cur}${price}</div>
+        <div style="font-size:10px;font-weight:700;color:${color};">${chg ? arrow+' '+chg : '—'}</div>
+      </div>
+    </div>`;
+  }
+
+  function renderTab(tab) {
+    renderTrending._tab = tab;
+    let rows = '';
+    if (tab === 'nse')    rows = nseStocks.map(s => stockRow(s,'₹')).join('');
+    if (tab === 'crypto') rows = cryptoList.map(s => stockRow(s,'$')).join('');
+    if (tab === 'comm')   rows = commList.map(s => stockRow(s,'$')).join('');
+    if (!rows) rows = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading data…</div>`;
+    document.getElementById('trendListRows').innerHTML = rows;
+    document.querySelectorAll('.tl-tab').forEach(b => {
+      b.style.color = b.dataset.tab === tab ? 'var(--accent)' : 'var(--text3)';
+      b.style.borderBottom = b.dataset.tab === tab ? '2px solid var(--accent)' : '2px solid transparent';
+    });
+  }
+
+  el.innerHTML = `
+    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0;">
+      <button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab('nse')"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">NSE</button>
+      <button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab('crypto')" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">CRYPTO</button>
+      <button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab('comm')"   style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">COMMOD</button>
+    </div>
+    <div id="trendListRows" style="overflow-y:auto;max-height:360px;"></div>`;
+
+  renderTrending._renderTab = renderTab;
+  renderTab(renderTrending._tab);
+
+  // Update liveTs label
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+  const liveEl = document.getElementById('liveTs');
+  if (liveEl) { liveEl.textContent = '● ' + ts; liveEl.style.color='var(--green)'; }
 }
 
 // ── SEARCH ──
@@ -10276,8 +10264,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('marketpit-theme-change', () => {
     const wm = document.getElementById('whatsMoving');
     if (wm) { wm.remove(); }
-    const tvSb = document.getElementById('tvSidebarWidget');
-    if (tvSb) { tvSb.closest('#trendList').innerHTML = '<div style="padding:10px;text-align:center;color:var(--text3);font-size:11px;">Reload to update widget theme</div>'; }
+    // Re-render custom trending list on theme change
+    if (liveStocks && liveStocks.length) renderTrending(liveStocks.slice(0,6));
     setTimeout(injectWhatsMoving, 200);
   });
     injectScreenerPresets();
