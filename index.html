@@ -525,6 +525,34 @@ header {
   padding-left: 20px;
 }
 .news-ticker-track:hover { animation-play-state: paused; }
+
+/* ── Global top ticker bar ── */
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+#globalTickerTrack { animation: tickerScroll 70s linear infinite; }
+#globalTickerTrack:hover { animation-play-state: paused; }
+.g-tick-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px;
+  height: 40px;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.g-tick-item:hover { background: var(--bg3); }
+.g-tick-sym  { font-size: 11px; font-weight: 800; color: var(--text); font-family: 'Space Mono', monospace; letter-spacing: 0.3px; }
+.g-tick-name { font-size: 9px; color: var(--text3); }
+.g-tick-price{ font-size: 11px; font-weight: 700; }
+.g-tick-chg  { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; }
+.g-tick-chg.up  { color: var(--green); background: rgba(0,168,84,0.1); }
+.g-tick-chg.dn  { color: var(--red);   background: rgba(229,57,53,0.1); }
+.g-tick-price.up { color: var(--green); }
+.g-tick-price.dn { color: var(--red);   }
 @keyframes tickerScroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -1020,6 +1048,17 @@ header {
   </div>
 </header>
 
+<!-- ── TRADINGVIEW TICKER TAPE — shows on all pages ── -->
+<!-- ── CUSTOM LIVE TICKER BAR — top of every page ── -->
+<div id="globalTickerBar" style="width:100%;height:40px;border-bottom:1px solid var(--border);flex-shrink:0;overflow:hidden;display:flex;align-items:center;background:var(--bg2);position:relative;">
+  <div style="padding:0 10px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;letter-spacing:1px;flex-shrink:0;">● LIVE</div>
+  <div style="flex:1;overflow:hidden;position:relative;">
+    <div id="globalTickerTrack" style="display:flex;align-items:center;gap:0;animation:tickerScroll 60s linear infinite;white-space:nowrap;width:max-content;">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
 <!-- LAYOUT -->
 <div class="layout">
 
@@ -1103,45 +1142,10 @@ header {
       <!-- Corner decorations -->
       <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;">NSE · BSE · CRYPTO</div>
       <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;">● LIVE</div>
-      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;">LIVE DATA · TRADINGVIEW</div>
+      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;">NSE · BSE · CRYPTO · COMMODITIES</div>
     </div>
 
-    <!-- TradingView Ticker Tape — live prices for all stocks/crypto/commodities -->
-    <div style="margin:8px 12px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);">
-      <div class="tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-          "symbols": [
-            {"proName":"NSE:NIFTY","title":"NIFTY 50"},
-            {"proName":"NSE:BANKNIFTY","title":"BANK NIFTY"},
-            {"proName":"BSE:SENSEX","title":"SENSEX"},
-            {"proName":"NSE:RELIANCE","title":"RELIANCE"},
-            {"proName":"NSE:TCS","title":"TCS"},
-            {"proName":"NSE:HDFCBANK","title":"HDFC BANK"},
-            {"proName":"NSE:INFY","title":"INFOSYS"},
-            {"proName":"NSE:SBIN","title":"SBI"},
-            {"proName":"NSE:ICICIBANK","title":"ICICI BANK"},
-            {"proName":"BINANCE:BTCUSDT","title":"BITCOIN"},
-            {"proName":"BINANCE:ETHUSDT","title":"ETHEREUM"},
-            {"proName":"BINANCE:SOLUSDT","title":"SOLANA"},
-            {"proName":"COMEX:GC1!","title":"GOLD"},
-            {"proName":"NYMEX:CL1!","title":"CRUDE OIL"},
-            {"proName":"NSE:TATAMOTORS","title":"TATA MOTORS"},
-            {"proName":"NSE:WIPRO","title":"WIPRO"},
-            {"proName":"NSE:BAJFINANCE","title":"BAJAJ FIN"},
-            {"proName":"NSE:LT","title":"L&T"},
-            {"proName":"NSE:MARUTI","title":"MARUTI"}
-          ],
-          "showSymbolLogo": true,
-          "isTransparent": false,
-          "displayMode": "adaptive",
-          "colorTheme": "light",
-          "locale": "en"
-        }
-        </script>
-      </div>
-    </div>
+
 
     <div class="feed-filters">
       <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
@@ -2266,19 +2270,87 @@ function updateSidebarItem(sym, price, chgStr, up, currency) {
 }
 
 function updateTickerFromLive() {
+  // Old news ticker (inside feed page) — keep for compatibility
   const track = document.getElementById('tickerTrack');
-  if (!track || !liveStocks.length) return;
-  const items = liveStocks.slice(0,25).map(s => {
+  if (track && liveStocks.length) {
+    const items = liveStocks.slice(0,25).map(s => {
+      const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
+      const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
+      const cur = (isCrypto || isComm) ? '$' : '₹';
+      const p   = s.price || 0;
+      const fmtP = cur === '₹'
+        ? '₹' + Number(p).toLocaleString('en-IN',{maximumFractionDigits:0})
+        : '$' + Number(p).toLocaleString('en-US',{maximumFractionDigits: p < 1 ? 4 : p < 100 ? 2 : 0});
+      return `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-price ${s.up?'up':'dn'}">${fmtP}</span><span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span></span>`;
+    }).join('');
+    track.innerHTML = items + items;
+  }
+  // Also update global top ticker bar
+  buildGlobalTicker();
+}
+
+// ── GLOBAL TOP TICKER BAR ── uses liveStocks + STATIC_CRYPTO + STATIC_COMMODITIES
+function buildGlobalTicker() {
+  const track = document.getElementById('globalTickerTrack');
+  if (!track) return;
+
+  // All assets to show in order: indices first, then NSE stocks, then crypto, then commodities
+  const allAssets = [
+    // Indices (from Railway /indices or static fallback)
+    {sym:'NIFTY 50',  name:'Nifty 50',       price:null, chg:null, up:true,  isIndex:true},
+    {sym:'BANK NIFTY',name:'Bank Nifty',      price:null, chg:null, up:true,  isIndex:true},
+    {sym:'SENSEX',    name:'Sensex',           price:null, chg:null, up:true,  isIndex:true},
+    // NSE stocks from liveStocks
+    ...liveStocks.slice(0, 20),
+    // Crypto from STATIC_CRYPTO (updated by CoinGecko)
+    ...STATIC_CRYPTO.slice(0, 8),
+    // Commodities
+    ...STATIC_COMMODITIES.slice(0, 5),
+  ];
+
+  // Merge index data from liveStocks if available
+  const niftyLive = liveStocks.find(s => s.sym === 'NIFTY' || s.sym === 'NIFTY50');
+  const bankLive  = liveStocks.find(s => s.sym === 'BANKNIFTY');
+  if (niftyLive) { allAssets[0].price = niftyLive.price; allAssets[0].chg = niftyLive.chg; allAssets[0].up = niftyLive.up; }
+  if (bankLive)  { allAssets[1].price = bankLive.price;  allAssets[1].chg = bankLive.chg;  allAssets[1].up = bankLive.up; }
+
+  const makeItem = (s) => {
     const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
     const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
-    const cur = (isCrypto || isComm) ? '$' : '₹';
-    const p   = s.price || 0;
+    const isIndex  = s.isIndex;
+    const cur      = (isCrypto || isComm) ? '$' : '₹';
+    const p        = s.price;
+    if (!p) return ''; // skip if no price yet
+
     const fmtP = cur === '₹'
-      ? '₹' + Number(p).toLocaleString('en-IN',{maximumFractionDigits:0})
-      : '$' + Number(p).toLocaleString('en-US',{maximumFractionDigits: p < 1 ? 4 : p < 100 ? 2 : 0});
-    return `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-price ${s.up?'up':'dn'}">${fmtP}</span><span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span></span>`;
-  }).join('');
-  track.innerHTML = items + items; // double for seamless scroll
+      ? '₹' + Number(p).toLocaleString('en-IN', {maximumFractionDigits: 0})
+      : '$' + Number(p).toLocaleString('en-US', {maximumFractionDigits: p < 1 ? 4 : p < 100 ? 2 : 0});
+
+    const chgVal  = s.chg || '';
+    const upClass = s.up ? 'up' : 'dn';
+    const arrow   = s.up ? '▲' : '▼';
+    const sym     = s.sym || s.name;
+    const name    = s.name || '';
+
+    return `<div class="g-tick-item" onclick="fetchAndShowStock('${sym.replace(/\s/g,'_')}')">
+      <div style="display:flex;flex-direction:column;gap:1px;">
+        <span class="g-tick-sym">${isIndex ? sym : sym}</span>
+        ${name && name !== sym ? `<span class="g-tick-name">${name}</span>` : ''}
+      </div>
+      <span class="g-tick-price ${upClass}">${fmtP}</span>
+      <span class="g-tick-chg ${upClass}">${arrow} ${chgVal}</span>
+    </div>`;
+  };
+
+  const html = allAssets.map(makeItem).filter(Boolean).join('');
+  if (!html) return;
+  // Double for seamless infinite scroll
+  track.innerHTML = html + html;
+
+  // Adjust animation speed based on item count
+  const count = allAssets.filter(s => s.price).length;
+  const speed = Math.max(40, count * 3);
+  track.style.animationDuration = speed + 's';
 }
 
 function showApiBanner(state) {
@@ -4501,6 +4573,12 @@ const BG_THEMES = [
 ];
 
 function applySettings(s) {
+  // Sync TradingView ticker tape theme
+  try {
+    const isDark = s.theme === 'dark' || s.theme === 'dim';
+    const ticker = document.getElementById('tvTickerGlobal');
+    if (ticker) ticker.style.background = isDark ? 'rgba(0,0,0,0.3)' : 'transparent';
+  } catch(e) {}
   const body = document.body;
   // Theme — light is default (no class), dim and dark get a class
   body.classList.remove('theme-dim','theme-dark');
@@ -5019,6 +5097,7 @@ function switchTabMobile(btn, page) {
 
 function switchTab(btn, page) {
   navPush({ type: 'tab', page });
+  _activePage = page; // track active page for live updates
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   // Smooth fade-in for new page
@@ -9894,38 +9973,23 @@ function updateTickerTape() {
 function injectWhatsMoving() {
   const sidebar = document.querySelector('.right-sidebar');
   if (!sidebar || document.getElementById('whatsMoving')) return;
-  const theme = getTVTheme();
 
   const widget = document.createElement('div');
   widget.id = 'whatsMoving';
-  widget.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;flex-shrink:0;';
+  widget.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;flex-shrink:0;';
   widget.innerHTML = `
-    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;padding:10px 14px 6px;">🔥 WHAT'S MOVING</div>
-    <div class="tradingview-widget-container" id="tvHotlistWidget">
-      <div class="tradingview-widget-container__widget"></div>
-    </div>`;
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+      <span>🔥 WHAT'S MOVING</span>
+      <span id="wmLiveTag" style="font-size:8px;color:var(--green);letter-spacing:1px;">● LIVE</span>
+    </div>
+    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:6px;">TOP GAINERS</div>
+    <div id="wmGainers"></div>
+    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin:10px 0 6px;border-top:1px solid var(--border);padding-top:8px;">TOP LOSERS</div>
+    <div id="wmLosers"></div>`;
 
   sidebar.insertBefore(widget, sidebar.firstChild);
-
-  // Inject TradingView Hotlists script dynamically so theme is applied correctly
-  const cfg = {
-    colorTheme: theme,
-    dateRange: "1D",
-    exchange: "NSE",
-    showChart: false,
-    locale: "en",
-    width: "100%",
-    height: 300,
-    isTransparent: true,
-    showSymbolLogo: false,
-    showFloatingTooltip: true,
-  };
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js';
-  script.async = true;
-  script.innerHTML = JSON.stringify(cfg);
-  widget.querySelector('.tradingview-widget-container__widget').appendChild(script);
+  updateWhatsMoving();
+  setInterval(updateWhatsMoving, 30000);
 }
 
 function updateWhatsMoving() {
@@ -10502,23 +10566,15 @@ const TV_TABS = {
     widget: 'market-overview',
     config: {
       tabs: [
-        { title:'Indian Indices', symbols:[
-          [{s:'NSE:NIFTY',d:'NIFTY 50'},{s:'NSE:BANKNIFTY',d:'BANK NIFTY'},{s:'BSE:SENSEX',d:'SENSEX'},{s:'NSE:CNXFINANCE',d:'NIFTY FIN SVC'},{s:'NSE:CNXIT',d:'NIFTY IT'}]
-        ]},
         { title:'Global Indices', symbols:[
-          [{s:'FOREXCOM:SPXUSD',d:'S&P 500'},{s:'FOREXCOM:NSXUSD',d:'NASDAQ'},{s:'FOREXCOM:DJI',d:'DOW JONES'},{s:'SPREADEX:FTSE',d:'FTSE 100'},{s:'EUREX:FDAX1!',d:'DAX'},{s:'INDEX:NKY',d:'NIKKEI'}]
+          [{s:'FOREXCOM:SPXUSD',d:'S&P 500'},{s:'FOREXCOM:NSXUSD',d:'NASDAQ 100'},{s:'FOREXCOM:DJI',d:'DOW JONES'},{s:'SPREADEX:FTSE',d:'FTSE 100'},{s:'EUREX:FDAX1!',d:'DAX'},{s:'INDEX:NKY',d:'NIKKEI 225'},{s:'INDEX:HSI',d:'HANG SENG'},{s:'SGXNIFTY:SGX_IN',d:'SGX NIFTY'}]
         ]},
       ]
     }
   },
   stocks: {
-    title: '🏦 NSE Stocks — Live',
-    widget: 'market-overview',
-    config: {
-      tabs:[{ title:'NSE Top Stocks', symbols:[
-        [{s:'NSE:RELIANCE',d:'RELIANCE'},{s:'NSE:TCS',d:'TCS'},{s:'NSE:HDFCBANK',d:'HDFC BANK'},{s:'NSE:INFY',d:'INFOSYS'},{s:'NSE:SBIN',d:'SBI'},{s:'NSE:ICICIBANK',d:'ICICI BANK'},{s:'NSE:WIPRO',d:'WIPRO'},{s:'NSE:BAJFINANCE',d:'BAJAJ FIN'},{s:'NSE:LT',d:'L&T'},{s:'NSE:TATAMOTORS',d:'TATA MOTORS'},{s:'NSE:HCLTECH',d:'HCL TECH'},{s:'NSE:AXISBANK',d:'AXIS BANK'},{s:'NSE:KOTAKBANK',d:'KOTAK BANK'},{s:'NSE:MARUTI',d:'MARUTI'},{s:'NSE:SUNPHARMA',d:'SUN PHARMA'},{s:'NSE:TITAN',d:'TITAN'},{s:'NSE:ADANIENT',d:'ADANI ENT'},{s:'NSE:NESTLEIND',d:'NESTLE'},{s:'NSE:ASIANPAINT',d:'ASIAN PAINTS'},{s:'NSE:TECHM',d:'TECH M'}]
-      ]}]
-    }
+    title: '🏦 NSE Stocks — Live Prices',
+    widget: 'custom', // uses our own data, not TradingView
   },
   crypto: {
     title: '₿ Crypto — Live',
@@ -10589,6 +10645,29 @@ function renderTVBody(tab) {
   const theme = isDark ? 'dark' : 'light';
 
   setTimeout(() => {
+    if (tab === 'stocks') {
+      // NSE stocks — use our own live data (TradingView can't show NSE for non-Indian IPs)
+      const src = (liveStocks && liveStocks.length >= 10) ? liveStocks : STATIC_STOCKS;
+      const rows = src.slice(0, 30).map(s => {
+        const chgVal = parseFloat((s.chg||'0').replace('%',''));
+        const up = chgVal >= 0;
+        const chgStr = (up ? '+' : '') + chgVal.toFixed(2) + '%';
+        const priceStr = '₹' + Number(s.price||0).toLocaleString('en-IN', {maximumFractionDigits:0});
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" onclick="fetchAndShowStock('${s.sym}')">
+          <div>
+            <div style="font-weight:800;font-size:13px;letter-spacing:0.3px;">${s.sym}</div>
+            <div style="font-size:11px;color:var(--text3);">${s.name||s.sym}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700;font-size:13px;color:${up?'var(--green)':'var(--red)'};">${priceStr}</div>
+            <div style="font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:${up?'rgba(0,168,84,0.1)':'rgba(229,57,53,0.1)'};color:${up?'var(--green)':'var(--red)'};">${chgStr}</div>
+          </div>
+        </div>`;
+      }).join('');
+      const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+      body.innerHTML = `<div style="padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;display:flex;justify-content:space-between;"><span>NSE TOP STOCKS · LIVE PRICES</span><span style="color:var(--green);">● Updated ${ts} IST</span></div>${rows}`;
+      return;
+    }
     if (tab === 'chart') {
       body.innerHTML = `<div id="tv_chart_wrap" style="height:520px;"></div>`;
       const s = document.createElement('script');
@@ -10661,6 +10740,244 @@ function renderTVPage() {
     btn.style.color = 'var(--accent)';
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// LIVE UPDATE ENGINE — refreshes visible tab every N seconds
+// ══════════════════════════════════════════════════════════════
+
+let _activePage = 'feed'; // tracks which tab is open
+
+// News auto-refresh: re-fetch every 5 minutes when news tab is open
+let _newsRefreshTimer = null;
+function startNewsRefresh() {
+  stopNewsRefresh();
+  _newsRefreshTimer = setInterval(() => {
+    if (_activePage !== 'news') return;
+    const activeCatBtn = document.querySelector('#newsCatBtns button[style*="var(--accent)"]');
+    const cat = activeCatBtn?.id?.replace('nc_','') || 'markets';
+    const btn = document.getElementById('nc_' + cat);
+    if (btn) {
+      delete _newsLoaded[cat]; // force re-fetch
+      loadNews(cat, btn);
+    }
+  }, 5 * 60 * 1000); // every 5 minutes
+}
+function stopNewsRefresh() {
+  if (_newsRefreshTimer) { clearInterval(_newsRefreshTimer); _newsRefreshTimer = null; }
+}
+
+// FII/DII: fetch from Railway every hour, refresh DOM when tab is open
+let _fiiCache = null;
+let _fiiCacheTime = 0;
+async function fetchFiiFromRailway() {
+  try {
+    const res = await fetch(`${API_BASE}/fii`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('no fii endpoint');
+    const json = await res.json();
+    if (json.data && json.data.length) {
+      _fiiCache = json.data;
+      _fiiCacheTime = Date.now();
+      return json.data;
+    }
+  } catch(e) {}
+  return null; // Railway doesn't have FII endpoint yet — keep static data
+}
+
+// Heatmap: rebuilds from liveStocks when live data updates
+function refreshHeatmapFromLive() {
+  if (_activePage !== 'heatmap') return;
+  // Update HEATMAP_DATA with live % changes from liveStocks
+  let updated = 0;
+  HEATMAP_DATA.forEach(sector => {
+    sector.stocks.forEach(cell => {
+      const live = liveStocks.find(s => s.sym === cell.sym);
+      if (live && live.chg) {
+        const pct = parseFloat(live.chg);
+        if (!isNaN(pct)) { cell.chg = parseFloat(pct.toFixed(2)); updated++; }
+      }
+    });
+  });
+  if (updated > 0) renderHeatmap();
+}
+
+// Portfolio: update current prices from liveStocks
+function refreshPortfolioFromLive() {
+  if (_activePage !== 'portfolio') return;
+  renderPortfolio(); // re-render uses liveStocks prices
+}
+
+// Alerts: check if any alert is now triggered
+function checkAlertsFromLive() {
+  const alerts = getAlerts();
+  let fired = false;
+  alerts.forEach(a => {
+    const live = liveStocks.find(s => s.sym === a.sym)
+              || STATIC_CRYPTO.find(s => s.sym === a.sym)
+              || STATIC_COMMODITIES.find(s => s.sym === a.sym);
+    const ltp = live?.price;
+    if (!ltp) return;
+    const triggered = a.condition === 'above' ? ltp >= a.target : ltp <= a.target;
+    if (triggered && !a._notified) {
+      a._notified = true;
+      fired = true;
+      // Show notification
+      showAlertFired(a.sym, a.condition, a.target, ltp);
+    }
+  });
+  if (_activePage === 'alerts') renderAlerts();
+}
+
+function showAlertFired(sym, condition, target, ltp) {
+  let notif = document.getElementById('alertNotifBanner');
+  if (!notif) {
+    notif = document.createElement('div');
+    notif.id = 'alertNotifBanner';
+    notif.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#ff9900;color:#000;padding:12px 24px;border-radius:12px;font-weight:800;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);cursor:pointer;';
+    notif.onclick = () => { notif.style.display='none'; switchTab(document.querySelector('.nav-tab.active'), 'alerts'); };
+    document.body.appendChild(notif);
+  }
+  const cur = ltp < 1000 ? '$' : '₹';
+  notif.innerHTML = `🔔 ALERT: ${sym} hit ${condition === 'above' ? '▲' : '▼'} ${cur}${target} — now ${cur}${ltp}`;
+  notif.style.display = 'block';
+  setTimeout(() => { if (notif) notif.style.display = 'none'; }, 8000);
+}
+
+// Paper Trade: update open P&L from liveStocks
+function refreshPaperTradeFromLive() {
+  if (_activePage !== 'paper') return;
+  const paper = getPaper();
+  if (!paper.positions || !paper.positions.length) return;
+  let changed = false;
+  paper.positions.forEach(pos => {
+    const live = liveStocks.find(s => s.sym === pos.sym)
+              || STATIC_CRYPTO.find(s => s.sym === pos.sym)
+              || STATIC_COMMODITIES.find(s => s.sym === pos.sym);
+    if (live?.price && live.price !== pos.ltp) {
+      pos.ltp = live.price;
+      changed = true;
+    }
+  });
+  if (changed) {
+    savePaper(paper);
+    renderPaperTrade();
+  }
+}
+
+// Watchlist: refresh prices using live data
+function refreshWatchlistFromLive() {
+  if (_activePage !== 'watchlist') return;
+  liveStocks.forEach(s => {
+    if (_wlPriceCache[s.sym]) {
+      _wlPriceCache[s.sym] = { price: s.price, chg: s.chg, up: s.up };
+    }
+  });
+  // Update DOM directly for items already showing
+  liveStocks.forEach(s => {
+    const priceEl = document.querySelector(`[data-wl-sym="${s.sym}"] .wl-price-val`);
+    const chgEl   = document.querySelector(`[data-wl-sym="${s.sym}"] .wl-chg`);
+    if (priceEl) {
+      const isCrypto = !!STATIC_CRYPTO.find(c => c.sym === s.sym);
+      const cur = isCrypto ? '$' : '₹';
+      priceEl.textContent = cur + Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0});
+    }
+    if (chgEl) {
+      chgEl.textContent = s.chg || '';
+      chgEl.style.color = s.up ? 'var(--green)' : 'var(--red)';
+    }
+  });
+}
+
+// Master refresh: called every time liveStocks updates
+function onLiveDataUpdate() {
+  refreshHeatmapFromLive();
+  refreshPortfolioFromLive();
+  checkAlertsFromLive();
+  refreshPaperTradeFromLive();
+  refreshWatchlistFromLive();
+  updateWhatsMoving();
+}
+
+// Add per-page live status bar — shows last updated time on each tab
+function addLiveStatusBar(pageId, label) {
+  const page = document.getElementById(pageId);
+  if (!page || document.getElementById(`live-bar-${pageId}`)) return;
+  const bar = document.createElement('div');
+  bar.id = `live-bar-${pageId}`;
+  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0;';
+  bar.innerHTML = `
+    <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">${label}</span>
+    <span id="live-ts-${pageId}" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--green);">● LIVE</span>`;
+  // Insert after the first child (header)
+  const header = page.querySelector('div');
+  if (header && header.nextSibling) {
+    page.insertBefore(bar, header.nextSibling);
+  }
+}
+
+// FII live fetch — runs once on page load and every 60 min
+async function refreshFiiData() {
+  const data = await fetchFiiFromRailway();
+  // If Railway returns data, update FII_DATA and re-render if on fii tab
+  if (data) {
+    // data comes as [{date, fii_net, dii_net}] from Railway
+    FII_DATA.splice(0, FII_DATA.length, ...data.map(d => ({
+      date: d.date || d.Date,
+      fii: d.fii_net || d.fii || 0,
+      dii: d.dii_net || d.dii || 0,
+      net: (d.fii_net || d.fii || 0) + (d.dii_net || d.dii || 0),
+    })));
+    if (_activePage === 'fii') renderFii();
+  }
+  if (_activePage === 'fii') {
+    const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    const el = document.getElementById('live-ts-page-fii');
+    if (el) el.textContent = '● Updated ' + ts;
+  }
+}
+
+// News live status
+function updateNewsLiveStatus() {
+  const el = document.getElementById('live-ts-page-news');
+  if (!el) return;
+  const cat = Object.keys(_newsLoaded)[0];
+  if (cat && _newsLoaded[cat]) {
+    const ts = new Date(_newsLoaded[cat].ts).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',hour12:true});
+    el.textContent = '● Fetched ' + ts;
+  }
+}
+
+// Inject live status bars on page load (after DOM is ready)
+function injectLiveStatusBars() {
+  addLiveStatusBar('page-news',      'Auto-refreshes every 5 min');
+  addLiveStatusBar('page-fii',       'FII/DII data from NSE India');
+  addLiveStatusBar('page-heatmap',   'Updates from live stock prices');
+  addLiveStatusBar('page-portfolio', 'P&L updates with live prices');
+  addLiveStatusBar('page-alerts',    'Checked every 30 seconds');
+  addLiveStatusBar('page-watchlist', 'Prices refresh every 30 seconds');
+  addLiveStatusBar('page-paper',     'P&L updates with live prices');
+  addLiveStatusBar('page-ipo',       'Data updated weekly');
+  addLiveStatusBar('page-mf',        'NAV data from AMFI India');
+}
+
+// ── Wire up onLiveDataUpdate to fire after fetchLiveData succeeds ──
+// Patch fetchLiveData to call onLiveDataUpdate at the end of successful fetches
+const _origFetchLiveData = fetchLiveData;
+async function fetchLiveData() {
+  await _origFetchLiveData();
+  onLiveDataUpdate();
+}
+
+// Start everything once DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(injectLiveStatusBars, 1000);
+  startNewsRefresh();
+  // Fetch FII data from Railway on load
+  setTimeout(refreshFiiData, 3000);
+  // Refresh FII every hour
+  setInterval(refreshFiiData, 60 * 60 * 1000);
+  // Alert check every 30s even when not on alerts page
+  setInterval(checkAlertsFromLive, 30000);
+});
 </script>
 
 
