@@ -2241,7 +2241,7 @@ async function fetchLiveData() {
     const liveMap = {};
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
     const railwaySyms = Object.keys(liveMap);
-    console.log(`[Railway] Got ${railwaySyms.length} stocks:`, railwaySyms.join(', '));
+    console.log(`[Railway] Got ${railwaySyms.length} assets:`, railwaySyms.join(', '));
     // Update ALL liveStocks entries (stocks + crypto + commodities) with Railway data
     liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
     window._hasLiveData = true;
@@ -2252,6 +2252,22 @@ async function fetchLiveData() {
       window._liveIndices = {};
       json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
       console.log('[Railway] Indices:', json.indices.map(i=>i.sym+' '+i.price).join(', '));
+    }
+    // Merge commodities + crypto returned by Railway into liveStocks
+    if (json.commodities && json.commodities.length) {
+      json.commodities.forEach(c => {
+        if (!c.price || c.price === '—') return;
+        const chgNum = typeof c.chg === 'number' ? c.chg : parseFloat((c.chg||'0').replace('%','').replace('+',''));
+        const chgStr = (chgNum >= 0 ? '+' : '') + Math.abs(chgNum).toFixed(2) + '%';
+        const up = chgNum >= 0;
+        const existing = liveStocks.find(s => s.sym === c.sym);
+        if (existing) {
+          existing.price = c.price; existing.chg = chgStr; existing.up = up; existing._live = true;
+        } else {
+          liveStocks.push({ sym: c.sym, name: c.name, price: c.price, chg: chgStr, up, currency: '$', _live: true });
+        }
+      });
+      console.log('[Railway] Commodities/Crypto:', json.commodities.map(c=>c.sym+' '+c.price).join(', '));
     }
     renderTrending(liveStocks.slice(0,6));
     updateTickerFromLive();
@@ -2331,23 +2347,42 @@ async function fetchYFDirect() {
     await new Promise(r => setTimeout(r, 300));
   }
 
-  // ── 3. Also fetch commodity prices via Yahoo Finance ──
+  // ── 3. Fetch ALL commodity prices via Yahoo Finance ──
   const commodities = [
-    {sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},
-    {sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},
+    {sym:'GOLD',      yf:'GC=F' },
+    {sym:'SILVER',    yf:'SI=F' },
+    {sym:'CRUDE',     yf:'CL=F' },
+    {sym:'BRENT',     yf:'BZ=F' },
+    {sym:'NATURALGAS',yf:'NG=F' },
+    {sym:'COPPER',    yf:'HG=F' },
+    {sym:'PLATINUM',  yf:'PL=F' },
+    {sym:'WHEAT',     yf:'ZW=F' },
+    {sym:'CORN',      yf:'ZC=F' },
   ];
   await Promise.allSettled(commodities.map(async item => {
+    let price, chg, up;
+    // Try Yahoo Finance first
     try {
-      const { price, chg, up } = await yfFetch(item.yf);
-      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
-      const existing = liveStocks.find(s => s.sym === item.sym);
-      if (existing) {
-        existing.price = price; existing.chg = chgStr; existing.up = up;
-      } else {
-        const staticEntry = STATIC_COMMODITIES.find(s => s.sym === item.sym);
-        liveStocks.push({ ...(staticEntry||{sym:item.sym,name:item.sym,currency:'$'}), price, chg: chgStr, up });
-      }
-    } catch(e) {}
+      const r = await yfFetch(item.yf);
+      price = r.price; chg = r.chg; up = r.up;
+    } catch(e) {
+      // Try Railway /api/quote as fallback
+      try {
+        const r2 = await fetch(`${API_BASE}/quote/${item.sym}`, { signal: AbortSignal.timeout(6000) });
+        if (r2.ok) { const d = await r2.json(); price = d.price; chg = parseFloat((d.chg||'0').replace('%','')); up = d.up; }
+      } catch(e2) {}
+    }
+    if (!price) return; // both failed — keep static
+    const chgNum = typeof chg === 'number' ? chg : parseFloat((chg||'0').replace('%','').replace('+',''));
+    const chgStr = (chgNum >= 0 ? '+' : '') + chgNum.toFixed(2) + '%';
+    up = chgNum >= 0;
+    const existing = liveStocks.find(s => s.sym === item.sym);
+    if (existing) {
+      existing.price = price; existing.chg = chgStr; existing.up = up;
+    } else {
+      const staticEntry = STATIC_COMMODITIES.find(s => s.sym === item.sym);
+      liveStocks.push({ ...(staticEntry||{sym:item.sym,name:item.sym,currency:'$'}), price, chg: chgStr, up });
+    }
   }));
 
   const total = stocksUpdated + cryptoUpdated;

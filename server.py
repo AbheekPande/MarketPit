@@ -88,7 +88,16 @@ INDICES = [
     {"sym": "SENSEX",     "yf": "^BSESN",  "name": "BSE Sensex"},
     {"sym": "NIFTY BANK", "yf": "^NSEBANK","name": "Nifty Bank"},
     {"sym": "BTC-USD",    "yf": "BTC-USD", "name": "Bitcoin"},
-    {"sym": "GOLD",       "yf": "GC=F",    "name": "Gold Futures"},
+    {"sym": "ETH-USD",    "yf": "ETH-USD", "name": "Ethereum"},
+    {"sym": "GOLD",       "yf": "GC=F",    "name": "Gold"},
+    {"sym": "SILVER",     "yf": "SI=F",    "name": "Silver"},
+    {"sym": "CRUDE",      "yf": "CL=F",    "name": "Crude Oil WTI"},
+    {"sym": "BRENT",      "yf": "BZ=F",    "name": "Brent Crude"},
+    {"sym": "NATURALGAS", "yf": "NG=F",    "name": "Natural Gas"},
+    {"sym": "COPPER",     "yf": "HG=F",    "name": "Copper"},
+    {"sym": "PLATINUM",   "yf": "PL=F",    "name": "Platinum"},
+    {"sym": "WHEAT",      "yf": "ZW=F",    "name": "Wheat"},
+    {"sym": "CORN",       "yf": "ZC=F",    "name": "Corn"},
 ]
 
 # ── Cache ──
@@ -513,17 +522,51 @@ def api_indices():
 @app.route("/api/all")
 def api_all():
     with _cache_lock:
-        return jsonify({"stocks": _cache["stocks"], "indices": _cache["indices"],
-                        "last_updated": _cache["last_updated"], "source": "Yahoo Finance"})
+        stocks  = _cache["stocks"]
+        indices = _cache["indices"]
+        last_up = _cache["last_updated"]
+    # Split indices into actual indices vs commodities/crypto for frontend convenience
+    index_syms = {"NIFTY 50", "SENSEX", "NIFTY BANK"}
+    actual_indices = [i for i in indices if i["sym"] in index_syms]
+    commodities    = [i for i in indices if i["sym"] not in index_syms]
+    return jsonify({
+        "stocks": stocks,
+        "indices": actual_indices,
+        "commodities": commodities,   # ← Gold, Silver, Crude, BTC, ETH etc.
+        "last_updated": last_up,
+        "source": "Yahoo Finance"
+    })
 
+
+# Commodity symbol map for /api/quote
+COMMODITY_YF_MAP = {
+    "GOLD": "GC=F", "SILVER": "SI=F", "CRUDE": "CL=F", "BRENT": "BZ=F",
+    "NATURALGAS": "NG=F", "COPPER": "HG=F", "PLATINUM": "PL=F",
+    "WHEAT": "ZW=F", "CORN": "ZC=F",
+}
+CRYPTO_YF_MAP = {
+    "BTC": "BTC-USD", "ETH": "ETH-USD", "BNB": "BNB-USD",
+    "SOL": "SOL-USD", "XRP": "XRP-USD", "DOGE": "DOGE-USD",
+    "ADA": "ADA-USD", "MATIC": "MATIC-USD", "DOT": "DOT-USD",
+    "AVAX": "AVAX-USD", "LTC": "LTC-USD", "LINK": "LINK-USD",
+}
 
 @app.route("/api/quote/<symbol>")
 def api_quote(symbol):
-    yf_sym = symbol.upper()
-    if "." not in yf_sym:
-        yf_sym += ".NS"
+    sym_upper = symbol.upper()
+    # Check commodity first
+    if sym_upper in COMMODITY_YF_MAP:
+        yf_sym = COMMODITY_YF_MAP[sym_upper]
+    # Check crypto
+    elif sym_upper in CRYPTO_YF_MAP:
+        yf_sym = CRYPTO_YF_MAP[sym_upper]
+    # NSE stock
+    elif "." not in sym_upper:
+        yf_sym = sym_upper + ".NS"
+    else:
+        yf_sym = sym_upper
     q = fetch_quote(yf_sym)
-    return jsonify({"symbol": symbol.upper(), **q})
+    return jsonify({"symbol": sym_upper, **q})
 
 
 STATIC_FII_FALLBACK = [
