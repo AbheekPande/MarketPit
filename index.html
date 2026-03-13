@@ -738,22 +738,24 @@ header {
 
 <!-- EYES BANNER -->
 <style>
-#eyesBanner { transition:background 0.6s ease; cursor:default; }
-#eyesBanner:hover { background:#ccc8c0 !important; border-bottom-color:rgba(0,0,0,0.1) !important; }
+#eyesBanner { transition:background 0.5s ease; cursor:default; }
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
+
+/* Tile: slim, well-spaced, not chunky */
 .eb-tile {
-  width:54px; height:54px; flex-shrink:0;
+  width:36px; height:36px; flex-shrink:0;
   display:grid;
   grid-template-columns:1fr 1fr;
   grid-template-rows:1fr 1fr;
-  gap:2px; padding:2px;
+  gap:3px; padding:1px;
   background:transparent; border:none;
   box-sizing:border-box;
 }
-/* Use border-top/left/right/bottom separately — shorthand breaks individual transitions */
+
+/* Sub: razor-thin borders, generous border-radius for gem feel */
 .eb-sub {
-  border-radius:2px;
+  border-radius:3px;
   background:transparent;
   border-top:1px solid transparent;
   border-left:1px solid transparent;
@@ -762,29 +764,32 @@ header {
   opacity:0;
   box-sizing:border-box;
   transition:
-    opacity 0.13s ease,
-    background 0.13s ease,
-    box-shadow 0.13s ease,
-    border-top-color 0.13s ease,
-    border-left-color 0.13s ease,
-    border-bottom-color 0.13s ease,
-    border-right-color 0.13s ease;
+    opacity 0.18s cubic-bezier(0.4,0,0.2,1),
+    background 0.18s cubic-bezier(0.4,0,0.2,1),
+    box-shadow 0.18s cubic-bezier(0.4,0,0.2,1),
+    border-top-color 0.18s cubic-bezier(0.4,0,0.2,1),
+    border-left-color 0.18s cubic-bezier(0.4,0,0.2,1),
+    border-bottom-color 0.18s cubic-bezier(0.4,0,0.2,1),
+    border-right-color 0.18s cubic-bezier(0.4,0,0.2,1);
   will-change: opacity, background;
 }
+
+/* Soft ambient glow — smaller, more refined */
 #ebGlow {
-  position:absolute; width:120px; height:120px; border-radius:50%;
+  position:absolute; width:90px; height:90px; border-radius:50%;
   transform:translate(-50%,-50%); pointer-events:none; z-index:1;
   opacity:0;
-  transition:opacity 0.25s ease;
-  filter:blur(12px);
+  transition:opacity 0.3s ease;
+  filter:blur(18px);
 }
-#eyesBanner:hover #ebGlow { opacity:1; }
+#eyesBanner:hover #ebGlow { opacity:0.7; }
+
 #ebTileGrid {
   position:absolute; left:0; right:0; top:0; bottom:0;
-  display:flex; flex-wrap:wrap; gap:0; z-index:2;
+  display:flex; flex-wrap:wrap; gap:5px; z-index:2;
   pointer-events:all;
   align-content:center; justify-content:flex-start;
-  padding:7px 6px; overflow:hidden;
+  padding:8px 10px; overflow:hidden;
 }
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:68px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
@@ -10803,20 +10808,26 @@ setTimeout(updateNavArrows, 800);
   const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
 
   function showSub(sub, qi, r, g, b) {
+    // Elegant: lower opacity fill, crisp specular top-left highlight
     const br = BRIGHTNESS[qi] ?? 0.7;
     const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
     const isTop  = qi < 2, isLeft = qi % 2 === 0;
-    const hi = 'rgba(255,255,255,0.38)';
-    const sh = 'rgba(0,0,0,0.50)';
+    // Highlight edge: bright crisp line; shadow edge: very subtle
+    const hi = isTop && isLeft ? 'rgba(255,255,255,0.55)'
+             : (isTop || isLeft) ? 'rgba(255,255,255,0.30)'
+             : 'rgba(255,255,255,0.10)';
+    const sh = 'rgba(0,0,0,0.28)';
     sub.style.opacity           = '1';
-    sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
+    // Translucent glass face — not solid
+    sub.style.background        = `rgba(${fr},${fg},${fb},0.52)`;
     sub.style.borderTopColor    = isTop  ? hi : sh;
     sub.style.borderLeftColor   = isLeft ? hi : sh;
-    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),`
-                                + `inset 0 -2px 5px rgba(0,0,0,0.38),`
-                                + `0 0 8px rgba(${r},${g},${b},0.45)`;
+    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.38)';
+    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.38)';
+    // Soft inner glow only on TL face; clean shadow on BR
+    sub.style.boxShadow         = `inset 0 1px 3px rgba(255,255,255,0.18),`
+                                + `inset 0 -1px 3px rgba(0,0,0,0.22),`
+                                + `0 2px 8px rgba(${r},${g},${b},0.28)`;
   }
 
   function hideSub(sub) {
