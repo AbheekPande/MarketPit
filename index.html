@@ -7097,13 +7097,21 @@ document.addEventListener('keydown', e => {
 
 // ── INIT — clear old fake calls from localStorage ──
 localStorage.removeItem && ['mp_trade_calls'].forEach(k=>{ try { const d=JSON.parse(localStorage.getItem(k)||'[]'); if(d.some&&d.some(x=>['c1','c2','c3','c4','c5','c6'].includes(x.id))) localStorage.removeItem(k); }catch(e){} });
-updateAvatars();
-renderPosts();
-renderTrendingTags();
-renderChat();
-renderLeaderboard();
-fetchLiveData();
-loadSymbols();
+// ── STARTUP — wait for DOM to be ready ──
+function _mpInit() {
+  updateAvatars();
+  renderPosts();
+  renderTrendingTags();
+  renderChat();
+  renderLeaderboard();
+  fetchLiveData();
+  loadSymbols();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _mpInit);
+} else {
+  _mpInit(); // DOM already ready
+}
 
 // ── SMART REFRESH STRATEGY ──────────────────────────────────────
 // Every 30 seconds: try Railway first, fall back to CoinGecko + Yahoo Finance
