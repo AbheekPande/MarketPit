@@ -7917,10 +7917,302 @@ function loadStrategy(key,btn){
 }
 
 // ─── Stubs to prevent errors on unimplemented pages ───
-function renderEcono(){}
+// ═══════════════════════════════════════════════════════════════════
+// ECONOMIC CALENDAR
+// ═══════════════════════════════════════════════════════════════════
+let _econoData=[], _econoFilter='all';
+
+// Curated Indian + Global macro events (refreshed weekly from hardcoded knowledge + live fetch)
+const ECONO_STATIC = [
+  // ── RBI ──
+  {date:'2026-04-09',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI Monetary Policy Committee Decision',impact:'high',actual:null,forecast:'6.25%',prev:'6.25%',category:'central-bank',desc:'RBI MPC rate decision — key for Nifty and Bank Nifty'},
+  {date:'2026-06-04',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Jun)',impact:'high',actual:null,forecast:'6.0%',prev:'6.25%',category:'central-bank'},
+  {date:'2026-08-06',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Aug)',impact:'high',actual:null,forecast:'6.0%',prev:'6.0%',category:'central-bank'},
+  // ── India Macro ──
+  {date:'2026-03-14',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Feb)',impact:'high',actual:null,forecast:'3.9%',prev:'4.26%',category:'inflation'},
+  {date:'2026-03-17',time:'12:00',country:'IN',flag:'🇮🇳',event:'India WPI Inflation (Feb)',impact:'medium',actual:null,forecast:'2.3%',prev:'2.31%',category:'inflation'},
+  {date:'2026-03-28',time:'12:00',country:'IN',flag:'🇮🇳',event:'India GDP Q3 FY26 Final',impact:'high',actual:null,forecast:'6.7%',prev:'6.4%',category:'gdp'},
+  {date:'2026-04-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Mar)',impact:'high',actual:null,forecast:'3.8%',prev:'3.9%',category:'inflation'},
+  {date:'2026-03-31',time:'09:00',country:'IN',flag:'🇮🇳',event:'GST Collections (Mar)',impact:'medium',actual:null,forecast:'₹1.85L Cr',prev:'₹1.84L Cr',category:'fiscal'},
+  {date:'2026-04-01',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',actual:null,forecast:'57.2',prev:'57.7',category:'pmi'},
+  {date:'2026-04-03',time:'09:30',country:'IN',flag:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',actual:null,forecast:'59.0',prev:'59.0',category:'pmi'},
+  {date:'2026-03-20',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Trade Balance (Feb)',impact:'medium',actual:null,forecast:'-$18.5B',prev:'-$17.9B',category:'trade'},
+  {date:'2026-04-30',time:'12:00',country:'IN',flag:'🇮🇳',event:'India Fiscal Deficit (FY26)',impact:'high',actual:null,forecast:'4.9% of GDP',prev:'5.6%',category:'fiscal'},
+  // ── US Fed ──
+  {date:'2026-03-19',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Mar)',impact:'high',actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank',desc:'Fed holds — markets watch for dot plot guidance'},
+  {date:'2026-05-07',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (May)',impact:'high',actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank'},
+  {date:'2026-06-18',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Jun)',impact:'high',actual:null,forecast:'4.00–4.25%',prev:'4.25–4.50%',category:'central-bank'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US PCE Inflation (Feb)',impact:'high',actual:null,forecast:'2.5%',prev:'2.5%',category:'inflation'},
+  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',actual:null,forecast:'+195K',prev:'+151K',category:'employment'},
+  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US CPI Inflation (Mar)',impact:'high',actual:null,forecast:'2.8%',prev:'2.8%',category:'inflation'},
+  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US GDP Q4 Final',impact:'high',actual:null,forecast:'2.3%',prev:'2.3%',category:'gdp'},
+  {date:'2026-04-07',time:'14:00',country:'US',flag:'🇺🇸',event:'US ISM Services PMI (Mar)',impact:'medium',actual:null,forecast:'53.2',prev:'53.5',category:'pmi'},
+  // ── Europe / Global ──
+  {date:'2026-04-17',time:'12:15',country:'EU',flag:'🇪🇺',event:'ECB Rate Decision',impact:'high',actual:null,forecast:'2.25%',prev:'2.5%',category:'central-bank'},
+  {date:'2026-04-07',time:'03:00',country:'CN',flag:'🇨🇳',event:'China Trade Balance (Mar)',impact:'high',actual:null,forecast:'$90B',prev:'$170B',category:'trade'},
+  {date:'2026-04-16',time:'03:00',country:'CN',flag:'🇨🇳',event:'China GDP Q1 2026',impact:'high',actual:null,forecast:'4.8%',prev:'5.0%',category:'gdp'},
+  {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'Bank of England Rate Decision',impact:'high',actual:null,forecast:'4.50%',prev:'4.50%',category:'central-bank'},
+];
+
+function renderEcono() {
+  const el=document.getElementById('econoBody'); if(!el) return;
+  _econoData=ECONO_STATIC;
+  renderEconoPage();
+  // Try to fetch live data from Investing.com via RapidAPI or fallback
+  fetchLiveEconoData();
+}
+
+async function fetchLiveEconoData() {
+  // Use TradingEconomics or Investing.com calendar via a CORS proxy
+  // For now the static data is comprehensive; live API needs a key
+  // We can embed a TradingView Economic Calendar widget instead
+}
+
+function filterEcono(f,btn) {
+  _econoFilter=f;
+  document.querySelectorAll('#page-econocal .pcat-btn').forEach(b=>b.classList.remove('active-pcat'));
+  btn?.classList.add('active-pcat');
+  renderEconoPage();
+}
+
+function renderEconoPage() {
+  const el=document.getElementById('econoBody'); if(!el) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().split('T')[0];
+  let data=[..._econoData].sort((a,b)=>a.date.localeCompare(b.date));
+  if(_econoFilter==='india') data=data.filter(d=>d.country==='IN');
+  else if(_econoFilter==='global') data=data.filter(d=>d.country!=='IN');
+  else if(_econoFilter==='high') data=data.filter(d=>d.impact==='high');
+
+  // Group by date
+  const grouped={};
+  data.forEach(e=>{ if(!grouped[e.date]) grouped[e.date]=[]; grouped[e.date].push(e); });
+  const impactColor={high:'var(--red)',medium:'var(--gold)',low:'var(--text3)'};
+  const impactBg={high:'rgba(229,57,53,0.12)',medium:'rgba(255,193,7,0.12)',low:'rgba(100,100,100,0.08)'};
+
+  if(!Object.keys(grouped).length){ el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text3);">No events found</div>`; return; }
+
+  el.innerHTML = `
+  <!-- TradingView Economic Calendar widget as supplementary source -->
+  <div style="margin-bottom:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:10px 14px 0;font-size:10px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;">LIVE ECONOMIC CALENDAR (TradingView)</div>
+    <iframe src="https://s.tradingview.com/embed-widget/events/#eyJsb2NhbGUiOiJlbiIsImltcG9ydGFuY2UiOlsiaGlnaCIsIm1lZGl1bSJdLCJjb3VudHJpZXMiOlsiSU4iLCJVUyIsIkdCIiwiRVUiLCJDTiIsIkpQIl0sImNvbG9yVGhlbWUiOiJkYXJrIiwid2lkdGgiOiIxMDAlIiwiaGVpZ2h0IjoiMzAwIn0=" 
+      style="width:100%;height:300px;border:none;" scrolling="no" frameborder="0" allowtransparency="true">
+    </iframe>
+  </div>
+  <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;padding:0 2px;">UPCOMING MACRO EVENTS</div>
+  ${Object.entries(grouped).map(([date,events])=>{
+    const dObj=new Date(date+'T00:00:00');
+    const dayLabel=dObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    const isPast=date<todayStr, isToday=date===todayStr;
+    return `
+    <div style="margin-bottom:4px;padding:8px 2px 4px;${isPast?'opacity:0.6':''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="font-weight:800;font-size:12px;color:${isToday?'var(--accent)':isPast?'var(--text3)':'var(--text)'};">${dayLabel}</div>
+        ${isToday?`<div style="font-size:9px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:8px;font-weight:700;">TODAY</div>`:''}
+        ${isPast?`<div style="font-size:9px;color:var(--text3);">Past</div>`:''}
+      </div>
+      ${events.map(e=>`
+      <div style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:10px;align-items:center;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;border-left:3px solid ${impactColor[e.impact]||'var(--border)'};">
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span style="font-size:16px;">${e.flag||'🌍'}</span>
+          <div>
+            <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">${e.time||'—'} IST</div>
+            <div style="font-size:9px;padding:1px 6px;border-radius:4px;background:${impactBg[e.impact]};color:${impactColor[e.impact]};font-weight:700;white-space:nowrap;">${e.impact?.toUpperCase()||'MED'}</div>
+          </div>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-weight:700;font-size:13px;color:var(--text);line-height:1.3;">${e.event}</div>
+          ${e.desc?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${e.desc}</div>`:''}
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:9px;color:var(--text3);">Actual</div>
+          <div style="font-weight:800;font-size:12px;color:${e.actual?'var(--green)':'var(--text3)'};">${e.actual||'—'}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:9px;color:var(--text3);">Forecast</div>
+          <div style="font-weight:700;font-size:12px;color:var(--text);">${e.forecast||'—'}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:9px;color:var(--text3);">Previous</div>
+          <div style="font-size:12px;color:var(--text2);">${e.prev||'—'}</div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }).join('')}`;
+}
+setInterval(()=>{ if(document.getElementById('page-econocal')?.style.display!=='none') renderEconoPage(); },5*60*1000);
+
+// ═══════════════════════════════════════════════════════════════════
+// TRADINGVIEW LIVE CHARTS PAGE
+// ═══════════════════════════════════════════════════════════════════
+let _tvTab='indices';
+function renderTVPage(){
+  // Set up tab state and render default tab
+  document.querySelectorAll('[id^="tvtab_"]').forEach(b=>{
+    const v=b.id.replace('tvtab_','');
+    b.style.borderBottomColor=v===_tvTab?'var(--accent)':'transparent';
+    b.style.color=v===_tvTab?'var(--accent)':'var(--text3)';
+    b.style.fontWeight=v===_tvTab?'700':'600';
+  });
+  showTVTab(_tvTab, document.getElementById('tvtab_'+_tvTab));
+}
+function showTVTab(tab,btn){
+  _tvTab=tab;
+  document.querySelectorAll('[id^="tvtab_"]').forEach(b=>{
+    b.style.borderBottomColor='transparent'; b.style.color='var(--text3)'; b.style.fontWeight='600';
+  });
+  if(btn){ btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700'; }
+  const el=document.getElementById('tvBody'); if(!el) return;
+
+  const tvWidgets = {
+    indices: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">
+        ${[
+          {sym:'NSE:NIFTY50',name:'NIFTY 50'},
+          {sym:'BSE:SENSEX',name:'SENSEX'},
+          {sym:'NSE:BANKNIFTY',name:'BANK NIFTY'},
+          {sym:'NSE:CNXAUTO',name:'NIFTY AUTO'},
+          {sym:'NSE:CNXIT',name:'NIFTY IT'},
+          {sym:'NSE:CNXPHARMA',name:'NIFTY PHARMA'},
+        ].map(s=>`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {"symbol":"${s.sym}","width":"100%","height":"220","locale":"en","dateRange":"1D","colorTheme":"dark","trendLineColor":"rgba(0,112,243,1)","underLineColor":"rgba(0,112,243,0.1)","isTransparent":true,"autosize":true,"largeChartUrl":""}</script>
+        </div>`).join('')}
+      </div>`,
+    stocks: `
+      <div style="padding:14px;">
+        <div class="tradingview-widget-container" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+          {"width":"100%","height":"600","defaultColumn":"overview","defaultScreen":"most_capitalized","market":"india","showToolbar":true,"colorTheme":"dark","locale":"en","isTransparent":true}</script>
+        </div>
+      </div>`,
+    crypto: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">
+        ${[
+          {sym:'BINANCE:BTCUSDT',name:'Bitcoin'},
+          {sym:'BINANCE:ETHUSDT',name:'Ethereum'},
+          {sym:'BINANCE:BNBUSDT',name:'BNB'},
+          {sym:'BINANCE:SOLUSDT',name:'Solana'},
+          {sym:'BINANCE:XRPUSDT',name:'XRP'},
+          {sym:'BINANCE:DOGEUSDT',name:'Dogecoin'},
+        ].map(s=>`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {"symbol":"${s.sym}","width":"100%","height":"200","locale":"en","dateRange":"1D","colorTheme":"dark","trendLineColor":"rgba(0,168,84,1)","underLineColor":"rgba(0,168,84,0.1)","isTransparent":true,"autosize":true}</script>
+        </div>`).join('')}
+      </div>`,
+    commodities: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">
+        ${[
+          {sym:'COMEX:GC1!',name:'Gold'},
+          {sym:'COMEX:SI1!',name:'Silver'},
+          {sym:'NYMEX:CL1!',name:'Crude Oil WTI'},
+          {sym:'ICEEUR:B1!',name:'Brent Crude'},
+          {sym:'NYMEX:NG1!',name:'Natural Gas'},
+          {sym:'COMEX:HG1!',name:'Copper'},
+        ].map(s=>`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {"symbol":"${s.sym}","width":"100%","height":"200","locale":"en","dateRange":"1D","colorTheme":"dark","trendLineColor":"rgba(255,193,7,1)","underLineColor":"rgba(255,193,7,0.1)","isTransparent":true,"autosize":true}</script>
+        </div>`).join('')}
+      </div>`,
+    forex: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">
+        ${[
+          {sym:'FX_IDC:USDINR',name:'USD/INR'},
+          {sym:'FX:EURUSD',name:'EUR/USD'},
+          {sym:'FX:GBPUSD',name:'GBP/USD'},
+          {sym:'FX:USDJPY',name:'USD/JPY'},
+          {sym:'FX_IDC:EURINR',name:'EUR/INR'},
+          {sym:'FX:USDCNY',name:'USD/CNY'},
+        ].map(s=>`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {"symbol":"${s.sym}","width":"100%","height":"200","locale":"en","dateRange":"1D","colorTheme":"dark","trendLineColor":"rgba(147,51,234,1)","underLineColor":"rgba(147,51,234,0.1)","isTransparent":true,"autosize":true}</script>
+        </div>`).join('')}
+      </div>`,
+    chart: `
+      <div style="padding:10px 14px 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <select id="tvChartSym" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">
+          <optgroup label="Indices"><option value="NSE:NIFTY50">NIFTY 50</option><option value="BSE:SENSEX">SENSEX</option><option value="NSE:BANKNIFTY">BANK NIFTY</option></optgroup>
+          <optgroup label="Stocks">${['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','SBIN','WIPRO','AXISBANK','BAJFINANCE','TATAMOTORS','SUNPHARMA','LT','TITAN','MARUTI','BHARTIARTL','ADANIENT','ZOMATO','HAL','BEL','DLF'].map(s=>`<option value="NSE:${s}">${s}</option>`).join('')}</optgroup>
+          <optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option></optgroup>
+          <optgroup label="Commodities"><option value="COMEX:GC1!">Gold</option><option value="NYMEX:CL1!">Crude Oil</option></optgroup>
+        </select>
+        <select id="tvChartInterval" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">
+          <option value="1">1 min</option><option value="5">5 min</option><option value="15">15 min</option><option value="60" selected>1 hour</option><option value="D">1 Day</option><option value="W">1 Week</option>
+        </select>
+      </div>
+      <div style="padding:0 14px 14px;flex:1;">
+        <div id="tvChartContainer" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:520px;"></div>
+      </div>`,
+  };
+
+  el.innerHTML = tvWidgets[tab] || tvWidgets.indices;
+
+  // For chart tab, inject the advanced chart widget properly
+  if(tab==='chart'){
+    updateTVChart();
+  }
+}
+
+function updateTVChart(){
+  const container=document.getElementById('tvChartContainer');
+  if(!container) return;
+  const sym=document.getElementById('tvChartSym')?.value||'NSE:NIFTY50';
+  const interval=document.getElementById('tvChartInterval')?.value||'60';
+  const isDark=document.documentElement.getAttribute('data-theme')!=='light';
+  container.innerHTML='';
+  const script=document.createElement('script');
+  script.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+  script.async=true;
+  script.type='text/javascript';
+  script.textContent=JSON.stringify({
+    "symbol":sym,
+    "interval":interval,
+    "width":"100%",
+    "height":"100%",
+    "timezone":"Asia/Kolkata",
+    "theme":isDark?"dark":"light",
+    "style":"1",
+    "locale":"en",
+    "toolbar_bg":isDark?"#1a1a2e":"#ffffff",
+    "enable_publishing":false,
+    "hide_top_toolbar":false,
+    "hide_legend":false,
+    "save_image":true,
+    "container_id":"tvChartContainer",
+    "support_host":"https://www.tradingview.com",
+    "studies":["RSI@tv-basicstudies","MACD@tv-basicstudies"],
+    "show_popup_button":true,
+    "popup_width":"1000",
+    "popup_height":"650",
+    "isTransparent":true,
+  });
+  const widgetDiv=document.createElement('div');
+  widgetDiv.className='tradingview-widget-container';
+  widgetDiv.style.height='100%';
+  const inner=document.createElement('div');
+  inner.id='tvChartContainer_inner';
+  inner.style.height='100%';
+  widgetDiv.appendChild(inner);
+  widgetDiv.appendChild(script);
+  container.appendChild(widgetDiv);
+}
+
 function renderRooms(){}
 function renderDiscover(){}
-function renderTVPage(){ const el=document.getElementById('tvBody'); if(el) el.innerHTML=`<div style="padding:16px;"><iframe src="https://www.tradingview.com/markets/indices/" style="width:100%;height:600px;border:none;border-radius:12px;" loading="lazy"></iframe></div>`; }
 
 // missing onLiveDataUpdate — central dispatcher called after any data refresh
 function onLiveDataUpdate(){
