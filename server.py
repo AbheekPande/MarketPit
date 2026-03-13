@@ -647,6 +647,81 @@ def api_earnings():
     })
 
 
+@app.route("/api/ipo")
+def api_ipo():
+    """
+    Returns live IPO data scraped from Chittorgarh / NSE.
+    Falls back to curated static data if scraping fails.
+    Format: { upcoming:[], open:[], allotment:[], listed:[] }
+    """
+    import datetime as _dt
+
+    # ── Static fallback (always available) ──
+    today = _dt.date.today()
+    static_data = {
+        "upcoming": [
+            {"name": "Skyways Air", "open": "17 Mar 2026", "close": "19 Mar 2026", "price": "TBA", "size": "TBA", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐", "sector": "Aviation", "lot": "TBA", "minInvest": "TBA"},
+            {"name": "Novus Loyalty & Business Services", "open": "18 Mar 2026", "close": "20 Mar 2026", "price": "TBA", "size": "TBA", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐", "sector": "Fintech", "lot": "TBA", "minInvest": "TBA"},
+            {"name": "Truhome Finance", "open": "Mar–Apr 2026", "close": "—", "price": "TBA", "size": "₹3,000 Cr", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐", "sector": "NBFC/Finance", "lot": "TBA", "minInvest": "TBA"},
+            {"name": "Reliance Jio", "open": "TBA 2026", "close": "—", "price": "TBA", "size": "TBA", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐⭐", "sector": "Telecom", "lot": "TBA", "minInvest": "TBA"},
+            {"name": "PhonePe", "open": "TBA 2026", "close": "—", "price": "TBA", "size": "TBA", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐", "sector": "Fintech", "lot": "TBA", "minInvest": "TBA"},
+        ],
+        "open": [
+            {"name": "Raajmarg Infra InvIT", "open": "11 Mar 2026", "close": "13 Mar 2026", "price": "₹99–100", "size": "₹6,000 Cr", "gmp": "—", "gmpPct": "—", "subscribed": "—", "rating": "⭐⭐⭐⭐", "sector": "Infrastructure/InvIT", "lot": "TBA", "minInvest": "TBA", "exchange": "BSE & NSE", "listDate": "24 Mar 2026"},
+        ],
+        "allotment": [
+            {"name": "Innovision", "date": "13 Mar 2026", "price": "₹548", "listPrice": "17 Mar 2026", "gain": "Pending", "status": "Allotment Today"},
+            {"name": "Rajputana Stainless", "date": "12 Mar 2026", "price": "₹122", "listPrice": "16 Mar 2026", "gain": "Pending", "status": "Allotment Today"},
+        ],
+        "listed": [
+            {"name": "SEDEMAC Mechatronics", "listDate": "11 Mar 2026", "issuePrice": "₹1,352", "listPrice": "₹1,510", "gain": "+11.7%", "current": "₹1,547"},
+        ],
+        "last_updated": today.isoformat(),
+        "source": "Static data (live fetch not available on this server)",
+    }
+
+    # ── Try live scrape from Chittorgarh ──
+    try:
+        import requests as _req
+        from bs4 import BeautifulSoup as _BS
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "text/html,application/xhtml+xml",
+        }
+
+        live_open = []
+        r = _req.get("https://www.chittorgarh.com/ipo/ipo_dashboard.asp", headers=headers, timeout=8)
+        if r.status_code == 200:
+            soup = _BS(r.text, "html.parser")
+            # Find open IPO table
+            tables = soup.find_all("table")
+            for table in tables:
+                rows = table.find_all("tr")[1:]  # skip header
+                for row in rows:
+                    cells = row.find_all("td")
+                    if len(cells) >= 4:
+                        name = cells[0].get_text(strip=True)
+                        open_d = cells[1].get_text(strip=True) if len(cells)>1 else "—"
+                        close_d = cells[2].get_text(strip=True) if len(cells)>2 else "—"
+                        price = cells[3].get_text(strip=True) if len(cells)>3 else "—"
+                        if name and len(name) > 2:
+                            live_open.append({
+                                "name": name, "open": open_d, "close": close_d,
+                                "price": price, "gmp": "—", "gmpPct": "—",
+                                "size": "—", "sector": "—", "lot": "—", "minInvest": "—",
+                            })
+            if live_open:
+                static_data["open"] = live_open[:6]
+                static_data["source"] = "Chittorgarh (live)"
+                static_data["last_updated"] = _dt.datetime.now().isoformat()
+
+    except Exception as e:
+        pass  # Keep static fallback
+
+    return jsonify(static_data)
+
+
 @app.route("/api/nifty-spot")
 def api_nifty_spot():
     """Returns live Nifty 50 and Bank Nifty spot prices."""

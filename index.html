@@ -595,6 +595,28 @@ header {
 .pt-stat-val { font-size:20px; font-weight:800; }
 .pt-holding-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); transition:background 0.12s; }
 .pt-holding-row:hover { background:var(--bg3); }
+/* Paper trading tab active state */
+#pt_trade.pt-active, #pt_holdings.pt-active, #pt_orders.pt-active, #pt_history.pt-active, #pt_leaderboard.pt-active {
+  color: var(--accent); border-bottom-color: var(--accent);
+}
+/* Paper trading input polish */
+#page-paper .form-input {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text1);
+  font-family: 'Space Mono', monospace;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#page-paper .form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,112,243,0.12);
+  outline: none;
+}
+/* Search dropdown polish */
+#ptSearchDrop { scrollbar-width: thin; }
+#ptSearchDrop::-webkit-scrollbar { width: 4px; }
+#ptSearchDrop::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .trade-form { padding:16px; display:flex; flex-direction:column; gap:12px; }
 .trade-form select, .trade-form input { background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:10px 12px; font-size:13px; outline:none; font-family:'DM Sans',sans-serif; }
 .buy-btn { background:var(--green); color:#fff; border:none; border-radius:8px; padding:12px; font-weight:800; font-size:14px; cursor:pointer; font-family:'DM Sans',sans-serif; }
@@ -1455,25 +1477,48 @@ header {
   <!-- PAPER TRADING PAGE -->
   <!-- ═══════════════════════════════════════════ -->
   <div class="main-feed" id="page-paper" style="display:none;flex-direction:column;">
-    <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">PAPER TRADING</div>
-        <div id="ptMarketStatus" style="font-size:10px;font-family:'Space Mono',monospace;padding:3px 8px;border-radius:20px;"></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">BALANCE</div>
-          <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:15px;color:var(--accent);font-weight:700;">₹10,00,000</div>
+    <!-- ── PAPER TRADING HEADER ── -->
+    <div style="padding:0;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <!-- Top bar: logo + balance + reset -->
+      <div style="padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <!-- Terminal-style logo -->
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0052cc);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,112,243,0.35);">📈</div>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;line-height:1;">PAPER TRADING</div>
+              <div id="ptMarketStatus" style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.5px;"></div>
+            </div>
+          </div>
         </div>
-        <button onclick="resetPaperPortfolio()" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;">Reset</button>
+        <!-- Balance card -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:10px;">
+            <div>
+              <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:2px;">BALANCE</div>
+              <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:16px;color:var(--accent);font-weight:700;letter-spacing:-0.5px;">₹10,00,000</div>
+            </div>
+            <div style="width:1px;height:28px;background:var(--border);"></div>
+            <button onclick="resetPaperPortfolio()" title="Reset portfolio"
+              style="padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;"
+              onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺ RESET</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <button onclick="switchPaperTab('trade',this)" id="pt_trade" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Trade</button>
-      <button onclick="switchPaperTab('holdings',this)" id="pt_holdings" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Holdings</button>
-      <button onclick="switchPaperTab('orders',this)" id="pt_orders" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Orders</button>
-      <button onclick="switchPaperTab('history',this)" id="pt_history" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">History</button>
-      <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">🏆</button>
+      <!-- Tab nav -->
+      <div style="display:flex;padding:0 20px;gap:0;">
+        <button onclick="switchPaperTab('trade',this)" id="pt_trade"
+          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">TRADE</button>
+        <button onclick="switchPaperTab('holdings',this)" id="pt_holdings"
+          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">POSITIONS</button>
+        <button onclick="switchPaperTab('orders',this)" id="pt_orders"
+          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">ORDERS</button>
+        <button onclick="switchPaperTab('history',this)" id="pt_history"
+          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">HISTORY</button>
+        <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard"
+          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">STATS</button>
+      </div>
     </div>
     <div class="feed-scroll" id="paperBody" style="padding:0;"></div>
   </div>
@@ -5355,9 +5400,9 @@ function switchTabMobile(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='paper')     renderPaperTrade();
-  if (page==='ipo')       renderIpoPage();
+  if (page==='ipo')       { renderIpoPage(); fetchLiveIpoData(); }
   if (page==='heatmap')   renderHeatmap();
-  if (page==='earnings')  renderEarnings();
+  if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
   if (page==='options')   renderOptions();
@@ -5396,9 +5441,9 @@ function switchTab(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='paper')     renderPaperTrade();
-  if (page==='ipo')       renderIpoPage();
+  if (page==='ipo')       { renderIpoPage(); fetchLiveIpoData(); }
   if (page==='heatmap')   renderHeatmap();
-  if (page==='earnings')  renderEarnings();
+  if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
   if (page==='options')   renderOptions();
@@ -7703,7 +7748,7 @@ function renderPtTrade(el, d) {
   // 1. TRADE MODE SELECTOR
   let modeSectionHTML = '';
   if (isStock) {
-    modeSectionHTML = '<div style="margin-bottom:16px;">'
+    modeSectionHTML = '<div style="margin-bottom:18px;">'
       + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
       + '<button onclick="setPtTradeMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptTradeMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptTradeMode==='intraday'?'#fff':'var(--text3)') + ';">'
@@ -7717,7 +7762,7 @@ function renderPtTrade(el, d) {
           : '\ud83d\udce6 <strong>Full payment</strong> required &nbsp;\u00b7&nbsp; Hold overnight &nbsp;\u00b7&nbsp; T+1 settlement &nbsp;\u00b7&nbsp; STT on sell only')
       + '</div></div>';
   } else if (isCrypto) {
-    modeSectionHTML = '<div style="margin-bottom:16px;">'
+    modeSectionHTML = '<div style="margin-bottom:18px;">'
       + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
       + '<button onclick="setPtCryptoMode(\'spot\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCryptoMode==='spot'?'#f7931a':'var(--bg3)') + ';color:' + (_ptCryptoMode==='spot'?'#fff':'var(--text3)') + ';">'
@@ -7744,7 +7789,7 @@ function renderPtTrade(el, d) {
   } else {
     // Commodity
     const lotData = MCX_LOT_SIZES[asset.sym];
-    modeSectionHTML = '<div style="margin-bottom:16px;">'
+    modeSectionHTML = '<div style="margin-bottom:18px;">'
       + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
       + '<button onclick="setPtCommMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCommMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptCommMode==='intraday'?'#fff':'var(--text3)') + ';">'
@@ -7817,11 +7862,11 @@ function renderPtTrade(el, d) {
   const execLabel = (_ptOrderType==='BUY'?'\u25b2 BUY':'\u25bc SELL') + ' ' + asset.sym + modeLabel + orderTypeLabel;
 
   el.innerHTML = `
-  <div style="padding:16px;max-width:480px;margin:0 auto;">
+  <div style="padding:20px;max-width:460px;margin:0 auto;">
 
     <!-- Asset Search -->
-    <div style="position:relative;margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1px;">SEARCH ASSET</div>
+    <div style="position:relative;margin-bottom:18px;">
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Search Asset</div>
       <input id="ptAssetSearch" class="form-input" placeholder="Search stocks, crypto, commodities\u2026" autocomplete="off"
         style="padding-right:36px;"
         oninput="onPtSearch(this.value)"
@@ -7831,90 +7876,109 @@ function renderPtTrade(el, d) {
     </div>
 
     <!-- Selected Asset Card -->
-    <div id="ptAssetCard" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="document.getElementById('ptAssetSearch').focus()">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${asset.sym.slice(0,4)}</div>
+    <div id="ptAssetCard"
+      style="background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color 0.2s;"
+      onclick="document.getElementById('ptAssetSearch').focus()"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(0,112,243,0.15),rgba(0,112,243,0.04));border:1px solid rgba(0,112,243,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;letter-spacing:0.5px;">${asset.sym.slice(0,4)}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:800;font-size:15px;">${asset.sym}</div>
-        <div style="font-size:11px;color:var(--text3);">${asset.name} \u00b7 ${asset.group}</div>
+        <div style="font-weight:800;font-size:16px;letter-spacing:-0.3px;">${asset.sym}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${asset.name} &middot; <span style="font-family:'Space Mono',monospace;">${asset.group}</span></div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-weight:800;font-size:17px;">${cur}${Number(asset.price).toLocaleString()}</div>
-        <div style="font-size:12px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '\u2014'}</div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:-0.5px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:0})}</div>
+        <div style="font-size:11px;font-weight:700;margin-top:3px;padding:2px 7px;border-radius:4px;display:inline-block;
+          background:${parseFloat(asset.chg)>=0?'rgba(0,168,84,0.1)':'rgba(229,57,53,0.1)'};
+          color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '—'}</div>
       </div>
     </div>
 
-    <!-- Market status -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <span style="font-size:11px;font-weight:700;color:${marketStatusLabel(asset.sym).color};">${marketStatusLabel(asset.sym).label}</span>
-      <span style="font-size:10px;color:var(--text3);">${getMarketStatus().istTime}</span>
+    <!-- Market status strip -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding:8px 12px;background:var(--bg3);border-radius:9px;border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${marketStatusLabel(asset.sym).color};box-shadow:0 0 7px ${marketStatusLabel(asset.sym).color};animation:livePulse 2s ease-in-out infinite;"></span>
+        <span style="font-size:11px;font-weight:700;color:${marketStatusLabel(asset.sym).color};">${marketStatusLabel(asset.sym).label}</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">${getMarketStatus().istTime} IST</span>
     </div>
 
     ${modeSectionHTML}
 
     <!-- BUY / SELL toggle -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;">
       <button id="ptBuyBtn" onclick="setPtOrder('BUY')"
-        style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
-        background:${_ptOrderType==='BUY'?'var(--green)':'var(--bg3)'};
-        color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};">
-        \u25b2 BUY
+        style="padding:13px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;
+        border:2px solid ${_ptOrderType==='BUY'?'var(--green)':'var(--border)'};
+        background:${_ptOrderType==='BUY'?'var(--green)':'transparent'};
+        color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};
+        box-shadow:${_ptOrderType==='BUY'?'0 4px 16px rgba(0,168,84,0.3)':'none'};">
+        ▲ BUY
       </button>
       <button id="ptSellBtn" onclick="setPtOrder('SELL')"
-        style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
-        background:${_ptOrderType==='SELL'?'var(--red)':'var(--bg3)'};
-        color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};">
-        \u25bc SELL
+        style="padding:13px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;
+        border:2px solid ${_ptOrderType==='SELL'?'var(--red)':'var(--border)'};
+        background:${_ptOrderType==='SELL'?'var(--red)':'transparent'};
+        color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};
+        box-shadow:${_ptOrderType==='SELL'?'0 4px 16px rgba(229,57,53,0.3)':'none'};">
+        ▼ SELL
       </button>
     </div>
 
     <!-- Price + Qty inputs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
       <div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:5px;letter-spacing:0.5px;">PRICE (${cur})</div>
-        <input type="number" id="ptPrice" class="form-input" style="margin:0;font-weight:700;font-size:15px;"
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Price (${cur})</div>
+        <input type="number" id="ptPrice" class="form-input"
+          style="margin:0;font-weight:700;font-size:15px;font-family:'Space Mono',monospace;border-radius:10px;"
           value="${asset.price}" oninput="ptCalcTotal()" step="0.01">
       </div>
       <div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:5px;letter-spacing:0.5px;">QUANTITY</div>
-        <input type="number" id="ptQty" class="form-input" style="margin:0;font-weight:700;font-size:15px;"
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Quantity</div>
+        <input type="number" id="ptQty" class="form-input"
+          style="margin:0;font-weight:700;font-size:15px;font-family:'Space Mono',monospace;border-radius:10px;"
           value="1" min="1" oninput="ptCalcTotal()">
       </div>
     </div>
 
     <!-- Quick qty buttons -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;">
-      ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})" style="flex:1;padding:6px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;">${n}</button>`).join('')}
+    <div style="display:flex;gap:5px;margin-bottom:16px;">
+      ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})"
+        style="flex:1;padding:7px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;transition:all 0.12s;"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">${n}</button>`).join('')}
     </div>
 
     ${limitInputHTML}
 
     <!-- Summary box -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;overflow:hidden;">
+      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">ORDER SUMMARY</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <span style="font-size:12px;color:var(--text3);">Order Value</span>
         <div style="text-align:right;">
-          <div id="ptTotal" style="font-size:15px;font-weight:800;color:var(--accent);">\u2014</div>
-          <div id="ptTotalInr" style="font-size:10px;color:var(--text3);"></div>
+          <div id="ptTotal" style="font-size:15px;font-weight:800;font-family:'Space Mono',monospace;color:var(--accent);">—</div>
+          <div id="ptTotalInr" style="font-size:10px;color:var(--text3);margin-top:1px;"></div>
         </div>
       </div>
       ${summaryExtrasHTML}
-      <div style="display:flex;justify-content:space-between;margin-bottom:${maxSell>0?'8px':'0'};">
-        <span style="font-size:12px;color:var(--text3);">Available Balance</span>
-        <span style="font-size:13px;font-weight:700;color:var(--green);">\u20b9${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;${maxSell>0?'margin-bottom:10px;':''}padding-top:10px;border-top:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text3);">Cash Available</span>
+        <span style="font-size:13px;font-weight:700;font-family:'Space Mono',monospace;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
       </div>
       ${holdingsHTML}
     </div>
 
     <!-- Execute button -->
     <button onclick="executePaperTrade()" id="ptExecBtn"
-      style="width:100%;padding:15px;border-radius:12px;border:none;
-      background:${_ptOrderType==='BUY'?'var(--green)':'var(--red)'};
+      style="width:100%;padding:15px;border-radius:14px;border:none;
+      background:${_ptOrderType==='BUY'?'linear-gradient(135deg,#00c950,#00a854)':'linear-gradient(135deg,#ff4444,#e53935)'};
       color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;
-      transition:all 0.15s;letter-spacing:0.3px;">
+      transition:all 0.15s;letter-spacing:0.5px;
+      box-shadow:${_ptOrderType==='BUY'?'0 4px 20px rgba(0,168,84,0.4)':'0 4px 20px rgba(229,57,53,0.4)'};">
       ${execLabel}
     </button>
 
-    <div id="ptMsg" style="font-size:12px;text-align:center;min-height:18px;margin-top:10px;font-weight:600;"></div>
+    <div id="ptMsg" style="font-size:12px;text-align:center;min-height:18px;margin-top:12px;font-weight:600;padding:0 4px;line-height:1.4;"></div>
   </div>`;
 
   ptCalcTotal();
@@ -8190,95 +8254,122 @@ function renderPtHoldings(el, d) {
   fetchUsdInr();
   const holdings = Object.entries(d.holdings).filter(([,h]) => h.qty > 0);
   if (!holdings.length) {
-    el.innerHTML = `<div style="text-align:center;padding:60px 24px;">
-      <div style="font-size:52px;margin-bottom:16px;">📭</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">No holdings yet</div>
-      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Go to Trade tab and make your first paper trade!</div>
-      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))" style="padding:10px 28px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Start Trading</button>
+    el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;">📭</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-0.3px;">No open positions</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;max-width:240px;line-height:1.5;">Place a trade to see your positions here.</div>
+      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))"
+        style="padding:11px 28px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-size:13px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(0,112,243,0.35);">Start Trading</button>
     </div>`;
     return;
   }
 
   const totalInvested = holdings.reduce((a,[,h]) => a + (h.cur==='$'?toInr(h.avgPrice):h.avgPrice) * h.qty, 0);
   const currentValue  = holdings.reduce((a,[sym,h]) => {
-    const asset = getAllPtAssets().find(s => s.sym === sym);
-    const ltp   = asset?.price || h.avgPrice;
-    return a + (h.cur==='$'?toInr(ltp):ltp) * h.qty;
+    const displaySym2 = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
+    const ltp2 = getAllPtAssets().find(s=>s.sym===displaySym2)?.price || h.avgPrice;
+    return a + (h.cur==='$'?toInr(ltp2):ltp2) * h.qty;
   }, 0);
   const pnl    = currentValue - totalInvested;
   const pnlPct = totalInvested > 0 ? ((pnl/totalInvested)*100).toFixed(2) : '0.00';
+  const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Build holding cards
+  const holdingCards = holdings.map(([sym, h]) => {
+    const displaySym = (h.sym || sym).replace('_MIS','').replace('_MARGIN','');
+    const asset      = getAllPtAssets().find(s => s.sym === displaySym);
+    const isUsd      = h.cur === '$';
+    const isMIS      = h.tradeMode === 'intraday';
+    const isMargin   = h.tradeMode === 'margin';
+    const isSpot     = h.tradeMode === 'spot';
+    const isNRML     = h.tradeMode === 'nrml';
+    const ltp        = asset?.price || h.avgPrice;
+    const ltpInr     = isUsd ? toInr(ltp) : ltp;
+    const avgInr     = isUsd ? toInr(h.avgPrice) : h.avgPrice;
+    const plInr      = (ltpInr - avgInr) * h.qty;
+    const plPct      = avgInr > 0 ? ((ltpInr-avgInr)/avgInr*100).toFixed(2) : '0.00';
+    const plPos      = plInr >= 0;
+    const nativeCur  = isUsd ? '$' : '\u20b9';
+    const chgN       = parseFloat(asset?.chg) || 0;
+    const nowIst     = new Date(Date.now() + 5.5*3600000);
+    const minsLeft   = isMIS ? (15*60+20) - (nowIst.getUTCHours()*60+nowIst.getUTCMinutes()) : null;
+    const sqWarn     = (isMIS && minsLeft !== null && minsLeft > 0 && minsLeft < 90);
+
+    // Mode badge
+    const modeLabel  = isMIS?'MIS':isMargin?'3\u00d7':isSpot?'SPOT':isNRML?'NRML':'CNC';
+    const modeBg     = isMIS?'rgba(245,166,35,0.12)':isMargin?'rgba(247,147,26,0.12)':isSpot?'rgba(247,147,26,0.08)':'rgba(0,168,84,0.1)';
+    const modeCol    = isMIS?'#f5a623':isMargin?'#f7931a':isSpot?'#f7931a':'var(--green)';
+
+    const sellLabel  = isMIS||isMargin ? 'Close' : 'Sell All';
+
+    return '<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;padding:0;margin-bottom:10px;overflow:hidden;transition:border-color 0.15s;"'
+      + ' onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+      // Top row
+      + '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px 10px;">'
+        // Logo
+        + '<div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:\'Space Mono\',monospace;letter-spacing:0.5px;'
+        + 'background:linear-gradient(135deg,rgba(0,112,243,0.12),rgba(0,112,243,0.04));border:1px solid rgba(0,112,243,0.2);color:var(--accent);">' + displaySym.slice(0,4) + '</div>'
+        // Name + mode badge
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+            + '<span style="font-weight:800;font-size:14px;">' + displaySym + '</span>'
+            + '<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:0.5px;background:' + modeBg + ';color:' + modeCol + ';">' + modeLabel + '</span>'
+            + (sqWarn ? '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(245,166,35,0.12);color:#f5a623;font-weight:700;">\u23f0 ' + minsLeft + 'm</span>' : '')
+          + '</div>'
+          + '<div style="font-size:10px;color:var(--text3);margin-top:3px;font-family:\'Space Mono\',monospace;">'
+            + 'Avg ' + nativeCur + Number(h.avgPrice).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2})
+            + ' &middot; ' + h.qty + ' units'
+          + '</div>'
+        + '</div>'
+        // LTP + day chg
+        + '<div style="text-align:right;flex-shrink:0;">'
+          + '<div style="font-family:\'Space Mono\',monospace;font-weight:700;font-size:14px;">' + nativeCur + Number(ltp).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2}) + '</div>'
+          + '<div style="font-size:11px;font-weight:700;margin-top:2px;color:' + (chgN>=0?'var(--green)':'var(--red)') + ';">' + (asset?.chg||'\u2014') + '</div>'
+        + '</div>'
+      + '</div>'
+      // P&L bar
+      + '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:' + (plPos?'rgba(0,168,84,0.05)':'rgba(229,57,53,0.05)') + ';border-top:1px solid var(--border);">'
+        + '<div style="display:flex;align-items:center;gap:8px;">'
+          + '<span style="font-size:10px;color:var(--text3);">Unrealised P&amp;L</span>'
+          + '<span style="font-size:12px;font-weight:800;font-family:\'Space Mono\',monospace;color:' + (plPos?'var(--green)':'var(--red)') + ';">'
+            + (plPos?'+':'\u2212') + '\u20b9' + Math.abs(Math.round(plInr)).toLocaleString('en-IN')
+            + ' <span style="font-weight:600;font-size:10px;">(' + (plPos?'+':'') + plPct + '%)</span>'
+          + '</span>'
+        + '</div>'
+        + '<button onclick="quickSellAll(\'' + sym + '\')"'
+          + ' style="padding:5px 14px;border-radius:7px;border:1px solid ' + (plPos?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)') + ';background:' + (plPos?'rgba(0,168,84,0.08)':'rgba(229,57,53,0.08)') + ';color:' + (plPos?'var(--green)':'var(--red)') + ';font-size:11px;font-weight:700;cursor:pointer;transition:all 0.12s;"'
+          + ' onmouseover="this.style.opacity=\'0.75\'" onmouseout="this.style.opacity=\'1\'">'
+          + sellLabel
+        + '</button>'
+      + '</div>'
+    + '</div>';
+  }).join('');
 
   el.innerHTML = `
-    <!-- Rate badge + auto-refresh -->
-    <div style="padding:6px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">USD/INR: <span style="color:var(--accent);font-weight:700;">₹${_usdInr.toFixed(2)}</span></span>
-      <span style="font-size:10px;color:var(--text3);">Live P&L · updates every 30s</span>
-    </div>
-    <!-- Portfolio summary -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="padding:14px 16px;background:var(--bg2);">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">INVESTED</div>
-        <div style="font-weight:800;font-size:15px;">₹${totalInvested.toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+    <!-- Portfolio summary strip -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg1);">
+      <div style="padding:14px 16px;border-right:1px solid var(--border);">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">INVESTED</div>
+        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;">\u20b9${Math.round(totalInvested).toLocaleString('en-IN')}</div>
       </div>
-      <div style="padding:14px 16px;background:var(--bg2);">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">CURRENT</div>
-        <div style="font-weight:800;font-size:15px;color:var(--accent);">₹${currentValue.toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+      <div style="padding:14px 16px;border-right:1px solid var(--border);">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">CURRENT</div>
+        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;color:var(--accent);">\u20b9${Math.round(currentValue).toLocaleString('en-IN')}</div>
       </div>
-      <div style="padding:14px 16px;background:var(--bg2);">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:4px;">P&L</div>
-        <div style="font-weight:800;font-size:15px;color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}₹${Math.abs(pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
-        <div style="font-size:10px;font-weight:700;color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}${pnlPct}%</div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">P&amp;L</div>
+        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;color:${pnlColor};">${pnl>=0?'+':'\u2212'}\u20b9${Math.abs(Math.round(pnl)).toLocaleString('en-IN')}</div>
+        <div style="font-size:10px;font-weight:700;color:${pnlColor};">${pnl>=0?'+':''}${pnlPct}%</div>
       </div>
     </div>
-    <!-- Holdings list -->
-    <div style="padding:12px 16px;">
-      ${holdings.map(([sym, h]) => {
-        const asset   = getAllPtAssets().find(s => s.sym === sym);
-        const isUsd   = h.cur === '$';
-        const displaySym = (h.sym || sym.replace('_MIS','')).replace('_MIS','');
-        const isMIS  = h.tradeMode === 'intraday';
-        const ltp    = (getAllPtAssets().find(s=>s.sym===displaySym))?.price || h.avgPrice;
-        const ltpInr  = isUsd ? toInr(ltp) : ltp;
-        const avgInr  = isUsd ? toInr(h.avgPrice) : h.avgPrice;
-        const plInr   = (ltpInr - avgInr) * h.qty;
-        const plPct   = avgInr > 0 ? ((ltpInr - avgInr)/avgInr*100).toFixed(2) : '0.00';
-        const chgN    = parseFloat((getAllPtAssets().find(s=>s.sym===displaySym))?.chg) || 0;
-        const nativeCur = isUsd ? '$' : '\u20b9';
-        // Intraday sq-off countdown
-        const nowIst  = new Date(Date.now() + 5.5*3600000);
-        const minsToSqOff = isMIS ? (15*60+20) - (nowIst.getUTCHours()*60+nowIst.getUTCMinutes()) : null;
-        const sqWarn  = (isMIS && minsToSqOff !== null && minsToSqOff > 0 && minsToSqOff < 90)
-          ? `<div style="font-size:10px;font-weight:700;color:#f5a623;margin-top:3px;">⏰ Auto sq-off in ${minsToSqOff}m</div>` : '';
-        return `
-        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg2);border:1.5px solid ${isMIS?'rgba(0,112,243,0.35)':'var(--border)'};border-radius:14px;margin-bottom:10px;">
-          <div style="width:42px;height:42px;border-radius:11px;background:${isMIS?'rgba(0,112,243,0.08)':'var(--bg3)'};border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${displaySym.slice(0,4)}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <span style="font-weight:800;font-size:14px;">${displaySym}</span>
-              <span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:0.5px;
-                background:${isMIS?'rgba(0,112,243,0.13)':'rgba(0,168,84,0.11)'};
-                color:${isMIS?'#3b82f6':'var(--green)'};">${isMIS?'⚡ MIS':'📦 CNC'}</span>
-            </div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">
-              Avg ${nativeCur}${h.avgPrice.toLocaleString(undefined,{maximumFractionDigits:2})}${isUsd?' (\u20b9'+Math.round(avgInr).toLocaleString('en-IN')+')':''} · ${h.qty} units
-            </div>
-            <div style="font-size:11px;margin-top:3px;font-weight:800;color:${plInr>=0?'var(--green)':'var(--red)'};">
-              ${plInr>=0?'+':''}\u20b9${Math.abs(Math.round(plInr)).toLocaleString('en-IN')}
-              <span style="font-weight:600;">(${plInr>=0?'+':''}${plPct}%)</span>
-            </div>
-            ${sqWarn}
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:800;font-size:13px;">${nativeCur}${Number(ltp).toLocaleString()}</div>
-            ${isUsd ? `<div style="font-size:10px;color:var(--text3);">\u20b9${Math.round(ltpInr).toLocaleString('en-IN')}</div>` : ''}
-            <div style="font-size:11px;font-weight:700;color:${chgN>=0?'var(--green)':'var(--red)'};">${(getAllPtAssets().find(s=>s.sym===displaySym))?.chg||'—'}</div>
-            <button onclick="quickSellAll('${sym}')"
-              style="margin-top:6px;padding:4px 12px;border-radius:7px;border:none;background:rgba(229,57,53,0.12);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;">
-              ${isMIS ? 'Sq-off' : 'Sell All'}
-            </button>
-          </div>
-        </div>`;
-      }).join('')}
+    <!-- USD/INR + refresh note -->
+    <div style="padding:7px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">USD/INR <span style="color:var(--accent);font-weight:700;">\u20b9${_usdInr.toFixed(2)}</span></span>
+      <span style="font-size:10px;color:var(--text3);">Live P&amp;L</span>
+    </div>
+    <!-- Positions list -->
+    <div style="padding:14px 16px;">
+      ${holdingCards}
     </div>`;
 }
 
@@ -8320,140 +8411,199 @@ function quickSellAll(key) {
 }
 
 function renderPtOrders(el) {
-  const orders = getPendingOrders();
+  const orders  = getPendingOrders();
   const pending = orders.filter(o => o.status === 'pending');
-  const filled  = orders.filter(o => o.status === 'filled').slice(0, 10);
+  const filled  = orders.filter(o => o.status === 'filled').slice(0, 15);
 
   if (!orders.length) {
-    el.innerHTML = `<div style="text-align:center;padding:60px 24px;">
-      <div style="font-size:48px;margin-bottom:16px;">📋</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">No pending orders</div>
-      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Place a Limit or SL-M order from the Trade tab to see it here.</div>
-      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))" style="padding:10px 28px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Go to Trade</button>
+    el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;">📋</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-0.3px;">No orders yet</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;max-width:240px;line-height:1.5;">Place a Limit or SL-M order from the Trade tab.</div>
+      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))"
+        style="padding:11px 28px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(0,112,243,0.35);">Go to Trade</button>
     </div>`;
     return;
   }
 
-  const renderOrder = (o, isPending) => {
-    const typeColor = o.orderType === 'limit' ? '#0070f3' : 'var(--red)';
-    const typeLabel = o.orderType === 'limit' ? '📌 LIMIT' : '🛑 SL-M';
-    const sideColor = o.side === 'BUY' ? 'var(--green)' : 'var(--red)';
-    const triggerLabel = o.orderType === 'limit'
-      ? (o.side === 'BUY' ? `Execute when ≤ ${o.cur}${o.limitPrice}` : `Execute when ≥ ${o.cur}${o.limitPrice}`)
-      : (o.side === 'BUY' ? `Trigger when ≥ ${o.cur}${o.triggerPrice}` : `Trigger when ≤ ${o.cur}${o.triggerPrice}`);
-    const modeLabel = o.tradeMode === 'intraday' ? 'MIS' : o.tradeMode === 'spot' ? 'SPOT' : o.tradeMode === 'margin' ? '3×' : o.tradeMode === 'nrml' ? 'NRML' : 'CNC';
+  const renderOrderCard = (o, isPending) => {
+    const isBuy     = o.side === 'BUY';
+    const isLimit   = o.orderType === 'limit';
+    const sideColor = isBuy ? 'var(--green)' : 'var(--red)';
+    const sideBg    = isBuy ? 'rgba(0,168,84,0.1)' : 'rgba(229,57,53,0.1)';
+    const typeColor = isLimit ? '#3b82f6' : '#f59e0b';
+    const typeBg    = isLimit ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)';
+    const typeLabel = isLimit ? 'LIMIT' : 'SL-M';
+    const modeLabel = o.tradeMode === 'intraday' ? 'MIS' : o.tradeMode === 'spot' ? 'SPOT' : o.tradeMode === 'margin' ? '3\u00d7' : o.tradeMode === 'nrml' ? 'NRML' : 'CNC';
+    const triggerTxt = isLimit
+      ? (isBuy ? 'Fills \u2264 ' + o.cur + (o.limitPrice||'\u2014') : 'Fills \u2265 ' + o.cur + (o.limitPrice||'\u2014'))
+      : (isBuy ? 'Triggers \u2265 ' + o.cur + (o.triggerPrice||'\u2014') : 'Triggers \u2264 ' + o.cur + (o.triggerPrice||'\u2014'));
 
-    return `<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg2);border:1.5px solid ${isPending?'rgba(0,112,243,0.25)':'var(--border)'};border-radius:14px;margin-bottom:10px;">
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-          <span style="font-weight:800;font-size:14px;">${o.sym}</span>
-          <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:${sideColor === 'var(--green)' ? 'rgba(0,168,84,0.12)' : 'rgba(229,57,53,0.12)'};color:${sideColor};">${o.side}</span>
-          <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(0,112,243,0.1);color:${typeColor};">${typeLabel}</span>
-          <span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--bg3);color:var(--text3);">${modeLabel}</span>
-        </div>
-        <div style="font-size:12px;color:var(--text2);font-weight:600;">${o.qty} units @ ${o.cur}${o.price}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${triggerLabel}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">${isPending ? '🕐 Placed: '+o.createdAt : '✅ Filled @ '+o.cur+(o.filledPrice||'—')+' · '+o.filledAt}</div>
-      </div>
-      ${isPending ? `<button onclick="cancelPendingOrder(${o.id})"
-        style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(229,57,53,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">
-        Cancel
-      </button>` : `<span style="font-size:10px;font-weight:700;color:var(--green);padding:3px 8px;border-radius:6px;background:rgba(0,168,84,0.1);">FILLED</span>`}
-    </div>`;
+    return '<div style="background:var(--bg2);border:1.5px solid ' + (isPending?'rgba(59,130,246,0.2)':'var(--border)') + ';border-radius:14px;overflow:hidden;margin-bottom:10px;">'
+      + '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;">'
+        // Symbol + badges
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px;">'
+            + '<span style="font-weight:800;font-size:14px;">' + o.sym + '</span>'
+            + '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;background:' + sideBg + ';color:' + sideColor + ';">' + o.side + '</span>'
+            + '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;background:' + typeBg + ';color:' + typeColor + ';">' + typeLabel + '</span>'
+            + '<span style="font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;background:var(--bg3);color:var(--text3);">' + modeLabel + '</span>'
+          + '</div>'
+          + '<div style="font-size:11px;color:var(--text2);font-weight:600;font-family:\'Space Mono\',monospace;">' + o.qty + ' units @ ' + o.cur + Number(o.price).toLocaleString() + '</div>'
+          + '<div style="font-size:10px;color:' + typeColor + ';margin-top:3px;font-weight:600;">' + triggerTxt + '</div>'
+          + '<div style="font-size:9px;color:var(--text3);margin-top:3px;font-family:\'Space Mono\',monospace;">'
+            + (isPending ? '\u23f1 ' + (o.createdAt||'\u2014') : '\u2713 Filled @ ' + o.cur + (o.filledPrice||'\u2014') + ' &middot; ' + (o.filledAt||'\u2014'))
+          + '</div>'
+        + '</div>'
+        // Action / status
+        + (isPending
+          ? '<button onclick="cancelPendingOrder(' + o.id + ')"'
+              + ' style="padding:6px 14px;border-radius:8px;border:1px solid rgba(229,57,53,0.3);background:rgba(229,57,53,0.08);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.12s;"'
+              + ' onmouseover="this.style.background=\'rgba(229,57,53,0.15)\'" onmouseout="this.style.background=\'rgba(229,57,53,0.08)\'">Cancel</button>'
+          : '<span style="font-size:9px;font-weight:800;padding:4px 9px;border-radius:6px;background:rgba(0,168,84,0.1);color:var(--green);letter-spacing:0.5px;flex-shrink:0;">FILLED</span>')
+      + '</div>'
+    + '</div>';
   };
 
-  el.innerHTML = `<div style="padding:12px 16px;">
-    ${pending.length ? `
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:10px;">PENDING ORDERS (${pending.length})</div>
-      ${pending.map(o => renderOrder(o, true)).join('')}
-    ` : ''}
-    ${filled.length ? `
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-top:${pending.length?'16px':'0'};margin-bottom:10px;">RECENTLY FILLED</div>
-      ${filled.map(o => renderOrder(o, false)).join('')}
-    ` : ''}
-  </div>`;
+  el.innerHTML = '<div style="padding:14px 16px;">'
+    + (pending.length
+      ? '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1.5px;margin-bottom:10px;">PENDING (' + pending.length + ')</div>'
+        + pending.map(o => renderOrderCard(o, true)).join('')
+      : '')
+    + (filled.length
+      ? '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1.5px;margin-top:' + (pending.length?'18px':'0') + ';margin-bottom:10px;">EXECUTED</div>'
+        + filled.map(o => renderOrderCard(o, false)).join('')
+      : '')
+    + '</div>';
 }
 
 function renderPtHistory(el) {
   const h = getPaperHistory();
   if (!h.length) {
-    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">
-      <div style="font-size:40px;margin-bottom:12px;">📋</div>
-      <div style="font-weight:700;margin-bottom:6px;">No trade history yet</div>
-      <div style="font-size:12px;">Your executed trades will appear here.</div>
+    el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;">🗒</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-0.3px;">No trade history</div>
+      <div style="font-size:13px;color:var(--text3);max-width:240px;line-height:1.5;">Your executed trades will appear here after you trade.</div>
     </div>`;
     return;
   }
-  el.innerHTML = `<div style="padding:12px 16px;">
-    ${h.map(t => `
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;">
-      <div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
-        background:${t.type==='BUY'?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};
-        color:${t.type==='BUY'?'var(--green)':'var(--red)'};">
-        ${t.type==='BUY'?'▲':'▼'}
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-          <span style="font-weight:800;font-size:13px;">${t.sym}</span>
-          <span style="font-weight:400;color:var(--text3);">× ${t.qty}</span>
-          ${t.mode?`<span style="font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px;background:${t.mode==='intraday'?'rgba(0,112,243,0.12)':'rgba(0,168,84,0.1)'};color:${t.mode==='intraday'?'#3b82f6':'var(--green)'}">${t.mode==='intraday'?'MIS':'CNC'}</span>`:''}
-          ${t.auto?`<span style="font-size:8px;padding:1px 5px;border-radius:4px;background:rgba(245,166,35,0.1);color:#f5a623;font-weight:700;">AUTO</span>`:''}
-        </div>
-        <div style="font-size:10px;color:var(--text3);">${t.ts}${t.stt>0?' · STT ₹'+t.stt:''}</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-weight:700;font-size:13px;">${t.cur||'₹'}${Number(t.price).toLocaleString()}</div>
-        <div style="font-size:11px;font-weight:700;color:${t.type==='BUY'?'var(--red)':'var(--green)'};">
-          ${t.type==='BUY'?'−':'+'} ₹${(t.net||t.totalInr||t.price*t.qty).toLocaleString('en-IN',{maximumFractionDigits:0})}
-        </div>
-      </div>
-    </div>`).join('')}
-  </div>`;
+
+  const rows = h.map(t => {
+    const isBuy    = t.type === 'BUY';
+    const isUsd    = t.cur === '$';
+    const mode     = t.mode || 'delivery';
+    const modeLabel = mode==='intraday'?'MIS':mode==='margin'?'3\u00d7':mode==='spot'?'SPOT':mode==='nrml'?'NRML':'CNC';
+    const modeBg   = mode==='intraday'?'rgba(245,166,35,0.1)':mode==='margin'?'rgba(247,147,26,0.1)':mode==='spot'?'rgba(247,147,26,0.08)':'rgba(0,168,84,0.08)';
+    const modeCol  = mode==='intraday'?'#f5a623':mode==='margin'?'#f7931a':mode==='spot'?'#f7931a':'var(--green)';
+    const charges  = (t.stt||0) + (t.ctt||0) + (t.fee||0);
+    const netVal   = t.net || t.totalInr || (t.price * t.qty);
+
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background 0.12s;"'
+      + ' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'transparent\'">'
+      // Side icon
+      + '<div style="width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;'
+        + 'background:' + (isBuy?'rgba(0,168,84,0.1)':'rgba(229,57,53,0.1)') + ';'
+        + 'color:' + (isBuy?'var(--green)':'var(--red)') + ';">'
+        + (isBuy?'\u25b2':'\u25bc')
+      + '</div>'
+      // Details
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px;">'
+          + '<span style="font-weight:800;font-size:13px;">' + t.sym + '</span>'
+          + '<span style="font-size:9px;color:var(--text3);">\u00d7' + t.qty + '</span>'
+          + '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:' + modeBg + ';color:' + modeCol + ';">' + modeLabel + '</span>'
+          + (t.auto ? '<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(245,166,35,0.1);color:#f5a623;font-weight:700;">AUTO</span>' : '')
+          + (t.orderType && t.orderType!=='market' ? '<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.1);color:#3b82f6;font-weight:700;">' + (t.orderType==='limit'?'LIMIT':'SL-M') + '</span>' : '')
+        + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;">'
+          + (t.ts||'\u2014')
+          + (charges>0 ? ' &middot; fees \u20b9' + charges.toLocaleString('en-IN') : '')
+        + '</div>'
+      + '</div>'
+      // Amount
+      + '<div style="text-align:right;flex-shrink:0;">'
+        + '<div style="font-family:\'Space Mono\',monospace;font-weight:700;font-size:12px;color:var(--text2);">' + (t.cur||'\u20b9') + Number(t.price).toLocaleString(undefined,{maximumFractionDigits:4}) + '</div>'
+        + '<div style="font-size:12px;font-weight:700;font-family:\'Space Mono\',monospace;color:' + (isBuy?'var(--red)':'var(--green)') + ';margin-top:2px;">'
+          + (isBuy?'\u2212':'+') + '\u20b9' + Math.round(Math.abs(netVal)).toLocaleString('en-IN')
+        + '</div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+
+  el.innerHTML = '<div>'
+    + '<div style="padding:9px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">'
+      + '<span style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1.5px;">TRADE LOG (' + h.length + ')</span>'
+      + '<span style="font-size:10px;color:var(--text3);">Most recent first</span>'
+    + '</div>'
+    + rows
+    + '</div>';
 }
 
 function renderPtLeaderboard(el, d) {
   const holdings = Object.entries(d.holdings).filter(([,h])=>h.qty>0);
   const invested = holdings.reduce((a,[,h])=>a+(h.cur==='$'?toInr(h.avgPrice):h.avgPrice)*h.qty,0);
   const current  = holdings.reduce((a,[sym,h])=>{
-    const p = getAllPtAssets().find(s=>s.sym===sym)?.price||h.avgPrice;
+    const ds = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
+    const p  = getAllPtAssets().find(s=>s.sym===ds)?.price||h.avgPrice;
     return a+(h.cur==='$'?toInr(p):p)*h.qty;
   },0);
-  const myPnl = current - invested;
-  const myPct = invested>0?((myPnl/invested)*100).toFixed(2):0;
-  const board = [];
-  const user  = getUser();
-  if (user && getPaperHistory().length > 0) {
-    board.push({name:user.displayName||user.name, pnl:myPnl, pct:parseFloat(myPct), trades:getPaperHistory().length, isMe:true});
-  }
+  const hist     = getPaperHistory();
+  const myPnl    = current - invested;
+  const myPct    = invested>0?((myPnl/invested)*100).toFixed(2):0;
+  const user     = getUser();
+  const capital  = 1000000; // ₹10L
+  const totalPnl = d.balance + current - capital;
+  const totalPct = ((totalPnl/capital)*100).toFixed(2);
+  const pnlPos   = totalPnl >= 0;
 
-  el.innerHTML = `<div style="padding:16px;">
-    <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:16px;letter-spacing:1px;">YOUR PAPER PERFORMANCE</div>
-    ${!board.length
-      ? `<div style="text-align:center;padding:40px;color:var(--text3);">
-          <div style="font-size:40px;margin-bottom:12px;">📊</div>
-          <div style="font-weight:700;margin-bottom:6px;">No trades yet</div>
-          <div style="font-size:12px;">Start trading to see your stats here.</div>
-        </div>`
-      : board.map((t,i)=>`
-        <div style="display:flex;align-items:center;gap:14px;padding:16px;background:rgba(0,112,243,0.05);border:1.5px solid var(--accent);border-radius:14px;margin-bottom:10px;">
-          <div style="font-size:28px;">🥇</div>
-          <div style="flex:1;">
-            <div style="font-weight:800;font-size:15px;">${t.name} (You)</div>
-            <div style="font-size:11px;color:var(--text3);">${t.trades} trades executed</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:800;font-size:16px;color:${t.pnl>=0?'var(--green)':'var(--red)'};">${t.pnl>=0?'+':''}₹${Math.abs(t.pnl).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
-            <div style="font-size:12px;font-weight:700;color:${t.pct>=0?'var(--green)':'var(--red)'};">${t.pct>=0?'+':''}${t.pct}%</div>
-          </div>
-        </div>`).join('')
-    }
-    <div style="margin-top:24px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">
-      <div style="font-size:11px;font-weight:700;margin-bottom:8px;">📈 PORTFOLIO SNAPSHOT</div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text3);">Starting Capital</span><span style="font-weight:700;">₹10,00,000</span></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text3);">Current Balance</span><span style="font-weight:700;color:var(--accent);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span></div>
-      <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--text3);">Total Trades</span><span style="font-weight:700;">${getPaperHistory().length}</span></div>
-    </div>
-  </div>`;
+  // Compute trade stats
+  const buyTrades  = hist.filter(t=>t.type==='BUY').length;
+  const sellTrades = hist.filter(t=>t.type==='SELL').length;
+  const winTrades  = hist.filter(t=>t.type==='SELL'&&(t.net||0)>(t.price||0)*(t.qty||1)*0.995).length;
+  const winRate    = sellTrades>0?Math.round(winTrades/sellTrades*100):0;
+
+  const statCard = (label, value, sub, color) =>
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">'
+    + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1.5px;margin-bottom:6px;">' + label + '</div>'
+    + '<div style="font-size:18px;font-weight:800;font-family:\'Space Mono\',monospace;' + (color?'color:'+color+';':'') + '">' + value + '</div>'
+    + (sub ? '<div style="font-size:10px;color:var(--text3);margin-top:3px;">' + sub + '</div>' : '')
+    + '</div>';
+
+  el.innerHTML = '<div style="padding:16px;">'
+    // Performance hero
+    + '<div style="background:' + (pnlPos?'linear-gradient(135deg,rgba(0,168,84,0.12),rgba(0,168,84,0.04))':'linear-gradient(135deg,rgba(229,57,53,0.1),rgba(229,57,53,0.04))') + ';border:1.5px solid ' + (pnlPos?'rgba(0,168,84,0.25)':'rgba(229,57,53,0.25)') + ';border-radius:16px;padding:20px;margin-bottom:16px;">'
+      + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1.5px;margin-bottom:8px;">TOTAL RETURN ON \u20b910,00,000</div>'
+      + '<div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">'
+        + '<div style="font-size:32px;font-weight:800;font-family:\'Space Mono\',monospace;letter-spacing:-1px;color:' + (pnlPos?'var(--green)':'var(--red)') + ';line-height:1;">'
+          + (pnlPos?'+':'\u2212') + '\u20b9' + Math.abs(Math.round(totalPnl)).toLocaleString('en-IN')
+        + '</div>'
+        + '<div style="padding:4px 10px;border-radius:8px;background:' + (pnlPos?'rgba(0,168,84,0.15)':'rgba(229,57,53,0.15)') + ';color:' + (pnlPos?'var(--green)':'var(--red)') + ';font-weight:800;font-size:14px;margin-bottom:4px;">'
+          + (pnlPos?'+':'') + totalPct + '%'
+        + '</div>'
+      + '</div>'
+      + '<div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;">'
+        + '<div><div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Cash Balance</div><div style="font-size:12px;font-weight:700;font-family:\'Space Mono\',monospace;">\u20b9' + d.balance.toLocaleString('en-IN',{maximumFractionDigits:0}) + '</div></div>'
+        + '<div><div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Portfolio Value</div><div style="font-size:12px;font-weight:700;font-family:\'Space Mono\',monospace;color:var(--accent);">\u20b9' + Math.round(current).toLocaleString('en-IN') + '</div></div>'
+        + '<div><div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Open Positions</div><div style="font-size:12px;font-weight:700;">' + holdings.length + '</div></div>'
+      + '</div>'
+    + '</div>'
+    // Stats grid
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">'
+      + statCard('TOTAL TRADES', hist.length, buyTrades + ' buys &middot; ' + sellTrades + ' sells')
+      + statCard('WIN RATE', winRate + '%', sellTrades + ' exits analysed', winRate>=50?'var(--green)':'var(--red)')
+      + statCard('UNREALISED P&L', (myPnl>=0?'+':'\u2212') + '\u20b9' + Math.abs(Math.round(myPnl)).toLocaleString('en-IN'), (myPct>=0?'+':'') + myPct + '% on open positions', myPnl>=0?'var(--green)':'var(--red)')
+      + statCard('CAPITAL DEPLOYED', '\u20b9' + Math.round(invested).toLocaleString('en-IN'), Math.round(invested/capital*100) + '% of starting capital')
+    + '</div>'
+    // Reset CTA
+    + '<div style="padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:space-between;">'
+      + '<div>'
+        + '<div style="font-size:12px;font-weight:700;margin-bottom:2px;">Reset Portfolio</div>'
+        + '<div style="font-size:11px;color:var(--text3);">Start fresh with \u20b910,00,000</div>'
+      + '</div>'
+      + '<button onclick="resetPaperPortfolio()" style="padding:8px 16px;border-radius:9px;border:1px solid rgba(229,57,53,0.3);background:rgba(229,57,53,0.08);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.12s;"'
+        + ' onmouseover="this.style.background=\'rgba(229,57,53,0.15)\'" onmouseout="this.style.background=\'rgba(229,57,53,0.08)\'">↺ Reset</button>'
+    + '</div>'
+  + '</div>';
 }
 
 function sellPaperHolding(sym) { quickSellAll(sym); }
@@ -8510,8 +8660,10 @@ function switchIpoTab(tab, btn) {
 function renderIpoPage() {
   const el = document.getElementById('ipoBody');
   if (!el) return;
+  // Trigger live fetch every time page renders (debounced inside fetchLiveIpoData)
+  fetchLiveIpoData();
   const list = IPO_DATA[_ipoTab] || [];
-  if (!list.length) { el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">No data</div>`; return; }
+  if (!list.length) { el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">No IPO data available</div>`; return; }
 
   if (_ipoTab === 'upcoming' || _ipoTab === 'open') {
     el.innerHTML = list.map(ipo => `
@@ -8597,6 +8749,16 @@ const HEATMAP_DATA = [
 function renderHeatmap() {
   const el = document.getElementById('heatmapBody');
   if (!el) return;
+  // Merge live prices into HEATMAP_DATA synchronously before rendering
+  HEATMAP_DATA.forEach(sector => {
+    sector.stocks.forEach(cell => {
+      const live = liveStocks.find(s => s.sym === cell.sym);
+      if (live && live.chg) {
+        const pct = parseFloat(live.chg);
+        if (!isNaN(pct)) cell.chg = parseFloat(pct.toFixed(2));
+      }
+    });
+  });
   el.innerHTML = `
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
       <span style="font-size:12px;color:var(--text3);">Color scale:</span>
@@ -12129,6 +12291,39 @@ async function refreshEarningsData() {
   }
 }
 
+// ── LIVE IPO DATA ─────────────────────────────────────────
+let _ipoLastFetch = 0;
+
+async function fetchLiveIpoData() {
+  const now = Date.now();
+  if (now - _ipoLastFetch < 60000) return; // debounce: max 1 req/min
+  _ipoLastFetch = now;
+  try {
+    const res = await fetch(`${API_BASE}/ipo`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error('IPO endpoint not available');
+    const json = await res.json();
+    // Expect: { upcoming:[], open:[], allotment:[], listed:[] }
+    let updated = false;
+    ['upcoming','open','allotment','listed'].forEach(tab => {
+      if (json[tab] && Array.isArray(json[tab]) && json[tab].length) {
+        IPO_DATA[tab] = json[tab];
+        updated = true;
+      }
+    });
+    if (updated) {
+      if (_activePage === 'ipo') renderIpoPage();
+      // Update live status bar timestamp
+      const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+      const el = document.getElementById('live-ts-page-ipo');
+      if (el) el.textContent = '● Updated ' + ts + ' IST';
+      console.log('[IPO] Live data loaded from Railway');
+    }
+  } catch(e) {
+    // Railway /api/ipo not yet implemented — silently ignore, keep static data
+    console.log('[IPO] Live fetch failed, using static data:', e.message);
+  }
+}
+
 async function refreshFiiData() {
   const data = await fetchFiiFromRailway();
   // Only update if Railway returns real, non-zero data
@@ -12172,7 +12367,8 @@ function injectLiveStatusBars() {
   addLiveStatusBar('page-paper',     'P&L live · Updates every 30s');
   addLiveStatusBar('page-screener',  'Live prices · Updates every 30s');
   addLiveStatusBar('page-compare',   'Live prices · Updates every 30s');
-  addLiveStatusBar('page-ipo',       'Updated weekly');
+  addLiveStatusBar('page-ipo',       'Live · Auto-refreshes every 10 min');
+  addLiveStatusBar('page-earnings',  'Live · Auto-refreshes every 5 min');
   addLiveStatusBar('page-mf',        'NAV from AMFI India');
 }
 
@@ -12213,9 +12409,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh FII every hour
   setInterval(refreshFiiData, 60 * 60 * 1000);
   // Fetch live earnings/events from Railway on load
-  setTimeout(refreshEarningsData, 5000);
+  setTimeout(refreshEarningsData, 1000); // fast initial load
+  // Fetch live IPO data on startup and every 10 min
+  setTimeout(fetchLiveIpoData, 2000);
+  setInterval(fetchLiveIpoData, 10 * 60 * 1000);
   // Refresh earnings every 6 hours
-  setInterval(refreshEarningsData, 6 * 60 * 60 * 1000);
+  setInterval(refreshEarningsData, 5 * 60 * 1000); // every 5 min
   // Fetch live Nifty spot for options chain
   setTimeout(fetchLiveNiftySpot, 4000);
   setInterval(fetchLiveNiftySpot, 60000);
