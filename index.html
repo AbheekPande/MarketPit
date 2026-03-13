@@ -2037,19 +2037,37 @@ const CG_IDS = {
 
 // Yahoo Finance symbol map for NSE stocks
 const YF_STOCK_MAP = {
-  'RELIANCE':'RELIANCE.NS','TCS':'TCS.NS','HDFCBANK':'HDFCBANK.NS',
-  'INFY':'INFY.NS','SBIN':'SBIN.NS','ICICIBANK':'ICICIBANK.NS',
-  'WIPRO':'WIPRO.NS','TATAMOTORS':'TATAMOTORS.NS','HCLTECH':'HCLTECH.NS',
-  'BAJFINANCE':'BAJFINANCE.NS','LT':'LT.NS','AXISBANK':'AXISBANK.NS',
-  'KOTAKBANK':'KOTAKBANK.NS','MARUTI':'MARUTI.NS','SUNPHARMA':'SUNPHARMA.NS',
-  'TITAN':'TITAN.NS','NESTLEIND':'NESTLEIND.NS','ASIANPAINT':'ASIANPAINT.NS',
-  'TECHM':'TECHM.NS','NTPC':'NTPC.NS','ONGC':'ONGC.NS','COALINDIA':'COALINDIA.NS',
-  'JSWSTEEL':'JSWSTEEL.NS','TATASTEEL':'TATASTEEL.NS','CIPLA':'CIPLA.NS',
-  'DRREDDY':'DRREDDY.NS','ADANIENT':'ADANIENT.NS','HEROMOTOCO':'HEROMOTOCO.NS',
-  'ULTRACEMCO':'ULTRACEMCO.NS','POWERGRID':'POWERGRID.NS',
+  // Banking
+  'HDFCBANK':'HDFCBANK.NS','SBIN':'SBIN.NS','ICICIBANK':'ICICIBANK.NS',
+  'AXISBANK':'AXISBANK.NS','KOTAKBANK':'KOTAKBANK.NS','INDUSINDBK':'INDUSINDBK.NS',
+  // IT
+  'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','HCLTECH':'HCLTECH.NS',
+  'TECHM':'TECHM.NS','LTIM':'LTIM.NS',
+  // Auto
+  'TATAMOTORS':'TATAMOTORS.NS','MARUTI':'MARUTI.NS','HEROMOTOCO':'HEROMOTOCO.NS',
+  'EICHERMOT':'EICHERMOT.NS','M&M':'M%26M.NS',
+  // Pharma
+  'SUNPHARMA':'SUNPHARMA.NS','DRREDDY':'DRREDDY.NS','CIPLA':'CIPLA.NS',
+  'DIVISLAB':'DIVISLAB.NS','APOLLOHOSP':'APOLLOHOSP.NS',
+  // Energy
+  'RELIANCE':'RELIANCE.NS','ONGC':'ONGC.NS','BPCL':'BPCL.NS',
+  'IOC':'IOC.NS','NTPC':'NTPC.NS',
+  // Metals
+  'TATASTEEL':'TATASTEEL.NS','JSWSTEEL':'JSWSTEEL.NS',
+  'HINDALCO':'HINDALCO.NS','COALINDIA':'COALINDIA.NS',
+  // FMCG
+  'NESTLEIND':'NESTLEIND.NS','BRITANNIA':'BRITANNIA.NS',
+  'ITC':'ITC.NS','HINDUNILVR':'HINDUNILVR.NS',
+  // Infra/Utilities
+  'LT':'LT.NS','POWERGRID':'POWERGRID.NS',
+  'ADANIENT':'ADANIENT.NS','ULTRACEMCO':'ULTRACEMCO.NS',
+  // Finance/Consumer
+  'BAJFINANCE':'BAJFINANCE.NS','BAJAJFINSV':'BAJAJFINSV.NS',
+  'TITAN':'TITAN.NS','ASIANPAINT':'ASIANPAINT.NS',
+  'DMART':'DMART.NS','JUBLFOOD':'JUBLFOOD.NS',
   // Indices
   'NIFTY':'%5ENSEI','BANKNIFTY':'%5ENSEBANK','SENSEX':'%5EBSESN',
-  // Commodities via Yahoo
+  // Commodities
   'GOLD':'GC=F','SILVER':'SI=F','CRUDE':'CL=F','BRENT':'BZ=F',
   'NATURALGAS':'NG=F','COPPER':'HG=F','PLATINUM':'PL=F','WHEAT':'ZW=F','CORN':'ZC=F',
 };
@@ -2107,26 +2125,60 @@ async function cgFetch(sym) {
 
 // Stocks to fetch via Yahoo Finance when Railway is offline
 const LIVE_SIDEBAR_SYMS = [
-  {sym:'RELIANCE', name:'Reliance Industries', sector:'Energy'},
-  {sym:'TCS',      name:'Tata Consultancy',    sector:'IT'},
-  {sym:'HDFCBANK', name:'HDFC Bank',           sector:'Banking'},
-  {sym:'INFY',     name:'Infosys',             sector:'IT'},
-  {sym:'SBIN',     name:'SBI',                 sector:'Banking'},
-  {sym:'ICICIBANK',name:'ICICI Bank',          sector:'Banking'},
-  {sym:'TATAMOTORS',name:'Tata Motors',        sector:'Auto'},
-  {sym:'WIPRO',    name:'Wipro',               sector:'IT'},
-  {sym:'AXISBANK', name:'Axis Bank',           sector:'Banking'},
-  {sym:'MARUTI',   name:'Maruti Suzuki',       sector:'Auto'},
-  {sym:'BAJFINANCE',name:'Bajaj Finance',      sector:'Finance'},
-  {sym:'LT',       name:'L&T',                 sector:'Infra'},
-  {sym:'HCLTECH',  name:'HCL Technologies',    sector:'IT'},
-  {sym:'SUNPHARMA',name:'Sun Pharma',          sector:'Pharma'},
-  {sym:'KOTAKBANK',name:'Kotak Mahindra',      sector:'Banking'},
-  {sym:'TECHM',    name:'Tech Mahindra',       sector:'IT'},
-  {sym:'NTPC',     name:'NTPC',                sector:'Energy'},
-  {sym:'TATASTEEL',name:'Tata Steel',          sector:'Metal'},
-  {sym:'JSWSTEEL', name:'JSW Steel',           sector:'Metal'},
-  {sym:'ASIANPAINT',name:'Asian Paints',       sector:'Consumer'},
+  // Banking
+  {sym:'HDFCBANK',  name:'HDFC Bank',           sector:'Banking'},
+  {sym:'SBIN',      name:'SBI',                 sector:'Banking'},
+  {sym:'ICICIBANK', name:'ICICI Bank',          sector:'Banking'},
+  {sym:'AXISBANK',  name:'Axis Bank',           sector:'Banking'},
+  {sym:'KOTAKBANK', name:'Kotak Mahindra',      sector:'Banking'},
+  {sym:'INDUSINDBK',name:'IndusInd Bank',       sector:'Banking'},
+  // IT
+  {sym:'TCS',       name:'Tata Consultancy',    sector:'IT'},
+  {sym:'INFY',      name:'Infosys',             sector:'IT'},
+  {sym:'WIPRO',     name:'Wipro',               sector:'IT'},
+  {sym:'HCLTECH',   name:'HCL Tech',            sector:'IT'},
+  {sym:'TECHM',     name:'Tech Mahindra',       sector:'IT'},
+  {sym:'LTIM',      name:'LTIMindtree',         sector:'IT'},
+  // Auto
+  {sym:'TATAMOTORS',name:'Tata Motors',         sector:'Auto'},
+  {sym:'MARUTI',    name:'Maruti Suzuki',       sector:'Auto'},
+  {sym:'HEROMOTOCO',name:'Hero MotoCorp',       sector:'Auto'},
+  {sym:'EICHERMOT', name:'Eicher Motors',       sector:'Auto'},
+  {sym:'M&M',       name:'Mahindra & Mahindra', sector:'Auto'},
+  // Pharma
+  {sym:'SUNPHARMA', name:'Sun Pharma',          sector:'Pharma'},
+  {sym:'DRREDDY',   name:"Dr. Reddy's",         sector:'Pharma'},
+  {sym:'CIPLA',     name:'Cipla',               sector:'Pharma'},
+  {sym:'DIVISLAB',  name:"Divi's Labs",         sector:'Pharma'},
+  {sym:'APOLLOHOSP',name:'Apollo Hospitals',    sector:'Pharma'},
+  // Energy
+  {sym:'RELIANCE',  name:'Reliance Industries', sector:'Energy'},
+  {sym:'ONGC',      name:'ONGC',                sector:'Energy'},
+  {sym:'BPCL',      name:'BPCL',                sector:'Energy'},
+  {sym:'IOC',       name:'Indian Oil',          sector:'Energy'},
+  {sym:'NTPC',      name:'NTPC',                sector:'Energy'},
+  // Metals
+  {sym:'TATASTEEL', name:'Tata Steel',          sector:'Metal'},
+  {sym:'JSWSTEEL',  name:'JSW Steel',           sector:'Metal'},
+  {sym:'HINDALCO',  name:'Hindalco',            sector:'Metal'},
+  {sym:'COALINDIA', name:'Coal India',          sector:'Metal'},
+  // FMCG
+  {sym:'NESTLEIND', name:'Nestle India',        sector:'FMCG'},
+  {sym:'BRITANNIA', name:'Britannia',           sector:'FMCG'},
+  {sym:'ITC',       name:'ITC',                 sector:'FMCG'},
+  {sym:'HINDUNILVR',name:'HUL',                 sector:'FMCG'},
+  // Infra
+  {sym:'LT',        name:'L&T',                 sector:'Infra'},
+  {sym:'POWERGRID', name:'Power Grid',          sector:'Infra'},
+  {sym:'ADANIENT',  name:'Adani Enterprises',   sector:'Infra'},
+  {sym:'ULTRACEMCO',name:'UltraTech Cement',    sector:'Cement'},
+  // Finance/Consumer
+  {sym:'BAJFINANCE',name:'Bajaj Finance',       sector:'Finance'},
+  {sym:'BAJAJFINSV',name:'Bajaj Finserv',       sector:'Finance'},
+  {sym:'TITAN',     name:'Titan',               sector:'Consumer'},
+  {sym:'ASIANPAINT',name:'Asian Paints',        sector:'Consumer'},
+  {sym:'DMART',     name:'DMart',               sector:'Consumer'},
+  {sym:'JUBLFOOD',  name:'Jubilant Foods',      sector:'Consumer'},
 ];
 
 async function fetchLiveData() {
@@ -2197,12 +2249,15 @@ async function fetchYFDirect() {
     }
   } catch(e) { console.warn('CoinGecko failed:', e.message); }
 
-  // ── 2. Fetch NSE stocks via Yahoo Finance in batches ──
+  // ── 2. Fetch NSE stocks via Yahoo Finance in batches (all 46) ──
   const batches = [
-    LIVE_SIDEBAR_SYMS.slice(0,5),
-    LIVE_SIDEBAR_SYMS.slice(5,10),
-    LIVE_SIDEBAR_SYMS.slice(10,15),
-    LIVE_SIDEBAR_SYMS.slice(15),
+    LIVE_SIDEBAR_SYMS.slice(0,6),
+    LIVE_SIDEBAR_SYMS.slice(6,12),
+    LIVE_SIDEBAR_SYMS.slice(12,18),
+    LIVE_SIDEBAR_SYMS.slice(18,24),
+    LIVE_SIDEBAR_SYMS.slice(24,30),
+    LIVE_SIDEBAR_SYMS.slice(30,38),
+    LIVE_SIDEBAR_SYMS.slice(38),
   ];
   for (const batch of batches) {
     await Promise.allSettled(batch.map(async item => {
@@ -2221,6 +2276,8 @@ async function fetchYFDirect() {
         stocksUpdated++;
       } catch(e) {}
     }));
+    updateWhatsMoving();
+    refreshHeatmapFromLive();
     await new Promise(r => setTimeout(r, 300));
   }
 
