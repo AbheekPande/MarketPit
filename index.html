@@ -1469,10 +1469,11 @@ header {
       </div>
     </div>
     <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <button onclick="switchPaperTab('trade',this)" id="pt_trade" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Trade</button>
-      <button onclick="switchPaperTab('holdings',this)" id="pt_holdings" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Holdings</button>
-      <button onclick="switchPaperTab('history',this)" id="pt_history" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">History</button>
-      <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">🏆 Board</button>
+      <button onclick="switchPaperTab('trade',this)" id="pt_trade" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Trade</button>
+      <button onclick="switchPaperTab('holdings',this)" id="pt_holdings" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Holdings</button>
+      <button onclick="switchPaperTab('orders',this)" id="pt_orders" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">Orders</button>
+      <button onclick="switchPaperTab('history',this)" id="pt_history" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">History</button>
+      <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard" style="flex:1;padding:10px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;">🏆</button>
     </div>
     <div class="feed-scroll" id="paperBody" style="padding:0;"></div>
   </div>
@@ -7319,71 +7320,229 @@ let _ptSelectedAsset = null;
 let _ptSearchQ = '';
 let _ptTradeMode = 'delivery'; // 'intraday' | 'delivery'
 
-// ── INTRADAY / DELIVERY RULES (NSE) ──────────────────────────
-// Intraday (MIS):
-//   - 5x leverage on equity (margin = 20% of order value)
-//   - Position must be squared off before 3:20 PM IST
-//   - No overnight carry — auto sq-off at 3:20 PM
-//   - STT charged on both buy & sell legs
-// Delivery (CNC):
-//   - Full payment required (no leverage)
-//   - T+1 settlement (shares credited next trading day)
-//   - Can hold indefinitely
-//   - STT only on sell side
-// Crypto/Commodities: no intraday distinction — always full pay
+// ══════════════════════════════════════════════════════════════
+// PAPER TRADING — MARKET RULES
+// ══════════════════════════════════════════════════════════════
+
+// ── NSE EQUITY RULES ────────────────────────────────────────
 const PT_RULES = {
   intraday: {
-    label: 'Intraday (MIS)',
-    leverage: 5,            // 5x — 20% margin
-    squareOffHour: 15,      // 3 PM IST
-    squareOffMin:  20,      // 3:20 PM IST
-    stt: 0.025,             // 0.025% on both buy & sell (equity intraday)
-    note: '5× leverage · Must square off by 3:20 PM · STT both sides',
+    label: 'Intraday (MIS)', leverage: 5,
+    squareOffHour: 15, squareOffMin: 20,
+    stt: 0.025,   // both sides
+    note: '5× leverage · Auto sq-off 3:20 PM · STT both sides',
   },
   delivery: {
-    label: 'Delivery (CNC)',
-    leverage: 1,            // No leverage
-    squareOffHour: null,    // No auto sq-off
-    squareOffMin:  null,
-    stt: 0.1,               // 0.1% on sell only
+    label: 'Delivery (CNC)', leverage: 1,
+    squareOffHour: null, squareOffMin: null,
+    stt: 0.1,     // sell only
     note: 'Full payment · Hold overnight · T+1 settlement',
   }
 };
 
-function getPtRule() { return PT_RULES[_ptTradeMode]; }
-function setPtTradeMode(mode) {
-  _ptTradeMode = mode;
+// ── CRYPTO RULES (WazirX / CoinDCX / Binance style) ─────────
+const PT_CRYPTO_MODES = {
+  spot: {
+    label: 'Spot',
+    leverage: 1,
+    fee: 0.1,           // 0.1% taker fee (both sides)
+    note: '24×7 · Full payment · 0.1% trading fee both sides',
+    color: '#f7931a',   // Bitcoin orange
+    icon: '💱',
+  },
+  margin: {
+    label: 'Margin 3×',
+    leverage: 3,        // 3x — pay 33% margin
+    fee: 0.1,           // 0.1% fee
+    fundingRate: 0.01,  // 0.01% per 8h (simulated)
+    note: '3× leverage · 33% margin · Funding rate 0.01%/8h · Liquidation at 90% loss',
+    color: '#f7931a',
+    icon: '⚡',
+  }
+};
+
+// ── COMMODITY RULES (MCX / NCDEX style) ─────────────────────
+// MCX hours: 9:00 AM – 11:30 PM IST (Mon–Fri); Agri: 9 AM – 9 PM
+// Lot sizes reflect MCX standard contracts
+const MCX_LOT_SIZES = {
+  GOLD:      { lot: 100,   unit: 'g',         margin: 0.05  }, // 100g, 5% margin MIS
+  SILVER:    { lot: 30000, unit: 'g',         margin: 0.05  }, // 30 kg
+  CRUDE:     { lot: 100,   unit: 'bbl',       margin: 0.05  }, // 100 barrels
+  BRENT:     { lot: 100,   unit: 'bbl',       margin: 0.05  },
+  NATURALGAS:{ lot: 1250,  unit: 'mmBtu',     margin: 0.06  },
+  COPPER:    { lot: 2500,  unit: 'kg',        margin: 0.06  }, // 2.5 MT
+  PLATINUM:  { lot: 500,   unit: 'g',         margin: 0.05  },
+  WHEAT:     { lot: 10000, unit: 'kg',        margin: 0.05  },
+  CORN:      { lot: 10000, unit: 'kg',        margin: 0.05  },
+};
+
+const PT_COMM_MODES = {
+  intraday: {
+    label: 'Intraday (MIS)',
+    leverage: 4,               // MCX typically 4x on metals, 5x on energy
+    squareOffHour: 23,         // 11:00 PM IST
+    squareOffMin: 20,          // 11:20 PM
+    ctt: 0.01,                 // CTT 0.01% on sell
+    note: '4× leverage · Sq-off 11:20 PM · CTT 0.01% sell · Lot size enforced',
+  },
+  nrml: {
+    label: 'Normal (NRML)',
+    leverage: 1,
+    squareOffHour: null,
+    squareOffMin: null,
+    ctt: 0.01,                 // CTT 0.01% on sell
+    note: 'Full margin · Hold till expiry · CTT 0.01% sell · Lot size enforced',
+  }
+};
+
+// ── PENDING ORDERS (Limit / SL-M) ───────────────────────────
+const PT_ORDERS_KEY = 'mp_paper_orders';
+function getPendingOrders() {
+  try { return JSON.parse(localStorage.getItem(PT_ORDERS_KEY)) || []; } catch(e) { return []; }
+}
+function savePendingOrders(o) { localStorage.setItem(PT_ORDERS_KEY, JSON.stringify(o)); }
+function addPendingOrder(order) {
+  const orders = getPendingOrders();
+  order.id = Date.now();
+  order.createdAt = new Date().toLocaleString('en-IN');
+  order.status = 'pending';
+  orders.unshift(order);
+  savePendingOrders(orders.slice(0, 50));
+}
+function cancelPendingOrder(id) {
+  const orders = getPendingOrders().filter(o => o.id !== id);
+  savePendingOrders(orders);
   renderPaperTrade();
+  showToast('🗑 Order cancelled', 'var(--text3)');
 }
 
-// Auto square-off intraday positions at 3:20 PM IST
+// ── ORDER TYPE + CRYPTO/COMM MODE STATE ─────────────────────
+let _ptCryptoMode = 'spot';      // 'spot' | 'margin'
+let _ptCommMode   = 'intraday';  // 'intraday' | 'nrml'
+let _ptOrderTypeAdv = 'market';  // 'market' | 'limit' | 'sl'
+
+function getPtRule() { return PT_RULES[_ptTradeMode]; }
+function setPtTradeMode(mode) { _ptTradeMode = mode; renderPaperTrade(); }
+function setPtCryptoMode(mode) { _ptCryptoMode = mode; renderPaperTrade(); }
+function setPtCommMode(mode)   { _ptCommMode = mode;   renderPaperTrade(); }
+function setPtOrderTypeAdv(t)  { _ptOrderTypeAdv = t;  renderPaperTrade(); }
+
+// ── CHECK PENDING LIMIT/SL ORDERS ───────────────────────────
+function checkPendingOrders() {
+  const orders = getPendingOrders();
+  if (!orders.length) return;
+  const assets = getAllPtAssets();
+  let filled = [];
+
+  orders.forEach(order => {
+    if (order.status !== 'pending') return;
+    const asset = assets.find(a => a.sym === order.sym);
+    if (!asset || !asset.price) return;
+    const ltp = Number(asset.price);
+
+    let shouldExecute = false;
+    if (order.orderType === 'limit') {
+      // Limit BUY executes when price drops to or below limit price
+      // Limit SELL executes when price rises to or above limit price
+      shouldExecute = order.side === 'BUY' ? ltp <= order.limitPrice : ltp >= order.limitPrice;
+    } else if (order.orderType === 'sl') {
+      // SL-M BUY triggers when price rises above trigger (for short cover)
+      // SL-M SELL triggers when price falls below trigger (stop loss on long)
+      shouldExecute = order.side === 'BUY' ? ltp >= order.triggerPrice : ltp <= order.triggerPrice;
+    }
+
+    if (shouldExecute) {
+      const execPrice = ltp; // market price at trigger
+      const d = getPaperData();
+      const isUsd = order.cur === '$';
+      const total = execPrice * order.qty;
+      const totalInr = isUsd ? toInr(total) : total;
+      const fee = order.assetType === 'crypto' ? Math.round(totalInr * 0.001) : 0;
+
+      if (order.side === 'BUY') {
+        if (totalInr + fee <= d.balance) {
+          d.balance -= (totalInr + fee);
+          const key = order.sym;
+          if (!d.holdings[key]) d.holdings[key] = { qty: 0, avgPrice: 0, cur: order.cur, tradeMode: order.tradeMode, sym: order.sym };
+          const h = d.holdings[key];
+          h.avgPrice = ((h.avgPrice * h.qty) + (execPrice * order.qty)) / (h.qty + order.qty);
+          h.qty += order.qty;
+          addPaperHistory({ type:'BUY', sym:order.sym, qty:order.qty, price:execPrice, cur:order.cur, totalInr, fee, mode:order.tradeMode, orderType:order.orderType, auto:true, reason:'Limit/SL triggered' });
+          filled.push({ sym: order.sym, side: 'BUY', price: execPrice });
+        }
+      } else {
+        const key = order.sym;
+        const h = d.holdings[key];
+        if (h && h.qty >= order.qty) {
+          const net = totalInr - fee;
+          d.balance += net;
+          h.qty -= order.qty;
+          if (h.qty <= 0) delete d.holdings[key];
+          addPaperHistory({ type:'SELL', sym:order.sym, qty:order.qty, price:execPrice, cur:order.cur, totalInr, net, fee, mode:order.tradeMode, orderType:order.orderType, auto:true, reason:'Limit/SL triggered' });
+          filled.push({ sym: order.sym, side: 'SELL', price: execPrice });
+        }
+      }
+      order.status = 'filled';
+      order.filledAt = new Date().toLocaleString('en-IN');
+      order.filledPrice = execPrice;
+      savePaperData(d);
+    }
+  });
+
+  savePendingOrders(orders);
+  if (filled.length) {
+    filled.forEach(f => showToast(`✅ ${f.side} order filled: ${f.sym} @ ${f.price}`, 'var(--green)'));
+    renderPaperTrade();
+  }
+}
+setInterval(checkPendingOrders, 5000); // check every 5 seconds
+
+// ── AUTO SQ-OFF: NSE EQUITY 3:20 PM ─────────────────────────
 function checkIntradaySquareOff() {
   const now = new Date();
   const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
   const h = ist.getUTCHours(), m = ist.getUTCMinutes();
   const day = ist.getUTCDay();
-  if (day < 1 || day > 5) return; // weekend
-  if (h < 15 || (h === 15 && m < 20)) return; // before 3:20 PM
-
+  if (day < 1 || day > 5) return;
   const d = getPaperData();
   let squaredOff = [];
-  Object.entries(d.holdings).forEach(([sym, holding]) => {
+
+  Object.entries(d.holdings).forEach(([key, holding]) => {
     if (holding.tradeMode !== 'intraday') return;
-    const asset = getAllPtAssets().find(a => a.sym === sym);
-    const price = asset?.price || holding.avgPrice;
-    const totalInr = (holding.cur === '$' ? _usdInr : 1) * price * holding.qty;
-    d.balance += totalInr;
-    addPaperHistory({ type:'SELL', sym, qty: holding.qty, price, cur: holding.cur || '₹', totalInr, auto: true, reason: 'Intraday auto sq-off 3:20 PM' });
-    delete d.holdings[sym];
-    squaredOff.push(sym);
+    const isCommodity = !!STATIC_COMMODITIES.find(s => s.sym === (holding.sym || key));
+    const isStock = !isCommodity && holding.cur !== '$';
+
+    // NSE equity sq-off: 3:20 PM weekdays
+    if (isStock && (h > 15 || (h === 15 && m >= 20))) {
+      const asset = getAllPtAssets().find(a => a.sym === (holding.sym || key));
+      const price = asset?.price || holding.avgPrice;
+      const totalInr = price * holding.qty;
+      const stt = Math.round(totalInr * 0.00025);
+      d.balance += (totalInr - stt);
+      addPaperHistory({ type:'SELL', sym: holding.sym||key, qty: holding.qty, price, cur: '₹', totalInr, net: totalInr-stt, stt, mode:'intraday', auto: true, reason: 'NSE auto sq-off 3:20 PM' });
+      delete d.holdings[key];
+      squaredOff.push(holding.sym || key);
+    }
+    // MCX commodity sq-off: 11:20 PM weekdays
+    if (isCommodity && (h > 23 || (h === 23 && m >= 20))) {
+      const asset = getAllPtAssets().find(a => a.sym === (holding.sym || key));
+      const price = asset?.price || holding.avgPrice;
+      const totalInr = toInr(price * holding.qty);
+      const ctt = Math.round(totalInr * 0.0001);
+      d.balance += (totalInr - ctt);
+      addPaperHistory({ type:'SELL', sym: holding.sym||key, qty: holding.qty, price, cur: '$', totalInr, net: totalInr-ctt, ctt, mode:'intraday', auto: true, reason: 'MCX auto sq-off 11:20 PM' });
+      delete d.holdings[key];
+      squaredOff.push(holding.sym || key);
+    }
   });
+
   if (squaredOff.length) {
     savePaperData(d);
-    showToast(`⏰ Intraday auto sq-off: ${squaredOff.join(', ')}`, 'var(--gold)');
+    showToast(`⏰ Auto sq-off: ${squaredOff.join(', ')}`, '#f5a623');
     renderPaperTrade();
   }
 }
-setInterval(checkIntradaySquareOff, 60000); // check every minute
+setInterval(checkIntradaySquareOff, 60000);
 // ────────────────────────────────────────────────────────────
 
 // ── Live USD/INR exchange rate ──
@@ -7464,7 +7623,7 @@ function updatePtMarketBadge() {
 
 function switchPaperTab(tab, btn) {
   _ptTab = tab;
-  ['trade','holdings','history','leaderboard'].forEach(t => {
+  ['trade','holdings','orders','history','leaderboard'].forEach(t => {
     const b = document.getElementById('pt_' + t);
     if (!b) return;
     b.style.color = t === tab ? 'var(--accent)' : 'var(--text3)';
@@ -7486,6 +7645,8 @@ function renderPaperTrade() {
     renderPtTrade(el, d);
   } else if (_ptTab === 'holdings') {
     renderPtHoldings(el, d);
+  } else if (_ptTab === 'orders') {
+    renderPtOrders(el);
   } else if (_ptTab === 'history') {
     renderPtHistory(el);
   } else if (_ptTab === 'leaderboard') {
@@ -7516,34 +7677,152 @@ function getAllPtAssets() {
 }
 
 function renderPtTrade(el, d) {
-  const assets = getAllPtAssets();
-  const asset  = _ptSelectedAsset || assets[0];
-  const st     = marketStatusLabel(asset.sym);
-  const holding = d.holdings[asset.sym];
-  const maxSell = holding?.qty || 0;
+  const assets   = getAllPtAssets();
+  const asset    = _ptSelectedAsset || assets[0];
+  const st       = marketStatusLabel(asset.sym);
   const isCrypto = asset.assetType === 'crypto';
   const isComm   = asset.assetType === 'commodity';
   const isStock  = !isCrypto && !isComm;
-  const cur = (isCrypto || isComm) ? '$' : '₹';
-  const rule = getPtRule();
+  const isUsd    = !isStock;
+  const cur      = isUsd ? '$' : '\u20b9';
 
-  // For crypto/commodity — force delivery mode
-  const showModeSwitch = isStock;
-  const effectiveMode = isStock ? _ptTradeMode : 'delivery';
-  const effectiveRule = PT_RULES[effectiveMode];
+  // Effective mode per asset class
+  const effectiveMode = isStock ? _ptTradeMode : isCrypto ? _ptCryptoMode : _ptCommMode;
 
-  // Margin required for intraday (leveraged)
-  const priceVal = Number(asset.price) || 0;
-  const marginPct = effectiveMode === 'intraday' ? (100 / effectiveRule.leverage) : 100;
+  // Max sell qty from matching position
+  const posKey  = effectiveMode === 'intraday' ? asset.sym + '_MIS'
+                : effectiveMode === 'margin'   ? asset.sym + '_MARGIN'
+                : asset.sym;
+  const holding = d.holdings[posKey] || d.holdings[asset.sym];
+  const maxSell = holding?.qty || 0;
 
   fetchUsdInr();
+
+  // ── PRE-COMPUTE SECTION HTML (avoids nested template literal syntax issues) ──
+
+  // 1. TRADE MODE SELECTOR
+  let modeSectionHTML = '';
+  if (isStock) {
+    modeSectionHTML = '<div style="margin-bottom:16px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
+      + '<button onclick="setPtTradeMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptTradeMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptTradeMode==='intraday'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\u26a1 Intraday</div><div style="font-size:10px;opacity:0.8;margin-top:2px;">MIS \u00b7 5\u00d7 leverage</div></button>'
+      + '<button onclick="setPtTradeMode(\'delivery\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptTradeMode==='delivery'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptTradeMode==='delivery'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\ud83d\udce6 Delivery</div><div style="font-size:10px;opacity:0.8;margin-top:2px;">CNC \u00b7 Full payment</div></button>'
+      + '</div>'
+      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:' + (_ptTradeMode==='intraday'?'rgba(0,112,243,0.08)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (_ptTradeMode==='intraday'?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:11px;color:var(--text2);line-height:1.5;">'
+      + (_ptTradeMode==='intraday'
+          ? '\u26a1 <strong>5\u00d7 leverage</strong> \u2014 pay 20% margin &nbsp;\u00b7&nbsp; Auto sq-off at <strong>3:20 PM IST</strong> &nbsp;\u00b7&nbsp; STT on buy &amp; sell'
+          : '\ud83d\udce6 <strong>Full payment</strong> required &nbsp;\u00b7&nbsp; Hold overnight &nbsp;\u00b7&nbsp; T+1 settlement &nbsp;\u00b7&nbsp; STT on sell only')
+      + '</div></div>';
+  } else if (isCrypto) {
+    modeSectionHTML = '<div style="margin-bottom:16px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
+      + '<button onclick="setPtCryptoMode(\'spot\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCryptoMode==='spot'?'#f7931a':'var(--bg3)') + ';color:' + (_ptCryptoMode==='spot'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\ud83d\udcb1 Spot</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">Full payment \u00b7 0.1% fee</div></button>'
+      + '<button onclick="setPtCryptoMode(\'margin\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCryptoMode==='margin'?'#f7931a':'var(--bg3)') + ';color:' + (_ptCryptoMode==='margin'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\u26a1 Margin 3\u00d7</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">33% margin \u00b7 Funding 0.01%</div></button>'
+      + '</div>'
+      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:rgba(247,147,26,0.07);border:1px solid rgba(247,147,26,0.2);font-size:11px;color:var(--text2);line-height:1.6;">'
+      + (_ptCryptoMode==='spot'
+          ? '\ud83d\udcb1 <strong>Spot</strong> \u2014 full payment \u00b7 24\u00d77 trading \u00b7 <strong>0.1%</strong> fee both sides \u00b7 No liquidation risk'
+          : '\u26a1 <strong>3\u00d7 leverage</strong> \u2014 pay 33% margin \u00b7 Funding rate 0.01%/8h \u00b7 Liquidation at 90% drawdown \u00b7 0.1% fee')
+      + '</div>'
+      // Order type row for crypto
+      + '<div style="margin-top:12px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">ORDER TYPE</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + ['market','limit','sl'].map(function(t){
+          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s;background:' + (_ptOrderTypeAdv===t?'var(--accent)':'var(--bg3)') + ';color:' + (_ptOrderTypeAdv===t?'#fff':'var(--text3)') + ';">' + (t==='market'?'Market':t==='limit'?'Limit':'SL-M') + '</button>';
+        }).join('')
+      + '</div>'
+      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\udccc BUY executes when price \u2264 limit \u00b7 SELL executes when price \u2265 limit</div>' : '')
+      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\uded1 SL-M BUY triggers when price \u2265 trigger \u00b7 SL-M SELL when price \u2264 trigger</div>' : '')
+      + '</div></div>';
+  } else {
+    // Commodity
+    const lotData = MCX_LOT_SIZES[asset.sym];
+    modeSectionHTML = '<div style="margin-bottom:16px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
+      + '<button onclick="setPtCommMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCommMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptCommMode==='intraday'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\u26a1 Intraday</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">MIS \u00b7 4\u00d7 leverage</div></button>'
+      + '<button onclick="setPtCommMode(\'nrml\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCommMode==='nrml'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptCommMode==='nrml'?'#fff':'var(--text3)') + ';">'
+      + '<div style="font-weight:800;font-size:13px;">\ud83d\udce6 Normal</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">NRML \u00b7 Full margin</div></button>'
+      + '</div>'
+      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:' + (_ptCommMode==='intraday'?'rgba(0,112,243,0.07)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (_ptCommMode==='intraday'?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:11px;color:var(--text2);line-height:1.6;">'
+      + (_ptCommMode==='intraday'
+          ? '\u26a1 MCX <strong>4\u00d7 leverage</strong> \u00b7 Auto sq-off <strong>11:20 PM IST</strong> \u00b7 CTT 0.01% on sell \u00b7 Lot size applies'
+          : '\ud83d\udce6 <strong>Full margin</strong> \u00b7 Hold till expiry \u00b7 MCX 9AM\u201311:30PM \u00b7 CTT 0.01% on sell')
+      + '</div>'
+      + (lotData ? '<div style="margin-top:8px;padding:7px 12px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:11px;display:flex;align-items:center;justify-content:space-between;"><span style="color:var(--text3);">MCX Lot Size</span><span style="font-weight:800;color:var(--accent);">' + lotData.lot.toLocaleString() + ' ' + lotData.unit + '</span></div>' : '')
+      // Order type for commodity
+      + '<div style="margin-top:10px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">ORDER TYPE</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + ['market','limit','sl'].map(function(t){
+          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s;background:' + (_ptOrderTypeAdv===t?'var(--accent)':'var(--bg3)') + ';color:' + (_ptOrderTypeAdv===t?'#fff':'var(--text3)') + ';">' + (t==='market'?'Market':t==='limit'?'Limit':'SL-M') + '</button>';
+        }).join('')
+      + '</div>'
+      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\udccc BUY fills when price \u2264 limit \u00b7 SELL fills when price \u2265 limit</div>' : '')
+      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\uded1 SL-M triggers at set price \u2014 executes at market</div>' : '')
+      + '</div></div>';
+  }
+
+  // 2. LIMIT/TRIGGER PRICE INPUT (only for non-market orders on crypto/commodity)
+  let limitInputHTML = '';
+  if (isUsd && _ptOrderTypeAdv !== 'market') {
+    const lbl = _ptOrderTypeAdv === 'limit' ? 'LIMIT PRICE (' + cur + ')' : 'TRIGGER PRICE (' + cur + ')';
+    const ph  = _ptOrderTypeAdv === 'limit' ? 'Target price to execute' : 'Trigger price for SL';
+    const borderCol = _ptOrderTypeAdv === 'sl' ? 'var(--red)' : 'rgba(0,112,243,0.4)';
+    limitInputHTML = '<div style="margin-bottom:14px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:5px;letter-spacing:0.5px;">' + lbl + '</div>'
+      + '<input type="number" id="ptLimitPrice" class="form-input" style="margin:0;font-weight:700;font-size:15px;border-color:' + borderCol + '" placeholder="' + ph + '" step="0.01" value="' + asset.price + '">'
+      + '</div>';
+  }
+
+  // 3. SUMMARY BOX EXTRA ROWS
+  let summaryExtrasHTML = '';
+  if (isStock && effectiveMode === 'intraday') {
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">Margin Required <span style="color:var(--accent);font-weight:700;">(20%)</span></span><div id="ptMargin" style="font-size:13px;font-weight:800;color:var(--accent);">\u2014</div></div>';
+  }
+  if (isCrypto && _ptCryptoMode === 'margin') {
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">Margin <span style="color:#f7931a;font-weight:700;">(33%)</span></span><div id="ptMargin" style="font-size:13px;font-weight:800;color:#f7931a;">\u2014</div></div>';
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">Funding Rate</span><span style="font-size:12px;font-weight:700;color:var(--text2);">0.01%/8h</span></div>';
+  }
+  if (isCrypto) {
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">Trading Fee (0.1%)</span><div id="ptFee" style="font-size:12px;font-weight:700;color:var(--red);">\u2014</div></div>';
+  }
+  if (isComm && _ptCommMode === 'intraday') {
+    const lotData2 = MCX_LOT_SIZES[asset.sym];
+    const mPct = lotData2 ? Math.round(lotData2.margin * 100) + '%' : '25%';
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">Margin Required <span style="color:var(--accent);font-weight:700;">(' + mPct + ')</span></span><div id="ptMargin" style="font-size:13px;font-weight:800;color:var(--accent);">\u2014</div></div>';
+  }
+  if (isComm) {
+    summaryExtrasHTML += '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;color:var(--text3);">CTT (0.01% sell)</span><span style="font-size:11px;color:var(--text3);">Applied on sq-off</span></div>';
+  }
+
+  // 4. HOLDINGS IN THIS MODE
+  const holdingsHTML = maxSell > 0
+    ? '<div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--text3);">Holdings in ' + asset.sym + '</span><span style="font-size:12px;font-weight:700;color:var(--text2);">' + maxSell + ' units' + (holding?.tradeMode==='intraday'?' <span style="color:var(--accent);font-size:10px;">(MIS)</span>':holding?.tradeMode==='margin'?' <span style="color:#f7931a;font-size:10px;">(3\u00d7)</span>':'') + '</span></div>'
+    : '';
+
+  // 5. EXECUTE BUTTON LABEL
+  const modeLabel = isStock ? (effectiveMode==='intraday'?' \u00b7 MIS':' \u00b7 CNC')
+                  : isCrypto ? (' \u00b7 ' + (_ptCryptoMode==='spot'?'SPOT':'3\u00d7'))
+                  : (' \u00b7 ' + (_ptCommMode==='intraday'?'MIS':'NRML'));
+  const orderTypeLabel = (isUsd && _ptOrderTypeAdv !== 'market') ? ' \u2014 ' + (_ptOrderTypeAdv==='limit'?'LIMIT':'SL-M') : '';
+  const execLabel = (_ptOrderType==='BUY'?'\u25b2 BUY':'\u25bc SELL') + ' ' + asset.sym + modeLabel + orderTypeLabel;
+
   el.innerHTML = `
   <div style="padding:16px;max-width:480px;margin:0 auto;">
 
     <!-- Asset Search -->
     <div style="position:relative;margin-bottom:16px;">
       <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1px;">SEARCH ASSET</div>
-      <input id="ptAssetSearch" class="form-input" placeholder="Search stocks, crypto, commodities…" autocomplete="off"
+      <input id="ptAssetSearch" class="form-input" placeholder="Search stocks, crypto, commodities\u2026" autocomplete="off"
         style="padding-right:36px;"
         oninput="onPtSearch(this.value)"
         onfocus="onPtSearch(this.value)"
@@ -7556,55 +7835,21 @@ function renderPtTrade(el, d) {
       <div style="width:44px;height:44px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${asset.sym.slice(0,4)}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;font-size:15px;">${asset.sym}</div>
-        <div style="font-size:11px;color:var(--text3);">${asset.name} · ${asset.group}</div>
+        <div style="font-size:11px;color:var(--text3);">${asset.name} \u00b7 ${asset.group}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-weight:800;font-size:17px;">${cur}${Number(asset.price).toLocaleString()}</div>
-        <div style="font-size:12px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '—'}</div>
+        <div style="font-size:12px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '\u2014'}</div>
       </div>
     </div>
 
-    <!-- Market status + time -->
+    <!-- Market status -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <span style="font-size:11px;font-weight:700;color:${st.color};">${st.label}</span>
+      <span style="font-size:11px;font-weight:700;color:${marketStatusLabel(asset.sym).color};">${marketStatusLabel(asset.sym).label}</span>
       <span style="font-size:10px;color:var(--text3);">${getMarketStatus().istTime}</span>
     </div>
 
-    ${showModeSwitch ? `
-    <!-- ── INTRADAY / DELIVERY TOGGLE ── -->
-    <div style="margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">
-        <button onclick="setPtTradeMode('intraday')"
-          style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;
-          background:${_ptTradeMode==='intraday'?'var(--accent)':'var(--bg3)'};
-          color:${_ptTradeMode==='intraday'?'#fff':'var(--text3)'};">
-          <div style="font-weight:800;font-size:13px;">⚡ Intraday</div>
-          <div style="font-size:10px;opacity:0.8;margin-top:2px;">MIS · 5× leverage</div>
-        </button>
-        <button onclick="setPtTradeMode('delivery')"
-          style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;
-          background:${_ptTradeMode==='delivery'?'var(--accent)':'var(--bg3)'};
-          color:${_ptTradeMode==='delivery'?'#fff':'var(--text3)'};">
-          <div style="font-weight:800;font-size:13px;">📦 Delivery</div>
-          <div style="font-size:10px;opacity:0.8;margin-top:2px;">CNC · Full payment</div>
-        </button>
-      </div>
-      <!-- Rule info bar -->
-      <div style="margin-top:8px;padding:9px 12px;border-radius:10px;
-        background:${effectiveMode==='intraday'?'rgba(0,112,243,0.08)':'rgba(0,168,84,0.07)'};
-        border:1px solid ${effectiveMode==='intraday'?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)'};
-        font-size:11px;color:var(--text2);line-height:1.5;">
-        ${effectiveMode==='intraday'
-          ? '⚡ <strong>5× leverage</strong> — pay 20% margin &nbsp;·&nbsp; Auto sq-off at <strong>3:20 PM IST</strong> &nbsp;·&nbsp; STT on buy &amp; sell'
-          : '📦 <strong>Full payment</strong> required &nbsp;·&nbsp; Hold overnight &nbsp;·&nbsp; T+1 settlement &nbsp;·&nbsp; STT on sell only'
-        }
-      </div>
-    </div>` : `
-    <!-- Crypto/Commodity: no intraday -->
-    <div style="margin-bottom:14px;padding:8px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--text3);">
-      📦 Delivery only — Crypto &amp; Commodities trade 24×7 with full payment
-    </div>`}
+    ${modeSectionHTML}
 
     <!-- BUY / SELL toggle -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;">
@@ -7612,13 +7857,13 @@ function renderPtTrade(el, d) {
         style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
         background:${_ptOrderType==='BUY'?'var(--green)':'var(--bg3)'};
         color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};">
-        ▲ BUY
+        \u25b2 BUY
       </button>
       <button id="ptSellBtn" onclick="setPtOrder('SELL')"
         style="padding:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;
         background:${_ptOrderType==='SELL'?'var(--red)':'var(--bg3)'};
         color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};">
-        ▼ SELL
+        \u25bc SELL
       </button>
     </div>
 
@@ -7641,38 +7886,32 @@ function renderPtTrade(el, d) {
       ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})" style="flex:1;padding:6px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;">${n}</button>`).join('')}
     </div>
 
+    ${limitInputHTML}
+
     <!-- Summary box -->
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <span style="font-size:12px;color:var(--text3);">Order Value</span>
         <div style="text-align:right;">
-          <div id="ptTotal" style="font-size:15px;font-weight:800;color:var(--accent);">—</div>
+          <div id="ptTotal" style="font-size:15px;font-weight:800;color:var(--accent);">\u2014</div>
           <div id="ptTotalInr" style="font-size:10px;color:var(--text3);"></div>
         </div>
       </div>
-      ${effectiveMode==='intraday' ? `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:12px;color:var(--text3);">Margin Required <span style="color:var(--accent);font-weight:700;">(20%)</span></span>
-        <div id="ptMargin" style="font-size:13px;font-weight:800;color:var(--accent);">—</div>
-      </div>` : ''}
+      ${summaryExtrasHTML}
       <div style="display:flex;justify-content:space-between;margin-bottom:${maxSell>0?'8px':'0'};">
         <span style="font-size:12px;color:var(--text3);">Available Balance</span>
-        <span style="font-size:13px;font-weight:700;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green);">\u20b9${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
       </div>
-      ${maxSell > 0 ? `<div style="display:flex;justify-content:space-between;">
-        <span style="font-size:12px;color:var(--text3);">Holdings in ${asset.sym}</span>
-        <span style="font-size:12px;font-weight:700;color:var(--text2);">${maxSell} units ${holding?.tradeMode==='intraday'?'<span style="color:var(--accent);font-size:10px;">(Intraday)</span>':''}</span>
-      </div>` : ''}
+      ${holdingsHTML}
     </div>
 
     <!-- Execute button -->
     <button onclick="executePaperTrade()" id="ptExecBtn"
       style="width:100%;padding:15px;border-radius:12px;border:none;
       background:${_ptOrderType==='BUY'?'var(--green)':'var(--red)'};
-      color:#fff;font-weight:800;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;
-      transition:all 0.15s;letter-spacing:0.5px;">
-      ${_ptOrderType==='BUY'?'▲ BUY':'▼ SELL'} ${asset.sym}
-      ${effectiveMode==='intraday' ? ' · MIS' : ' · CNC'}
+      color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;
+      transition:all 0.15s;letter-spacing:0.3px;">
+      ${execLabel}
     </button>
 
     <div id="ptMsg" style="font-size:12px;text-align:center;min-height:18px;margin-top:10px;font-weight:600;"></div>
@@ -7680,18 +7919,14 @@ function renderPtTrade(el, d) {
 
   ptCalcTotal();
 
-  // Close search dropdown on outside click
   setTimeout(() => {
     document.addEventListener('click', function ptDropClose(e) {
       const drop = document.getElementById('ptSearchDrop');
       const inp  = document.getElementById('ptAssetSearch');
-      if (drop && !drop.contains(e.target) && e.target !== inp) {
-        drop.style.display = 'none';
-      }
+      if (drop && !drop.contains(e.target) && e.target !== inp) drop.style.display = 'none';
     }, { once: false });
   }, 100);
 }
-
 function onPtSearch(q) {
   _ptSearchQ = q;
   const drop = document.getElementById('ptSearchDrop');
@@ -7756,26 +7991,41 @@ function ptCalcTotal() {
   const qty    = parseFloat(document.getElementById('ptQty')?.value)  || 0;
   const total  = price * qty;
   const asset  = _ptSelectedAsset || getAllPtAssets()[0];
-  const isUsd  = asset.assetType==='crypto' || asset.assetType==='commodity';
+  const isCrypto = asset.assetType === 'crypto';
+  const isComm   = asset.assetType === 'commodity';
+  const isUsd  = isCrypto || isComm;
   const isStock = !isUsd;
   const cur    = isUsd ? '$' : '\u20b9';
   const el     = document.getElementById('ptTotal');
   const elInr  = document.getElementById('ptTotalInr');
   const elMargin = document.getElementById('ptMargin');
+  const elFee    = document.getElementById('ptFee');
 
-  if (el) el.textContent = cur + total.toLocaleString('en-IN', {maximumFractionDigits: isUsd ? 2 : 0});
+  if (el) el.textContent = cur + total.toLocaleString('en-IN', {maximumFractionDigits: isUsd ? 4 : 0});
 
   const totalInr = isUsd ? toInr(total) : total;
   if (elInr && isUsd && total > 0) {
-    elInr.textContent = '\u2248 \u20b9' + Math.round(totalInr).toLocaleString('en-IN') + ' (at \u20b9' + _usdInr.toFixed(1) + '/$)';
-  } else if (elInr) {
-    elInr.textContent = '';
-  }
+    elInr.textContent = '\u2248 \u20b9' + Math.round(totalInr).toLocaleString('en-IN') + ' (\u20b9' + _usdInr.toFixed(1) + '/$)';
+  } else if (elInr) { elInr.textContent = ''; }
 
-  // Show margin required for intraday
+  // Equity intraday margin
   if (elMargin && isStock && _ptTradeMode === 'intraday') {
-    const margin = totalInr / PT_RULES.intraday.leverage; // 20%
-    elMargin.textContent = '\u20b9' + Math.round(margin).toLocaleString('en-IN');
+    elMargin.textContent = '\u20b9' + Math.round(totalInr / PT_RULES.intraday.leverage).toLocaleString('en-IN');
+  }
+  // Crypto margin (3x)
+  if (elMargin && isCrypto && _ptCryptoMode === 'margin') {
+    elMargin.textContent = '\u20b9' + Math.round(totalInr / 3).toLocaleString('en-IN');
+  }
+  // Crypto fee (0.1%)
+  if (elFee && isCrypto) {
+    const fee = Math.round(totalInr * 0.001);
+    elFee.textContent = '\u20b9' + fee.toLocaleString('en-IN');
+  }
+  // Commodity margin
+  if (elMargin && isComm && _ptCommMode === 'intraday') {
+    const lotData = MCX_LOT_SIZES[asset.sym];
+    const marginPct = lotData ? lotData.margin : 0.25;
+    elMargin.textContent = '\u20b9' + Math.round(totalInr * marginPct).toLocaleString('en-IN');
   }
 }
 
@@ -7788,6 +8038,15 @@ function executePaperTrade() {
   const msg    = document.getElementById('ptMsg');
   const d      = getPaperData();
 
+  const isCrypto = asset.assetType === 'crypto';
+  const isComm   = asset.assetType === 'commodity';
+  const isUsd    = isCrypto || isComm;
+  const isStock  = !isUsd;
+  const cur      = isUsd ? '$' : '₹';
+
+  // Determine mode
+  const mode = isStock ? _ptTradeMode : isCrypto ? _ptCryptoMode : _ptCommMode;
+
   const showMsg = (text, color) => {
     if (!msg) return;
     msg.style.color = color;
@@ -7798,42 +8057,76 @@ function executePaperTrade() {
   if (!sym || !price || price <= 0) { showMsg('⚠ Enter a valid price', 'var(--red)'); return; }
   if (!qty  || qty  <= 0)           { showMsg('⚠ Enter a valid quantity', 'var(--red)'); return; }
 
-  const isUsd    = asset.assetType === 'crypto' || asset.assetType === 'commodity';
-  const isStock  = !isUsd;
-  const cur      = isUsd ? '$' : '₹';
+  // ── LIMIT / SL-M orders — add to pending queue ──
+  if (isUsd && _ptOrderTypeAdv !== 'market') {
+    const limitPrice = parseFloat(document.getElementById('ptLimitPrice')?.value);
+    if (!limitPrice || limitPrice <= 0) { showMsg('⚠ Enter a valid limit/trigger price', 'var(--red)'); return; }
+    addPendingOrder({
+      sym, qty, price, cur,
+      side: _ptOrderType,
+      orderType: _ptOrderTypeAdv,
+      limitPrice: _ptOrderTypeAdv === 'limit' ? limitPrice : null,
+      triggerPrice: _ptOrderTypeAdv === 'sl' ? limitPrice : null,
+      assetType: asset.assetType,
+      tradeMode: mode,
+    });
+    const typeLabel = _ptOrderTypeAdv === 'limit' ? 'Limit' : 'SL-M';
+    showMsg(`📌 ${typeLabel} order placed — executes when price ${_ptOrderType==='BUY'?'≤':'≥'} ${cur}${limitPrice}`, 'var(--accent)');
+    showToast(`📌 ${typeLabel} order: ${_ptOrderType} ${sym}`, 'var(--accent)');
+    switchPaperTab('orders', document.getElementById('pt_orders'));
+    return;
+  }
+
   const total    = price * qty;
   const totalInr = isUsd ? toInr(total) : total;
 
-  // Determine effective trade mode (only stocks support intraday)
-  const mode     = isStock ? _ptTradeMode : 'delivery';
-  const rule     = PT_RULES[mode];
+  // ── Charges ──
+  let chargesInr = 0;
+  let stt = 0, ctt = 0, fee = 0;
 
-  // ── STT (Securities Transaction Tax) calculation ──
-  // Intraday: 0.025% on both buy AND sell turnover
-  // Delivery: 0.1% on SELL only
-  const sttBuy  = (mode === 'intraday' && isStock) ? Math.round(totalInr * 0.00025) : 0;
-  const sttSell = isStock ? Math.round(totalInr * (mode === 'intraday' ? 0.00025 : 0.001)) : 0;
-  // Exchange + SEBI charges (approx): 0.00325% + ₹10 flat brokerage simulation
-  const otherCharges = isStock ? Math.round(totalInr * 0.0000325 + 10) : 0;
+  if (isStock) {
+    const rule = PT_RULES[mode];
+    if (_ptOrderType === 'BUY') stt = mode === 'intraday' ? Math.round(totalInr * 0.00025) : 0;
+    else stt = Math.round(totalInr * (mode === 'intraday' ? 0.00025 : 0.001));
+    chargesInr = stt + Math.round(totalInr * 0.0000325 + 10);
+  } else if (isCrypto) {
+    fee = Math.round(totalInr * 0.001); // 0.1% both sides
+    chargesInr = fee;
+  } else if (isComm) {
+    if (_ptOrderType === 'SELL') ctt = Math.round(totalInr * 0.0001);
+    chargesInr = ctt + Math.round(totalInr * 0.0000325 + 5);
+  }
+
+  // ── Leverage / margin calculation ──
+  let requiredFunds = totalInr + (_ptOrderType === 'BUY' ? chargesInr : 0);
+  let leverage = 1;
+
+  if (isStock && mode === 'intraday') {
+    leverage = PT_RULES.intraday.leverage; // 5x
+    requiredFunds = Math.ceil(totalInr / leverage) + chargesInr;
+  } else if (isCrypto && mode === 'margin') {
+    leverage = 3;
+    requiredFunds = Math.ceil(totalInr / leverage) + chargesInr;
+  } else if (isComm && mode === 'intraday') {
+    const lotData = MCX_LOT_SIZES[sym];
+    leverage = lotData ? Math.round(1 / lotData.margin) : 4;
+    requiredFunds = Math.ceil(totalInr / leverage) + chargesInr;
+  }
 
   if (_ptOrderType === 'BUY') {
-    // ── INTRADAY: charge only margin (20%), not full value ──
-    const requiredFunds = mode === 'intraday'
-      ? Math.ceil(totalInr / rule.leverage) + sttBuy + otherCharges
-      : totalInr + sttBuy + otherCharges;
-
     if (requiredFunds > d.balance) {
-      const need = mode === 'intraday'
-        ? `₹${Math.ceil(totalInr/rule.leverage).toLocaleString('en-IN')} margin`
+      const needStr = leverage > 1
+        ? `₹${Math.ceil(totalInr/leverage).toLocaleString('en-IN')} margin`
         : `₹${totalInr.toLocaleString('en-IN',{maximumFractionDigits:0})}`;
-      showMsg(`⚠ Need ${need} + charges — insufficient balance`, 'var(--red)');
+      showMsg(`⚠ Need ${needStr} + charges ₹${chargesInr.toLocaleString()} — insufficient balance`, 'var(--red)');
       return;
     }
-
     d.balance -= requiredFunds;
 
-    // Store holding with trade mode tag
-    const key = mode === 'intraday' ? sym + '_MIS' : sym;
+    // Key: separate MIS/SPOT/MARGIN positions
+    const key = mode === 'intraday' ? sym + '_MIS'
+              : mode === 'margin'   ? sym + '_MARGIN'
+              : sym;
     if (!d.holdings[key]) d.holdings[key] = { qty: 0, avgPrice: 0, cur, tradeMode: mode, sym };
     const h = d.holdings[key];
     h.avgPrice   = ((h.avgPrice * h.qty) + (price * qty)) / (h.qty + qty);
@@ -7841,42 +8134,47 @@ function executePaperTrade() {
     h.cur         = cur;
     h.tradeMode   = mode;
     h.sym         = sym;
-    h.marginPaid  = (h.marginPaid || 0) + (mode === 'intraday' ? Math.ceil(totalInr/rule.leverage) : totalInr);
+    h.assetType   = asset.assetType;
+    h.marginPaid  = (h.marginPaid || 0) + Math.ceil(totalInr / leverage);
+    if (isCrypto && mode === 'margin') {
+      h.liquidationPrice = price * (1 - 0.9 / leverage); // 90% loss of margin = liquidation
+    }
 
-    const chargesNote = (sttBuy + otherCharges) > 0 ? ` · charges ₹${(sttBuy+otherCharges).toLocaleString('en-IN')}` : '';
-    addPaperHistory({ type:'BUY', sym, qty, price, cur, totalInr, mode, stt: sttBuy, charges: otherCharges });
-    showMsg(`✅ ${mode==='intraday'?'⚡':'📦'} Bought ${qty} × ${sym} @ ${cur}${price.toLocaleString()}${chargesNote}`, 'var(--green)');
-    showToast(`✅ Bought ${sym} (${mode==='intraday'?'MIS':'CNC'})`, 'var(--green)');
+    const modeLabel = isStock ? (mode==='intraday'?'MIS':'CNC')
+                    : isCrypto ? (mode==='spot'?'SPOT':'3×')
+                    : (mode==='intraday'?'MIS':'NRML');
+    addPaperHistory({ type:'BUY', sym, qty, price, cur, totalInr, mode, stt, ctt, fee, charges: chargesInr });
+    showMsg(`✅ Bought ${qty} × ${sym} (${modeLabel}) @ ${cur}${price.toLocaleString()} · charges ₹${chargesInr.toLocaleString()}`, 'var(--green)');
+    showToast(`✅ Bought ${sym} · ${modeLabel}`, 'var(--green)');
 
   } else {
     // ── SELL ──
-    // Check intraday position first, then delivery
-    const keyMIS = sym + '_MIS';
-    const keyCNC = sym;
-    const hMIS   = d.holdings[keyMIS];
-    const hCNC   = d.holdings[keyCNC];
+    const keyMIS    = sym + '_MIS';
+    const keyMARGIN = sym + '_MARGIN';
+    const keySPOT   = sym;
+    let targetKey;
+    if (mode === 'intraday') targetKey = keyMIS;
+    else if (mode === 'margin') targetKey = keyMARGIN;
+    else targetKey = keySPOT;
 
-    // Selling intraday mode: must match intraday position
-    const targetKey = mode === 'intraday' ? keyMIS : keyCNC;
-    const h         = d.holdings[targetKey];
-
+    const h = d.holdings[targetKey];
     if (!h || h.qty < qty) {
       const have = h?.qty || 0;
-      const modeLbl = mode === 'intraday' ? 'intraday (MIS)' : 'delivery (CNC)';
-      showMsg(`⚠ Only ${have} units in ${modeLbl} for ${sym}`, 'var(--red)');
+      showMsg(`⚠ Only ${have} units in ${mode.toUpperCase()} for ${sym}`, 'var(--red)');
       return;
     }
 
-    const stt = sttSell + otherCharges;
-    const net = totalInr - stt;
+    const net = totalInr - chargesInr;
     d.balance += net;
     h.qty -= qty;
     if (h.qty <= 0) delete d.holdings[targetKey];
 
-    const chargesNote = stt > 0 ? ` · after charges ₹${stt.toLocaleString('en-IN')}` : '';
-    addPaperHistory({ type:'SELL', sym, qty, price, cur, totalInr, net, mode, stt: sttSell, charges: otherCharges });
-    showMsg(`✅ ${mode==='intraday'?'⚡':'📦'} Sold ${qty} × ${sym} @ ${cur}${price.toLocaleString()}${chargesNote}`, 'var(--green)');
-    showToast(`✅ Sold ${sym} (${mode==='intraday'?'MIS':'CNC'})`, 'var(--accent)');
+    const modeLabel = isStock ? (mode==='intraday'?'MIS':'CNC')
+                    : isCrypto ? (mode==='spot'?'SPOT':'3×')
+                    : (mode==='intraday'?'MIS':'NRML');
+    addPaperHistory({ type:'SELL', sym, qty, price, cur, totalInr, net, mode, stt, ctt, fee, charges: chargesInr });
+    showMsg(`✅ Sold ${qty} × ${sym} (${modeLabel}) · net ₹${Math.round(net).toLocaleString('en-IN')}`, 'var(--green)');
+    showToast(`✅ Sold ${sym} · ${modeLabel}`, 'var(--accent)');
   }
 
   savePaperData(d);
@@ -7988,23 +8286,92 @@ function quickSellAll(key) {
   const d = getPaperData();
   const h = d.holdings[key];
   if (!h || !h.qty) return;
-  const displaySym = (h.sym || key.replace('_MIS','')).replace('_MIS','');
+  const displaySym = (h.sym || key.replace('_MIS','').replace('_MARGIN','')).replace('_MIS','').replace('_MARGIN','');
   const asset   = getAllPtAssets().find(a => a.sym === displaySym);
   const price   = asset?.price || h.avgPrice;
   const isUsd   = h.cur === '$';
+  const isCrypto = h.assetType === 'crypto' || !!STATIC_CRYPTO.find(s=>s.sym===displaySym);
+  const isComm   = h.assetType === 'commodity' || !!STATIC_COMMODITIES.find(s=>s.sym===displaySym);
   const totalGross = isUsd ? toInr(price * h.qty) : price * h.qty;
-  const isMIS   = h.tradeMode === 'intraday';
-  const mode    = isMIS ? 'intraday' : 'delivery';
-  // STT on sell
-  const stt     = asset?.assetType === 'stock' || (!isUsd) ? Math.round(totalGross * (isMIS ? 0.00025 : 0.001)) : 0;
-  const charges = (!isUsd) ? Math.round(totalGross * 0.0000325 + 10) : 0;
-  const net     = totalGross - stt - charges;
+  const mode    = h.tradeMode || 'delivery';
+  const isMIS   = mode === 'intraday';
+  const isMargin = mode === 'margin';
+
+  let stt = 0, ctt = 0, fee = 0, charges = 0;
+  if (!isCrypto && !isComm) { // stock
+    stt = Math.round(totalGross * (isMIS ? 0.00025 : 0.001));
+    charges = Math.round(totalGross * 0.0000325 + 10);
+  } else if (isCrypto) {
+    fee = Math.round(totalGross * 0.001);
+    charges = fee;
+  } else if (isComm) {
+    ctt = Math.round(totalGross * 0.0001);
+    charges = ctt + Math.round(totalGross * 0.0000325 + 5);
+  }
+
+  const net = totalGross - stt - charges;
   d.balance += net;
-  addPaperHistory({ type:'SELL', sym: displaySym, qty: h.qty, price, cur: h.cur||'₹', totalInr: totalGross, net, mode, stt, charges });
+  const modeLabel = isMIS ? 'MIS' : isMargin ? '3×' : mode === 'nrml' ? 'NRML' : mode === 'spot' ? 'SPOT' : 'CNC';
+  addPaperHistory({ type:'SELL', sym:displaySym, qty:h.qty, price, cur:h.cur||'₹', totalInr:totalGross, net, mode, stt, ctt, fee, charges });
   delete d.holdings[key];
   savePaperData(d);
-  showToast(`✅ ${isMIS?'Squared off':'Sold all'} ${displaySym}`, 'var(--accent)');
+  showToast(`✅ Closed ${displaySym} · ${modeLabel}`, 'var(--accent)');
   renderPaperTrade();
+}
+
+function renderPtOrders(el) {
+  const orders = getPendingOrders();
+  const pending = orders.filter(o => o.status === 'pending');
+  const filled  = orders.filter(o => o.status === 'filled').slice(0, 10);
+
+  if (!orders.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">📋</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">No pending orders</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Place a Limit or SL-M order from the Trade tab to see it here.</div>
+      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))" style="padding:10px 28px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Go to Trade</button>
+    </div>`;
+    return;
+  }
+
+  const renderOrder = (o, isPending) => {
+    const typeColor = o.orderType === 'limit' ? '#0070f3' : 'var(--red)';
+    const typeLabel = o.orderType === 'limit' ? '📌 LIMIT' : '🛑 SL-M';
+    const sideColor = o.side === 'BUY' ? 'var(--green)' : 'var(--red)';
+    const triggerLabel = o.orderType === 'limit'
+      ? (o.side === 'BUY' ? `Execute when ≤ ${o.cur}${o.limitPrice}` : `Execute when ≥ ${o.cur}${o.limitPrice}`)
+      : (o.side === 'BUY' ? `Trigger when ≥ ${o.cur}${o.triggerPrice}` : `Trigger when ≤ ${o.cur}${o.triggerPrice}`);
+    const modeLabel = o.tradeMode === 'intraday' ? 'MIS' : o.tradeMode === 'spot' ? 'SPOT' : o.tradeMode === 'margin' ? '3×' : o.tradeMode === 'nrml' ? 'NRML' : 'CNC';
+
+    return `<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg2);border:1.5px solid ${isPending?'rgba(0,112,243,0.25)':'var(--border)'};border-radius:14px;margin-bottom:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <span style="font-weight:800;font-size:14px;">${o.sym}</span>
+          <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:${sideColor === 'var(--green)' ? 'rgba(0,168,84,0.12)' : 'rgba(229,57,53,0.12)'};color:${sideColor};">${o.side}</span>
+          <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(0,112,243,0.1);color:${typeColor};">${typeLabel}</span>
+          <span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--bg3);color:var(--text3);">${modeLabel}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);font-weight:600;">${o.qty} units @ ${o.cur}${o.price}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${triggerLabel}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">${isPending ? '🕐 Placed: '+o.createdAt : '✅ Filled @ '+o.cur+(o.filledPrice||'—')+' · '+o.filledAt}</div>
+      </div>
+      ${isPending ? `<button onclick="cancelPendingOrder(${o.id})"
+        style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(229,57,53,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">
+        Cancel
+      </button>` : `<span style="font-size:10px;font-weight:700;color:var(--green);padding:3px 8px;border-radius:6px;background:rgba(0,168,84,0.1);">FILLED</span>`}
+    </div>`;
+  };
+
+  el.innerHTML = `<div style="padding:12px 16px;">
+    ${pending.length ? `
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:10px;">PENDING ORDERS (${pending.length})</div>
+      ${pending.map(o => renderOrder(o, true)).join('')}
+    ` : ''}
+    ${filled.length ? `
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-top:${pending.length?'16px':'0'};margin-bottom:10px;">RECENTLY FILLED</div>
+      ${filled.map(o => renderOrder(o, false)).join('')}
+    ` : ''}
+  </div>`;
 }
 
 function renderPtHistory(el) {
