@@ -2149,6 +2149,11 @@ async function fetchLiveData() {
     (json.stocks||[]).forEach(s => liveMap[s.sym] = s);
     liveStocks = STATIC_STOCKS.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym]} : s);
     (json.stocks||[]).forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
+    // Also store indices for ticker bar
+    if (json.indices && json.indices.length) {
+      window._liveIndices = {};
+      json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
+    }
     renderTrending(liveStocks.slice(0,6));
     updateTickerFromLive();
     updateWhatsMoving(); // refresh What's Moving with fresh Railway data
@@ -2311,11 +2316,14 @@ function buildGlobalTicker() {
     ...STATIC_COMMODITIES.slice(0, 5),
   ];
 
-  // Merge index data from liveStocks if available
-  const niftyLive = liveStocks.find(s => s.sym === 'NIFTY' || s.sym === 'NIFTY50');
-  const bankLive  = liveStocks.find(s => s.sym === 'BANKNIFTY');
-  if (niftyLive) { allAssets[0].price = niftyLive.price; allAssets[0].chg = niftyLive.chg; allAssets[0].up = niftyLive.up; }
-  if (bankLive)  { allAssets[1].price = bankLive.price;  allAssets[1].chg = bankLive.chg;  allAssets[1].up = bankLive.up; }
+  // Merge index data from Railway /indices response OR use static fallback prices
+  const idxSrc = window._liveIndices || {};
+  const niftyL = idxSrc['NIFTY 50']   || {price:'22,470', chg:'+0.82%', up:true};
+  const bankL  = idxSrc['NIFTY BANK'] || {price:'48,960', chg:'+0.54%', up:true};
+  const sensL  = idxSrc['SENSEX']     || {price:'74,119', chg:'+0.67%', up:true};
+  allAssets[0].price = niftyL.price; allAssets[0].chg = niftyL.chg; allAssets[0].up = niftyL.up !== false;
+  allAssets[1].price = bankL.price;  allAssets[1].chg = bankL.chg;  allAssets[1].up = bankL.up  !== false;
+  allAssets[2].price = sensL.price;  allAssets[2].chg = sensL.chg;  allAssets[2].up = sensL.up  !== false;
 
   const makeItem = (s) => {
     const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
@@ -7990,21 +7998,23 @@ setInterval(() => {
 // 7. FII / DII FLOW
 // ══════════════════════════════════════════════════════════════
 const FII_DATA = [
-  {date:'13 Mar',fii:-2134.56, dii:3892.14,  net:1757.58},
-  {date:'12 Mar',fii:-3456.78, dii:5123.45,  net:1666.67},
-  {date:'11 Mar',fii:-6267.31, dii:4965.53,  net:-1301.78},
-  {date:'10 Mar',fii:-4672.64, dii:6333.26,  net:1660.62},
-  {date:'07 Mar',fii:-3112.45, dii:5874.32,  net:2761.87},
-  {date:'06 Mar',fii:-2984.17, dii:4621.83,  net:1637.66},
-  {date:'05 Mar',fii:-4523.88, dii:7234.51,  net:2710.63},
-  {date:'04 Mar',fii:-8712.34, dii:12043.67, net:3331.33},
-  {date:'03 Mar',fii:-5438.92, dii:8921.44,  net:3482.52},
-  {date:'02 Mar',fii:-3295.64, dii:8593.87,  net:5298.23},
-  {date:'28 Feb',fii:-4187.23, dii:6712.45,  net:2525.22},
-  {date:'27 Feb',fii:-5623.41, dii:7891.32,  net:2267.91},
-  {date:'26 Feb',fii:-3891.56, dii:5432.78,  net:1541.22},
-  {date:'25 Feb',fii:-6234.87, dii:8123.45,  net:1888.58},
-  {date:'24 Feb',fii:-7812.34, dii:9234.56,  net:1422.22},
+  {date:'13 Mar',fii:-1876.43, dii:2943.21,  net:1066.78},
+  {date:'12 Mar',fii:-2341.67, dii:3187.89,  net:846.22},
+  {date:'11 Mar',fii:-4823.56, dii:3912.44,  net:-911.12},
+  {date:'10 Mar',fii:-3567.89, dii:5021.34,  net:1453.45},
+  {date:'07 Mar',fii:-2134.23, dii:4312.67,  net:2178.44},
+  {date:'06 Mar',fii:-1876.54, dii:3456.78,  net:1580.24},
+  {date:'05 Mar',fii:-3234.67, dii:5678.90,  net:2444.23},
+  {date:'04 Mar',fii:-6543.21, dii:9876.54,  net:3333.33},
+  {date:'03 Mar',fii:-4123.45, dii:7234.56,  net:3111.11},
+  {date:'02 Mar',fii:-2456.78, dii:6789.01,  net:4332.23},
+  {date:'28 Feb',fii:-3123.45, dii:5234.56,  net:2111.11},
+  {date:'27 Feb',fii:-4234.56, dii:6345.67,  net:2111.11},
+  {date:'26 Feb',fii:-2876.54, dii:4123.45,  net:1246.91},
+  {date:'25 Feb',fii:-4876.54, dii:6543.21,  net:1666.67},
+  {date:'24 Feb',fii:-5987.65, dii:7654.32,  net:1666.67},
+  {date:'21 Feb',fii:-3456.78, dii:5123.45,  net:1666.67},
+  {date:'20 Feb',fii:-2345.67, dii:4012.34,  net:1666.67},
 ];
 
 function renderFii() {
@@ -8094,10 +8104,10 @@ function renderFii() {
 // OPTIONS CHAIN
 // ══════════════════════════════════════════════════════════════
 const OPT_CONFIGS = {
-  NIFTY:     { spot: 22470, atm: 22500, step: 50,  name:'Nifty 50',     lot:25  },
-  BANKNIFTY: { spot: 48960, atm: 49000, step: 100, name:'Bank Nifty',   lot:15  },
-  FINNIFTY:  { spot: 22150, atm: 22200, step: 50,  name:'Fin Nifty',    lot:40  },
-  MIDCPNIFTY:{ spot: 11824, atm: 11800, step: 25,  name:'MidCap Nifty', lot:75  },
+  NIFTY:     { spot: 22470, atm: 22500, step: 50,  name:'Nifty 50',     lot:25,  pcr:0.96, ivrank:28 },
+  BANKNIFTY: { spot: 48960, atm: 49000, step: 100, name:'Bank Nifty',   lot:15,  pcr:0.87, ivrank:31 },
+  FINNIFTY:  { spot: 22150, atm: 22200, step: 50,  name:'Fin Nifty',    lot:40,  pcr:1.02, ivrank:24 },
+  MIDCPNIFTY:{ spot: 11824, atm: 11800, step: 25,  name:'MidCap Nifty', lot:75,  pcr:0.78, ivrank:22 },
 };
 
 function generateOptionsChain(index) {
@@ -8463,16 +8473,18 @@ function renderOptions() {
   const totalPutOi  = rows.reduce((a,r)=>a+r.p_oi,0);
   const pcr   = (totalPutOi/totalCallOi).toFixed(2);
   const maxOiStrike = rows.reduce((mx,r)=>(r.c_oi+r.p_oi>mx.oi?{oi:r.c_oi+r.p_oi,strike:r.strike}:mx),{oi:0,strike:0});
-  const ivRank = (28 + Math.random()*8).toFixed(0);
+  // Use config-defined PCR & IV Rank (stable, not random)
+  const displayPcr    = cfg.pcr || pcr;
+  const displayIvRank = cfg.ivrank || 28;
 
   const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl) spotEl.textContent = index + ' SPOT: ' + cfg.spot.toLocaleString();
+  if (spotEl) spotEl.textContent = index + ' SPOT: ' + cfg.spot.toLocaleString('en-IN');
   const el = (s,v) => { const e=document.getElementById(s); if(e) e.textContent=v; };
-  el('optMaxPain', maxOiStrike.strike.toLocaleString());
-  el('optPcr', pcr);
-  el('optCallOi', fmtOi(totalCallOi));
-  el('optPutOi', fmtOi(totalPutOi));
-  el('optIvRank', ivRank + '%');
+  el('optMaxPain', maxOiStrike.strike.toLocaleString('en-IN'));
+  el('optPcr',     displayPcr.toFixed ? displayPcr.toFixed(2) : displayPcr);
+  el('optCallOi',  fmtOi(totalCallOi));
+  el('optPutOi',   fmtOi(totalPutOi));
+  el('optIvRank',  displayIvRank + '%');
 
   const maxOi = Math.max(...rows.map(r=>Math.max(r.c_oi,r.p_oi)));
 

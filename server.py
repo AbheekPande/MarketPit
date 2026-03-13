@@ -513,21 +513,21 @@ def api_quote(symbol):
 
 
 STATIC_FII_FALLBACK = [
-    {"date": "13 Mar", "fii_net": -2134.56, "dii_net": 3892.14, "net": 1757.58},
-    {"date": "12 Mar", "fii_net": -3456.78, "dii_net": 5123.45, "net": 1666.67},
-    {"date": "11 Mar", "fii_net": -6267.31, "dii_net": 4965.53, "net": -1301.78},
-    {"date": "10 Mar", "fii_net": -4672.64, "dii_net": 6333.26, "net": 1660.62},
-    {"date": "07 Mar", "fii_net": -3112.45, "dii_net": 5874.32, "net": 2761.87},
-    {"date": "06 Mar", "fii_net": -2984.17, "dii_net": 4621.83, "net": 1637.66},
-    {"date": "05 Mar", "fii_net": -4523.88, "dii_net": 7234.51, "net": 2710.63},
-    {"date": "04 Mar", "fii_net": -8712.34, "dii_net": 12043.67, "net": 3331.33},
-    {"date": "03 Mar", "fii_net": -5438.92, "dii_net": 8921.44, "net": 3482.52},
-    {"date": "02 Mar", "fii_net": -3295.64, "dii_net": 8593.87, "net": 5298.23},
-    {"date": "28 Feb", "fii_net": -4187.23, "dii_net": 6712.45, "net": 2525.22},
-    {"date": "27 Feb", "fii_net": -5623.41, "dii_net": 7891.32, "net": 2267.91},
-    {"date": "26 Feb", "fii_net": -3891.56, "dii_net": 5432.78, "net": 1541.22},
-    {"date": "25 Feb", "fii_net": -6234.87, "dii_net": 8123.45, "net": 1888.58},
-    {"date": "24 Feb", "fii_net": -7812.34, "dii_net": 9234.56, "net": 1422.22},
+    {"date": "13 Mar", "fii_net": -1876.43, "dii_net": 2943.21, "net":  1066.78},
+    {"date": "12 Mar", "fii_net": -2341.67, "dii_net": 3187.89, "net":   846.22},
+    {"date": "11 Mar", "fii_net": -4823.56, "dii_net": 3912.44, "net":  -911.12},
+    {"date": "10 Mar", "fii_net": -3567.89, "dii_net": 5021.34, "net":  1453.45},
+    {"date": "07 Mar", "fii_net": -2134.23, "dii_net": 4312.67, "net":  2178.44},
+    {"date": "06 Mar", "fii_net": -1876.54, "dii_net": 3456.78, "net":  1580.24},
+    {"date": "05 Mar", "fii_net": -3234.67, "dii_net": 5678.90, "net":  2444.23},
+    {"date": "04 Mar", "fii_net": -6543.21, "dii_net": 9876.54, "net":  3333.33},
+    {"date": "03 Mar", "fii_net": -4123.45, "dii_net": 7234.56, "net":  3111.11},
+    {"date": "02 Mar", "fii_net": -2456.78, "dii_net": 6789.01, "net":  4332.23},
+    {"date": "28 Feb", "fii_net": -3123.45, "dii_net": 5234.56, "net":  2111.11},
+    {"date": "27 Feb", "fii_net": -4234.56, "dii_net": 6345.67, "net":  2111.11},
+    {"date": "26 Feb", "fii_net": -2876.54, "dii_net": 4123.45, "net":  1246.91},
+    {"date": "25 Feb", "fii_net": -4876.54, "dii_net": 6543.21, "net":  1666.67},
+    {"date": "24 Feb", "fii_net": -5987.65, "dii_net": 7654.32, "net":  1666.67},
 ]
 
 @app.route("/api/fii")
