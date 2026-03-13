@@ -1144,6 +1144,23 @@ header {
 
     <!-- TradingView Market Overview — live NSE stock prices in sidebar -->
     <div id="trendList" style="padding:0 4px 8px;"></div>
+
+    <!-- TOP GAINERS & LOSERS -->
+    <div id="whatsMoving" class="sidebar-section" style="padding:10px 10px 8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text);letter-spacing:0.5px;text-transform:uppercase;">📊 Market Movers</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
+          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
+          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN FEED -->
@@ -2454,6 +2471,61 @@ const LIVE_SIDEBAR_SYMS = [
 ];
 
 // Priority stocks to fetch first for What's Moving
+
+function updateWhatsMoving() {
+  // Use live stocks with real prices; fall back to static
+  const source = (liveStocks && liveStocks.filter(s => s.price && s.price !== '—' && s._live).length >= 5)
+    ? liveStocks.filter(s => s.price && s.price !== '—' && s._live)
+    : (STATIC_STOCKS || []);
+
+  // Only NSE stocks (exclude crypto/commodities)
+  const stocks = source.filter(s =>
+    !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.chg && s.chg !== '—'
+  );
+
+  const getPct = s => parseFloat((s.chg||'0').replace('%','').replace('+','')) || 0;
+
+  const sorted  = [...stocks].sort((a,b) => getPct(b) - getPct(a));
+  const gainers = sorted.filter(s => getPct(s) > 0).slice(0, 5);
+  const losers  = sorted.filter(s => getPct(s) < 0).slice(-5).reverse();
+
+  const renderItem = (s, isGainer) => {
+    const chgVal = getPct(s);
+    const chgDisplay = (chgVal >= 0 ? '+' : '') + chgVal.toFixed(2) + '%';
+    const rawPrice = typeof s.price === 'string' ? parseFloat(s.price.replace(/,/g,'')) : (s.price || 0);
+    const priceDisplay = rawPrice ? '₹' + rawPrice.toLocaleString('en-IN', {maximumFractionDigits: rawPrice < 100 ? 2 : 0}) : '';
+    return `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;cursor:pointer;border-bottom:1px solid var(--border);" onclick="fetchAndShowStock('${s.sym}')">
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="font-weight:700;font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.sym}</div>
+        ${priceDisplay ? `<div style="font-size:9px;color:var(--text3);">${priceDisplay}</div>` : ''}
+      </div>
+      <span style="font-size:11px;font-weight:800;color:${isGainer?'var(--green)':'var(--red)'};flex-shrink:0;">${chgDisplay}</span>
+    </div>`;
+  };
+
+  const g = document.getElementById('wmGainers');
+  const l = document.getElementById('wmLosers');
+  if (g) g.innerHTML = gainers.length
+    ? gainers.map(s => renderItem(s, true)).join('')
+    : '<div style="font-size:10px;color:var(--text3);padding:4px 0;">—</div>';
+  if (l) l.innerHTML = losers.length
+    ? losers.map(s => renderItem(s, false)).join('')
+    : '<div style="font-size:10px;color:var(--text3);padding:4px 0;">—</div>';
+
+  // Update timestamp
+  const wm = document.getElementById('whatsMoving');
+  let tsEl = wm?.querySelector('.wm-ts');
+  if (wm && !tsEl) {
+    tsEl = document.createElement('div');
+    tsEl.className = 'wm-ts';
+    tsEl.style.cssText = 'font-size:9px;color:var(--text3);margin-top:6px;text-align:right;';
+    wm.appendChild(tsEl);
+  }
+  if (tsEl) {
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    tsEl.textContent = 'Updated ' + ts + ' IST';
+  }
+}
 const PRIORITY_SYMS = [
   'RELIANCE','TCS','HDFCBANK','INFY','SBIN','ICICIBANK','TATAMOTORS',
   'WIPRO','AXISBANK','BAJFINANCE','TATASTEEL','TECHM','NTPC','JSWSTEEL',
