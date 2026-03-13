@@ -1051,15 +1051,7 @@ header {
 </header>
 
 <!-- ── TRADINGVIEW TICKER TAPE — shows on all pages ── -->
-<!-- ── CUSTOM LIVE TICKER BAR — full width above layout ── -->
-<div id="globalTickerBar" style="width:100%;height:36px;border-bottom:1px solid var(--border);overflow:hidden;display:flex;align-items:center;background:var(--bg2);flex-shrink:0;z-index:90;">
-  <div style="padding:0 10px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;letter-spacing:1px;flex-shrink:0;">● LIVE</div>
-  <div style="flex:1;overflow:hidden;position:relative;">
-    <div id="globalTickerTrack" style="display:inline-flex;align-items:center;gap:0;white-space:nowrap;">
-      <!-- filled by JS -->
-    </div>
-  </div>
-</div>
+
 
 <!-- LAYOUT -->
 <div class="layout">
@@ -2184,6 +2176,30 @@ const LIVE_SIDEBAR_SYMS = [
   {sym:'DMART',     name:'DMart',               sector:'Consumer'},
   {sym:'JUBLFOOD',  name:'Jubilant Foods',      sector:'Consumer'},
 ];
+
+// Priority stocks to fetch first for What's Moving
+const PRIORITY_SYMS = [
+  'RELIANCE','TCS','HDFCBANK','INFY','SBIN','ICICIBANK','TATAMOTORS',
+  'WIPRO','AXISBANK','BAJFINANCE','TATASTEEL','TECHM','NTPC','JSWSTEEL',
+  'ASIANPAINT','MARUTI','SUNPHARMA','KOTAKBANK','HCLTECH','LT'
+];
+
+// Fetch priority stocks from Yahoo Finance immediately on load
+async function fetchPriorityStocks() {
+  await Promise.allSettled(PRIORITY_SYMS.map(async sym => {
+    const yfSym = YF_STOCK_MAP[sym];
+    if (!yfSym) return;
+    try {
+      const { price, chg, up } = await yfFetch(yfSym);
+      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
+      const s = liveStocks.find(x => x.sym === sym);
+      if (s) { s.price = price; s.chg = chgStr; s.up = up; }
+    } catch(e) {}
+  }));
+  updateWhatsMoving();
+  updateTickerTape();
+  refreshHeatmapFromLive();
+}
 
 async function fetchLiveData() {
   // Show static fallback immediately so UI isn't blank
@@ -9823,29 +9839,66 @@ function injectTickerTape() {
   if (header) header.parentNode.insertBefore(tape, header.nextSibling);
 
   updateTickerTape();
-  setInterval(updateTickerTape, 30000);
+  setInterval(updateTickerTape, 15000);
 }
 
 function updateTickerTape() {
   const inner = document.getElementById('tickerInner');
   if (!inner) return;
+
+  // Use liveStocks (updated from Railway/Yahoo every 30s) with static fallbacks
+  const stocks = (liveStocks && liveStocks.length >= 5) ? liveStocks : STATIC_STOCKS;
   const tickers = [
-    ...STATIC_STOCKS.slice(0,15),
+    // Indices first
+    {sym:'NIFTY',  name:'Nifty 50',   price:22470, chg:'+0.82', currency:'₹', up:true},
+    {sym:'SENSEX', name:'Sensex',      price:74119, chg:'+0.67', currency:'₹', up:true},
+    {sym:'BNIFTY', name:'Bank Nifty',  price:48960, chg:'+0.54', currency:'₹', up:true},
+    // Live stocks
+    ...stocks.slice(0,20),
+    // Crypto & commodities
     ...STATIC_CRYPTO.slice(0,5),
     ...STATIC_COMMODITIES.slice(0,4),
   ];
+
+  // Merge live index prices if available
+  if (window._liveIndices) {
+    const ni = window._liveIndices['NIFTY 50'] || window._liveIndices['NIFTY'];
+    const se = window._liveIndices['SENSEX'];
+    const bk = window._liveIndices['NIFTY BANK'] || window._liveIndices['BANKNIFTY'];
+    if (ni) { tickers[0].price = parseFloat(String(ni.price).replace(/,/g,'')); tickers[0].chg = ni.chg; }
+    if (se) { tickers[1].price = parseFloat(String(se.price).replace(/,/g,'')); tickers[1].chg = se.chg; }
+    if (bk) { tickers[2].price = parseFloat(String(bk.price).replace(/,/g,'')); tickers[2].chg = bk.chg; }
+  }
+
   const items = tickers.map(t => {
-    const chgN = parseFloat(t.chg);
-    const up   = chgN >= 0;
-    const cur  = t.currency || '₹';
+    if (!t.price) return '';
+    const chgStr = String(t.chg || '0').replace('%','').replace('+','');
+    const chgN   = parseFloat(chgStr) || 0;
+    const up     = t.up !== undefined ? t.up : chgN >= 0;
+    const cur    = t.currency || '₹';
+    const pNum   = typeof t.price === 'string' ? parseFloat(t.price.replace(/,/g,'')) : t.price;
+    const pFmt   = cur === '₹'
+      ? '₹' + pNum.toLocaleString('en-IN', {maximumFractionDigits:0})
+      : '$' + pNum.toLocaleString('en-US', {maximumFractionDigits: pNum < 1 ? 4 : pNum < 100 ? 2 : 0});
+    const chgFmt = (up ? '▲' : '▼') + ' ' + Math.abs(chgN).toFixed(2) + '%';
     return `<div class="ticker-item" onclick="fetchAndShowStock('${t.sym}')">
-      <span style="font-weight:700;color:var(--text);">${t.sym}</span>
-      <span style="color:${up?'var(--green)':'var(--red)'};">${cur}${t.price?.toLocaleString()}</span>
-      <span style="color:${up?'var(--green)':'var(--red)'};">${up?'▲':'▼'}${Math.abs(chgN).toFixed(2)}%</span>
+      <div style="display:flex;flex-direction:column;gap:1px;">
+        <span style="font-weight:800;color:var(--text);font-size:10px;">${t.sym}</span>
+        ${t.name && t.name !== t.sym ? `<span style="font-size:8px;color:var(--text3);">${t.name}</span>` : ''}
+      </div>
+      <span style="color:${up?'var(--green)':'var(--red)'};">${pFmt}</span>
+      <span style="color:${up?'var(--green)':'var(--red)'};">${chgFmt}</span>
     </div>`;
-  }).join('');
-  // Duplicate for seamless loop
+  }).filter(Boolean).join('');
   inner.innerHTML = items + items;
+
+  // Restart animation cleanly
+  const innerEl = document.getElementById('tickerInner');
+  if (innerEl) {
+    innerEl.style.animation = 'none';
+    innerEl.offsetHeight;
+    innerEl.style.animation = 'tickerScroll 60s linear infinite';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -10171,6 +10224,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Build ticker immediately — no delay needed, all data is in-memory
 buildGlobalTicker();
 updateWhatsMoving();
+
+// Fetch live prices for key stocks immediately (2s delay to let DOM settle)
+setTimeout(fetchPriorityStocks, 2000);
+// Re-fetch every 30s
+setInterval(fetchPriorityStocks, 30000);
 
 setTimeout(() => {
   buildGlobalTicker(); // rebuild after DOM settles
