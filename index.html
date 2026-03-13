@@ -10634,21 +10634,38 @@ setTimeout(updateNavArrows, 800);
   }
 
   async function updateHeroPrices() {
-    // Layer 1: Try already-live data from liveStocks/_liveIndices (free, instant)
+    // Layer 1: liveStocks already populated — instant, no fetch needed
     const gotLive = updateHeroFromLiveStocks();
-    if (gotLive) return; // already have fresh data — no need for extra fetch
+    if (gotLive) return;
 
-    // Layer 2: Fall back to direct Yahoo Finance fetch if liveStocks not ready yet
-    for (const s of HERO_SYMBOLS) {
+    // Layer 2: Fetch ALL 3 symbols in parallel — no sequential waiting
+    const fetches = HERO_SYMBOLS.map(async (s) => {
       const el = document.getElementById(s.id);
-      if (!el) continue;
+      if (!el) return;
+
+      // BTC: use CoinGecko directly — much faster than YF proxy
+      if (s.id === 'heroBtc') {
+        try {
+          const cgData = await cgFetchAll();
+          const coin = cgData['bitcoin'];
+          if (coin?.usd) {
+            renderHeroItem(el, s, coin.usd, coin.usd_24h_change || 0, (coin.usd_24h_change || 0) >= 0);
+            return;
+          }
+        } catch(e) {}
+      }
+
+      // NIFTY / BANKNIFTY: Yahoo Finance proxy
       try {
         const { price, prev } = await fetchHeroPrice(s.yfSym);
-        if (!price) continue;
+        if (!price) return;
         const chgPct = prev ? ((price - prev) / prev * 100) : 0;
         renderHeroItem(el, s, price, chgPct, chgPct >= 0);
-      } catch(e) { /* silently keep last value */ }
-    }
+      } catch(e) {}
+    });
+
+    // Fire all in parallel — each updates the DOM as soon as it resolves
+    await Promise.allSettled(fetches);
   }
 
   // Init after DOM ready
@@ -10657,6 +10674,9 @@ setTimeout(updateNavArrows, 800);
   } else {
     setTimeout(initSpotlight, 100);
   }
+
+  // Fire hero price fetch immediately — don't wait for spotlight init
+  updateHeroPrices();
 })();
 
 // ── EYES FOLLOW CURSOR ──
