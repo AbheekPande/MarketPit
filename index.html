@@ -742,8 +742,8 @@ header {
 #eyesBanner:hover { background:#ccc8c0 !important; border-bottom-color:rgba(0,0,0,0.1) !important; }
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
-.eb-tile { flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;padding:3px;background:transparent;border:none;position:relative; }
-.eb-sub { border-radius:5px;background:transparent;border:1px solid transparent;transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;aspect-ratio:1;opacity:0; }
+.eb-tile { flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;background:transparent;border:none;position:relative;height:52px;box-sizing:border-box; }
+.eb-sub { border-radius:5px;background:transparent;border:1px solid transparent;transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;opacity:0;min-width:0;min-height:0; }
 .eb-tile.eb-active .eb-sub { background:rgba(255,200,80,0.35);border-color:rgba(255,255,255,0.5); }
 
 #ebGlow { position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,40,0.9) 0%,rgba(255,100,0,0.55) 40%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:0;transition:opacity 0.3s;filter:blur(8px); }
@@ -10708,6 +10708,8 @@ setTimeout(updateNavArrows, 800);
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
+  let _lastActive = null;
+
   function getColor(pct) {
     let r,g,b;
     if (pct < 0.5) {
@@ -10720,6 +10722,16 @@ setTimeout(updateNavArrows, 800);
     return {r,g,b};
   }
 
+  function clearAll() {
+    banner.querySelectorAll('.eb-sub').forEach(s => {
+      s.style.opacity = '0';
+      s.style.background = 'transparent';
+      s.style.borderColor = 'transparent';
+      s.style.boxShadow = 'none';
+    });
+    _lastActive = null;
+  }
+
   banner.addEventListener('mousemove', function(e) {
     const rect = banner.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -10727,36 +10739,43 @@ setTimeout(updateNavArrows, 800);
     const pct = x / rect.width;
     const {r,g,b} = getColor(pct);
 
+    // Move the glow dot
     glow.style.left = x + 'px';
     glow.style.top  = y + 'px';
     glow.style.background = `radial-gradient(circle, rgba(${r},${g},${b},0.9) 0%, rgba(${Math.round(r*0.7)},${Math.round(g*0.5)},${Math.round(b*0.3)},0.5) 40%, transparent 70%)`;
 
-    // Activate only the single sub-cube the cursor is directly over
-    banner.querySelectorAll('.eb-sub').forEach(s => {
-      const sr = s.getBoundingClientRect();
-      const over = e.clientX >= sr.left && e.clientX <= sr.right && e.clientY >= sr.top && e.clientY <= sr.bottom;
-      if (over) {
-        s.style.opacity = '1';
-        s.style.background = `rgba(${r},${g},${b},0.55)`;
-        s.style.borderColor = `rgba(255,255,255,0.7)`;
-        s.style.boxShadow = `0 0 10px rgba(${r},${g},${b},0.7)`;
-      } else {
-        s.style.opacity = '0';
-        s.style.background = 'transparent';
-        s.style.borderColor = 'transparent';
-        s.style.boxShadow = 'none';
-      }
-    });
+    // Use elementFromPoint to find exactly which sub-cube the cursor is over
+    // Temporarily disable pointer-events on glow so it doesn't intercept
+    glow.style.pointerEvents = 'none';
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    glow.style.pointerEvents = '';
+
+    // Walk up to find .eb-sub if cursor is over a child element
+    const sub = el && (el.classList.contains('eb-sub') ? el : el.closest?.('.eb-sub'));
+
+    if (sub === _lastActive) return; // same quad — no DOM update needed
+
+    // Hide previous
+    if (_lastActive) {
+      _lastActive.style.opacity = '0';
+      _lastActive.style.background = 'transparent';
+      _lastActive.style.borderColor = 'transparent';
+      _lastActive.style.boxShadow = 'none';
+    }
+
+    // Show new
+    if (sub && sub.classList.contains('eb-sub')) {
+      sub.style.opacity = '1';
+      sub.style.background = `rgba(${r},${g},${b},0.6)`;
+      sub.style.borderColor = `rgba(255,255,255,0.75)`;
+      sub.style.boxShadow = `0 0 12px rgba(${r},${g},${b},0.8), inset 0 0 8px rgba(255,255,255,0.15)`;
+      _lastActive = sub;
+    } else {
+      _lastActive = null;
+    }
   });
 
-  banner.addEventListener('mouseleave', function() {
-    banner.querySelectorAll('.eb-sub').forEach(s => {
-      s.style.opacity = '0';
-      s.style.background = 'transparent';
-      s.style.borderColor = 'transparent';
-      s.style.boxShadow = 'none';
-    });
-  });
+  banner.addEventListener('mouseleave', clearAll);
 })();
 
 
