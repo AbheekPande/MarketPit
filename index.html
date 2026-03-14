@@ -9212,7 +9212,7 @@ function renderEconoPage() {
     el.parentElement.insertBefore(tvDiv, el);
   }
   const eventsHeader = '<div style="font-family:\'Space Mono\',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;padding:0 2px;">UPCOMING MACRO EVENTS</div>';
-  el.innerHTML = eventsHeader +
+  el.innerHTML = eventsHeader + `
   ${Object.entries(grouped).map(([date,events])=>{
     const dObj=new Date(date+'T00:00:00');
     const dayLabel=dObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
