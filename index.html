@@ -1808,7 +1808,7 @@ header {
     </div>
     <!-- Tab selector -->
     <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
-      <button onclick="showTVTab('indices',this)" id="tvtab_indices" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">📈 Indices</button>
+      <button onclick="showTVTab('indices',this)" id="tvtab_indices" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">🇺🇸 US Stocks</button>
       <button onclick="showTVTab('stocks',this)" id="tvtab_stocks" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🏦 NSE Stocks</button>
       <button onclick="showTVTab('crypto',this)" id="tvtab_crypto" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">₿ Crypto</button>
       <button onclick="showTVTab('commodities',this)" id="tvtab_commodities" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🪙 Commodities</button>
@@ -9349,7 +9349,7 @@ function showTVTab(tab, btn) {
   const theme = document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
 
   if (tab === 'indices') {
-    const syms = ['NSE:NIFTY','NSE:BANKNIFTY','NSE:CNXIT','NSE:CNXPHARMA','NSE:CNXAUTO','NSE:CNXMETAL'];
+    const syms = ['NASDAQ:AAPL','NASDAQ:MSFT','NASDAQ:GOOGL','NASDAQ:NVDA','NASDAQ:AMZN','NYSE:JPM'];
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
       + syms.map(function(_,i){ return '<div id="tvIdx_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:220px;min-height:220px;"></div>'; }).join('')
       + '</div>';
