@@ -1117,7 +1117,7 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'optpnl')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
-      Options P&L
+      Option Strategies
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'tv')">
@@ -8147,7 +8147,7 @@ function _optRemoveBasket(i) { _optBasket.splice(i,1); renderOptions(); }
 function _optClearBasket() { _optBasket = []; renderOptions(); }
 function _optAnalyzeBasket() {
   if (!_optBasket.length) return;
-  // Switch to Options P&L page with basket pre-loaded
+  // Switch to Option Strategies page with basket pre-loaded
   switchTab(null,'optpnl');
   showToast('Opening P&L Simulator with your basket…','var(--accent)');
 }
@@ -9186,72 +9186,106 @@ function filterEcono(f,btn) {
 }
 
 function renderEconoPage() {
-  const el=document.getElementById('econoBody'); if(!el) return;
-  const today=new Date(); today.setHours(0,0,0,0);
-  const todayStr=today.toISOString().split('T')[0];
-  let data=[..._econoData].sort((a,b)=>a.date.localeCompare(b.date));
-  if(_econoFilter==='india') data=data.filter(d=>d.country==='IN');
-  else if(_econoFilter==='global') data=data.filter(d=>d.country!=='IN');
-  else if(_econoFilter==='high') data=data.filter(d=>d.impact==='high');
+  const el = document.getElementById('econoBody'); if (!el) return;
 
-  // Group by date
-  const grouped={};
-  data.forEach(e=>{ if(!grouped[e.date]) grouped[e.date]=[]; grouped[e.date].push(e); });
-  const impactColor={high:'var(--red)',medium:'var(--gold)',low:'var(--text3)'};
-  const impactBg={high:'rgba(229,57,53,0.12)',medium:'rgba(255,193,7,0.12)',low:'rgba(100,100,100,0.08)'};
+  // Ensure we have data — if _econoData is empty, seed from static immediately
+  if (!_econoData || !_econoData.length) _econoData = ECONO_STATIC.slice();
 
-  if(!Object.keys(grouped).length){ el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text3);">No events found</div>`; return; }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().split('T')[0];
 
-  // Inject the TV iframe only once (avoid reloading on every filter click)
+  let data = _econoData.slice().sort((a,b) => a.date.localeCompare(b.date));
+  if (_econoFilter === 'india')  data = data.filter(d => d.country === 'IN');
+  else if (_econoFilter === 'global') data = data.filter(d => d.country !== 'IN');
+  else if (_econoFilter === 'high')   data = data.filter(d => d.impact === 'high');
+
+  const grouped = {};
+  data.forEach(e => { if (!grouped[e.date]) grouped[e.date] = []; grouped[e.date].push(e); });
+
+  const impactColor = {high:'var(--red)', medium:'#f5a623', low:'var(--text3)'};
+  const impactBg    = {high:'rgba(229,57,53,0.12)', medium:'rgba(245,166,35,0.12)', low:'rgba(100,100,100,0.08)'};
+
+  // Inject TradingView iframe once — above econoBody, not inside it
   if (!document.getElementById('econoTVFrame')) {
     const tvDiv = document.createElement('div');
     tvDiv.id = 'econoTVFrame';
-    tvDiv.style.cssText = 'margin-bottom:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;';
-    tvDiv.innerHTML = '<div style="padding:10px 14px 0;font-size:10px;font-family:\'Space Mono\',monospace;color:var(--text3);">LIVE ECONOMIC CALENDAR (TradingView)</div>'
-      + '<iframe src="https://s.tradingview.com/external-embedding/embed-widget-events.html?locale=en&importanceFilter=high%2Cmedium&countryFilter=IN%2CUS%2CGB%2CEU%2CCN%2CJP&colorTheme=dark&isTransparent=true&width=100%25&height=300" style="width:100%;height:300px;border:none;" scrolling="no" frameborder="0" allowtransparency="true"></iframe>';
+    tvDiv.style.cssText = 'margin:0 14px 14px;border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;';
+    tvDiv.innerHTML =
+      '<div style="padding:8px 14px;font-size:9px;font-family:\'Space Mono\',monospace;color:var(--text3);letter-spacing:1px;background:var(--bg3);border-bottom:1px solid var(--border);">LIVE ECONOMIC CALENDAR — TRADINGVIEW</div>'
+      + '<iframe src="https://s.tradingview.com/external-embedding/embed-widget-events.html?locale=en&importanceFilter=high%2Cmedium&countryFilter=IN%2CUS%2CGB%2CEU%2CCN%2CJP&colorTheme=dark&isTransparent=true&width=100%25&height=280" style="width:100%;height:280px;border:none;display:block;" scrolling="no" frameborder="0" allowtransparency="true"></iframe>';
     el.parentElement.insertBefore(tvDiv, el);
   }
-  const eventsHeader = '<div style="font-family:\'Space Mono\',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;padding:0 2px;">UPCOMING MACRO EVENTS</div>';
-  el.innerHTML = eventsHeader + `
-  ${Object.entries(grouped).map(([date,events])=>{
-    const dObj=new Date(date+'T00:00:00');
-    const dayLabel=dObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-    const isPast=date<todayStr, isToday=date===todayStr;
-    return `
-    <div style="margin-bottom:4px;padding:8px 2px 4px;${isPast?'opacity:0.6':''}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <div style="font-weight:800;font-size:12px;color:${isToday?'var(--accent)':isPast?'var(--text3)':'var(--text)'};">${dayLabel}</div>
-        ${isToday?`<div style="font-size:9px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:8px;font-weight:700;">TODAY</div>`:''}
-        ${isPast?`<div style="font-size:9px;color:var(--text3);">Past</div>`:''}
-      </div>
-      ${events.map(e=>`
-      <div style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:10px;align-items:center;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;border-left:3px solid ${impactColor[e.impact]||'var(--border)'};">
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <span style="font-size:16px;">${e.flag||'🌍'}</span>
-          <div>
-            <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">${e.time||'—'} IST</div>
-            <div style="font-size:9px;padding:1px 6px;border-radius:4px;background:${impactBg[e.impact]};color:${impactColor[e.impact]};font-weight:700;white-space:nowrap;">${e.impact?.toUpperCase()||'MED'}</div>
-          </div>
-        </div>
-        <div style="min-width:0;">
-          <div style="font-weight:700;font-size:13px;color:var(--text);line-height:1.3;">${e.event}</div>
-          ${e.desc?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${e.desc}</div>`:''}
-        </div>
-        <div style="text-align:center;flex-shrink:0;">
-          <div style="font-size:9px;color:var(--text3);">Actual</div>
-          <div style="font-weight:800;font-size:12px;color:${e.actual?'var(--green)':'var(--text3)'};">${e.actual||'—'}</div>
-        </div>
-        <div style="text-align:center;flex-shrink:0;">
-          <div style="font-size:9px;color:var(--text3);">Forecast</div>
-          <div style="font-weight:700;font-size:12px;color:var(--text);">${e.forecast||'—'}</div>
-        </div>
-        <div style="text-align:center;flex-shrink:0;">
-          <div style="font-size:9px;color:var(--text3);">Previous</div>
-          <div style="font-size:12px;color:var(--text2);">${e.prev||'—'}</div>
-        </div>
-      </div>`).join('')}
-    </div>`;
-  }).join('')}`;
+
+  if (!Object.keys(grouped).length) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3);">No events found for this filter.</div>';
+    return;
+  }
+
+  // Source badge
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px;">'
+    + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">MACRO EVENTS</div>'
+    + '<div style="font-size:9px;color:var(--text3);">' + (_econoSource||'') + '</div>'
+    + '</div>';
+
+  Object.entries(grouped).sort(([a],[b]) => a.localeCompare(b)).forEach(([date, events]) => {
+    const dObj     = new Date(date + 'T00:00:00');
+    const dayLabel = dObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    const isPast   = date < todayStr;
+    const isToday  = date === todayStr;
+
+    html += '<div style="margin-bottom:16px;' + (isPast ? 'opacity:0.55;' : '') + '">';
+    // Date header
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px;">';
+    html += '<div style="font-weight:800;font-size:12px;color:' + (isToday ? 'var(--accent)' : isPast ? 'var(--text3)' : 'var(--text)') + ';">' + dayLabel + '</div>';
+    if (isToday) html += '<div style="font-size:9px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:6px;font-weight:800;">TODAY</div>';
+    if (isPast)  html += '<div style="font-size:9px;color:var(--text3);">Past</div>';
+    html += '</div>';
+
+    events.forEach(e => {
+      const ic = impactColor[e.impact] || 'var(--text3)';
+      const ib = impactBg[e.impact]    || 'rgba(100,100,100,0.08)';
+      html += '<div style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:10px;align-items:center;'
+        + 'padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;'
+        + 'border-left:3px solid ' + ic + ';">';
+
+      // Flag + time + impact
+      html += '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+        + '<span style="font-size:18px;">' + (e.flag||'🌍') + '</span>'
+        + '<div>'
+        + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;white-space:nowrap;">' + (e.time||'—') + ' IST</div>'
+        + '<div style="font-size:9px;padding:2px 6px;border-radius:4px;background:' + ib + ';color:' + ic + ';font-weight:700;white-space:nowrap;margin-top:2px;">' + (e.impact||'med').toUpperCase() + '</div>'
+        + '</div></div>';
+
+      // Event name + desc
+      html += '<div style="min-width:0;">'
+        + '<div style="font-weight:700;font-size:13px;line-height:1.3;">' + (e.event||'') + '</div>';
+      if (e.desc) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + e.desc + '</div>';
+      html += '</div>';
+
+      // Actual
+      html += '<div style="text-align:center;flex-shrink:0;min-width:48px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Actual</div>'
+        + '<div style="font-weight:800;font-size:12px;font-family:\'Space Mono\',monospace;color:' + (e.actual ? 'var(--green)' : 'var(--text3)') + ';">' + (e.actual||'—') + '</div>'
+        + '</div>';
+
+      // Forecast
+      html += '<div style="text-align:center;flex-shrink:0;min-width:52px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Forecast</div>'
+        + '<div style="font-weight:700;font-size:12px;font-family:\'Space Mono\',monospace;">' + (e.forecast||'—') + '</div>'
+        + '</div>';
+
+      // Previous
+      html += '<div style="text-align:center;flex-shrink:0;min-width:48px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Previous</div>'
+        + '<div style="font-size:12px;font-family:\'Space Mono\',monospace;color:var(--text2);">' + (e.prev||'—') + '</div>'
+        + '</div>';
+
+      html += '</div>'; // end event row
+    });
+    html += '</div>'; // end date group
+  });
+
+  el.innerHTML = html;
 }
 // Refresh econo calendar every 30 min (TradingEconomics updates hourly)
 setInterval(() => {
