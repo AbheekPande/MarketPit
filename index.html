@@ -1781,7 +1781,8 @@ header {
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">MUTUAL FUNDS</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;" id="mfNavStatus">NAV from AMFI India · <span style="color:var(--text3);">loading…</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;" id="mfNavStatus">NAV from AMFI India · <span style="color:var(--text3);">loading…</span>
+          <span id="optSimBadge" style="display:none;align-items:center;gap:4px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:#f5a623;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;cursor:help;font-family:'Space Mono',monospace;letter-spacing:0.5px;">⚠️ SIMULATED</span></div>
       </div>
       <button onclick="showMfCompare()" id="mfCompareBtn" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">⚖️ Compare Funds (<span id="mfCompareCount">0</span>)</button>
     </div>
@@ -7442,7 +7443,7 @@ localStorage.removeItem && ['mp_trade_calls'].forEach(k=>{ try { const d=JSON.pa
 // FII / DII PAGE — Live data, multiple sources, auto-refresh at 6 PM IST
 // ═══════════════════════════════════════════════════════════════════
 let _fiiData = null, _fiiSource = 'NSE India', _fiiLastFetch = 0;
-const _FII_CACHE_MS = 15 * 60 * 1000; // 15 min cache
+const _FII_CACHE_MS = 5 * 60 * 1000;  // 5 min cache — auto-refreshes
 
 async function renderFii() {
   const el = document.getElementById('fiiBody'); if (!el) return;
@@ -7643,12 +7644,12 @@ function renderFiiTable(data, source) {
     </div>`;
 }
 
-// Auto-refresh every 15 min when FII page is open
+// Auto-refresh every 5 min when FII page is open
 setInterval(() => {
   if (document.getElementById('page-fii')?.style.display !== 'none') {
     _fiiLastFetch = 0; renderFii();
   }
-}, 15 * 60 * 1000);
+}, 5 * 60 * 1000);
 
 // Smart trigger: auto-fetch at 6:05 PM IST daily (when NSE publishes data)
 (function _scheduleFii6pm() {
@@ -7892,6 +7893,16 @@ function renderOptions() {
   const rows = d.rows || [];
 
   // ── Update header stats ──
+  // Show simulated warning if fallback data
+  const simBadge = document.getElementById('optSimBadge');
+  if (simBadge) {
+    if (d.simulated) {
+      simBadge.style.display = 'inline-flex';
+      simBadge.title = d.source || 'Simulated data';
+    } else {
+      simBadge.style.display = 'none';
+    }
+  }
   const spotEl = document.getElementById('optSpotLabel');
   if (spotEl && spot) {
     spotEl.innerHTML = `<span style="color:var(--text3);font-size:11px;font-weight:400;">SPOT</span> ₹${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}`;
@@ -8162,7 +8173,7 @@ setInterval(() => {
       .then(j => { if(j && !j.error && j.rows?.length) { _optionsData = j; renderOptions(); } })
       .catch(() => {});
   }
-}, 60 * 1000);
+}, 30 * 1000);
 
 
 // ═══════════════════════════════════════════════════════════════════
