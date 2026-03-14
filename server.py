@@ -1153,28 +1153,77 @@ def _options_fallback(symbol="NIFTY"):
     atm  = round(spot / step) * step
     strikes = range(atm - 12*step, atm + 13*step, step)
 
-    iv_base = 13.5  # base IV %
+    # ── Realistic NSE-scale OI and LTP parameters ──
+    # Real NSE weekly expiry data:
+    #   NIFTY:     ATM OI ~8-15M per side, total chain ~400-600M
+    #   BANKNIFTY: ATM OI ~2-5M per side, total chain ~120-200M
+    #   FINNIFTY:  ATM OI ~1-3M per side, total chain ~60-120M
+    OI_ATM_PEAK = {"NIFTY": 12000000, "BANKNIFTY": 3500000, "FINNIFTY": 2000000, "MIDCPNIFTY": 800000}
+    oi_peak     = OI_ATM_PEAK.get(symbol, 8000000)
+    oi_lot      = {"NIFTY": 25, "BANKNIFTY": 15, "FINNIFTY": 40, "MIDCPNIFTY": 75}.get(symbol, 25)
+
+    # Time to expiry approximation (weekly = ~5 trading days)
+    tte = 5.0 / 252  # fraction of year
+    sigma = 0.135    # implied vol ~13.5%
+
+    iv_base = 13.5
     rows = []
     for k in strikes:
-        dist = (k - atm) / atm  # normalised distance from ATM
-        # Black-Scholes approximation for illustrative IVs
-        ce_iv  = round(iv_base + abs(dist) * 40, 2)
-        pe_iv  = round(iv_base + abs(dist) * 38, 2)
-        # LTP decreases exponentially away from ATM
-        ce_ltp = max(0.05, round(atm * 0.006 * math.exp(-3.5 * max(0, dist)), 2))
-        pe_ltp = max(0.05, round(atm * 0.006 * math.exp( 3.5 * min(0, dist)), 2))
-        # OI peaks at ATM
-        oi_scale = math.exp(-6 * dist**2)
-        ce_oi  = int(oi_scale * random.randint(180000, 320000) / 100) * 100
-        pe_oi  = int(oi_scale * random.randint(150000, 280000) / 100) * 100
+        dist    = (k - atm) / step   # distance in number of steps from ATM
+        dist_pct = (k - spot) / spot  # % distance from spot
+
+        # ── IV smile: higher OTM IV (skew) ──
+        ce_iv = round(iv_base + abs(dist) * 0.8 + max(0, -dist_pct) * 15, 2)
+        pe_iv = round(iv_base + abs(dist) * 0.9 + max(0,  dist_pct) * 12, 2)
+
+        # ── LTP: Black-Scholes approximation ──
+        # CE: ITM when k < spot, OTM when k > spot
+        ce_intrinsic = max(0, spot - k)
+        pe_intrinsic = max(0, k - spot)
+        time_val     = spot * sigma * math.sqrt(tte) * math.exp(-0.5 * dist_pct**2 / (sigma**2 * tte + 0.0001))
+        ce_ltp = round(max(0.1, ce_intrinsic + time_val * 0.5), 2)
+        pe_ltp = round(max(0.1, pe_intrinsic + time_val * 0.5), 2)
+
+        # ── OI: bell curve peaking at ATM, realistic lot-size multiples ──
+        # CE OI peaks slightly OTM (1-2 strikes above ATM, resistance)
+        # PE OI peaks slightly OTM (1-2 strikes below ATM, support)
+        ce_oi_scale = math.exp(-0.18 * max(0, dist - 1)**2) * math.exp(-0.06 * max(0, -dist)**2)
+        pe_oi_scale = math.exp(-0.18 * max(0, -dist - 1)**2) * math.exp(-0.06 * max(0, dist)**2)
+        # Add OI concentration at round-number strikes
+        round_bonus = 1.4 if k % (step * 4) == 0 else 1.0
+
+        ce_oi_raw = int(oi_peak * ce_oi_scale * round_bonus * random.uniform(0.85, 1.15))
+        pe_oi_raw = int(oi_peak * pe_oi_scale * round_bonus * random.uniform(0.85, 1.15))
+        # Snap to lot size multiples
+        ce_oi = max(oi_lot, round(ce_oi_raw / oi_lot) * oi_lot)
+        pe_oi = max(oi_lot, round(pe_oi_raw / oi_lot) * oi_lot)
+
+        ce_oichg = int(ce_oi * random.uniform(-0.08, 0.18))
+        pe_oichg = int(pe_oi * random.uniform(-0.08, 0.18))
+        # Volume is typically 0.3-0.8× OI for weekly options near expiry
+        ce_vol = int(ce_oi * random.uniform(0.3, 0.75))
+        pe_vol = int(pe_oi * random.uniform(0.3, 0.75))
+
         rows.append({
             "strike": k,
-            "CE": {"ltp": ce_ltp, "chg": round(random.uniform(-5, 5), 2), "chgPct": round(random.uniform(-3, 3), 2),
-                   "oi": ce_oi, "oiChg": int(ce_oi * random.uniform(-0.1, 0.15)),
-                   "vol": int(ce_oi * random.uniform(0.2, 0.6)), "iv": ce_iv, "bid": ce_ltp-0.05, "ask": ce_ltp+0.05},
-            "PE": {"ltp": pe_ltp, "chg": round(random.uniform(-5, 5), 2), "chgPct": round(random.uniform(-3, 3), 2),
-                   "oi": pe_oi, "oiChg": int(pe_oi * random.uniform(-0.1, 0.15)),
-                   "vol": int(pe_oi * random.uniform(0.2, 0.6)), "iv": pe_iv, "bid": pe_ltp-0.05, "ask": pe_ltp+0.05},
+            "CE": {
+                "ltp": ce_ltp,
+                "chg": round(random.uniform(-15, 15) * (1 / (1 + abs(dist))), 2),
+                "chgPct": round(random.uniform(-8, 8) * (1 / (1 + abs(dist))), 2),
+                "oi": ce_oi, "oiChg": ce_oichg, "vol": ce_vol,
+                "iv": ce_iv,
+                "bid": round(max(0.05, ce_ltp - random.uniform(0.5, 2)), 2),
+                "ask": round(ce_ltp + random.uniform(0.5, 2), 2),
+            },
+            "PE": {
+                "ltp": pe_ltp,
+                "chg": round(random.uniform(-15, 15) * (1 / (1 + abs(dist))), 2),
+                "chgPct": round(random.uniform(-8, 8) * (1 / (1 + abs(dist))), 2),
+                "oi": pe_oi, "oiChg": pe_oichg, "vol": pe_vol,
+                "iv": pe_iv,
+                "bid": round(max(0.05, pe_ltp - random.uniform(0.5, 2)), 2),
+                "ask": round(pe_ltp + random.uniform(0.5, 2), 2),
+            },
         })
 
     # Compute PCR

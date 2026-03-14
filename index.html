@@ -7927,8 +7927,14 @@ function renderOptions() {
   const upd = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
   upd('optMaxPain', maxPain ? maxPain.toLocaleString('en-IN') : '—');
   upd('optPcr', pcr.toFixed(2));
-  upd('optCallOi', totalCallOI ? (totalCallOI/100000).toFixed(1)+'L' : '—');
-  upd('optPutOi', totalPutOI  ? (totalPutOI/100000).toFixed(1)+'L' : '—');
+  const fmtOIHeader = n => {
+    if (!n) return '—';
+    if (n >= 10000000) return (n/10000000).toFixed(1) + 'Cr';   // ≥1 Cr
+    if (n >= 100000)   return (n/100000).toFixed(1) + 'L';       // ≥1 L
+    return (n/1000).toFixed(1) + 'K';
+  };
+  upd('optCallOi', fmtOIHeader(totalCallOI));
+  upd('optPutOi',  fmtOIHeader(totalPutOI));
   upd('optIvRank', d.iv_rank ? d.iv_rank+'%' : '—');
 
   if (!rows.length) {
@@ -7941,7 +7947,7 @@ function renderOptions() {
   const maxPutOI  = Math.max(...rows.map(r => r.PE?.oi||0), 1);
 
   // ── Format helpers ──
-  const fmtOI  = n => { if (!n) return '—'; if (n >= 100000) return (n/100000).toFixed(2)+'L'; return (n/1000).toFixed(1)+'K'; };
+  const fmtOI  = n => { if (!n) return '—'; if (n >= 10000000) return (n/10000000).toFixed(2)+'Cr'; if (n >= 100000) return (n/100000).toFixed(2)+'L'; return (n/1000).toFixed(1)+'K'; };
   const fmtLTP = n => n ? n.toFixed(2) : '—';
   const fmtChg = n => { if(n == null) return '—'; const s = n>=0?'+':''; return s+n.toFixed(2)+'%'; };
   const fmtIV  = n => n ? n.toFixed(1)+'%' : '—';
