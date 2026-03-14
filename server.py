@@ -322,6 +322,94 @@ def fetch_fii_from_nse():
         "Connection": "keep-alive",
     }
 
+    # ── Source 0: NSDL FPI Data (most reliable — government portal, no bot blocking) ──
+    # NSDL publishes official FPI/FII net investment data daily
+    # URL: https://fpi.nsdl.co.in/web/Reports/Yearwise.aspx
+    try:
+        import urllib.parse
+        from datetime import date, timedelta
+        # NSDL has a direct data API used by their reports page
+        nsdl_url = "https://fpi.nsdl.co.in/web/Reports/ReportFetch.aspx?ID=GetFPIMonthlyData&Type=E&Year=2026"
+        r = req_lib.get(nsdl_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "application/json, text/html, */*",
+            "Referer": "https://fpi.nsdl.co.in/web/Reports/Yearwise.aspx",
+        }, timeout=12, verify=False)
+        if r.status_code == 200 and len(r.text) > 100:
+            try:
+                data = r.json()
+                results = []
+                for row in (data if isinstance(data, list) else data.get("data", data.get("Table", []))):
+                    try:
+                        dt_raw = str(row.get("Date") or row.get("TradeDate") or row.get("date") or "")
+                        net    = float(str(row.get("NetInvestment") or row.get("net") or 0).replace(",",""))
+                        if dt_raw and abs(net) > 0:
+                            results.append({"date": dt_raw, "fii_net": round(net, 2), "dii_net": 0, "net": round(net, 2)})
+                    except Exception:
+                        continue
+                if results:
+                    print(f"  [FII] ✓ NSDL API: {len(results)} rows")
+                    return results[:30]
+            except Exception:
+                # Try scraping HTML table
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(r.text, "html.parser")
+                results = []
+                for table in soup.find_all("table"):
+                    for tr in table.find_all("tr")[1:]:
+                        tds = [td.get_text(strip=True) for td in tr.find_all("td")]
+                        if len(tds) >= 3:
+                            try:
+                                dt  = tds[0]
+                                net = float(tds[-1].replace(",","").replace("(","").replace(")","") or 0)
+                                if dt and abs(net) > 10:
+                                    results.append({"date": dt, "fii_net": round(net, 2), "dii_net": 0, "net": round(net, 2)})
+                            except Exception:
+                                continue
+                if results:
+                    print(f"  [FII] ✓ NSDL HTML scrape: {len(results)} rows")
+                    return results[:30]
+    except Exception as e:
+        print(f"  [FII] NSDL: {e}")
+
+    # ── Source 0b: CDSL FII/DII data ──
+    try:
+        cdsl_url = "https://www.cdslindia.com/FII/fiidiitradeinfo.aspx"
+        r = req_lib.get(cdsl_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "text/html,*/*",
+        }, timeout=10, verify=False)
+        if r.status_code == 200 and ("FII" in r.text or "DII" in r.text):
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(r.text, "html.parser")
+            results = []
+            for table in soup.find_all("table"):
+                rows = table.find_all("tr")
+                headers = [th.get_text(strip=True).upper() for th in rows[0].find_all(["th","td"])] if rows else []
+                fii_col = next((i for i,h in enumerate(headers) if "FII" in h or "FPI" in h), None)
+                dii_col = next((i for i,h in enumerate(headers) if "DII" in h), None)
+                date_col = next((i for i,h in enumerate(headers) if "DATE" in h or "DAY" in h), 0)
+                if fii_col is None:
+                    continue
+                for tr in rows[1:21]:
+                    tds = [td.get_text(strip=True) for td in tr.find_all("td")]
+                    if len(tds) > fii_col:
+                        try:
+                            dt  = tds[date_col] if date_col < len(tds) else ""
+                            fn  = float(tds[fii_col].replace(",","").replace("(","").replace(")","") or 0)
+                            dn  = float(tds[dii_col].replace(",","").replace("(","").replace(")","") or 0) if dii_col and dii_col < len(tds) else 0
+                            if dt and (abs(fn) > 10 or abs(dn) > 10):
+                                results.append({"date": dt, "fii_net": round(fn,2), "dii_net": round(dn,2), "net": round(fn+dn,2)})
+                        except Exception:
+                            continue
+                if results:
+                    break
+            if results:
+                print(f"  [FII] ✓ CDSL scrape: {len(results)} rows")
+                return results[:30]
+    except Exception as e:
+        print(f"  [FII] CDSL: {e}")
+
     # ── Source 1: NSE India with full session ──
     for attempt in range(2):
         try:
@@ -993,366 +1081,6 @@ def api_ipo():
 
 
 # ── Options chain cache ──
-_options_cache = {}
-_options_lock  = threading.Lock()
-
-def fetch_nse_option_chain(symbol="NIFTY"):
-    """
-    Fetch live option chain from NSE India — multiple strategies to beat bot-blocking.
-    Falls back to realistic generated data so the UI never shows an error.
-    """
-    if req_lib is None:
-        return _options_fallback(symbol)
-
-    ROTATE_UAS = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.112 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    ]
-
-    # ── Strategy 1: NSE with full browser-like session warmup ──
-    for ua in ROTATE_UAS:
-        try:
-            session = req_lib.Session()
-            h = {
-                "User-Agent": ua,
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                "Accept-Language": "en-IN,en;q=0.9,hi;q=0.8",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Connection": "keep-alive",
-                "Upgrade-Insecure-Requests": "1",
-                "Sec-Fetch-Dest": "document",
-                "Sec-Fetch-Mode": "navigate",
-                "Sec-Fetch-Site": "none",
-            }
-            session.get("https://www.nseindia.com", headers=h, timeout=10)
-            time.sleep(2)
-            session.get("https://www.nseindia.com/option-chain", headers=h, timeout=8)
-            time.sleep(1)
-            api_h = {**h,
-                "Accept": "application/json, text/plain, */*",
-                "Referer": "https://www.nseindia.com/option-chain",
-                "X-Requested-With": "XMLHttpRequest",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-origin",
-            }
-            url  = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
-            resp = session.get(url, headers=api_h, timeout=15)
-            if resp.status_code == 200:
-                parsed = _parse_nse_option_json(resp.json(), symbol)
-                if parsed:
-                    print(f"  [Options] ✓ NSE live ({ua[:30]}…)")
-                    return parsed
-        except Exception as e:
-            print(f"  [Options] NSE attempt failed: {e}")
-        time.sleep(1.5)
-
-    # ── Strategy 2: Via allorigins CORS proxy ──
-    try:
-        import urllib.parse
-        target = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
-        proxy  = "https://api.allorigins.win/get?url=" + urllib.parse.quote(target, safe="")
-        r = req_lib.get(proxy, timeout=14)
-        if r.status_code == 200:
-            contents = r.json().get("contents", "")
-            if contents:
-                parsed = _parse_nse_option_json(json.loads(contents), symbol)
-                if parsed:
-                    print(f"  [Options] ✓ NSE via allorigins proxy")
-                    return parsed
-    except Exception as e:
-        print(f"  [Options] allorigins: {e}")
-
-    # ── Strategy 3: Upstox / Groww public data endpoints ──
-    try:
-        # Upstox option chain endpoint (public, no auth needed for index data)
-        sym_map = {"NIFTY": "NSE_INDEX|Nifty 50", "BANKNIFTY": "NSE_INDEX|Nifty Bank",
-                   "FINNIFTY": "NSE_INDEX|Nifty Fin Services"}
-        upstox_sym = sym_map.get(symbol)
-        if upstox_sym:
-            import urllib.parse
-            # Get expiry dates first
-            exp_url = f"https://api.upstox.com/v2/option/contract?instrument_key={urllib.parse.quote(upstox_sym)}"
-            rh = {"Accept": "application/json", "User-Agent": "Mozilla/5.0"}
-            r = req_lib.get(exp_url, headers=rh, timeout=8)
-            if r.status_code == 200:
-                exp_data = r.json().get("data", [])
-                if exp_data:
-                    # Use nearest expiry
-                    expiry = sorted(set(d["expiry"] for d in exp_data))[0]
-                    chain_url = f"https://api.upstox.com/v2/option/chain?instrument_key={urllib.parse.quote(upstox_sym)}&expiry_date={expiry}"
-                    rc = req_lib.get(chain_url, headers=rh, timeout=10)
-                    if rc.status_code == 200:
-                        parsed = _parse_upstox_option_json(rc.json(), symbol)
-                        if parsed:
-                            print(f"  [Options] ✓ Upstox API")
-                            return parsed
-    except Exception as e:
-        print(f"  [Options] Upstox: {e}")
-
-    # ── Fallback: Realistic generated data ──
-    print(f"  [Options] All sources failed — using realistic fallback for {symbol}")
-    return _options_fallback(symbol)
-
-
-def _parse_nse_option_json(data, symbol):
-    """Parse NSE option chain JSON into our format."""
-    try:
-        records      = data.get("records", {})
-        spot_price   = float(records.get("underlyingValue", 0))
-        expiry_dates = records.get("expiryDates", [])
-        option_data  = records.get("data", [])
-        if not option_data or not spot_price:
-            return None
-        nearest_expiry = expiry_dates[0] if expiry_dates else None
-        strikes = {}
-        for item in option_data:
-            if nearest_expiry and item.get("expiryDate") != nearest_expiry:
-                continue
-            strike = item.get("strikePrice", 0)
-            if strike not in strikes:
-                strikes[strike] = {"strike": strike, "CE": {}, "PE": {}}
-            for otype in ["CE", "PE"]:
-                if otype in item:
-                    d = item[otype]
-                    strikes[strike][otype] = {
-                        "ltp":    d.get("lastPrice", 0),
-                        "chg":    round(d.get("change", 0), 2),
-                        "chgPct": round(d.get("pChange", 0), 2),
-                        "oi":     d.get("openInterest", 0),
-                        "oiChg":  d.get("changeinOpenInterest", 0),
-                        "vol":    d.get("totalTradedVolume", 0),
-                        "iv":     round(d.get("impliedVolatility", 0), 2),
-                        "bid":    d.get("bidprice", 0),
-                        "ask":    d.get("askPrice", 0),
-                    }
-        all_strikes = sorted(strikes.keys())
-        if not all_strikes:
-            return None
-        atm     = min(all_strikes, key=lambda x: abs(x - spot_price))
-        atm_idx = all_strikes.index(atm)
-        window  = all_strikes[max(0, atm_idx-12): atm_idx+13]
-        rows    = [strikes[s] for s in window]
-        total_put_oi  = sum(strikes[s]["PE"].get("oi", 0) for s in all_strikes if strikes[s].get("PE"))
-        total_call_oi = sum(strikes[s]["CE"].get("oi", 0) for s in all_strikes if strikes[s].get("CE"))
-        pcr = round(total_put_oi / total_call_oi, 2) if total_call_oi else 1.0
-        return {
-            "symbol": symbol, "spot": spot_price, "atm": atm,
-            "expiry": nearest_expiry, "expiryDates": expiry_dates[:8],
-            "rows": rows, "pcr": pcr,
-            "last_updated": datetime.now().isoformat(),
-            "source": "NSE India (live)",
-        }
-    except Exception as e:
-        print(f"  [Options] parse error: {e}")
-        return None
-
-
-def _parse_upstox_option_json(data, symbol):
-    """Parse Upstox option chain response."""
-    try:
-        items = data.get("data", [])
-        if not items:
-            return None
-        spot = 0
-        strikes = {}
-        expiry_dates = sorted(set(i.get("expiry", "") for i in items))
-        nearest = expiry_dates[0] if expiry_dates else ""
-        for item in items:
-            if item.get("expiry") != nearest:
-                continue
-            strike = float(item.get("strike_price", 0))
-            if not spot:
-                spot = float(item.get("underlying_spot_price", 0) or 0)
-            if strike not in strikes:
-                strikes[strike] = {"strike": strike, "CE": {}, "PE": {}}
-            for otype in ["call_options", "put_options"]:
-                key  = "CE" if "call" in otype else "PE"
-                opts = item.get(otype, {}).get("market_data", {})
-                if opts:
-                    strikes[strike][key] = {
-                        "ltp": opts.get("ltp", 0), "chg": 0, "chgPct": 0,
-                        "oi": opts.get("oi", 0), "oiChg": opts.get("delta_oi", 0),
-                        "vol": opts.get("volume", 0), "iv": opts.get("iv", 0),
-                        "bid": opts.get("bid_price", 0), "ask": opts.get("ask_price", 0),
-                    }
-        if not strikes or not spot:
-            return None
-        all_s   = sorted(strikes.keys())
-        atm     = min(all_s, key=lambda x: abs(x - spot))
-        atm_idx = all_s.index(atm)
-        window  = all_s[max(0, atm_idx-12): atm_idx+13]
-        rows    = [strikes[s] for s in window]
-        put_oi  = sum(strikes[s]["PE"].get("oi", 0) for s in all_s if strikes[s].get("PE"))
-        call_oi = sum(strikes[s]["CE"].get("oi", 0) for s in all_s if strikes[s].get("CE"))
-        return {
-            "symbol": symbol, "spot": spot, "atm": atm,
-            "expiry": nearest, "expiryDates": expiry_dates[:8],
-            "rows": rows, "pcr": round(put_oi / call_oi, 2) if call_oi else 1.0,
-            "last_updated": datetime.now().isoformat(),
-            "source": "Upstox API (live)",
-        }
-    except Exception as e:
-        print(f"  [Options] Upstox parse error: {e}")
-        return None
-
-
-def _options_fallback(symbol="NIFTY"):
-    """
-    Generate realistic option chain data when all live sources fail.
-    Uses current Nifty spot from our own cache so strikes are centred correctly.
-    """
-    import math, random
-    SPOT_DEFAULTS = {"NIFTY": 22500, "BANKNIFTY": 48500, "FINNIFTY": 23800, "MIDCPNIFTY": 12000}
-    STEP = {"NIFTY": 50, "BANKNIFTY": 100, "FINNIFTY": 50, "MIDCPNIFTY": 25}
-
-    # Try to get live spot from our cache
-    spot = SPOT_DEFAULTS.get(symbol, 22500)
-    try:
-        with _cache_lock:
-            idx_list = _cache.get("indices", [])
-        name_map = {"NIFTY": "NIFTY 50", "BANKNIFTY": "NIFTY BANK", "FINNIFTY": "NIFTY FIN SERVICE"}
-        for idx in idx_list:
-            if name_map.get(symbol, symbol) in (idx.get("sym", "") or ""):
-                p = float(str(idx.get("price", "0")).replace(",", ""))
-                if p > 1000:
-                    spot = p
-                    break
-    except Exception:
-        pass
-
-    step = STEP.get(symbol, 50)
-    atm  = round(spot / step) * step
-    strikes = range(atm - 12*step, atm + 13*step, step)
-
-    # ── Realistic NSE-scale OI and LTP parameters ──
-    # Real NSE weekly expiry data:
-    #   NIFTY:     ATM OI ~8-15M per side, total chain ~400-600M
-    #   BANKNIFTY: ATM OI ~2-5M per side, total chain ~120-200M
-    #   FINNIFTY:  ATM OI ~1-3M per side, total chain ~60-120M
-    OI_ATM_PEAK = {"NIFTY": 12000000, "BANKNIFTY": 3500000, "FINNIFTY": 2000000, "MIDCPNIFTY": 800000}
-    oi_peak     = OI_ATM_PEAK.get(symbol, 8000000)
-    oi_lot      = {"NIFTY": 25, "BANKNIFTY": 15, "FINNIFTY": 40, "MIDCPNIFTY": 75}.get(symbol, 25)
-
-    # Time to expiry approximation (weekly = ~5 trading days)
-    tte = 5.0 / 252  # fraction of year
-    sigma = 0.135    # implied vol ~13.5%
-
-    iv_base = 13.5
-    rows = []
-    for k in strikes:
-        dist    = (k - atm) / step   # distance in number of steps from ATM
-        dist_pct = (k - spot) / spot  # % distance from spot
-
-        # ── IV smile: higher OTM IV (skew) ──
-        ce_iv = round(iv_base + abs(dist) * 0.8 + max(0, -dist_pct) * 15, 2)
-        pe_iv = round(iv_base + abs(dist) * 0.9 + max(0,  dist_pct) * 12, 2)
-
-        # ── LTP: Black-Scholes approximation ──
-        # CE: ITM when k < spot, OTM when k > spot
-        ce_intrinsic = max(0, spot - k)
-        pe_intrinsic = max(0, k - spot)
-        time_val     = spot * sigma * math.sqrt(tte) * math.exp(-0.5 * dist_pct**2 / (sigma**2 * tte + 0.0001))
-        ce_ltp = round(max(0.1, ce_intrinsic + time_val * 0.5), 2)
-        pe_ltp = round(max(0.1, pe_intrinsic + time_val * 0.5), 2)
-
-        # ── OI: bell curve peaking at ATM, realistic lot-size multiples ──
-        # CE OI peaks slightly OTM (1-2 strikes above ATM, resistance)
-        # PE OI peaks slightly OTM (1-2 strikes below ATM, support)
-        ce_oi_scale = math.exp(-0.18 * max(0, dist - 1)**2) * math.exp(-0.06 * max(0, -dist)**2)
-        pe_oi_scale = math.exp(-0.18 * max(0, -dist - 1)**2) * math.exp(-0.06 * max(0, dist)**2)
-        # Add OI concentration at round-number strikes
-        round_bonus = 1.4 if k % (step * 4) == 0 else 1.0
-
-        ce_oi_raw = int(oi_peak * ce_oi_scale * round_bonus * random.uniform(0.85, 1.15))
-        pe_oi_raw = int(oi_peak * pe_oi_scale * round_bonus * random.uniform(0.85, 1.15))
-        # Snap to lot size multiples
-        ce_oi = max(oi_lot, round(ce_oi_raw / oi_lot) * oi_lot)
-        pe_oi = max(oi_lot, round(pe_oi_raw / oi_lot) * oi_lot)
-
-        ce_oichg = int(ce_oi * random.uniform(-0.08, 0.18))
-        pe_oichg = int(pe_oi * random.uniform(-0.08, 0.18))
-        # Volume is typically 0.3-0.8× OI for weekly options near expiry
-        ce_vol = int(ce_oi * random.uniform(0.3, 0.75))
-        pe_vol = int(pe_oi * random.uniform(0.3, 0.75))
-
-        rows.append({
-            "strike": k,
-            "CE": {
-                "ltp": ce_ltp,
-                "chg": round(random.uniform(-15, 15) * (1 / (1 + abs(dist))), 2),
-                "chgPct": round(random.uniform(-8, 8) * (1 / (1 + abs(dist))), 2),
-                "oi": ce_oi, "oiChg": ce_oichg, "vol": ce_vol,
-                "iv": ce_iv,
-                "bid": round(max(0.05, ce_ltp - random.uniform(0.5, 2)), 2),
-                "ask": round(ce_ltp + random.uniform(0.5, 2), 2),
-            },
-            "PE": {
-                "ltp": pe_ltp,
-                "chg": round(random.uniform(-15, 15) * (1 / (1 + abs(dist))), 2),
-                "chgPct": round(random.uniform(-8, 8) * (1 / (1 + abs(dist))), 2),
-                "oi": pe_oi, "oiChg": pe_oichg, "vol": pe_vol,
-                "iv": pe_iv,
-                "bid": round(max(0.05, pe_ltp - random.uniform(0.5, 2)), 2),
-                "ask": round(pe_ltp + random.uniform(0.5, 2), 2),
-            },
-        })
-
-    # Compute PCR
-    total_pe_oi = sum(r["PE"]["oi"] for r in rows)
-    total_ce_oi = sum(r["CE"]["oi"] for r in rows)
-
-    # Generate next 4 expiry Thursdays
-    from datetime import date, timedelta
-    today = date.today()
-    expiries = []
-    d = today
-    while len(expiries) < 5:
-        d += timedelta(days=1)
-        if d.weekday() == 3:  # Thursday
-            expiries.append(d.strftime("%d-%b-%Y").upper())
-
-    return {
-        "symbol": symbol, "spot": spot, "atm": atm,
-        "expiry": expiries[0], "expiryDates": expiries,
-        "rows": rows,
-        "pcr": round(total_pe_oi / total_ce_oi, 2) if total_ce_oi else 1.0,
-        "last_updated": datetime.now().isoformat(),
-        "source": "⚠️ Simulated — NSE blocked Railway IPs. Live fetch retries in 60s.",
-        "simulated": True,
-    }
-
-
-@app.route("/api/options")
-def api_options():
-    """Live option chain from NSE India. ?symbol=NIFTY|BANKNIFTY|FINNIFTY|MIDCPNIFTY"""
-    symbol = request.args.get("symbol", "NIFTY").upper()
-    if symbol not in ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"):
-        symbol = "NIFTY"
-
-    with _options_lock:
-        cached = _options_cache.get(symbol)
-    # Cache for 60 seconds
-    if cached and (datetime.now() - datetime.fromisoformat(cached["last_updated"])).seconds < 60:
-        return jsonify(cached)
-
-    data = fetch_nse_option_chain(symbol)
-    if data:
-        with _options_lock:
-            _options_cache[symbol] = data
-        return jsonify(data)
-
-    # Return cached even if stale rather than error
-    with _options_lock:
-        stale = _options_cache.get(symbol)
-    if stale:
-        stale["stale"] = True
-        return jsonify(stale)
-
-    return jsonify({"error": "NSE option chain unavailable", "symbol": symbol}), 503
-
-
 @app.route("/api/nifty-spot")
 def api_nifty_spot():
     """Returns live Nifty 50 and Bank Nifty spot prices."""

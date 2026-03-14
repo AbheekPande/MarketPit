@@ -783,15 +783,7 @@ header {
   /* Smooth page transitions */
   .main-feed { transition: opacity 0.15s ease; }
 
-  /* ── OPTIONS CHAIN ── */
-  .opt-row { transition: filter 0.08s; }
-  #optBasket { box-shadow: 0 -4px 24px rgba(0,0,0,0.18); }
-  .opt-idx-btn { transition: all 0.15s; }
-  .opt-idx-btn:hover { opacity: 0.85; }
-  #optionsBody table { border-spacing: 0; }
-  #optionsBody table thead tr { position: sticky; top: 0; z-index: 4; }
-  #optionsBody table tbody .opt-row:hover td { filter: brightness(1.08); cursor: pointer; }
-
+  
   /* ── OPTIONS STRATEGIES ── */
   .strat-cat-btn { transition: color 0.15s, border-color 0.15s; -webkit-tap-highlight-color: transparent; }
   #optpnlBody > div > div > div { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
@@ -1084,10 +1076,6 @@ header {
 
 
 
-    <button class="nav-tab" onclick="switchTab(this,'options')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
-      Options Chain
-    </button>
 
     <button class="nav-tab" onclick="switchTab(this,'rooms')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/><path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/></svg>
@@ -1652,61 +1640,6 @@ header {
   <!-- ═══════════════════════════════════════════ -->
 
 
-  <!-- OPTIONS CHAIN PAGE -->
-  <div class="main-feed" id="page-options" style="display:none;flex-direction:column;">
-    <!-- Top toolbar -->
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;background:var(--bg2);">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);">OPTIONS CHAIN</div>
-      <!-- Index selector -->
-      <div style="display:flex;gap:4px;">
-        <button onclick="_optSelectIndex('NIFTY',this)" id="optBtn_NIFTY" class="opt-idx-btn active" style="padding:5px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;">NIFTY</button>
-        <button onclick="_optSelectIndex('BANKNIFTY',this)" id="optBtn_BANKNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">BANKNIFTY</button>
-        <button onclick="_optSelectIndex('FINNIFTY',this)" id="optBtn_FINNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">FINNIFTY</button>
-        <button onclick="_optSelectIndex('MIDCPNIFTY',this)" id="optBtn_MIDCPNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">MIDCAP</button>
-      </div>
-      <!-- Hidden select kept for JS compat -->
-      <select id="optIndex" onchange="fetchLiveOptionsChain(this.value)" style="display:none;">
-        <option value="NIFTY">NIFTY 50</option>
-        <option value="BANKNIFTY">BANK NIFTY</option>
-        <option value="FINNIFTY">FIN NIFTY</option>
-        <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
-      </select>
-      <!-- Expiry selector -->
-      <select id="optExpiry" onchange="renderOptions()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 12px;font-size:12px;font-weight:600;">
-        <option>Loading expiries…</option>
-      </select>
-      <!-- Spot price -->
-      <div id="optSpotLabel" style="font-size:13px;font-weight:800;color:var(--green);font-family:'Space Mono',monospace;margin-left:auto;"></div>
-      <!-- Refresh -->
-      <button onclick="fetchLiveOptionsChain(document.getElementById('optIndex').value||'NIFTY')"
-        style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;">↻</button>
-    </div>
-    <!-- Stats strip -->
-    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--bg3);">
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">MAX PAIN</div>
-        <div id="optMaxPain" style="font-weight:800;font-size:13px;color:var(--gold);">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">PCR (OI)</div>
-        <div id="optPcr" style="font-weight:800;font-size:13px;color:var(--accent);">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;">
-        <div style="font-size:9px;color:var(--red);font-family:'Space Mono',monospace;margin-bottom:3px;">CALL OI</div>
-        <div id="optCallOi" style="font-weight:800;font-size:13px;color:var(--text);">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;">
-        <div style="font-size:9px;color:var(--green);font-family:'Space Mono',monospace;margin-bottom:3px;">PUT OI</div>
-        <div id="optPutOi" style="font-weight:800;font-size:13px;color:var(--text);">—</div>
-      </div>
-      <div style="padding:8px 16px;flex-shrink:0;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">IV RANK</div>
-        <div id="optIvRank" style="font-weight:800;font-size:13px;color:var(--accent2);">—</div>
-      </div>
-    </div>
-    <!-- Options body — the interactive chain renders here -->
-    <div id="optionsBody" style="flex:1;overflow-y:auto;overflow-x:auto;display:flex;flex-direction:column;min-height:0;"></div>
-  </div>
 
 
   <!-- LIVE ROOMS PAGE -->
@@ -1758,8 +1691,7 @@ header {
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">MUTUAL FUNDS</div>
-        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;" id="mfNavStatus">NAV from AMFI India · <span style="color:var(--text3);">loading…</span>
-          <span id="optSimBadge" style="display:none;align-items:center;gap:4px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.4);color:#f5a623;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;cursor:help;font-family:'Space Mono',monospace;letter-spacing:0.5px;">⚠️ SIMULATED</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;" id="mfNavStatus">NAV from AMFI India · <span style="color:var(--text3);">loading…</span></div>
       </div>
       <button onclick="showMfCompare()" id="mfCompareBtn" style="padding:7px 16px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;">⚖️ Compare Funds (<span id="mfCompareCount">0</span>)</button>
     </div>
@@ -1876,7 +1808,6 @@ header {
     <button class="bn-item" onclick="switchTabMobile(this,'messages')"><span class="bn-icon">💬</span>DMs</button>
     <button class="bn-item" onclick="switchTabMobile(this,'paper')"><span class="bn-icon">📝</span>Paper</button>
 
-    <button class="bn-item" onclick="switchTabMobile(this,'options')"><span class="bn-icon">📊</span>Options</button>
     <button class="bn-item" onclick="switchTabMobile(this,'compare')"><span class="bn-icon">⚖️</span>Compare</button>
     <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">🎯</span>Strategies</button>
     <button class="bn-item" onclick="switchTabMobile(this,'mf')"><span class="bn-icon">🏦</span>MF</button>
@@ -5590,7 +5521,7 @@ function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5607,7 +5538,6 @@ function _switchTabSilent(btn, page) {
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -5646,7 +5576,7 @@ function switchTabMobile(btn, page) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5664,7 +5594,6 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -5680,7 +5609,7 @@ function switchTab(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5706,7 +5635,6 @@ function switchTab(btn, page) {
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const idx=document.getElementById('optIndex')?.value||'NIFTY'; fetchLiveOptionsChain(idx); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -7788,378 +7716,6 @@ setInterval(()=>{
   });
   if(triggered) renderAlerts();
 },30000);
-
-// ═══════════════════════════════════════════════════════════════════
-// OPTIONS CHAIN PAGE
-// ═══════════════════════════════════════════════════════════════════
-// ── Index selector helper ──
-function _optSelectIndex(sym, btn) {
-  document.querySelectorAll('.opt-idx-btn').forEach(b => {
-    b.style.background = 'transparent';
-    b.style.color = 'var(--text3)';
-    b.style.borderColor = 'var(--border)';
-  });
-  if (btn) {
-    btn.style.background = 'var(--accent)';
-    btn.style.color = '#fff';
-    btn.style.borderColor = 'var(--accent)';
-  }
-  const sel = document.getElementById('optIndex');
-  if (sel) sel.value = sym;
-  _optBasket = [];
-  fetchLiveOptionsChain(sym);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// OPTIONS CHAIN — Groww-style interactive
-// ═══════════════════════════════════════════════════════════════════
-let _optionsData = null;
-let _optBasket = []; // selected options for strategy builder
-let _optStrikesShown = 20; // number of strikes visible
-let _optSortBy = 'default';
-let _optHighlightedStrike = null;
-
-async function fetchLiveOptionsChain(symbol) {
-  const el = document.getElementById('optionsBody');
-  if (!el) return;
-  el.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:14px;color:var(--text3);">
-      <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-      <div style="font-size:13px;">Fetching live options from NSE India…</div>
-      <div style="font-size:11px;opacity:0.7;">This may take 5–10 seconds</div>
-    </div>`;
-  const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl) spotEl.textContent = '';
-  try {
-    const res = await fetch(`${API_BASE}/options?symbol=${encodeURIComponent(symbol)}`, { signal: AbortSignal.timeout(18000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = await res.json();
-    if (j.error) throw new Error(j.error);
-    _optionsData = j;
-    // Populate expiry dropdown from live data
-    const exSel = document.getElementById('optExpiry');
-    if (exSel && j.expiryDates?.length) {
-      exSel.innerHTML = j.expiryDates.map((e,i) => `<option value="${e}" ${i===0?'selected':''}>${e}</option>`).join('');
-    }
-    renderOptions();
-  } catch(e) {
-    el.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:12px;">
-        <div style="font-size:40px;">📊</div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);">Options Data Unavailable</div>
-        <div style="font-size:12px;color:var(--text3);text-align:center;max-width:340px;line-height:1.6;">
-          NSE India blocks direct API calls from outside India.<br>
-          Options data requires the Railway backend to be online & warmed up (takes ~10s after cold start).
-        </div>
-        <button onclick="fetchLiveOptionsChain(document.getElementById('optIndex').value||'NIFTY')"
-          style="padding:10px 24px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;">
-          ↻ Retry
-        </button>
-      </div>`;
-  }
-}
-
-function setOptionsView(view, btn) {
-  // view param kept for backward compat but we only have one view now
-  renderOptions();
-}
-
-function renderOptions() {
-  const el = document.getElementById('optionsBody');
-  if (!el || !_optionsData) return;
-  const d = _optionsData;
-  const spot = d.spot || 0;
-  const rows = d.rows || [];
-
-  // ── Update header stats ──
-  // Show simulated warning if fallback data
-  const simBadge = document.getElementById('optSimBadge');
-  if (simBadge) {
-    if (d.simulated) {
-      simBadge.style.display = 'inline-flex';
-      simBadge.title = d.source || 'Simulated data';
-    } else {
-      simBadge.style.display = 'none';
-    }
-  }
-  const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl && spot) {
-    spotEl.innerHTML = `<span style="color:var(--text3);font-size:11px;font-weight:400;">SPOT</span> ₹${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}`;
-  }
-
-  const totalCallOI = rows.reduce((s,r) => s + (r.CE?.oi||0), 0);
-  const totalPutOI  = rows.reduce((s,r) => s + (r.PE?.oi||0), 0);
-  const pcr = d.pcr || (totalCallOI ? +(totalPutOI/totalCallOI).toFixed(2) : 1);
-
-  // ── Compute Max Pain ──
-  let maxPain = d.atm || spot;
-  if (rows.length > 2) {
-    let minLoss = Infinity;
-    rows.forEach(r => {
-      const s = r.strike; let loss = 0;
-      rows.forEach(rr => { loss += (rr.CE?.oi||0)*Math.max(0,rr.strike-s) + (rr.PE?.oi||0)*Math.max(0,s-rr.strike); });
-      if (loss < minLoss) { minLoss = loss; maxPain = s; }
-    });
-  }
-
-  // ── Update stats bar ──
-  const upd = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
-  upd('optMaxPain', maxPain ? maxPain.toLocaleString('en-IN') : '—');
-  upd('optPcr', pcr.toFixed(2));
-  const fmtOIHeader = n => {
-    if (!n) return '—';
-    if (n >= 10000000) return (n/10000000).toFixed(1) + 'Cr';   // ≥1 Cr
-    if (n >= 100000)   return (n/100000).toFixed(1) + 'L';       // ≥1 L
-    return (n/1000).toFixed(1) + 'K';
-  };
-  upd('optCallOi', fmtOIHeader(totalCallOI));
-  upd('optPutOi',  fmtOIHeader(totalPutOI));
-  upd('optIvRank', d.iv_rank ? d.iv_rank+'%' : '—');
-
-  if (!rows.length) {
-    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">No chain data for this expiry.</div>`;
-    return;
-  }
-
-  // ── Max OI values for bar widths ──
-  const maxCallOI = Math.max(...rows.map(r => r.CE?.oi||0), 1);
-  const maxPutOI  = Math.max(...rows.map(r => r.PE?.oi||0), 1);
-
-  // ── Format helpers ──
-  const fmtOI  = n => { if (!n) return '—'; if (n >= 10000000) return (n/10000000).toFixed(2)+'Cr'; if (n >= 100000) return (n/100000).toFixed(2)+'L'; return (n/1000).toFixed(1)+'K'; };
-  const fmtLTP = n => n ? n.toFixed(2) : '—';
-  const fmtChg = n => { if(n == null) return '—'; const s = n>=0?'+':''; return s+n.toFixed(2)+'%'; };
-  const fmtIV  = n => n ? n.toFixed(1)+'%' : '—';
-
-  // ── PCR color ──
-  const pcrColor = pcr >= 1.2 ? 'var(--green)' : pcr <= 0.8 ? 'var(--red)' : 'var(--gold)';
-  const pcrLabel = pcr >= 1.2 ? 'Bullish 📗' : pcr <= 0.8 ? 'Bearish 📕' : 'Neutral ⚖️';
-
-  // ── Build summary ribbon ──
-  const summaryHTML = `
-  <div style="display:flex;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;align-items:center;">
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg3);border-radius:8px;flex-shrink:0;">
-      <span style="font-size:10px;color:var(--text3);">PCR</span>
-      <span style="font-weight:800;font-size:13px;color:${pcrColor};">${pcr.toFixed(2)}</span>
-      <span style="font-size:10px;color:${pcrColor};">${pcrLabel}</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg3);border-radius:8px;flex-shrink:0;">
-      <span style="font-size:10px;color:var(--text3);">Max Pain</span>
-      <span style="font-weight:800;font-size:13px;color:var(--gold);">₹${(maxPain||0).toLocaleString('en-IN')}</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg3);border-radius:8px;flex-shrink:0;">
-      <span style="font-size:10px;color:var(--red);">Call OI</span>
-      <span style="font-weight:700;font-size:12px;">${totalCallOI?(totalCallOI/100000).toFixed(1)+'L':'—'}</span>
-      <span style="font-size:10px;color:var(--text3);">vs</span>
-      <span style="font-size:10px;color:var(--green);">Put OI</span>
-      <span style="font-weight:700;font-size:12px;">${totalPutOI?(totalPutOI/100000).toFixed(1)+'L':'—'}</span>
-    </div>
-    ${d.expiry ? `<div style="margin-left:auto;font-size:11px;color:var(--text3);flex-shrink:0;">Expiry: <b style="color:var(--text);">${d.expiry}</b></div>` : ''}
-    <button onclick="_optStrikesShown=_optStrikesShown===20?rows.length:20;renderOptions();"
-      style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
-      ${_optStrikesShown===20?'Show All Strikes':'Show ±10 Strikes'}
-    </button>
-  </div>`;
-
-  // ── Build chain table rows ──
-  // Show ATM ±N strikes
-  const atmIdx = rows.findIndex(r => Math.abs(r.strike - spot) === Math.min(...rows.map(rr => Math.abs(rr.strike - spot))));
-  const half = Math.floor(_optStrikesShown / 2);
-  const visStart = Math.max(0, atmIdx - half);
-  const visEnd   = Math.min(rows.length, atmIdx + half + 1);
-  const visRows  = _optStrikesShown >= rows.length ? rows : rows.slice(visStart, visEnd);
-
-  const chainRows = visRows.map(row => {
-    const ce = row.CE || {}, pe = row.PE || {};
-    const isATM   = Math.abs(row.strike - spot) < (spot * 0.006);
-    const isITMCall = row.strike < spot; // ITM for calls
-    const isITMPut  = row.strike > spot; // ITM for puts
-
-    const ceOIBar = Math.round((ce.oi||0) / maxCallOI * 100);
-    const peOIBar = Math.round((pe.oi||0) / maxPutOI  * 100);
-    const ceChgOIUp = (ce.oiChg || 0) >= 0;
-    const peChgOIUp = (pe.oiChg || 0) >= 0;
-    const ceLTPUp   = (ce.chg || 0) >= 0;
-    const peLTPUp   = (pe.chg || 0) >= 0;
-
-    const itmCallBg  = isITMCall ? 'rgba(229,57,53,0.05)' : 'transparent';
-    const itmPutBg   = isITMPut  ? 'rgba(0,168,84,0.05)' : 'transparent';
-    const atmBg      = isATM ? 'rgba(0,112,243,0.08)' : '';
-
-    return `
-    <tr class="opt-row" data-strike="${row.strike}"
-      style="border-bottom:1px solid var(--border);cursor:pointer;${isATM?'box-shadow:inset 0 0 0 1px rgba(0,112,243,0.3);':''}"
-      onmouseover="this.style.filter='brightness(1.08)'"
-      onmouseout="this.style.filter=''">
-
-      <!-- CALL SIDE (ITM = slightly tinted) -->
-      <!-- OI -->
-      <td style="padding:0;position:relative;width:80px;background:${atmBg||itmCallBg};">
-        <div style="position:absolute;right:0;top:0;height:100%;width:${ceOIBar}%;background:rgba(229,57,53,0.12);pointer-events:none;"></div>
-        <div style="position:relative;padding:8px 8px;text-align:right;font-size:11px;font-family:'Space Mono',monospace;">
-          <div style="font-weight:600;color:var(--text2);">${fmtOI(ce.oi)}</div>
-          ${ce.oiChg != null ? `<div style="font-size:9px;color:${ceChgOIUp?'var(--green)':'var(--red)'}">${ceChgOIUp?'▲':'▼'}${fmtOI(Math.abs(ce.oiChg))}</div>` : ''}
-        </div>
-      </td>
-
-      <!-- CALL IV -->
-      <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--text3);background:${atmBg||itmCallBg};">${fmtIV(ce.iv)}</td>
-
-      <!-- CALL Vol -->
-      <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--text3);background:${atmBg||itmCallBg};">${fmtOI(ce.vol)}</td>
-
-      <!-- CALL Bid/Ask -->
-      <td style="padding:8px 6px;text-align:right;font-size:10px;background:${atmBg||itmCallBg};">
-        <span style="color:var(--green);">${ce.bid?ce.bid.toFixed(1):'—'}</span>
-        <span style="color:var(--text3);"> / </span>
-        <span style="color:var(--red);">${ce.ask?ce.ask.toFixed(1):'—'}</span>
-      </td>
-
-      <!-- CALL Chg% -->
-      <td style="padding:8px 6px;text-align:right;font-size:11px;color:${ceLTPUp?'var(--green)':'var(--red)'};background:${atmBg||itmCallBg};">
-        ${ce.chg != null ? fmtChg(ce.chg) : '—'}
-      </td>
-
-      <!-- CALL LTP -->
-      <td style="padding:8px 8px;text-align:right;font-weight:800;font-size:12px;background:${atmBg||itmCallBg};"
-        onclick="_optAddToBasket('CE',${row.strike},${ce.ltp||0})" title="Add to strategy">
-        <span style="color:var(--green);">${fmtLTP(ce.ltp)}</span>
-        <div style="font-size:8px;color:var(--text3);margin-top:1px;">${isITMCall?'ITM':'OTM'}</div>
-      </td>
-
-      <!-- ── STRIKE ── -->
-      <td style="padding:8px 10px;text-align:center;font-weight:800;font-size:12px;font-family:'Space Mono',monospace;
-        background:${isATM?'rgba(0,112,243,0.12)':'var(--bg3)'};
-        color:${isATM?'var(--accent)':row.strike===maxPain?'var(--gold)':'var(--text)'};
-        border-left:2px solid var(--border);border-right:2px solid var(--border);
-        white-space:nowrap;position:relative;">
-        ${row.strike.toLocaleString('en-IN')}
-        ${isATM ? `<div style="font-size:8px;font-weight:700;color:var(--accent);letter-spacing:0.5px;">ATM</div>` : ''}
-        ${row.strike===maxPain && !isATM ? `<div style="font-size:8px;color:var(--gold);">MAX PAIN</div>` : ''}
-      </td>
-
-      <!-- PUT LTP -->
-      <td style="padding:8px 8px;text-align:left;font-weight:800;font-size:12px;background:${atmBg||itmPutBg};"
-        onclick="_optAddToBasket('PE',${row.strike},${pe.ltp||0})" title="Add to strategy">
-        <span style="color:var(--red);">${fmtLTP(pe.ltp)}</span>
-        <div style="font-size:8px;color:var(--text3);margin-top:1px;">${isITMPut?'ITM':'OTM'}</div>
-      </td>
-
-      <!-- PUT Chg% -->
-      <td style="padding:8px 6px;text-align:left;font-size:11px;color:${peLTPUp?'var(--green)':'var(--red)'};background:${atmBg||itmPutBg};">
-        ${pe.chg != null ? fmtChg(pe.chg) : '—'}
-      </td>
-
-      <!-- PUT Bid/Ask -->
-      <td style="padding:8px 6px;text-align:left;font-size:10px;background:${atmBg||itmPutBg};">
-        <span style="color:var(--green);">${pe.bid?pe.bid.toFixed(1):'—'}</span>
-        <span style="color:var(--text3);"> / </span>
-        <span style="color:var(--red);">${pe.ask?pe.ask.toFixed(1):'—'}</span>
-      </td>
-
-      <!-- PUT Vol -->
-      <td style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text3);background:${atmBg||itmPutBg};">${fmtOI(pe.vol)}</td>
-
-      <!-- PUT IV -->
-      <td style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text3);background:${atmBg||itmPutBg};">${fmtIV(pe.iv)}</td>
-
-      <!-- PUT OI -->
-      <td style="padding:0;position:relative;width:80px;background:${atmBg||itmPutBg};">
-        <div style="position:absolute;left:0;top:0;height:100%;width:${peOIBar}%;background:rgba(0,168,84,0.12);pointer-events:none;"></div>
-        <div style="position:relative;padding:8px 8px;text-align:left;font-size:11px;font-family:'Space Mono',monospace;">
-          <div style="font-weight:600;color:var(--text2);">${fmtOI(pe.oi)}</div>
-          ${pe.oiChg != null ? `<div style="font-size:9px;color:${peChgOIUp?'var(--green)':'var(--red)'}">${peChgOIUp?'▲':'▼'}${fmtOI(Math.abs(pe.oiChg))}</div>` : ''}
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  // ── Basket HTML ──
-  const basketHTML = _optBasket.length ? `
-  <div id="optBasket" style="position:sticky;bottom:0;background:var(--bg2);border-top:2px solid var(--accent);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:10;">
-    <span style="font-size:11px;font-weight:700;color:var(--accent);">🧺 Strategy Basket</span>
-    ${_optBasket.map((b,i) => `
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:var(--bg3);border:1px solid ${b.type==='CE'?'rgba(229,57,53,0.4)':'rgba(0,168,84,0.4)'};">
-        <span style="font-size:10px;font-weight:700;color:${b.type==='CE'?'var(--red)':'var(--green)'};">${b.type}</span>
-        <span style="font-size:11px;font-weight:700;">₹${b.strike.toLocaleString()}</span>
-        <span style="font-size:10px;color:var(--text3);">@ ₹${b.ltp.toFixed(1)}</span>
-        <button onclick="_optRemoveBasket(${i})" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;padding:0 2px;">✕</button>
-      </div>`).join('')}
-    <button onclick="_optClearBasket()" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;cursor:pointer;margin-left:auto;">Clear</button>
-    <button onclick="_optAnalyzeBasket()" style="padding:6px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Analyze P&L →</button>
-  </div>` : '';
-
-  el.innerHTML = summaryHTML + `
-  <div style="overflow-x:auto;flex:1;">
-    <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:900px;">
-      <thead>
-        <tr style="background:var(--bg3);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:5;">
-          <th colspan="6" style="padding:9px 8px;text-align:center;color:var(--red);font-size:11px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:1px;border-right:2px solid var(--border);background:rgba(229,57,53,0.06);">
-            ← CALLS (${visRows.filter(r=>r.strike<spot).length} ITM · ${visRows.filter(r=>r.strike>=spot).length} OTM)
-          </th>
-          <th style="padding:9px 10px;text-align:center;font-weight:800;font-size:11px;font-family:'Space Mono',monospace;background:var(--bg3);border-left:2px solid var(--border);border-right:2px solid var(--border);">STRIKE</th>
-          <th colspan="6" style="padding:9px 8px;text-align:center;color:var(--green);font-size:11px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:1px;border-left:2px solid var(--border);background:rgba(0,168,84,0.06);">
-            PUTS (${visRows.filter(r=>r.strike>spot).length} ITM · ${visRows.filter(r=>r.strike<=spot).length} OTM) →
-          </th>
-        </tr>
-        <tr style="background:var(--bg3);border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);">
-          <th style="padding:6px 8px;text-align:right;border-right:none;">OI / Chg</th>
-          <th style="padding:6px 6px;text-align:right;">IV</th>
-          <th style="padding:6px 6px;text-align:right;">Vol</th>
-          <th style="padding:6px 6px;text-align:right;">Bid/Ask</th>
-          <th style="padding:6px 6px;text-align:right;">Chg%</th>
-          <th style="padding:6px 8px;text-align:right;border-right:2px solid var(--border);">LTP ▼</th>
-          <th style="padding:6px 10px;text-align:center;background:var(--bg3);border-left:2px solid var(--border);border-right:2px solid var(--border);color:var(--text);">STRIKE</th>
-          <th style="padding:6px 8px;text-align:left;border-left:2px solid var(--border);">LTP ▼</th>
-          <th style="padding:6px 6px;text-align:left;">Chg%</th>
-          <th style="padding:6px 6px;text-align:left;">Bid/Ask</th>
-          <th style="padding:6px 6px;text-align:left;">Vol</th>
-          <th style="padding:6px 6px;text-align:left;">IV</th>
-          <th style="padding:6px 8px;text-align:left;">OI / Chg</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${chainRows}
-      </tbody>
-    </table>
-  </div>
-  <div style="padding:8px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;">
-    <span>Source: NSE India · Expiry: <b>${d.expiry||'—'}</b> · Auto-refreshes every 60s · Click LTP to add to basket</span>
-    <span style="color:var(--text3);">Showing ${visRows.length} of ${rows.length} strikes · ATM: ₹${(d.atm||0).toLocaleString()}</span>
-  </div>
-  ${basketHTML}`;
-}
-
-// ── Basket helpers ──
-function _optAddToBasket(type, strike, ltp) {
-  const exists = _optBasket.find(b => b.type===type && b.strike===strike);
-  if (exists) { showToast(`${type} ₹${strike} already in basket`,'var(--gold)'); return; }
-  if (_optBasket.length >= 6) { showToast('Max 6 legs in basket','var(--red)'); return; }
-  _optBasket.push({type, strike, ltp});
-  showToast(`${type} ₹${strike.toLocaleString()} added to basket ✓`,'var(--green)');
-  renderOptions();
-}
-function _optRemoveBasket(i) { _optBasket.splice(i,1); renderOptions(); }
-function _optClearBasket() { _optBasket = []; renderOptions(); }
-function _optAnalyzeBasket() {
-  if (!_optBasket.length) return;
-  // Switch to Option Strategies page with basket pre-loaded
-  switchTab(null,'optpnl');
-  showToast('Opening P&L Simulator with your basket…','var(--accent)');
-}
-
-// ── Auto refresh every 60s ──
-setInterval(() => {
-  if (document.getElementById('page-options')?.style.display !== 'none') {
-    const sym = document.getElementById('optIndex')?.value || 'NIFTY';
-    // Refresh without showing loading spinner (silent refresh)
-    fetch(`${API_BASE}/options?symbol=${encodeURIComponent(sym)}`, { signal: AbortSignal.timeout(18000) })
-      .then(r => r.ok ? r.json() : null)
-      .then(j => { if(j && !j.error && j.rows?.length) { _optionsData = j; renderOptions(); } })
-      .catch(() => {});
-  }
-}, 30 * 1000);
-
 
 // ═══════════════════════════════════════════════════════════════════
 // MUTUAL FUNDS PAGE
