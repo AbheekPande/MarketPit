@@ -1808,8 +1808,8 @@ header {
     </div>
     <!-- Tab selector -->
     <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
-      <button onclick="showTVTab('indices',this)" id="tvtab_indices" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">🇺🇸 US Stocks</button>
-      <button onclick="showTVTab('stocks',this)" id="tvtab_stocks" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🏦 NSE Stocks</button>
+      <button onclick="showTVTab('stocks',this)" id="tvtab_stocks" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">🏦 NSE Stocks</button>
+      <button onclick="showTVTab('indices',this)" id="tvtab_indices" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🇺🇸 US Stocks</button>
       <button onclick="showTVTab('crypto',this)" id="tvtab_crypto" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">₿ Crypto</button>
       <button onclick="showTVTab('commodities',this)" id="tvtab_commodities" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🪙 Commodities</button>
       <button onclick="showTVTab('forex',this)" id="tvtab_forex" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">💱 Forex</button>
@@ -9298,7 +9298,7 @@ setInterval(() => {
 // TRADINGVIEW LIVE CHARTS PAGE
 // Uses textContent injection — reliable, no blank screens
 // ═══════════════════════════════════════════════════════════════════
-let _tvTab = 'indices';
+let _tvTab = 'stocks';
 
 function renderTVPage() {
   document.querySelectorAll('[id^="tvtab_"]').forEach(b => {
@@ -9393,7 +9393,7 @@ function showTVTab(tab, btn) {
     });
 
   } else if (tab === 'commodities') {
-    const syms = ['COMEX:GC1!','COMEX:SI1!','NYMEX:CL1!','ICEEUR:B1!','NYMEX:NG1!','COMEX:HG1!'];
+    const syms = ['COMEX:GC1!','COMEX:SI1!','NYMEX:CL1!','NYMEX:NG1!','COMEX:HG1!','CBOT:ZW1!'];
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
       + syms.map(function(_,i){ return '<div id="tvComm_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:210px;min-height:210px;"></div>'; }).join('')
       + '</div>';
@@ -9425,19 +9425,19 @@ function showTVTab(tab, btn) {
     });
 
   } else if (tab === 'chart') {
-    const stocks = 'RELIANCE,TCS,HDFCBANK,INFY,ICICIBANK,SBIN,WIPRO,AXISBANK,BAJFINANCE,TATAMOTORS,SUNPHARMA,LT,TITAN,MARUTI,BHARTIARTL,ADANIENT,ZOMATO,HAL,BEL,DLF,NESTLEIND,ITC,HCLTECH,KOTAKBANK'.split(',');
+    const nseStocks = 'RELIANCE,TCS,HDFCBANK,INFY,ICICIBANK,SBIN,WIPRO,AXISBANK,BAJFINANCE,TATAMOTORS,SUNPHARMA,LT,TITAN,MARUTI,BHARTIARTL,ADANIENT,ZOMATO,NESTLEIND,ITC,HCLTECH,KOTAKBANK'.split(',');
     el.innerHTML = '<div style="padding:10px 14px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;border-bottom:1px solid var(--border);">'
       + '<select id="tvChartSym" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">'
-      + '<optgroup label="Indices"><option value="NSE:NIFTY">NIFTY 50</option><option value="NSE:BANKNIFTY">BANK NIFTY</option><option value="NSE:CNXIT">NIFTY IT</option><option value="NSE:CNXPHARMA">NIFTY PHARMA</option><option value="NSE:CNXAUTO">NIFTY AUTO</option><option value="NSE:CNXMETAL">NIFTY METAL</option></optgroup>'
-      + '<optgroup label="NSE Stocks">' + stocks.map(function(s){ return '<option value="NSE:'+s+'">'+s+'</option>'; }).join('') + '</optgroup>'
-      + '<optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option></optgroup>'
-      + '<optgroup label="Commodities"><option value="COMEX:GC1!">Gold</option><option value="NYMEX:CL1!">Crude Oil</option></optgroup>'
-      + '<optgroup label="Forex"><option value="FX_IDC:USDINR">USD/INR</option><option value="FX:EURUSD">EUR/USD</option></optgroup>'
+      + '<optgroup label="US Stocks"><option value="NASDAQ:AAPL">AAPL – Apple</option><option value="NASDAQ:MSFT">MSFT – Microsoft</option><option value="NASDAQ:NVDA">NVDA – Nvidia</option><option value="NASDAQ:GOOGL">GOOGL – Alphabet</option><option value="NASDAQ:AMZN">AMZN – Amazon</option><option value="NASDAQ:META">META – Meta</option><option value="NYSE:JPM">JPM – JPMorgan</option><option value="NYSE:TSLA">TSLA – Tesla</option></optgroup>'
+      + '<optgroup label="NSE Stocks">' + nseStocks.map(function(s){ return '<option value="NSE:'+s+'">'+s+'</option>'; }).join('') + '</optgroup>'
+      + '<optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option><option value="BINANCE:SOLUSDT">SOL/USDT</option></optgroup>'
+      + '<optgroup label="Commodities"><option value="COMEX:GC1!">Gold</option><option value="NYMEX:CL1!">Crude Oil</option><option value="COMEX:SI1!">Silver</option></optgroup>'
+      + '<optgroup label="Forex"><option value="FX_IDC:USDINR">USD/INR</option><option value="FX:EURUSD">EUR/USD</option><option value="FX:GBPUSD">GBP/USD</option></optgroup>'
       + '</select>'
       + '<select id="tvChartInterval" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">'
       + '<option value="1">1 min</option><option value="5">5 min</option><option value="15">15 min</option><option value="60" selected>1 hr</option><option value="D">Daily</option><option value="W">Weekly</option>'
       + '</select>'
-      + '<span style="font-size:10px;color:var(--text3);">IST · RSI + MACD</span>'
+      + '<span style="font-size:10px;color:var(--text3);">RSI + MACD + Volume</span>'
       + '</div>'
       + '<div style="padding:14px;flex:1;">'
       + '<div id="tvChartContainer" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:500px;min-height:500px;"></div>'
@@ -9449,7 +9449,7 @@ function showTVTab(tab, btn) {
 function updateTVChart() {
   const container = document.getElementById('tvChartContainer');
   if (!container) return;
-  const sym = document.getElementById('tvChartSym') ? document.getElementById('tvChartSym').value : 'NSE:NIFTY';
+  const sym = document.getElementById('tvChartSym') ? document.getElementById('tvChartSym').value : 'NASDAQ:AAPL';
   const interval = document.getElementById('tvChartInterval') ? document.getElementById('tvChartInterval').value : '60';
   const theme = document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
   container.innerHTML = '';
@@ -9462,12 +9462,10 @@ function updateTVChart() {
     enable_publishing: false,
     hide_top_toolbar: false,
     hide_legend: false,
-    save_image: true,
+    save_image: false,
     calendar: false,
-    support_host: 'https://www.tradingview.com',
+    hide_side_toolbar: false,
     studies: ['RSI@tv-basicstudies','MACD@tv-basicstudies','Volume@tv-basicstudies'],
-    show_popup_button: true,
-    popup_width: '1000', popup_height: '650',
     isTransparent: true,
   });
 }
