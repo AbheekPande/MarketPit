@@ -9018,8 +9018,18 @@ function showTVTab(tab, btn) {
     });
 
   } else if (tab === 'commodities') {
-    const syms = ['COMEX:GC1!','COMEX:SI1!','NYMEX:CL1!','NYMEX:NG1!','COMEX:HG1!','CBOT:ZW1!'];
+    // COMEX/NYMEX futures are paywalled on TradingView free embeds
+    // Using commodity ETFs (NYSE/NASDAQ listed) which are freely available
+    const syms = [
+      'NYSE:GLD',   // Gold ETF (SPDR)
+      'NYSE:SLV',   // Silver ETF (iShares)
+      'NYSE:USO',   // Crude Oil ETF
+      'NYSE:UNG',   // Natural Gas ETF
+      'NASDAQ:PDBC',// Diversified Commodity ETF
+      'NYSE:CPER',  // Copper ETF
+    ];
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
+      + '<div style="grid-column:1/-1;padding:6px 4px 2px;font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">COMMODITY ETFs (NYSE/NASDAQ) · GLD · SLV · USO · UNG · PDBC · CPER</div>'
       + syms.map(function(_,i){ return '<div id="tvComm_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:210px;min-height:210px;"></div>'; }).join('')
       + '</div>';
     syms.forEach(function(sym,i){
@@ -9056,7 +9066,7 @@ function showTVTab(tab, btn) {
       + '<optgroup label="US Stocks"><option value="NASDAQ:AAPL">AAPL – Apple</option><option value="NASDAQ:MSFT">MSFT – Microsoft</option><option value="NASDAQ:NVDA">NVDA – Nvidia</option><option value="NASDAQ:GOOGL">GOOGL – Alphabet</option><option value="NASDAQ:AMZN">AMZN – Amazon</option><option value="NASDAQ:META">META – Meta</option><option value="NYSE:JPM">JPM – JPMorgan</option><option value="NYSE:TSLA">TSLA – Tesla</option></optgroup>'
       + '<optgroup label="NSE Stocks">' + nseStocks.map(function(s){ return '<option value="NSE:'+s+'">'+s+'</option>'; }).join('') + '</optgroup>'
       + '<optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option><option value="BINANCE:SOLUSDT">SOL/USDT</option></optgroup>'
-      + '<optgroup label="Commodities"><option value="COMEX:GC1!">Gold</option><option value="NYMEX:CL1!">Crude Oil</option><option value="COMEX:SI1!">Silver</option></optgroup>'
+      + '<optgroup label="Commodities"><option value="NYSE:GLD">GLD – Gold ETF</option><option value="NYSE:SLV">SLV – Silver ETF</option><option value="NYSE:USO">USO – Crude Oil ETF</option><option value="NYSE:UNG">UNG – Nat Gas ETF</option></optgroup>'
       + '<optgroup label="Forex"><option value="FX_IDC:USDINR">USD/INR</option><option value="FX:EURUSD">EUR/USD</option><option value="FX:GBPUSD">GBP/USD</option></optgroup>'
       + '</select>'
       + '<select id="tvChartInterval" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">'
