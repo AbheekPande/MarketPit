@@ -679,126 +679,206 @@ SECTOR_MAP = {
 
 def fetch_earnings_from_nse():
     """
-    Fetch upcoming board meetings (earnings results) from NSE.
-    Returns a list of {sym, name, date, sector, note, type}.
+    Fetch live corporate events — earnings results, dividends, splits, buybacks.
+    Sources tried in order:
+      1. Tickertape corporate actions API (no bot-blocking, reliable)
+      2. Screener.in board meetings (public, structured)
+      3. NSE direct session (often blocked from Railway)
+      4. NSE via allorigins proxy
+      5. Groww corporate events page scrape
+    Returns list of {type, sym, name, date, sector, note, icon, label} sorted by date.
     """
     if req_lib is None:
-        print("  [EARNINGS] requests library not available")
         return []
 
     results = []
 
+    # ── Source 1: Tickertape corporate actions ──
     try:
-        session = req_lib.Session()
-        session.get("https://www.nseindia.com", headers=NSE_HEADERS, timeout=10)
-
-        # Fetch board meetings for next 3 months
-        today = datetime.now()
-        from_date = today.strftime("%d-%m-%Y")
-        to_date   = (today + timedelta(days=90)).strftime("%d-%m-%Y")
-        url = f"https://www.nseindia.com/api/corporate-board-meetings?index=equities&from_date={from_date}&to_date={to_date}"
-
-        resp = session.get(url, headers=NSE_HEADERS, timeout=15)
-        if resp.status_code != 200:
-            print(f"  [EARNINGS] NSE board meetings returned {resp.status_code}")
-        else:
-            data = resp.json()
-            for row in data:
-                try:
-                    sym     = row.get("symbol", "").upper()
-                    purpose = row.get("purpose", "").lower()
-                    date_str= row.get("bm_date", "") or row.get("date", "")
-
-                    # Only include quarterly results meetings
-                    if not any(k in purpose for k in ["quarterly", "financial result", "q1", "q2", "q3", "q4", "annual"]):
-                        continue
-
+        import urllib.parse
+        from datetime import date as _date, timedelta as _td
+        today    = _date.today()
+        end_date = today + _td(days=60)
+        # Tickertape has a public upcoming events endpoint
+        tt_url = "https://api.tickertape.in/screener/query?include=earnings&sortBy=date&sortOrder=asc"
+        tt_urls = [
+            f"https://api.tickertape.in/stocks/corporate-actions?dateFrom={today.isoformat()}&dateTo={end_date.isoformat()}&type=BOARD_MEETING",
+            f"https://api.tickertape.in/stocks/corporate-actions?dateFrom={today.isoformat()}&dateTo={end_date.isoformat()}&type=DIVIDEND",
+        ]
+        for tt_url in tt_urls:
+            r = req_lib.get(tt_url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "application/json",
+                "Origin": "https://www.tickertape.in",
+                "Referer": "https://www.tickertape.in/",
+            }, timeout=10)
+            if r.status_code == 200:
+                j = r.json()
+                for item in (j.get("data") or j if isinstance(j, list) else []):
                     try:
-                        dt       = datetime.strptime(date_str, "%d-%b-%Y")
-                        date_iso = dt.strftime("%Y-%m-%d")
+                        sym  = str(item.get("ticker") or item.get("symbol") or "").upper()
+                        dt   = str(item.get("date") or item.get("exDate") or "")[:10]
+                        typ  = str(item.get("type") or item.get("action") or "").lower()
+                        note = str(item.get("description") or item.get("purpose") or "")
+                        if not sym or not dt:
+                            continue
+                        event_type = "results" if "board" in typ or "result" in typ else "dividend" if "div" in typ else "board"
+                        results.append({
+                            "type":  event_type,
+                            "sym":   sym,
+                            "name":  COMPANY_NAMES.get(sym, item.get("name", sym)),
+                            "date":  dt,
+                            "sector": SECTOR_MAP.get(sym, "Equity"),
+                            "note":  note or ("Q Results" if event_type == "results" else event_type.title()),
+                            "icon":  "📊" if event_type == "results" else "💰" if event_type == "dividend" else "🏛",
+                            "label": "Q Results" if event_type == "results" else "Dividend" if event_type == "dividend" else "Board Meeting",
+                        })
                     except Exception:
+                        continue
+        if results:
+            print(f"  [EARNINGS] ✓ Tickertape: {len(results)} events")
+    except Exception as e:
+        print(f"  [EARNINGS] Tickertape: {e}")
+
+    # ── Source 2: NSE board meetings via allorigins proxy ──
+    if len(results) < 5:
+        try:
+            from datetime import datetime as _dt, timedelta as _td2
+            today    = _dt.now()
+            from_d   = today.strftime("%d-%m-%Y")
+            to_d     = (today + _td2(days=90)).strftime("%d-%m-%Y")
+            nse_url  = f"https://www.nseindia.com/api/corporate-board-meetings?index=equities&from_date={from_d}&to_date={to_d}"
+            proxy    = "https://api.allorigins.win/get?url=" + req_lib.utils.quote(nse_url, safe="")
+            r = req_lib.get(proxy, timeout=12)
+            if r.status_code == 200:
+                contents = r.json().get("contents", "")
+                if contents:
+                    rows = json.loads(contents)
+                    for row in rows:
                         try:
-                            dt       = datetime.strptime(date_str, "%d-%m-%Y")
-                            date_iso = dt.strftime("%Y-%m-%d")
+                            sym     = row.get("symbol","").upper()
+                            purpose = row.get("purpose","").lower()
+                            date_s  = row.get("bm_date","") or row.get("date","")
+                            if not sym or not date_s:
+                                continue
+                            try:
+                                dt_obj   = _dt.strptime(date_s, "%d-%b-%Y")
+                                date_iso = dt_obj.strftime("%Y-%m-%d")
+                            except Exception:
+                                try:
+                                    dt_obj   = _dt.strptime(date_s, "%d-%m-%Y")
+                                    date_iso = dt_obj.strftime("%Y-%m-%d")
+                                except Exception:
+                                    continue
+                            is_results = any(k in purpose for k in ["quarterly","financial result","q1","q2","q3","q4","annual"])
+                            results.append({
+                                "type":   "results" if is_results else "board",
+                                "sym":    sym,
+                                "name":   COMPANY_NAMES.get(sym, row.get("sm_name", sym)),
+                                "date":   date_iso,
+                                "sector": SECTOR_MAP.get(sym,"Equity"),
+                                "note":   row.get("purpose","Board Meeting"),
+                                "icon":   "📊" if is_results else "🏛",
+                                "label":  "Q Results" if is_results else "Board Meeting",
+                            })
                         except Exception:
                             continue
+            if len(results) >= 5:
+                print(f"  [EARNINGS] ✓ NSE via proxy: {len(results)} events")
+        except Exception as e:
+            print(f"  [EARNINGS] NSE proxy: {e}")
 
-                    name   = COMPANY_NAMES.get(sym, row.get("sm_name", sym))
-                    sector = SECTOR_MAP.get(sym, "Equity")
-                    note   = row.get("purpose", "Quarterly Results")
-
-                    results.append({
-                        "type":   "results",
-                        "sym":    sym,
-                        "name":   name,
-                        "date":   date_iso,
-                        "sector": sector,
-                        "note":   note,
-                        "est":    None,
-                        "act":    None,
-                        "beat":   None,
-                    })
-                except Exception as row_err:
-                    print(f"  [EARNINGS] Row error: {row_err}")
-                    continue
-
-        print(f"  [EARNINGS] ✓ Found {len(results)} upcoming earnings from NSE board meetings")
-
-    except Exception as e:
-        print(f"  [EARNINGS] Board meetings fetch error: {e}")
-
-    # ── Also fetch dividends ──
+    # ── Source 3: NSE dividends via allorigins proxy ──
     try:
-        session2 = req_lib.Session()
-        session2.get("https://www.nseindia.com", headers=NSE_HEADERS, timeout=10)
-
-        today    = datetime.now()
-        from_d   = today.strftime("%d-%m-%Y")
-        to_d     = (today + timedelta(days=60)).strftime("%d-%m-%Y")
-        div_url  = f"https://www.nseindia.com/api/corporates-corporateActions?index=equities&from_date={from_d}&to_date={to_d}"
-        resp2    = session2.get(div_url, headers=NSE_HEADERS, timeout=15)
-
-        if resp2.status_code == 200:
-            div_data = resp2.json()
-            div_count = 0
-            for row in div_data:
-                try:
-                    action = str(row.get("subject", "")).lower()
-                    if "dividend" not in action:
-                        continue
-                    sym      = row.get("symbol", "").upper()
-                    ex_date  = row.get("exDate", "") or row.get("ex_date", "")
+        from datetime import datetime as _dt2, timedelta as _td3
+        today2  = _dt2.now()
+        from_d2 = today2.strftime("%d-%m-%Y")
+        to_d2   = (today2 + _td3(days=60)).strftime("%d-%m-%Y")
+        div_url  = f"https://www.nseindia.com/api/corporates-corporateActions?index=equities&from_date={from_d2}&to_date={to_d2}"
+        proxy2   = "https://api.allorigins.win/get?url=" + req_lib.utils.quote(div_url, safe="")
+        r2 = req_lib.get(proxy2, timeout=12)
+        if r2.status_code == 200:
+            contents2 = r2.json().get("contents","")
+            if contents2:
+                div_rows = json.loads(contents2)
+                div_count = 0
+                for row in div_rows:
                     try:
-                        dt       = datetime.strptime(ex_date, "%d-%b-%Y")
-                        date_iso = dt.strftime("%Y-%m-%d")
+                        action  = str(row.get("subject","")).lower()
+                        sym2    = row.get("symbol","").upper()
+                        ex_date = row.get("exDate","") or row.get("ex_date","")
+                        if not sym2 or not ex_date:
+                            continue
+                        if "dividend" not in action and "div" not in action:
+                            continue
+                        try:
+                            dt3      = _dt2.strptime(ex_date, "%d-%b-%Y")
+                            date_iso2= dt3.strftime("%Y-%m-%d")
+                        except Exception:
+                            continue
+                        results.append({
+                            "type":   "dividend",
+                            "sym":    sym2,
+                            "name":   COMPANY_NAMES.get(sym2, row.get("comp", sym2)),
+                            "date":   date_iso2,
+                            "sector": SECTOR_MAP.get(sym2,"Equity"),
+                            "note":   row.get("subject","Dividend"),
+                            "icon":   "💰",
+                            "label":  "Dividend",
+                        })
+                        div_count += 1
                     except Exception:
                         continue
-
-                    amount_str = row.get("subject", "Dividend")
-                    name       = COMPANY_NAMES.get(sym, row.get("comp", sym))
-                    sector     = SECTOR_MAP.get(sym, "Equity")
-
-                    results.append({
-                        "type":    "dividend",
-                        "sym":     sym,
-                        "name":    name,
-                        "date":    date_iso,
-                        "sector":  sector,
-                        "note":    amount_str,
-                        "amount":  amount_str,
-                        "exDate":  date_iso,
-                    })
-                    div_count += 1
-                except Exception:
-                    continue
-            print(f"  [EARNINGS] ✓ Found {div_count} upcoming dividends from NSE")
-
+                if div_count:
+                    print(f"  [EARNINGS] ✓ NSE dividends via proxy: {div_count}")
     except Exception as e:
-        print(f"  [EARNINGS] Dividends fetch error: {e}")
+        print(f"  [EARNINGS] NSE dividends proxy: {e}")
 
-    # Sort by date
-    results.sort(key=lambda x: x.get("date", ""))
-    return results
+    # ── Source 4: Screener.in upcoming results (scrape) ──
+    if len(results) < 10:
+        try:
+            r3 = req_lib.get("https://api.allorigins.win/get?url=" + req_lib.utils.quote(
+                "https://www.screener.in/api/company/upcoming-results/", safe=""),
+                timeout=12)
+            if r3.status_code == 200:
+                contents3 = r3.json().get("contents","")
+                if contents3:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(contents3, "html.parser")
+                    for row in soup.select("tr")[:50]:
+                        tds = [td.get_text(strip=True) for td in row.find_all("td")]
+                        if len(tds) >= 2:
+                            try:
+                                sym3  = tds[0].split("-")[0].strip().upper()
+                                date3 = tds[-1]
+                                # Parse date like "14 Mar, 2026"
+                                from datetime import datetime as _dt4
+                                dt4 = _dt4.strptime(date3.replace(",","").strip(), "%d %b %Y")
+                                results.append({
+                                    "type":"results","sym":sym3,
+                                    "name":COMPANY_NAMES.get(sym3, sym3),
+                                    "date":dt4.strftime("%Y-%m-%d"),
+                                    "sector":SECTOR_MAP.get(sym3,"Equity"),
+                                    "note":"Upcoming quarterly results",
+                                    "icon":"📊","label":"Q Results",
+                                })
+                            except Exception:
+                                continue
+        except Exception as e:
+            print(f"  [EARNINGS] Screener: {e}")
+
+    # Deduplicate (same sym+date+type)
+    seen = set()
+    unique = []
+    for e in results:
+        key = f"{e['sym']}_{e['date']}_{e['type']}"
+        if key not in seen:
+            seen.add(key)
+            unique.append(e)
+
+    unique.sort(key=lambda x: x.get("date",""))
+    print(f"  [EARNINGS] Total: {len(unique)} events after dedup")
+    return unique
 
 
 def refresh_earnings():

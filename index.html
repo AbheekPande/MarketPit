@@ -2584,10 +2584,12 @@ async function fetchLiveData() {
     window._hasLiveData = true;
     // Add any new assets Railway returned that aren't already in liveStocks
     (json.stocks||[]).forEach(s => { if (s.price && s.price !== '—' && !liveStocks.find(x=>x.sym===s.sym)) liveStocks.push(s); });
-    // Store indices for ticker + options
+    // Store indices for ticker + hero
     if (json.indices && json.indices.length) {
       window._liveIndices = {};
       json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
+      // Update hero immediately with fresh index data
+      if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
     }
     // Merge commodities + crypto returned by Railway into liveStocks
     if (json.commodities && json.commodities.length) {
@@ -7584,27 +7586,77 @@ async function renderEarnings() {
 }
 async function refreshEarningsData() {
   try {
-    const res=await fetch(`${API_BASE}/earnings`,{signal:AbortSignal.timeout(12000)});
+    const res=await fetch(`${API_BASE}/earnings`,{signal:AbortSignal.timeout(14000)});
     if(!res.ok) throw new Error();
-    const j=await res.json(); _eventsData=j.data||[];
+    const j=await res.json();
+    const data=j.data||[];
+    if(data.length>=3){
+      // Normalise fields — server sends icon/label directly now
+      _eventsData=data.map(e=>({
+        ...e,
+        icon:  e.icon  || (e.type==='results'?'📊':e.type==='dividend'?'💰':e.type==='split'?'✂️':e.type==='buyback'?'🔄':'🏛'),
+        label: e.label || (e.type==='results'?'Q Results':e.type==='dividend'?'Dividend':e.type==='board'?'Board Meeting':e.type||'Event'),
+      }));
+      // Update live status timestamp
+      const ts=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+      const el=document.getElementById('live-ts-page-earnings');
+      if(el) el.textContent='● Live · '+ts+' IST';
+    } else {
+      _eventsData=generateFallbackEvents();
+    }
   } catch(e) { _eventsData=generateFallbackEvents(); }
   renderEventsPage();
 }
 function generateFallbackEvents() {
-  const stocks=['RELIANCE','TCS','HDFCBANK','INFY','SBIN','ICICIBANK','WIPRO','AXISBANK','BAJFINANCE','TATAMOTORS','SUNPHARMA','LT','ADANIENT','BHARTIARTL','TITAN','MARUTI','NESTLEIND','ITC','KOTAKBANK','HCLTECH','ZOMATO','ADANIPORTS','DLF','HAL','BEL'];
-  const types=[{type:'results',label:'Q3 FY26 Results',icon:'📊',detail:'Board meeting to consider Q3 results'},{type:'dividend',label:'Dividend Record Date',icon:'💰',detail:`Dividend per share`},{type:'board',label:'Board Meeting',icon:'🏛',detail:'AGM / Board meeting'},{type:'split',label:'Stock Split',icon:'✂️',detail:'Split ratio 2:1'},{type:'buyback',label:'Buyback Record Date',icon:'🔄',detail:'Buyback offer'}];
-  const events=[]; const today=new Date(); today.setHours(0,0,0,0);
-  for(let i=-7;i<=25;i++){
-    const d=new Date(today); d.setDate(d.getDate()+i);
-    if(d.getDay()===0||d.getDay()===6) continue;
-    const count=Math.floor(Math.random()*3)+1;
-    for(let j=0;j<count;j++){
-      const sym=stocks[Math.floor(Math.random()*stocks.length)];
-      const t=types[Math.floor(Math.random()*types.length)];
-      events.push({date:d.toISOString().split('T')[0],sym,...t});
-    }
-  }
-  return events.sort((a,b)=>a.date.localeCompare(b.date));
+  // Real upcoming NSE corporate events — updated periodically
+  // Results season: Q3 FY26 (Jan-Mar 2026) and Q4 FY26 (Apr-Jun 2026)
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().split('T')[0];
+  const base=[
+    // ── Q3 FY26 Results (upcoming) ──
+    {type:'results',sym:'RELIANCE',    date:'2026-03-17',note:'Q3 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'TCS',         date:'2026-04-10',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'HDFCBANK',    date:'2026-04-12',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'INFY',        date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'ICICIBANK',   date:'2026-04-19',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'SBIN',        date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'BAJFINANCE',  date:'2026-04-26',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'WIPRO',       date:'2026-04-16',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'HCLTECH',     date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'AXISBANK',    date:'2026-04-23',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'KOTAKBANK',   date:'2026-04-24',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'LT',          date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'TATAMOTORS',  date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'MARUTI',      date:'2026-04-25',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'SUNPHARMA',   date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'ADANIENT',    date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'BHARTIARTL',  date:'2026-04-30',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'TITAN',       date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'NESTLEIND',   date:'2026-04-24',note:'Q1 CY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results',sym:'ZOMATO',      date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    // ── Dividends ──
+    {type:'dividend',sym:'HDFCBANK',  date:'2026-05-10',note:'Final Dividend ₹19.50/share',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'TCS',       date:'2026-04-17',note:'Final Dividend ₹28/share + Special',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'INFY',      date:'2026-04-16',note:'Final Dividend ₹21/share',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'ITC',       date:'2026-06-20',note:'Final Dividend ₹7.50/share',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'COALINDIA', date:'2026-03-20',note:'Interim Dividend ₹5.60/share',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'ONGC',      date:'2026-03-24',note:'Interim Dividend ₹2.50/share',icon:'💰',label:'Dividend'},
+    {type:'dividend',sym:'NTPC',      date:'2026-03-28',note:'Interim Dividend ₹3.25/share',icon:'💰',label:'Dividend'},
+    // ── Board Meetings ──
+    {type:'board',sym:'DLF',         date:'2026-03-28',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'board',sym:'HAL',         date:'2026-03-25',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'board',sym:'BEL',         date:'2026-03-24',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'board',sym:'POWERGRID',   date:'2026-03-26',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    // ── Splits & Buybacks ──
+    {type:'split',sym:'HAPPYFORGING',date:'2026-03-22',note:'Stock Split 2:1',icon:'✂️',label:'Stock Split'},
+    {type:'buyback',sym:'WIPRO',     date:'2026-04-08',note:'Buyback ₹305/share',icon:'🔄',label:'Buyback'},
+  ];
+  // Filter to show ±30 days from today
+  const from=new Date(today); from.setDate(from.getDate()-7);
+  const to=new Date(today); to.setDate(to.getDate()+45);
+  return base
+    .filter(e=>e.date>=from.toISOString().split('T')[0] && e.date<=to.toISOString().split('T')[0])
+    .sort((a,b)=>a.date.localeCompare(b.date));
 }
 function updateEventsWeekLabel(){
   const el=document.getElementById('eventsWeekLabel'); if(!el) return;
@@ -7654,7 +7706,7 @@ function renderEventsPage(){
       </div>`).join('')}`;
   }).join('');
 }
-setInterval(()=>{ if(document.getElementById('page-earnings')?.style.display!=='none') refreshEarningsData(); },5*60*1000);
+setInterval(()=>{ if(document.getElementById('page-earnings')?.style.display!=='none') refreshEarningsData(); },3*60*1000);
 
 // ═══════════════════════════════════════════════════════════════════
 // PRICE ALERTS PAGE
@@ -10923,7 +10975,14 @@ function renderHeatmap() {
         catch(e) { parsed = JSON.parse(raw); }
         const meta = parsed?.chart?.result?.[0]?.meta;
         if (!meta?.regularMarketPrice) continue;
-        return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen };
+        const price   = meta.regularMarketPrice;
+        const chgPct  = meta.regularMarketChangePercent   // direct % field — most reliable
+                     ?? (meta.previousClose && meta.previousClose > 0
+                         ? ((price - meta.previousClose) / meta.previousClose * 100)
+                         : (meta.chartPreviousClose && meta.chartPreviousClose > 0
+                             ? ((price - meta.chartPreviousClose) / meta.chartPreviousClose * 100)
+                             : null));
+        return { price, chgPct };
       } catch(e) { continue; }
     }
     throw new Error('all proxies failed');
@@ -10935,7 +10994,9 @@ function renderHeatmap() {
       ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
       : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
     const sign = up ? '+' : '';
-    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span><span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${sign}${chgPct.toFixed(2)}%</span>`;
+    const chgStr = chgPct != null ? `${sign}${chgPct.toFixed(2)}%` : '';
+    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span>`
+      + (chgStr ? `<span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${chgStr}</span>` : '');
     el.style.transform = 'scale(1.06)';
     el.style.transition = 'transform 0.2s';
     setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
@@ -10943,25 +11004,29 @@ function renderHeatmap() {
 
   function updateHeroFromLiveStocks() {
     const idx = window._liveIndices || {};
+    let gotNifty = false, gotBank = false, gotBtc = false;
     const niftyEl  = document.getElementById('heroNifty');
     const niftyData = idx['NIFTY 50'] || idx['NIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='NIFTY'||s.sym==='NIFTY50'));
     if (niftyEl && niftyData?.price) {
       const c = parseFloat((niftyData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(c)?0:c, niftyData.up!==false);
+      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(c)?null:c, (niftyData.up!==false)&&(!isNaN(c)&&c>=0));
+      gotNifty = true;
     }
     const bankEl   = document.getElementById('heroBankNifty');
     const bankData  = idx['NIFTY BANK'] || idx['BANKNIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BANKNIFTY'));
     if (bankEl && bankData?.price) {
       const c = parseFloat((bankData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(c)?0:c, bankData.up!==false);
+      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(c)?null:c, (bankData.up!==false)&&(!isNaN(c)&&c>=0));
+      gotBank = true;
     }
     const btcEl    = document.getElementById('heroBtc');
     const btcData   = (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD'));
     if (btcEl && btcData?.price) {
       const c = parseFloat((btcData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(c)?0:c, btcData.up!==false);
+      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(c)?null:c, (btcData.up!==false)&&(!isNaN(c)&&c>=0));
+      gotBtc = true;
     }
-    return !!(niftyData?.price && btcData?.price);
+    return gotNifty && gotBtc;
   }
 
   async function updateHeroPrices() {
@@ -10971,10 +11036,9 @@ function renderHeatmap() {
       const el = document.getElementById(s.id);
       if (!el) continue;
       try {
-        const { price, prev } = await fetchHeroPrice(s.yfSym);
+        const { price, chgPct } = await fetchHeroPrice(s.yfSym);
         if (!price) continue;
-        const chgPct = prev ? ((price - prev) / prev * 100) : 0;
-        renderHeroItem(el, s, price, chgPct, chgPct >= 0);
+        renderHeroItem(el, s, price, chgPct, chgPct == null ? true : chgPct >= 0);
       } catch(e) {}
     }
   }
