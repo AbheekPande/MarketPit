@@ -9315,7 +9315,7 @@ function showTVTab(tab, btn) {
   const theme = document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
 
   if (tab === 'indices') {
-    const syms = ['NSE:NIFTY50','BSE:SENSEX','NSE:BANKNIFTY','NSE:CNXIT','NSE:CNXPHARMA','NSE:CNXAUTO'];
+    const syms = ['NSE:NIFTY','NSE:BANKNIFTY','NSE:CNXIT','NSE:CNXPHARMA','NSE:CNXAUTO','NSE:CNXMETAL'];
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
       + syms.map(function(_,i){ return '<div id="tvIdx_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:220px;min-height:220px;"></div>'; }).join('')
       + '</div>';
@@ -9394,7 +9394,7 @@ function showTVTab(tab, btn) {
     const stocks = 'RELIANCE,TCS,HDFCBANK,INFY,ICICIBANK,SBIN,WIPRO,AXISBANK,BAJFINANCE,TATAMOTORS,SUNPHARMA,LT,TITAN,MARUTI,BHARTIARTL,ADANIENT,ZOMATO,HAL,BEL,DLF,NESTLEIND,ITC,HCLTECH,KOTAKBANK'.split(',');
     el.innerHTML = '<div style="padding:10px 14px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;border-bottom:1px solid var(--border);">'
       + '<select id="tvChartSym" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">'
-      + '<optgroup label="Indices"><option value="NSE:NIFTY50">NIFTY 50</option><option value="BSE:SENSEX">SENSEX</option><option value="NSE:BANKNIFTY">BANK NIFTY</option></optgroup>'
+      + '<optgroup label="Indices"><option value="NSE:NIFTY">NIFTY 50</option><option value="NSE:BANKNIFTY">BANK NIFTY</option><option value="NSE:CNXIT">NIFTY IT</option><option value="NSE:CNXPHARMA">NIFTY PHARMA</option><option value="NSE:CNXAUTO">NIFTY AUTO</option><option value="NSE:CNXMETAL">NIFTY METAL</option></optgroup>'
       + '<optgroup label="NSE Stocks">' + stocks.map(function(s){ return '<option value="NSE:'+s+'">'+s+'</option>'; }).join('') + '</optgroup>'
       + '<optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option></optgroup>'
       + '<optgroup label="Commodities"><option value="COMEX:GC1!">Gold</option><option value="NYMEX:CL1!">Crude Oil</option></optgroup>'
@@ -9415,7 +9415,7 @@ function showTVTab(tab, btn) {
 function updateTVChart() {
   const container = document.getElementById('tvChartContainer');
   if (!container) return;
-  const sym = document.getElementById('tvChartSym') ? document.getElementById('tvChartSym').value : 'NSE:NIFTY50';
+  const sym = document.getElementById('tvChartSym') ? document.getElementById('tvChartSym').value : 'NSE:NIFTY';
   const interval = document.getElementById('tvChartInterval') ? document.getElementById('tvChartInterval').value : '60';
   const theme = document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
   container.innerHTML = '';
