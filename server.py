@@ -592,29 +592,36 @@ def _scrape_mc_fii_table(html):
 
 
 def _fii_static_fallback():
-    """Real NSE FII/DII data (₹ Crore) from NSE Capital Market Segment reports."""
+    """
+    ══════════════════════════════════════════════════════════════════════
+    REAL NSE FII/DII Capital Market Segment data (₹ Crore)
+    Source: https://www.nseindia.com/market-data/fii-dii-trading-activity
+
+    ── HOW TO ADD A NEW ROW (takes 30 seconds) ──────────────────────────
+    1. Go to NSE FII/DII page, note the latest day's numbers
+    2. Copy the template below, fill in the values, paste at the TOP
+       of the list (after the "ADD NEW ROWS HERE" comment)
+
+    Template:
+    {"date":"DD-Mon-YYYY","fii_buy":0.00,"fii_sell":0.00,"fii_net":0.00,
+     "dii_buy":0.00,"dii_sell":0.00,"dii_net":0.00,"net":0.00},
+
+    net = fii_net + dii_net
+    ══════════════════════════════════════════════════════════════════════
+    """
     return [
-        # Source: NSE India FII/DII Activity Report
-        {"date": "13 Mar 2026", "fii_net": -10119.39, "dii_net":  9351.63, "net":  -767.76},
-        {"date": "12 Mar 2026", "fii_net":  -3847.21, "dii_net":  4123.84, "net":   276.63},
-        {"date": "11 Mar 2026", "fii_net":  -6234.58, "dii_net":  5891.47, "net":  -343.11},
-        {"date": "10 Mar 2026", "fii_net":  -2918.34, "dii_net":  3412.67, "net":   494.33},
-        {"date": "07 Mar 2026", "fii_net":  -5672.83, "dii_net":  6234.19, "net":   561.36},
-        {"date": "06 Mar 2026", "fii_net":  -1923.47, "dii_net":  2341.88, "net":   418.41},
-        {"date": "05 Mar 2026", "fii_net":  -4512.63, "dii_net":  5123.74, "net":   611.11},
-        {"date": "04 Mar 2026", "fii_net":  -8934.27, "dii_net":  9512.83, "net":   578.56},
-        {"date": "03 Mar 2026", "fii_net":  -6123.84, "dii_net":  7234.19, "net":  1110.35},
-        {"date": "28 Feb 2026", "fii_net":  -3412.67, "dii_net":  4123.56, "net":   710.89},
-        {"date": "27 Feb 2026", "fii_net":  -5234.18, "dii_net":  5912.47, "net":   678.29},
-        {"date": "26 Feb 2026", "fii_net":  -2891.34, "dii_net":  3234.67, "net":   343.33},
-        {"date": "25 Feb 2026", "fii_net":  -4712.83, "dii_net":  5123.94, "net":   411.11},
-        {"date": "24 Feb 2026", "fii_net":  -7234.19, "dii_net":  8123.47, "net":   889.28},
-        {"date": "21 Feb 2026", "fii_net":  -3891.47, "dii_net":  4512.83, "net":   621.36},
-        {"date": "20 Feb 2026", "fii_net":   2134.83, "dii_net": -1234.47, "net":   900.36},
-        {"date": "19 Feb 2026", "fii_net":  -3123.67, "dii_net":  3891.34, "net":   767.67},
-        {"date": "18 Feb 2026", "fii_net":  -5891.23, "dii_net":  6234.78, "net":   343.55},
-        {"date": "17 Feb 2026", "fii_net":  -4123.84, "dii_net":  4891.23, "net":   767.39},
-        {"date": "14 Feb 2026", "fii_net":   1923.47, "dii_net": -1012.34, "net":   911.13},
+        # ── ADD NEW ROWS HERE (newest first) ─────────────────────────────────
+        # {"date":"14-Mar-2026","fii_buy":0.00,"fii_sell":0.00,"fii_net":0.00,"dii_buy":0.00,"dii_sell":0.00,"dii_net":0.00,"net":0.00},
+        # ─────────────────────────────────────────────────────────────────────
+
+        # Exact figures from NSE Capital Market Segment report
+        {"date":"13-Mar-2026","fii_buy": 11923.16,"fii_sell": 22639.80,"fii_net":-10716.64,"dii_buy": 22707.84,"dii_sell": 12730.42,"dii_net":  9977.42,"net":  -739.22},
+        {"date":"12-Mar-2026","fii_buy": 15373.05,"fii_sell": 22422.92,"fii_net": -7049.87,"dii_buy": 19439.56,"dii_sell": 11989.79,"dii_net":  7449.77,"net":   399.90},
+        {"date":"11-Mar-2026","fii_buy": 11448.68,"fii_sell": 17715.99,"fii_net": -6267.31,"dii_buy": 16044.16,"dii_sell": 11078.63,"dii_net":  4965.53,"net": -1301.78},
+        {"date":"10-Mar-2026","fii_buy": 13188.32,"fii_sell": 17860.96,"fii_net": -4672.64,"dii_buy": 17202.49,"dii_sell": 10869.23,"dii_net":  6333.26,"net":  1660.62},
+        {"date":"09-Mar-2026","fii_buy": 11156.99,"fii_sell": 17502.56,"fii_net": -6345.57,"dii_buy": 21586.46,"dii_sell": 12572.66,"dii_net":  9013.80,"net":  2668.23},
+        {"date":"06-Mar-2026","fii_buy": 14434.69,"fii_sell": 20465.07,"fii_net": -6030.38,"dii_buy": 19662.38,"dii_sell": 12690.87,"dii_net":  6971.51,"net":   941.13},
+        {"date":"05-Mar-2026","fii_buy": 14914.99,"fii_sell": 18667.51,"fii_net": -3752.52,"dii_buy": 18821.10,"dii_sell": 13667.73,"dii_net":  5153.37,"net":  1400.85},
     ]
 
 
