@@ -1073,10 +1073,6 @@ header {
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/></svg>
       FII / DII Flow
     </button>
-    <button class="nav-tab" onclick="switchTab(this,'options')">
-      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
-      Options Chain
-    </button>
 
 
 
@@ -1817,50 +1813,6 @@ header {
   </div>
 
 
-  <!-- OPTIONS CHAIN PAGE -->
-  <div class="main-feed" id="page-options" style="display:none;flex-direction:column;">
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg2);flex-wrap:wrap;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">OPTIONS CHAIN</div>
-      <div style="display:flex;gap:4px;">
-        <button onclick="_optSelectIndex('NIFTY',this)" id="optBtn_NIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;">NIFTY</button>
-        <button onclick="_optSelectIndex('BANKNIFTY',this)" id="optBtn_BANKNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">BANKNIFTY</button>
-        <button onclick="_optSelectIndex('FINNIFTY',this)" id="optBtn_FINNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">FINNIFTY</button>
-        <button onclick="_optSelectIndex('MIDCPNIFTY',this)" id="optBtn_MIDCPNIFTY" class="opt-idx-btn" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">MIDCAP</button>
-      </div>
-      <select id="optIndex" onchange="fetchLiveOptionsChain(this.value)" style="display:none;">
-        <option value="NIFTY">NIFTY 50</option><option value="BANKNIFTY">BANK NIFTY</option>
-        <option value="FINNIFTY">FIN NIFTY</option><option value="MIDCPNIFTY">MIDCAP NIFTY</option>
-      </select>
-      <select id="optExpiry" onchange="renderOptions()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 12px;font-size:12px;font-weight:600;">
-        <option>Loading…</option>
-      </select>
-      <div id="optSpotLabel" style="font-size:13px;font-weight:800;color:var(--green);font-family:'Space Mono',monospace;margin-left:auto;"></div>
-      <button onclick="fetchLiveOptionsChain(document.getElementById('optIndex').value||'NIFTY')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;">↻</button>
-    </div>
-    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--bg3);">
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;text-align:center;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">MAX PAIN</div>
-        <div id="optMaxPain" style="font-weight:800;font-size:13px;color:var(--gold);">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;text-align:center;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">PCR (OI)</div>
-        <div id="optPcr" style="font-weight:800;font-size:13px;color:var(--accent);">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;text-align:center;">
-        <div style="font-size:9px;color:var(--red);font-family:'Space Mono',monospace;margin-bottom:3px;">CALL OI</div>
-        <div id="optCallOi" style="font-weight:800;font-size:13px;">—</div>
-      </div>
-      <div style="padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;text-align:center;">
-        <div style="font-size:9px;color:var(--green);font-family:'Space Mono',monospace;margin-bottom:3px;">PUT OI</div>
-        <div id="optPutOi" style="font-weight:800;font-size:13px;">—</div>
-      </div>
-      <div style="padding:8px 16px;flex-shrink:0;text-align:center;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">IV RANK</div>
-        <div id="optIvRank" style="font-weight:800;font-size:13px;color:var(--accent2);">—</div>
-      </div>
-    </div>
-    <div id="optionsBody" style="flex:1;overflow-y:auto;overflow-x:auto;display:flex;flex-direction:column;min-height:0;"></div>
-  </div>
 
   <!-- RIGHT SIDEBAR -->
   <div class="right-sidebar">
@@ -3688,7 +3640,7 @@ function renderPosts() {
     // Map interest IDs to pit names and keywords
     const pitMap = {stocks:'Stocks',largecap:'Stocks',smallcap:'Stocks',ipo:'Stocks',dividends:'Stocks',intraday:'Stocks',swing:'Stocks',options:'Options',futures:'Options',technicals:'Stocks',scalping:'Stocks',bitcoin:'Crypto',ethereum:'Crypto',altcoins:'Crypto',defi:'Crypto',nft:'Crypto',web3:'Crypto',rbi:'Macro',fii:'Macro',inflation:'Macro',gdp:'Macro',globalmarkets:'Macro',gold:'Commodities',crudeoil:'Commodities',silver:'Commodities',agri:'Commodities',banking:'Stocks',it:'Stocks',pharma:'Stocks',auto:'Stocks',realestate:'Stocks',fmcg:'Stocks',energy:'Commodities',infra:'Stocks'};
     const interestedPits = new Set(interests.map(id => pitMap[id]).filter(Boolean));
-    const kwMap = {bitcoin:'btc',ethereum:'eth',gold:'gold',crudeoil:'crude oil',silver:'silver',options:'options',futures:'futures',technicals:'technical',banking:'bank',pharma:'pharma',auto:'auto',intraday:'intraday',swing:'swing',ipo:'ipo'};
+    const kwMap = {bitcoin:'btc',ethereum:'eth',gold:'gold',crudeoil:'crude oil',silver:'silver',options:futures:'futures',technicals:'technical',banking:'bank',pharma:'pharma',auto:'auto',intraday:'intraday',swing:'swing',ipo:'ipo'};
     const keywords = interests.map(id => kwMap[id]).filter(Boolean);
     filtered = posts.filter(p => {
       if (interestedPits.has(p.pit)) return true;
@@ -4839,7 +4791,7 @@ const INTEREST_TOPICS = [
   // Trading
   { id:'intraday',   label:'Intraday',          emoji:'⚡', cat:'Trading' },
   { id:'swing',      label:'Swing Trading',     emoji:'🎯', cat:'Trading' },
-  { id:'options',    label:'Options',           emoji:'📈', cat:'Trading' },
+  { id:    label:'Options',           emoji:'📈', cat:'Trading' },
   { id:'futures',    label:'Futures',           emoji:'🔮', cat:'Trading' },
   { id:'technicals', label:'Technical Analysis',emoji:'📐', cat:'Trading' },
   { id:'scalping',   label:'Scalping',          emoji:'⚡', cat:'Trading' },
@@ -5667,7 +5619,7 @@ function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','options','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5684,7 +5636,6 @@ function _switchTabSilent(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const sym=document.getElementById('optIndex')?.value||'NIFTY'; if(typeof fetchLiveOptionsChain==='function') fetchLiveOptionsChain(sym); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -5724,7 +5675,7 @@ function switchTabMobile(btn, page) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','options','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5742,7 +5693,6 @@ function switchTabMobile(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const sym=document.getElementById('optIndex')?.value||'NIFTY'; if(typeof fetchLiveOptionsChain==='function') fetchLiveOptionsChain(sym); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -5759,7 +5709,7 @@ function switchTab(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','options','rooms','options','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5785,7 +5735,6 @@ function switchTab(btn, page) {
   if (page==='earnings')  renderEarnings();
   if (page==='alerts')    renderAlerts();
   if (page==='fii')       renderFii();
-  if (page==='options')   { const sym=document.getElementById('optIndex')?.value||'NIFTY'; if(typeof fetchLiveOptionsChain==='function') fetchLiveOptionsChain(sym); }
   if (page==='rooms')     renderRooms();
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
@@ -8922,256 +8871,6 @@ function loadStrategyDetail(key) {
 
 
 // ─── Stubs to prevent errors on unimplemented pages ───
-
-// ═══════════════════════════════════════════════════════════════════
-// OPTIONS CHAIN — Live from NSE India via Railway backend
-// ═══════════════════════════════════════════════════════════════════
-let _optionsData = null;
-let _optBasket = [];
-let _optStrikesShown = 20;
-
-// ── Basket helpers ──
-function _optAddToBasket(type, strike, ltp) {
-  if (!Array.isArray(_optBasket)) _optBasket = [];
-  if (_optBasket.find(b=>b.type===type&&b.strike===strike)){showToast(`${type} ₹${strike.toLocaleString()} already in basket`,'var(--gold)');return;}
-  if (_optBasket.length>=6){showToast('Max 6 legs','var(--red)');return;}
-  _optBasket.push({type,strike,ltp});
-  showToast(`${type} ₹${strike.toLocaleString()} added ✓`,'var(--green)');
-  renderOptions();
-}
-function _optRemoveBasket(i){_optBasket.splice(i,1);renderOptions();}
-function _optClearBasket(){_optBasket=[];renderOptions();}
-function _optAnalyzeBasket(){if(!_optBasket?.length)return;switchTab(null,'optpnl');showToast('Opening P&L Simulator…','var(--accent)');}
-function _optSelectIndex(sym,btn){
-  document.querySelectorAll('.opt-idx-btn').forEach(b=>{b.style.background='transparent';b.style.color='var(--text3)';b.style.borderColor='var(--border)';});
-  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';}
-  const sel=document.getElementById('optIndex');if(sel)sel.value=sym;
-  _optBasket=[];
-  fetchLiveOptionsChain(sym);
-}
-
-async function fetchLiveOptionsChain(symbol) {
-  const el = document.getElementById('optionsBody'); if (!el) return;
-  el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:14px;color:var(--text3);">
-    <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-    <div style="font-size:13px;">Fetching live options from NSE India…</div>
-    <div style="font-size:11px;opacity:0.7;">This may take 5–15 seconds (Railway cold start)</div>
-  </div>`;
-  const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl) spotEl.textContent = '';
-  try {
-    const res = await fetch(`${API_BASE}/options?symbol=${encodeURIComponent(symbol||'NIFTY')}`, {signal:AbortSignal.timeout(18000)});
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const j = await res.json();
-    if (j.error) throw new Error(j.error);
-    _optionsData = j;
-    const exSel = document.getElementById('optExpiry');
-    if (exSel && j.expiryDates?.length) exSel.innerHTML = j.expiryDates.map((e,i)=>`<option value="${e}"${i===0?' selected':''}>${e}</option>`).join('');
-    renderOptions();
-  } catch(e) {
-    el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:12px;">
-      <div style="font-size:40px;">📊</div>
-      <div style="font-size:15px;font-weight:700;color:var(--text);">Options Data Unavailable</div>
-      <div style="font-size:12px;color:var(--text3);text-align:center;max-width:340px;line-height:1.6;">NSE India blocks direct API calls. Options require the Railway backend to be running & warmed up (takes ~10s after cold start).</div>
-      <button onclick="fetchLiveOptionsChain('${symbol||'NIFTY'}')" style="padding:10px 24px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;">↻ Retry</button>
-    </div>`;
-  }
-}
-
-function renderOptions() {
-  const el = document.getElementById('optionsBody');
-  if (!el || !_optionsData) return;
-  const d = _optionsData, spot = d.spot || 0;
-  const rows = d.rows || [];
-
-  const spotEl = document.getElementById('optSpotLabel');
-  if (spotEl && spot) spotEl.innerHTML = `<span style="color:var(--text3);font-size:11px;font-weight:400;">SPOT</span> ₹${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}`;
-
-  const totalCallOI = rows.reduce((s,r)=>s+(r.CE?.oi||0),0);
-  const totalPutOI  = rows.reduce((s,r)=>s+(r.PE?.oi||0),0);
-  const pcr = d.pcr || (totalCallOI ? +(totalPutOI/totalCallOI).toFixed(2) : 1);
-
-  let maxPain = d.atm || spot;
-  if (rows.length > 2) {
-    let minLoss = Infinity;
-    rows.forEach(r=>{
-      const s=r.strike; let loss=0;
-      rows.forEach(rr=>{ loss+=(rr.CE?.oi||0)*Math.max(0,rr.strike-s)+(rr.PE?.oi||0)*Math.max(0,s-rr.strike); });
-      if(loss<minLoss){minLoss=loss;maxPain=s;}
-    });
-  }
-
-  const upd=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val;};
-  upd('optMaxPain', maxPain?maxPain.toLocaleString('en-IN'):'—');
-  upd('optPcr', pcr.toFixed(2));
-  upd('optCallOi', totalCallOI?(totalCallOI/100000).toFixed(1)+'L':'—');
-  upd('optPutOi', totalPutOI?(totalPutOI/100000).toFixed(1)+'L':'—');
-  upd('optIvRank', d.iv_rank?d.iv_rank+'%':'—');
-
-  if (!rows.length) { el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);">No chain data.</div>`; return; }
-
-  const maxCallOI = Math.max(...rows.map(r=>r.CE?.oi||0),1);
-  const maxPutOI  = Math.max(...rows.map(r=>r.PE?.oi||0),1);
-
-  const fmtOI = n=>{if(!n)return'—';if(n>=100000)return(n/100000).toFixed(2)+'L';return(n/1000).toFixed(1)+'K';};
-  const fmtP  = n=>n?n.toFixed(2):'—';
-  const fmtPct= n=>{if(n==null)return'—';return(n>=0?'+':'')+n.toFixed(2)+'%';};
-
-  const atmIdx = rows.findIndex(r=>Math.abs(r.strike-spot)===Math.min(...rows.map(rr=>Math.abs(rr.strike-spot))));
-  const half = Math.floor(_optStrikesShown/2);
-  const vs = _optStrikesShown>=rows.length ? rows : rows.slice(Math.max(0,atmIdx-half),Math.min(rows.length,atmIdx+half+1));
-
-  const pcrColor = pcr>=1.2?'var(--green)':pcr<=0.8?'var(--red)':'var(--gold)';
-
-  const chainRows = vs.map(row=>{
-    const ce=row.CE||{}, pe=row.PE||{};
-    const isATM = Math.abs(row.strike-spot)<(spot*0.006);
-    const isITMCall = row.strike < spot, isITMPut = row.strike > spot;
-    const ceBar = Math.round((ce.oi||0)/maxCallOI*100);
-    const peBar = Math.round((pe.oi||0)/maxPutOI*100);
-    const atmBg = isATM?'background:rgba(0,112,243,0.08);':'';
-    const itmCBg = isITMCall&&!isATM?'background:rgba(229,57,53,0.04);':'';
-    const itmPBg = isITMPut&&!isATM?'background:rgba(0,168,84,0.04);':'';
-
-    return `<tr style="border-bottom:1px solid var(--border);${isATM?'box-shadow:inset 0 0 0 1px rgba(0,112,243,0.3);':''}" onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter=''">
-      <td style="padding:0;width:90px;position:relative;${atmBg||itmCBg}">
-        <div style="position:absolute;right:0;top:0;height:100%;width:${ceBar}%;background:rgba(229,57,53,0.12);pointer-events:none;"></div>
-        <div style="position:relative;padding:7px 8px;text-align:right;font-size:11px;font-family:'Space Mono',monospace;">
-          <div style="font-weight:600;color:var(--text2);">${fmtOI(ce.oi)}</div>
-          ${ce.oiChg!=null?`<div style="font-size:9px;color:${(ce.oiChg||0)>=0?'var(--green)':'var(--red)'}">${(ce.oiChg||0)>=0?'▲':'▼'}${fmtOI(Math.abs(ce.oiChg))}</div>`:''}
-        </div>
-      </td>
-      <td style="padding:7px 6px;text-align:right;font-size:10px;color:var(--text3);${atmBg||itmCBg}">${ce.iv?ce.iv.toFixed(1)+'%':'—'}</td>
-      <td style="padding:7px 6px;text-align:right;font-size:10px;color:var(--text3);${atmBg||itmCBg}">${fmtOI(ce.vol)}</td>
-      <td style="padding:7px 6px;text-align:right;font-size:10px;color:${(ce.chg||0)>=0?'var(--green)':'var(--red)'};${atmBg||itmCBg}">${fmtPct(ce.chg)}</td>
-      <td style="padding:7px 8px;text-align:right;font-weight:800;font-size:12px;border-right:2px solid var(--border);cursor:pointer;${atmBg||itmCBg}" onclick="_optAddToBasket('CE',${row.strike},${ce.ltp||0})">
-        <div style="color:var(--green);">${fmtP(ce.ltp)}</div>
-        <div style="font-size:8px;color:var(--text3);">${isITMCall?'ITM':'OTM'}</div>
-      </td>
-      <td style="padding:7px 12px;text-align:center;font-weight:800;font-size:12px;font-family:'Space Mono',monospace;background:${isATM?'rgba(0,112,243,0.12)':'var(--bg3)'};color:${isATM?'var(--accent)':row.strike===maxPain?'var(--gold)':'var(--text)'};border-left:2px solid var(--border);border-right:2px solid var(--border);white-space:nowrap;">
-        ${row.strike.toLocaleString('en-IN')}
-        ${isATM?'<div style="font-size:8px;color:var(--accent);">ATM</div>':''}
-        ${row.strike===maxPain&&!isATM?'<div style="font-size:8px;color:var(--gold);">MAX PAIN</div>':''}
-      </td>
-      <td style="padding:7px 8px;text-align:left;font-weight:800;font-size:12px;border-left:2px solid var(--border);cursor:pointer;${atmBg||itmPBg}" onclick="_optAddToBasket('PE',${row.strike},${pe.ltp||0})">
-        <div style="color:var(--red);">${fmtP(pe.ltp)}</div>
-        <div style="font-size:8px;color:var(--text3);">${isITMPut?'ITM':'OTM'}</div>
-      </td>
-      <td style="padding:7px 6px;text-align:left;font-size:10px;color:${(pe.chg||0)>=0?'var(--green)':'var(--red)'};${atmBg||itmPBg}">${fmtPct(pe.chg)}</td>
-      <td style="padding:7px 6px;text-align:left;font-size:10px;color:var(--text3);${atmBg||itmPBg}">${fmtOI(pe.vol)}</td>
-      <td style="padding:7px 6px;text-align:left;font-size:10px;color:var(--text3);${atmBg||itmPBg}">${pe.iv?pe.iv.toFixed(1)+'%':'—'}</td>
-      <td style="padding:0;width:90px;position:relative;${atmBg||itmPBg}">
-        <div style="position:absolute;left:0;top:0;height:100%;width:${peBar}%;background:rgba(0,168,84,0.12);pointer-events:none;"></div>
-        <div style="position:relative;padding:7px 8px;text-align:left;font-size:11px;font-family:'Space Mono',monospace;">
-          <div style="font-weight:600;color:var(--text2);">${fmtOI(pe.oi)}</div>
-          ${pe.oiChg!=null?`<div style="font-size:9px;color:${(pe.oiChg||0)>=0?'var(--green)':'var(--red)'}">${(pe.oiChg||0)>=0?'▲':'▼'}${fmtOI(Math.abs(pe.oiChg))}</div>`:''}
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  const basket = _optBasket.length ? `
-  <div style="position:sticky;bottom:0;background:var(--bg2);border-top:2px solid var(--accent);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:10;box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
-    <span style="font-size:11px;font-weight:700;color:var(--accent);">🧺 Strategy Basket</span>
-    ${_optBasket.map((b,i)=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:var(--bg3);border:1px solid ${b.type==='CE'?'rgba(229,57,53,0.4)':'rgba(0,168,84,0.4)'};">
-      <span style="font-size:10px;font-weight:700;color:${b.type==='CE'?'var(--red)':'var(--green)'};">${b.type}</span>
-      <span style="font-size:11px;font-weight:700;">₹${b.strike.toLocaleString()}</span>
-      <span style="font-size:10px;color:var(--text3);">@${b.ltp.toFixed(1)}</span>
-      <button onclick="_optRemoveBasket(${i})" style="border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;">✕</button>
-    </div>`).join('')}
-    <button onclick="_optClearBasket()" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;cursor:pointer;margin-left:auto;">Clear</button>
-    <button onclick="_optAnalyzeBasket()" style="padding:6px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Analyze P&L →</button>
-  </div>` : '';
-
-  const summaryBar = `<div style="display:flex;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;align-items:center;">
-    <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--bg3);border-radius:8px;flex-shrink:0;">
-      <span style="font-size:10px;color:var(--text3);">PCR</span>
-      <span style="font-weight:800;font-size:13px;color:${pcrColor};">${pcr.toFixed(2)}</span>
-      <span style="font-size:10px;color:${pcrColor};">${pcr>=1.2?'Bullish 📗':pcr<=0.8?'Bearish 📕':'Neutral ⚖️'}</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--bg3);border-radius:8px;flex-shrink:0;">
-      <span style="font-size:10px;color:var(--text3);">Max Pain</span>
-      <span style="font-weight:800;font-size:13px;color:var(--gold);">₹${(maxPain||0).toLocaleString('en-IN')}</span>
-    </div>
-    ${d.expiry?`<div style="margin-left:auto;font-size:11px;color:var(--text3);flex-shrink:0;">Expiry: <b style="color:var(--text);">${d.expiry}</b></div>`:''}
-    <button onclick="_optStrikesShown=_optStrikesShown===20?rows.length:20;renderOptions();" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
-      ${_optStrikesShown===20?'Show All Strikes':'Show ±10 Strikes'}
-    </button>
-  </div>`;
-
-  el.innerHTML = summaryBar + `
-  <div style="overflow-x:auto;flex:1;">
-    <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:860px;">
-      <thead>
-        <tr style="background:var(--bg3);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:5;">
-          <th colspan="5" style="padding:9px 8px;text-align:center;color:var(--red);font-size:11px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:1px;border-right:2px solid var(--border);background:rgba(229,57,53,0.06);">← CALLS</th>
-          <th style="padding:9px 10px;text-align:center;font-weight:800;font-size:11px;font-family:'Space Mono',monospace;background:var(--bg3);border-left:2px solid var(--border);border-right:2px solid var(--border);">STRIKE</th>
-          <th colspan="5" style="padding:9px 8px;text-align:center;color:var(--green);font-size:11px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:1px;border-left:2px solid var(--border);background:rgba(0,168,84,0.06);">PUTS →</th>
-        </tr>
-        <tr style="background:var(--bg3);border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);">
-          <th style="padding:5px 8px;text-align:right;">OI/Chg</th>
-          <th style="padding:5px 6px;text-align:right;">IV</th>
-          <th style="padding:5px 6px;text-align:right;">Vol</th>
-          <th style="padding:5px 6px;text-align:right;">Chg%</th>
-          <th style="padding:5px 8px;text-align:right;border-right:2px solid var(--border);">LTP ▼</th>
-          <th style="padding:5px 10px;text-align:center;border-left:2px solid var(--border);border-right:2px solid var(--border);">STRIKE</th>
-          <th style="padding:5px 8px;text-align:left;border-left:2px solid var(--border);">LTP ▼</th>
-          <th style="padding:5px 6px;text-align:left;">Chg%</th>
-          <th style="padding:5px 6px;text-align:left;">Vol</th>
-          <th style="padding:5px 6px;text-align:left;">IV</th>
-          <th style="padding:5px 8px;text-align:left;">OI/Chg</th>
-        </tr>
-      </thead>
-      <tbody>${chainRows}</tbody>
-    </table>
-  </div>
-  <div style="padding:6px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;flex-shrink:0;">
-    <span>Source: NSE India · Expiry: ${d.expiry||'—'} · Auto-refreshes every 60s · Click LTP to add to basket</span>
-    <span>Showing ${vs.length}/${rows.length} strikes</span>
-  </div>
-  ${basket}`;
-}
-
-// Auto-refresh every 60s (silent - no spinner)
-setInterval(() => {
-  if (document.getElementById('page-options')?.style.display === 'none') return;
-  const sym = document.getElementById('optIndex')?.value || 'NIFTY';
-  fetch(`${API_BASE}/options?symbol=${encodeURIComponent(sym)}`, {signal:AbortSignal.timeout(18000)})
-    .then(r=>r.ok?r.json():null)
-    .then(j=>{ if(j&&!j.error&&j.rows?.length){_optionsData=j;renderOptions();} })
-    .catch(()=>{});
-}, 60000);
-
-// ── TradingEconomics live economic calendar ──
-async function fetchLiveEconoData() {
-  try {
-    const url='https://api.tradingeconomics.com/calendar/country/india,united+states,euro+area,china,united+kingdom?c=guest:guest&f=json';
-    const r=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(12000)});
-    if(!r.ok) throw new Error();
-    const raw=await r.json();
-    const arr=raw.contents?JSON.parse(raw.contents):null;
-    if(!Array.isArray(arr)||arr.length<5) throw new Error();
-    const ccM={'india':'IN','united states':'US','euro area':'EU','china':'CN','united kingdom':'GB'};
-    const flM={IN:'🇮🇳',US:'🇺🇸',EU:'🇪🇺',CN:'🇨🇳',GB:'🇬🇧'};
-    const mapped=arr.map(ev=>{
-      const cc=ccM[(ev.Country||'').toLowerCase()]||'US';
-      let date='',time='';
-      try{const dt=new Date(ev.Date||'');if(!isNaN(dt)){date=dt.toISOString().split('T')[0];time=dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Kolkata'});}}catch(e){}
-      if(!date)return null;
-      const imp=ev.Importance||0;
-      return{date,time,country:cc,flag:flM[cc]||'🌍',event:ev.Event||'Economic Event',
-        impact:imp>=3?'high':imp>=2?'medium':'low',
-        actual:ev.Actual!=null?String(ev.Actual):null,
-        forecast:ev.Forecast!=null?String(ev.Forecast):null,
-        prev:ev.Previous!=null?String(ev.Previous):null};
-    }).filter(Boolean);
-    if(mapped.length<5) throw new Error();
-    const liveKeys=new Set(mapped.map(e=>e.date+'_'+e.event.substring(0,20)));
-    _econoData=[...mapped,...(ECONO_STATIC||[]).filter(e=>!liveKeys.has(e.date+'_'+e.event.substring(0,20)))].sort((a,b)=>a.date.localeCompare(b.date));
-    renderEconoPage();
-  } catch(e) { renderEconoPage(); }
-}
-
 
 
 // ═══════════════════════════════════════════════════════════════════
