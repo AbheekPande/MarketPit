@@ -9644,7 +9644,7 @@ function updateTVChart() {
 function renderRooms(){}
 
 // missing onLiveDataUpdate — central dispatcher called after any data refresh
-function onLiveDataUpdate(){
+window.onLiveDataUpdate = function(){
   try { updateWhatsMoving(); } catch(e) {}
   try { updateTickerFromLive(); } catch(e) {}
   try { if(typeof updateHeroPrices==='function') updateHeroPrices(); } catch(e) {}
@@ -10311,16 +10311,18 @@ function updateMMI() {
   _renderMMIWeekDots(_mmiHistory);
 }
 
-// Update MMI whenever live stock data refreshes
-const _origOnLiveUpdate = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : null;
-function onLiveDataUpdate(data) {
-  if (_origOnLiveUpdate) _origOnLiveUpdate(data);
-  // Throttle MMI updates to once per minute
-  if (!window._lastMmiUpdate || Date.now() - window._lastMmiUpdate > 60000) {
-    window._lastMmiUpdate = Date.now();
-    setTimeout(updateMMI, 500); // slight delay so liveStocks is populated
-  }
-}
+// Update MMI whenever live stock data refreshes — patched into existing onLiveDataUpdate
+(function() {
+  var _orig = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : function(){};
+  window.onLiveDataUpdate = function(data) {
+    _orig(data);
+    // Throttle MMI updates to once per minute
+    if (!window._lastMmiUpdate || Date.now() - window._lastMmiUpdate > 60000) {
+      window._lastMmiUpdate = Date.now();
+      setTimeout(updateMMI, 500);
+    }
+  };
+})();
 
 // Initial render with placeholder
 setTimeout(() => {
