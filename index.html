@@ -5535,7 +5535,7 @@ function _switchTabSilent(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='paper')     renderPaperTrade();
-  if (page==='ipo')       { renderIpoPage(); fetchLiveIpoData(); }
+  if (page==='ipo')       renderIpoPage();
   if (page==='heatmap')   renderHeatmap();
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
@@ -5591,7 +5591,7 @@ function switchTabMobile(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='paper')     renderPaperTrade();
-  if (page==='ipo')       { renderIpoPage(); fetchLiveIpoData(); }
+  if (page==='ipo')       renderIpoPage();
   if (page==='heatmap')   renderHeatmap();
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
@@ -5632,7 +5632,7 @@ function switchTab(btn, page) {
   if (page==='trending')  renderTrendingPage('all');
   if (page==='watchlist') renderWatchlistPage();
   if (page==='paper')     renderPaperTrade();
-  if (page==='ipo')       { renderIpoPage(); fetchLiveIpoData(); }
+  if (page==='ipo')       renderIpoPage();
   if (page==='heatmap')   renderHeatmap();
   if (page==='earnings')  { renderEarnings(); refreshEarningsData(); }
   if (page==='alerts')    renderAlerts();
@@ -10704,21 +10704,50 @@ function resetPaperPortfolio() {
 // 2. IPO TRACKER
 // ══════════════════════════════════════════════════════════════
 const IPO_DATA = {
+  // ── HOW TO UPDATE ─────────────────────────────────────────────────────
+  // open:      IPOs currently accepting subscriptions
+  // upcoming:  IPOs opening soon
+  // allotment: IPOs in allotment / refund / listing phase
+  // listed:    Recently listed IPOs with gains
+  // ──────────────────────────────────────────────────────────────────────
+
+  open: [
+    // ── ADD OPEN IPOs HERE ──
+    {name:'Innovision',open:'10 Mar 2026',close:'17 Mar 2026',price:'₹494–519',size:'₹305.76 Cr',
+     lot:'27',minInvest:'₹14,013',exchange:'BSE & NSE',
+     subscribed:'0.3x',qib:'0.95x',nii:'0.35x',rii:'0.26x',
+     listDate:'20 Mar 2026',
+     gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Commerce/Retail'},
+    {name:'GSP Crop Science',open:'17 Mar 2026',close:'19 Mar 2026',price:'TBA',size:'TBA',
+     lot:'TBA',minInvest:'TBA',exchange:'BSE & NSE',
+     gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Agriculture'},
+    {name:'Novus Loyalty',open:'18 Mar 2026',close:'20 Mar 2026',price:'TBA',size:'TBA',
+     lot:'TBA',minInvest:'TBA',exchange:'BSE & NSE',
+     gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Fintech'},
+  ],
+
   upcoming: [
-    {name:'Ather Energy',open:'28 Apr 2026',close:'30 Apr 2026',price:'₹304–321',size:'₹2,981 Cr',gmp:'₹12',gmpPct:'+3.7%',rating:'⭐⭐⭐⭐',sector:'EV/Auto',lot:'46',minInvest:'₹14,766'},
-    {name:'Hexaware Technologies',open:'12 Feb 2026',close:'14 Feb 2026',price:'₹674–708',size:'₹8,750 Cr',gmp:'₹45',gmpPct:'+6.4%',rating:'⭐⭐⭐⭐',sector:'IT Services',lot:'21',minInvest:'₹14,868'},
-    {name:'Truhome Finance',open:'Apr 2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'NBFC',lot:'TBA',minInvest:'TBA'},
-    {name:'PhonePe',open:'2026',close:'—',price:'TBA',size:'₹15,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
-    {name:'Reliance Jio',open:'2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Telecom',lot:'TBA',minInvest:'TBA'},
-    {name:'NSDL',open:'2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'Financial Services',lot:'TBA',minInvest:'TBA'},
+    // ── ADD UPCOMING IPOs HERE ──
+    {name:'Ather Energy',open:'28 Apr 2026',close:'30 Apr 2026',price:'₹304–321',size:'₹2,981 Cr',
+     lot:'46',minInvest:'₹14,766',gmp:'₹12',gmpPct:'+3.7%',rating:'⭐⭐⭐⭐',sector:'EV/Auto'},
+    {name:'Truhome Finance',open:'Apr 2026',close:'—',price:'TBA',size:'₹3,000 Cr',
+     lot:'TBA',minInvest:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'NBFC'},
+    {name:'PhonePe',open:'2026',close:'—',price:'TBA',size:'₹15,000 Cr',
+     lot:'TBA',minInvest:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Fintech'},
+    {name:'Reliance Jio',open:'2026',close:'—',price:'TBA',size:'TBA',
+     lot:'TBA',minInvest:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Telecom'},
+    {name:'NSDL',open:'2026',close:'—',price:'TBA',size:'₹3,000 Cr',
+     lot:'TBA',minInvest:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'Financial Services'},
   ],
-  open: [],
+
   allotment: [
-    {name:'Schbang Digital Solutions',date:'17 Mar 2026',price:'₹216',listPrice:'19 Mar 2026',gain:'Pending',status:'Allotment Done'},
-    {name:'Innovision Commerce',date:'13 Mar 2026',price:'₹548',listPrice:'17 Mar 2026',gain:'Pending',status:'Allotment Done'},
-    {name:'Rajputana Stainless',date:'12 Mar 2026',price:'₹122',listPrice:'16 Mar 2026',gain:'Pending',status:'Allotment Done'},
+    // ── ADD ALLOTMENT / REFUND / LISTING PHASE IPOs HERE ──
+    {name:'Schbang Digital Solutions',date:'17 Mar 2026',price:'₹216',listDate:'19 Mar 2026',gain:'Pending',status:'Allotment Done'},
+    {name:'Rajputana Stainless',date:'12 Mar 2026',price:'₹122',listDate:'16 Mar 2026',gain:'Pending',status:'Allotment Done'},
   ],
+
   listed: [
+    // ── ADD NEWLY LISTED IPOs HERE (newest first) ──
     {name:'SEDEMAC Mechatronics',listDate:'11 Mar 2026',issuePrice:'₹1,352',listPrice:'₹1,510',gain:'+11.7%',current:'₹1,547'},
     {name:'Hexaware Technologies',listDate:'19 Feb 2026',issuePrice:'₹708',listPrice:'₹745',gain:'+5.2%',current:'₹731'},
     {name:'Laxmi Dental',listDate:'20 Jan 2026',issuePrice:'₹428',listPrice:'₹513',gain:'+19.9%',current:'₹498'},
@@ -10737,7 +10766,6 @@ function switchIpoTab(tab, btn) {
 function renderIpoPage() {
   const el = document.getElementById('ipoBody');
   if (!el) return;
-  fetchLiveIpoData(); // non-blocking background refresh
   if (!window.IPO_DATA || !window._ipoTab) return;
   const list = IPO_DATA[_ipoTab] || [];
   if (!list.length) {
@@ -10754,16 +10782,27 @@ function renderIpoPage() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
             <div style="font-weight:800;font-size:15px;color:var(--text);">${ipo.name}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${ipo.sector}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${ipo.sector}${ipo.exchange ? ' · ' + ipo.exchange : ''}</div>
           </div>
           <span class="ipo-badge ${_ipoTab}">${_ipoTab === 'open' ? '🟢 OPEN' : '⏳ UPCOMING'}</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
           ${[['Price Band',ipo.price],['Issue Size',ipo.size],['Rating',ipo.rating],
-             ['Open',ipo.open],['Close',ipo.close],['GMP',`<span class="${parseFloat(ipo.gmpPct)>=0?'gmp-pos':'gmp-neg'}">${ipo.gmp} (${ipo.gmpPct})</span>`]]
+             ['Open',ipo.open],['Close',ipo.close || ipo.close],
+             ['Lot Size', ipo.lot !== 'TBA' ? ipo.lot + ' shares' : 'TBA'],
+             ['Min Invest', ipo.minInvest || 'TBA'],
+             ['List Date', ipo.listDate || '—'],
+             ['GMP',`<span class="${parseFloat(ipo.gmpPct)>=0?'gmp-pos':'gmp-neg'}">${ipo.gmp} (${ipo.gmpPct})</span>`]]
           .map(([l,v])=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">${l}</div><div style="font-size:12px;font-weight:600;margin-top:3px;">${v}</div></div>`).join('')}
         </div>
-        ${ipo.subscribed ? `<div style="font-size:12px;color:var(--green);font-weight:700;">📈 Subscribed ${ipo.subscribed}</div>` : ''}
+        ${ipo.subscribed ? `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:4px;">
+          <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:8px;">SUBSCRIPTION STATUS</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+            ${[['Total', ipo.subscribed],['QIB', ipo.qib||'—'],['NII', ipo.nii||'—'],['RII', ipo.rii||'—']]
+              .map(([l,v])=>`<div style="text-align:center;"><div style="font-size:9px;color:var(--text3);">${l}</div><div style="font-weight:800;font-size:13px;color:${parseFloat(v)>=1?'var(--green)':'var(--text)'};">${v}</div></div>`).join('')}
+          </div>
+        </div>` : ''}
       </div>`).join('');
 
   } else if (_ipoTab === 'allotment') {
@@ -10795,26 +10834,7 @@ function renderIpoPage() {
 
 
 // Fetch live IPO data from Railway backend (server.py has /api/ipo)
-let _ipoFetching = false;
-async function fetchLiveIpoData() {
-  if (_ipoFetching) return;
-  _ipoFetching = true;
-  try {
-    const res = await fetch(`${API_BASE}/ipo`, { signal: AbortSignal.timeout(12000) });
-    if (!res.ok) throw new Error('ipo fetch failed');
-    const j = await res.json();
-    let updated = false;
-    if (j.upcoming?.length) { IPO_DATA.upcoming = j.upcoming; updated = true; }
-    if (j.open?.length)     { IPO_DATA.open     = j.open;     updated = true; }
-    if (j.allotment?.length){ IPO_DATA.allotment = j.allotment; updated = true; }
-    if (j.listed?.length)   { IPO_DATA.listed   = j.listed;   updated = true; }
-    if (updated) renderIpoPage();
-  } catch(e) {
-    // Keep existing static IPO_DATA — already populated
-  } finally {
-    _ipoFetching = false;
-  }
-}
+// IPO data is static — update IPO_DATA directly in the source
 
 // ══════════════════════════════════════════════════════════════
 // 3. SECTOR HEATMAP
