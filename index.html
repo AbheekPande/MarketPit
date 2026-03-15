@@ -8836,9 +8836,13 @@ let _econoData=[], _econoFilter='all';
 // Curated Indian + Global macro events (refreshed weekly from hardcoded knowledge + live fetch)
 const ECONO_STATIC = [
   // ══════════════════════════════════════════════════════════════
-  // HOW TO UPDATE: Add new entries at the top with today's date
-  // Fields: date, time(IST), country, flag, event, impact(high/medium/low)
-  //         actual(string or null), forecast(string), prev(string)
+  // HOW TO UPDATE — just message me with:
+  //   Date | Time (IST) | Country | Event | Impact | Forecast | Previous | Actual
+  // Example: "17 Mar | 19:30 | US | FOMC Rate Decision | High | 4.25% | 4.25%"
+  // I will paste it here immediately.
+  //
+  // impact: 'high' (red bull) | 'medium' (orange) | 'low' (grey)
+  // actual: set to null until event releases, then fill value
   // ══════════════════════════════════════════════════════════════
 
   // ── Today: 15 Mar 2026 (from screenshot) ──
