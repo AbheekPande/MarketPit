@@ -7938,89 +7938,107 @@ setInterval(()=>{
 // ═══════════════════════════════════════════════════════════════════
 // MUTUAL FUNDS PAGE
 // ═══════════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════════
-// MUTUAL FUNDS — Live NAV from AMFI India via mfapi.in
-// Source: https://api.mfapi.in  (free, no auth, AMFI official data)
-// NAV updated daily by 11 PM IST by AMFI
+// MUTUAL FUNDS — 100% Live from AMFI India via mfapi.in
+// Source: https://api.mfapi.in (free, no auth, CORS-friendly)
+// NAV: updated daily by AMFI at ~11 PM IST
+// Returns (1Y/3Y/5Y): computed live from historical NAV data
 // ═══════════════════════════════════════════════════════════════════
 
-// Scheme codes from AMFI India — verified correct as of 2026
+// Verified AMFI scheme codes — cross-checked on mfapi.in
 const MF_FUNDS = [
   // ── EQUITY - Large Cap ──
-  {id:'120503',name:'Mirae Asset Large Cap Fund',cat:'equity',amc:'Mirae Asset',rating:5,nav:null,navDate:null,ret1y:null,ret3y:28.4,ret5y:22.1,aum:'₹38,241 Cr',risk:'Moderate',minSip:1000},
-  {id:'100033',name:'SBI Bluechip Fund',cat:'equity',amc:'SBI MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:24.1,ret5y:19.8,aum:'₹46,125 Cr',risk:'Moderate',minSip:500},
-  {id:'120716',name:'Axis Bluechip Fund',cat:'equity',amc:'Axis MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:21.3,ret5y:18.2,aum:'₹35,982 Cr',risk:'Moderate',minSip:500},
-  {id:'118989',name:'ICICI Pru Bluechip Fund',cat:'equity',amc:'ICICI Pru MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:26.4,ret5y:20.1,aum:'₹52,341 Cr',risk:'Moderate',minSip:100},
+  {id:'120503',name:'Mirae Asset Large Cap Fund',         cat:'equity',amc:'Mirae Asset',  rating:5,risk:'Moderate', minSip:1000,nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'100033',name:'SBI Bluechip Fund',                  cat:'equity',amc:'SBI MF',       rating:4,risk:'Moderate', minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120716',name:'Axis Bluechip Fund',                 cat:'equity',amc:'Axis MF',      rating:4,risk:'Moderate', minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'118989',name:'ICICI Pru Bluechip Fund',            cat:'equity',amc:'ICICI Pru MF', rating:5,risk:'Moderate', minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'112090',name:'HDFC Top 100 Fund',                  cat:'equity',amc:'HDFC MF',      rating:4,risk:'Moderate', minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  // ── EQUITY - Flexi/Multi Cap ──
+  {id:'125497',name:'Parag Parikh Flexi Cap Fund',        cat:'equity',amc:'PPFAS MF',     rating:5,risk:'Moderate', minSip:1000,nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120594',name:'Motilal Oswal Flexi Cap Fund',       cat:'equity',amc:'Motilal Oswal',rating:5,risk:'High',     minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── EQUITY - Mid Cap ──
-  {id:'118834',name:'HDFC Mid-Cap Opportunities',cat:'equity',amc:'HDFC MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:38.2,ret5y:28.4,aum:'₹68,743 Cr',risk:'High',minSip:100},
-  {id:'120219',name:'Kotak Emerging Equity Fund',cat:'equity',amc:'Kotak MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:36.8,ret5y:26.2,aum:'₹45,123 Cr',risk:'High',minSip:1000},
-  {id:'120594',name:'Motilal Oswal Midcap Fund',cat:'equity',amc:'Motilal Oswal MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:44.2,ret5y:32.1,aum:'₹18,234 Cr',risk:'High',minSip:500},
+  {id:'118834',name:'HDFC Mid-Cap Opportunities Fund',    cat:'equity',amc:'HDFC MF',      rating:5,risk:'High',     minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120219',name:'Kotak Emerging Equity Fund',         cat:'equity',amc:'Kotak MF',     rating:5,risk:'High',     minSip:1000,nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'130503',name:'Nippon India Growth Fund',           cat:'equity',amc:'Nippon MF',    rating:4,risk:'High',     minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── EQUITY - Small Cap ──
-  {id:'118778',name:'Nippon India Small Cap Fund',cat:'equity',amc:'Nippon MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:42.1,ret5y:34.2,aum:'₹52,834 Cr',risk:'Very High',minSip:100},
-  {id:'100016',name:'Quant Small Cap Fund',cat:'equity',amc:'Quant MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:58.2,ret5y:42.1,aum:'₹21,876 Cr',risk:'Very High',minSip:1000},
-  {id:'120505',name:'SBI Small Cap Fund',cat:'equity',amc:'SBI MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:38.4,ret5y:30.2,aum:'₹28,432 Cr',risk:'Very High',minSip:500},
+  {id:'118778',name:'Nippon India Small Cap Fund',        cat:'equity',amc:'Nippon MF',    rating:5,risk:'Very High',minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'100016',name:'Quant Small Cap Fund',               cat:'equity',amc:'Quant MF',     rating:5,risk:'Very High',minSip:1000,nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120505',name:'SBI Small Cap Fund',                 cat:'equity',amc:'SBI MF',       rating:5,risk:'Very High',minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'122639',name:'Axis Small Cap Fund',                cat:'equity',amc:'Axis MF',      rating:5,risk:'Very High',minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── INDEX FUNDS ──
-  {id:'120465',name:'UTI Nifty 50 Index Fund',cat:'index',amc:'UTI MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:18.2,ret5y:15.1,aum:'₹18,234 Cr',risk:'Moderate',minSip:500},
-  {id:'120828',name:'HDFC Index Fund - Nifty 50',cat:'index',amc:'HDFC MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:18.1,ret5y:15.0,aum:'₹15,678 Cr',risk:'Moderate',minSip:100},
-  {id:'145552',name:'Navi Nifty 50 Index Fund',cat:'index',amc:'Navi MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:17.9,ret5y:14.8,aum:'₹1,234 Cr',risk:'Moderate',minSip:10},
-  {id:'120847',name:'Motilal Oswal Nifty Next 50',cat:'index',amc:'Motilal Oswal',rating:4,nav:null,navDate:null,ret1y:null,ret3y:22.4,ret5y:17.8,aum:'₹4,123 Cr',risk:'Moderate',minSip:500},
+  {id:'120465',name:'UTI Nifty 50 Index Fund',            cat:'index', amc:'UTI MF',       rating:4,risk:'Moderate', minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120828',name:'HDFC Index Fund - Nifty 50',         cat:'index', amc:'HDFC MF',      rating:4,risk:'Moderate', minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120847',name:'Motilal Oswal Nifty Midcap 150',     cat:'index', amc:'Motilal Oswal',rating:4,risk:'High',     minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'149508',name:'Navi Nifty 50 Index Fund',           cat:'index', amc:'Navi MF',      rating:3,risk:'Moderate', minSip:10,  nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── DEBT ──
-  {id:'119598',name:'HDFC Corporate Bond Fund',cat:'debt',amc:'HDFC MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:7.8,ret5y:8.2,aum:'₹28,341 Cr',risk:'Low',minSip:100},
-  {id:'118825',name:'ICICI Pru Short Term Fund',cat:'debt',amc:'ICICI Pru MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:7.2,ret5y:7.6,aum:'₹21,234 Cr',risk:'Low',minSip:100},
-  {id:'119270',name:'Axis Liquid Fund',cat:'debt',amc:'Axis MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:6.8,ret5y:6.4,aum:'₹32,123 Cr',risk:'Low',minSip:500},
+  {id:'119598',name:'HDFC Corporate Bond Fund',           cat:'debt',  amc:'HDFC MF',      rating:5,risk:'Low',      minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'118825',name:'ICICI Pru Short Term Fund',          cat:'debt',  amc:'ICICI Pru MF', rating:4,risk:'Low',      minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'119270',name:'Axis Liquid Fund',                   cat:'debt',  amc:'Axis MF',      rating:5,risk:'Low',      minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── HYBRID ──
-  {id:'119775',name:'HDFC Balanced Advantage Fund',cat:'hybrid',amc:'HDFC MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:26.1,ret5y:19.4,aum:'₹89,234 Cr',risk:'Moderate',minSip:100},
-  {id:'120684',name:'ICICI Pru Balanced Advantage',cat:'hybrid',amc:'ICICI Pru MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:21.8,ret5y:17.2,aum:'₹56,123 Cr',risk:'Moderate',minSip:100},
+  {id:'119775',name:'HDFC Balanced Advantage Fund',       cat:'hybrid',amc:'HDFC MF',      rating:5,risk:'Moderate', minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120684',name:'ICICI Pru Balanced Advantage',       cat:'hybrid',amc:'ICICI Pru MF', rating:5,risk:'Moderate', minSip:100, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
   // ── ELSS ──
-  {id:'125354',name:'Mirae Asset Tax Saver Fund',cat:'elss',amc:'Mirae Asset',rating:5,nav:null,navDate:null,ret1y:null,ret3y:31.2,ret5y:24.8,aum:'₹24,123 Cr',risk:'High',minSip:500},
-  {id:'120843',name:'Axis Long Term Equity (ELSS)',cat:'elss',amc:'Axis MF',rating:4,nav:null,navDate:null,ret1y:null,ret3y:18.4,ret5y:16.2,aum:'₹36,234 Cr',risk:'High',minSip:500},
-  {id:'120503',name:'Quant ELSS Tax Saver Fund',cat:'elss',amc:'Quant MF',rating:5,nav:null,navDate:null,ret1y:null,ret3y:42.1,ret5y:34.2,aum:'₹8,432 Cr',risk:'High',minSip:500},
+  {id:'125354',name:'Mirae Asset Tax Saver Fund (ELSS)',  cat:'elss',  amc:'Mirae Asset',  rating:5,risk:'High',     minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'120843',name:'Axis Long Term Equity (ELSS)',       cat:'elss',  amc:'Axis MF',      rating:4,risk:'High',     minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
+  {id:'138323',name:'Quant ELSS Tax Saver Fund',          cat:'elss',  amc:'Quant MF',     rating:5,risk:'High',     minSip:500, nav:null,navDate:null,navChg:null,navChgPct:null,ret1y:null,ret3y:null,ret5y:null},
 ];
 
-let _mfFilter='all', _mfCompare=new Set(), _mfNavFetched=false, _mfLastFetch=0;
-const _MF_CACHE_MS = 4 * 60 * 60 * 1000; // NAV updates once a day — cache for 4h
+let _mfFilter='all', _mfCompare=new Set(), _mfNavFetched=false, _mfLastFetch=0, _mfFetchInProgress=false;
+const _MF_CACHE_MS = 4 * 60 * 60 * 1000; // 4h cache — AMFI updates once daily
 
-async function fetchLiveMFNavs() {
-  // Don't re-fetch if recently done (NAV only updates once daily at 11 PM IST)
-  if (_mfNavFetched && Date.now() - _mfLastFetch < _MF_CACHE_MS) return;
+// Compute % return from mfapi NAV history array
+function _mfReturn(data, tradingDays) {
+  if (!data || data.length <= tradingDays) return null;
+  const navNow = parseFloat(data[0].nav);
+  const navOld = parseFloat(data[Math.min(tradingDays, data.length-1)].nav);
+  if (!navNow || !navOld || navOld <= 0) return null;
+  return +((navNow - navOld) / navOld * 100).toFixed(1);
+}
+
+async function fetchLiveMFNavs(force=false) {
+  if (_mfFetchInProgress) return;
+  if (!force && _mfNavFetched && Date.now() - _mfLastFetch < _MF_CACHE_MS) return;
+  _mfFetchInProgress = true;
 
   const statusEl = document.getElementById('mfNavStatus');
-  if (statusEl) statusEl.innerHTML = `NAV from AMFI India · <span style="color:var(--gold);">⏳ Loading…</span>`;
+  if (statusEl) statusEl.innerHTML = `<span style="color:var(--gold);">⏳ Fetching live NAVs from AMFI India…</span>`;
 
-  // Fetch all funds in parallel — mfapi.in handles CORS perfectly
-  const results = await Promise.allSettled(MF_FUNDS.map(async f => {
+  let loaded = 0;
+  await Promise.allSettled(MF_FUNDS.map(async f => {
     try {
-      const r = await fetch(`https://api.mfapi.in/mf/${f.id}`, {
-        signal: AbortSignal.timeout(10000)
-      });
+      const r = await fetch(`https://api.mfapi.in/mf/${f.id}`, { signal: AbortSignal.timeout(12000) });
       if (!r.ok) return;
       const j = await r.json();
-      const latest = j?.data?.[0];
-      if (!latest) return;
-
-      f.nav = parseFloat(latest.nav);
-      f.navDate = latest.date;
-
-      // Compute 1Y return from historical data
-      if (j.data?.length > 1) {
-        const old365 = j.data[Math.min(252, j.data.length - 1)]; // ~252 trading days = 1 year
-        if (old365) {
-          const oldNav = parseFloat(old365.nav);
-          if (oldNav > 0) f.ret1y = +((f.nav - oldNav) / oldNav * 100).toFixed(1);
-        }
-        // Also compute AUM trend from meta if available
-        if (j.meta?.scheme_name) f.fullName = j.meta.scheme_name;
+      if (!j?.data?.length) return;
+      const data = j.data; // data[0] = latest nav
+      f.nav     = parseFloat(data[0].nav);
+      f.navDate = data[0].date;
+      // Daily change
+      if (data.length > 1) {
+        const prev = parseFloat(data[1].nav);
+        f.navChg    = +(f.nav - prev).toFixed(3);
+        f.navChgPct = +((f.nav - prev) / prev * 100).toFixed(2);
       }
+      // Live returns — computed from full history
+      f.ret1y = _mfReturn(data, 252);  // 1 year (~252 trading days)
+      f.ret3y = _mfReturn(data, 756);  // 3 years
+      f.ret5y = _mfReturn(data, 1260); // 5 years
+      // Scheme name / AMC from metadata
+      if (j.meta?.scheme_name) f.fullName = j.meta.scheme_name;
+      if (j.meta?.fund_house)  f.amc = j.meta.fund_house.replace(' Mutual Fund','').replace(' Asset Management Co. Ltd.','').replace(' Asset Management','').trim();
+      loaded++;
+      if (loaded % 4 === 0) renderMF(); // progressive render
     } catch(e) {}
   }));
 
-  const fetched = MF_FUNDS.filter(f => f.nav != null).length;
-  _mfNavFetched = fetched > 5;
+  _mfNavFetched = loaded > 5;
   _mfLastFetch = Date.now();
+  _mfFetchInProgress = false;
 
   if (statusEl) {
     const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-    statusEl.innerHTML = `Source: <b>AMFI India</b> via <a href="https://api.mfapi.in" target="_blank" style="color:var(--accent);">mfapi.in</a> · ${fetched}/${MF_FUNDS.length} NAVs loaded · <span style="color:var(--green);">Live ✓</span> · ${now} IST`;
+    statusEl.innerHTML = loaded >= MF_FUNDS.length * 0.8
+      ? `Source: <b>AMFI India</b> via <b>mfapi.in</b> · ${loaded}/${MF_FUNDS.length} funds · <span style="color:var(--green);">✓ Live</span> · ${now} IST`
+      : `AMFI India · ${loaded}/${MF_FUNDS.length} loaded · <span style="color:var(--gold);">Partial</span>`;
   }
   renderMF();
 }
@@ -8033,55 +8051,49 @@ function filterMF(cat, btn) {
 }
 
 function renderMF() {
-  const el = document.getElementById('mfBody');
-  if (!el) return;
-  const funds = _mfFilter === 'all' ? MF_FUNDS
-    : _mfFilter === 'top' ? MF_FUNDS.filter(f => f.rating === 5)
-    : MF_FUNDS.filter(f => f.cat === _mfFilter);
-
-  document.getElementById('mfCompareCount').textContent = _mfCompare.size;
-  const riskColor = { Low:'var(--green)', Moderate:'var(--gold)', High:'var(--accent2)', 'Very High':'var(--red)' };
-
+  const el = document.getElementById('mfBody'); if (!el) return;
+  const funds = _mfFilter==='all' ? MF_FUNDS : _mfFilter==='top' ? MF_FUNDS.filter(f=>f.rating===5) : MF_FUNDS.filter(f=>f.cat===_mfFilter);
+  const cmpEl = document.getElementById('mfCompareCount'); if(cmpEl) cmpEl.textContent = _mfCompare.size;
+  const riskC = {Low:'var(--green)',Moderate:'var(--gold)',High:'var(--accent2)','Very High':'var(--red)'};
+  const fmtRet = v => {
+    if (v==null) return '<span style="color:var(--text3);">—</span>';
+    const c = v>=20?'var(--green)':v>=10?'var(--accent)':v>=0?'var(--text)':'var(--red)';
+    return `<span style="color:${c};font-weight:800;">${v>=0?'+':''}${v}%</span>`;
+  };
   el.innerHTML = funds.map(f => {
-    const navStr  = f.nav ? `₹${f.nav.toFixed(2)}` : '<span style="color:var(--text3);font-size:11px;">Loading…</span>';
-    const r1 = f.ret1y != null ? f.ret1y + '%' : '—';
-    const r3 = f.ret3y + '%';
-    const r5 = f.ret5y + '%';
-    const stars = '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating);
+    const navDisp = f.nav
+      ? `₹${f.nav.toFixed(3)}<span style="font-size:10px;color:${(f.navChgPct||0)>=0?'var(--green)':'var(--red)'};">  ${f.navChgPct!=null?((f.navChgPct>=0?'▲':'▼')+Math.abs(f.navChgPct).toFixed(2)+'%'):''}</span>`
+      : '<span style="color:var(--text3);font-size:11px;animation:pulse 1s infinite;">Loading…</span>';
+    const stars = '★'.repeat(f.rating)+'☆'.repeat(5-f.rating);
     const inCmp = _mfCompare.has(f.id);
-    const navDateStr = f.navDate ? `<div style="font-size:8px;color:var(--text3);margin-top:1px;">as of ${f.navDate}</div>` : '';
-
-    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
-      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;transition:box-shadow 0.2s,border-color 0.2s;"
+      onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';this.style.borderColor='var(--accent)'"
+      onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:800;font-size:14px;margin-bottom:3px;line-height:1.3;">${f.name}</div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;">
+          <div style="font-weight:800;font-size:14px;line-height:1.3;margin-bottom:4px;">${f.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span style="font-size:10px;color:var(--text3);">${f.amc}</span>
             <span style="font-size:11px;color:var(--gold);">${stars}</span>
-            <span style="font-size:10px;padding:1px 7px;border-radius:6px;background:${riskColor[f.risk]||'var(--text3)'}22;color:${riskColor[f.risk]||'var(--text3)'};">${f.risk}</span>
-            <span style="font-size:10px;color:var(--text3);">Min SIP: ₹${f.minSip}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:6px;background:${riskC[f.risk]||'var(--text3)'}22;color:${riskC[f.risk]||'var(--text3)'};">${f.risk}</span>
+            <span style="font-size:10px;color:var(--text3);">SIP ₹${f.minSip}+</span>
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-weight:800;font-size:16px;">${navStr}</div>
-          <div style="font-size:9px;color:var(--text3);">NAV</div>
-          ${navDateStr}
+          <div style="font-weight:800;font-size:15px;">${navDisp}</div>
+          <div style="font-size:9px;color:var(--text3);">NAV${f.navDate?' · '+f.navDate:''}</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
-        ${[
-          ['1Y Return', r1, f.ret1y!=null&&f.ret1y>0],
-          ['3Y Return', r3, f.ret3y>0],
-          ['5Y Return', r5, f.ret5y>0],
-          ['AUM', f.aum, null]
-        ].map(([l,v,up]) => `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:3px;">${l}</div>
-          <div style="font-weight:800;font-size:12px;color:${up===null?'var(--text)':up?'var(--green)':'var(--red)'};">${v}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        ${[['1Y RETURN',f.ret1y],['3Y RETURN',f.ret3y],['5Y RETURN',f.ret5y]].map(([l,v])=>`
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;text-align:center;">
+          <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:4px;">${l}</div>
+          <div style="font-size:14px;">${fmtRet(v)}</div>
         </div>`).join('')}
       </div>
       <div style="display:flex;gap:8px;">
         <button onclick="toggleMfCompare('${f.id}')" style="flex:1;padding:7px;border-radius:8px;border:1px solid ${inCmp?'var(--accent)':'var(--border)'};background:${inCmp?'rgba(0,112,243,0.1)':'transparent'};color:${inCmp?'var(--accent)':'var(--text3)'};font-weight:700;font-size:12px;cursor:pointer;transition:all 0.15s;">⚖️ ${inCmp?'Remove':'Compare'}</button>
-        <a href="https://www.mfapi.in/mf/${f.id}" target="_blank" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">📊 Historical NAV</a>
+        <a href="https://www.mfapi.in/mf/${f.id}" target="_blank" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">📈 Full History</a>
       </div>
     </div>`;
   }).join('');
@@ -8089,34 +8101,34 @@ function renderMF() {
 
 function toggleMfCompare(id) {
   if (_mfCompare.has(id)) { _mfCompare.delete(id); }
-  else { if (_mfCompare.size >= 3) { showToast('Max 3 funds to compare','var(--red)'); return; } _mfCompare.add(id); }
+  else { if (_mfCompare.size>=3){showToast('Max 3 funds','var(--red)');return;} _mfCompare.add(id); }
   renderMF();
 }
 
 function showMfCompare() {
-  if (_mfCompare.size < 2) { showToast('Select at least 2 funds to compare','var(--gold)'); return; }
-  const funds = MF_FUNDS.filter(f => _mfCompare.has(f.id));
+  if (_mfCompare.size<2){showToast('Select at least 2 funds','var(--gold)');return;}
+  const funds = MF_FUNDS.filter(f=>_mfCompare.has(f.id));
+  const fR = v=>v!=null?(v>=0?'+':'')+v+'%':'—';
   const rows = [
-    ['NAV', ...funds.map(f => f.nav ? '₹'+f.nav.toFixed(2) : '—')],
-    ['NAV Date', ...funds.map(f => f.navDate || '—')],
-    ['1Y Return', ...funds.map(f => f.ret1y!=null ? f.ret1y+'%' : '—')],
-    ['3Y Return', ...funds.map(f => f.ret3y+'%')],
-    ['5Y Return', ...funds.map(f => f.ret5y+'%')],
-    ['AUM', ...funds.map(f => f.aum)],
-    ['Risk', ...funds.map(f => f.risk)],
-    ['Min SIP', ...funds.map(f => '₹'+f.minSip)],
-    ['Rating', ...funds.map(f => '★'.repeat(f.rating))],
+    ['NAV',       ...funds.map(f=>f.nav?'₹'+f.nav.toFixed(3):'—')],
+    ['NAV Date',  ...funds.map(f=>f.navDate||'—')],
+    ['1D Change', ...funds.map(f=>f.navChgPct!=null?(f.navChgPct>=0?'+':'')+f.navChgPct+'%':'—')],
+    ['1Y Return', ...funds.map(f=>fR(f.ret1y))],
+    ['3Y Return', ...funds.map(f=>fR(f.ret3y))],
+    ['5Y Return', ...funds.map(f=>fR(f.ret5y))],
+    ['Risk',      ...funds.map(f=>f.risk)],
+    ['Min SIP',   ...funds.map(f=>'₹'+f.minSip)],
+    ['Rating',    ...funds.map(f=>'★'.repeat(f.rating))],
   ];
   const panel = document.getElementById('mfComparePanel');
   panel.innerHTML = `<div style="overflow-x:auto;">
-    <div style="font-size:10px;font-weight:700;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:8px;padding:0 2px;">FUND COMPARISON</div>
+    <div style="font-size:10px;font-weight:700;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:8px;">FUND COMPARISON</div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead><tr>
-        <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);color:var(--text3);font-size:9px;font-family:'Space Mono',monospace;"></th>
-        ${funds.map(f=>`<th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;">${f.name.split(' ').slice(0,4).join(' ')}</th>`).join('')}
+      <thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;color:var(--text3);"></th>
+      ${funds.map(f=>`<th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;">${f.name.split(' ').slice(0,3).join(' ')}</th>`).join('')}
       </tr></thead>
-      <tbody>${rows.map(([l,...vals]) => `<tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:8px;font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;white-space:nowrap;">${l}</td>
+      <tbody>${rows.map(([l,...vals])=>`<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;font-size:10px;color:var(--text3);white-space:nowrap;">${l}</td>
         ${vals.map(v=>`<td style="padding:8px;text-align:center;font-weight:700;">${v}</td>`).join('')}
       </tr>`).join('')}</tbody>
     </table>
@@ -8125,25 +8137,23 @@ function showMfCompare() {
   panel.style.display = 'block';
 }
 
-// Refresh NAVs every 4 hours (AMFI updates once daily, 4h is sufficient)
+// Auto-refresh every 4h when page is open
 setInterval(() => {
   if (document.getElementById('page-mf')?.style.display !== 'none') fetchLiveMFNavs();
 }, _MF_CACHE_MS);
 
-// Schedule daily refresh at 11:30 PM IST (when AMFI uploads new NAVs)
+// Daily refresh at 11:30 PM IST — right after AMFI uploads new NAVs
 (function _scheduleMfAtMidnight() {
   const ist = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
   const next = new Date(ist); next.setHours(23,30,0,0);
   if (ist >= next) next.setDate(next.getDate()+1);
   setTimeout(() => {
-    _mfNavFetched = false; // force re-fetch
-    MF_FUNDS.forEach(f => { f.nav = null; f.navDate = null; f.ret1y = null; });
-    if (document.getElementById('page-mf')?.style.display !== 'none') fetchLiveMFNavs();
+    _mfNavFetched = false;
+    MF_FUNDS.forEach(f => { f.nav=null; f.navDate=null; f.navChg=null; f.navChgPct=null; f.ret1y=null; f.ret3y=null; f.ret5y=null; });
+    fetchLiveMFNavs(true);
     _scheduleMfAtMidnight();
   }, next - ist);
 })();
-
-
 // ═══════════════════════════════════════════════════════════════════
 // STOCK COMPARE PAGE
 // ═══════════════════════════════════════════════════════════════════
