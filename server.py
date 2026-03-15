@@ -15,8 +15,6 @@ import threading
 import time
 import os
 import json
-import warnings
-warnings.filterwarnings("ignore")
 
 try:
     import requests as req_lib
@@ -780,8 +778,8 @@ def fetch_earnings_from_nse():
     # ── Source 2: NSE board meetings via allorigins ──
     if len(results) < 10:
         try:
-            from datetime import datetime as datetime, timedelta as _td2
-            today2  = datetime.now()
+            from datetime import datetime as _dt2, timedelta as _td2
+            today2  = _dt2.now()
             from_d2 = today2.strftime("%d-%m-%Y")
             to_d2   = (today2 + _td2(days=90)).strftime("%d-%m-%Y")
             nse_bm  = f"https://www.nseindia.com/api/corporate-board-meetings?index=equities&from_date={from_d2}&to_date={to_d2}"
@@ -799,7 +797,7 @@ def fetch_earnings_from_nse():
                             if not sym or not date_s:
                                 continue
                             try:
-                                dt_obj   = datetime.strptime(date_s, "%d-%b-%Y")
+                                dt_obj   = _dt2.strptime(date_s, "%d-%b-%Y")
                                 date_iso = dt_obj.strftime("%Y-%m-%d")
                             except:
                                 continue
@@ -1056,11 +1054,48 @@ def api_quote(symbol):
 @app.route("/api/technicals/<symbol>")
 def api_technicals(symbol):
     """
-    Returns technical indicators for a stock: RSI, MACD, MA50, MA200, 52W High/Low.
-    Calculated from 1-year daily price history via yfinance.
+    Full live technical analysis — 35+ indicators computed from 1-year daily OHLCV data.
+    Source: Yahoo Finance via yfinance. Updated on every request (cached 5 min in background).
+    Indicators: RSI, MACD, MAs (10/20/50/100/200), EMAs (9/21/50/200), VWAP,
+                Bollinger Bands, Stochastics, ADX, ATR, CCI, Pivot Points (R1/R2/S1/S2),
+                Support/Resistance zones, 52W range, % changes (1d/1w/1m/3m),
+                Golden/Death Cross, buy/sell signal count.
     """
+    import math
     sym_upper = symbol.upper()
-    yf_sym = sym_upper + ".NS" if "." not in sym_upper else sym_upper
+
+    # Map crypto/commodity symbols to Yahoo Finance tickers
+    CRYPTO_MAP = {"BTC":"BTC-USD","ETH":"ETH-USD","BNB":"BNB-USD","SOL":"SOL-USD",
+                  "XRP":"XRP-USD","DOGE":"DOGE-USD","ADA":"ADA-USD","DOT":"DOT-USD",
+                  "AVAX":"AVAX-USD","LTC":"LTC-USD","LINK":"LINK-USD","MATIC":"MATIC-USD"}
+    COMM_MAP   = {"GOLD":"GC=F","SILVER":"SI=F","CRUDE":"CL=F","BRENT":"BZ=F",
+                  "NATURALGAS":"NG=F","COPPER":"HG=F","PLATINUM":"PL=F","WHEAT":"ZW=F"}
+
+    if sym_upper in CRYPTO_MAP:
+        yf_sym   = CRYPTO_MAP[sym_upper]
+        currency = "$"
+    elif sym_upper in COMM_MAP:
+        yf_sym   = COMM_MAP[sym_upper]
+        currency = "$"
+    elif "." in sym_upper:
+        yf_sym   = sym_upper
+        currency = "₹"
+    else:
+        yf_sym   = sym_upper + ".NS"
+        currency = "₹"
+
+    def r2(v):
+        """Round to 2 decimal places, return None if NaN/None."""
+        try:
+            f = float(v)
+            return None if math.isnan(f) or math.isinf(f) else round(f, 2)
+        except: return None
+
+    def r1(v):
+        try:
+            f = float(v)
+            return None if math.isnan(f) or math.isinf(f) else round(f, 1)
+        except: return None
 
     try:
         ticker = yf.Ticker(yf_sym)
@@ -1069,64 +1104,205 @@ def api_technicals(symbol):
         if hist.empty or len(hist) < 20:
             return jsonify({"error": "insufficient data", "symbol": sym_upper}), 404
 
-        close = hist["Close"]
+        close  = hist["Close"]
+        high   = hist["High"]
+        low    = hist["Low"]
+        volume = hist["Volume"]
+        n      = len(close)
 
-        # ── RSI (14-period) ──
-        delta  = close.diff()
-        gain   = delta.where(delta > 0, 0.0)
-        loss   = (-delta).where(delta < 0, 0.0)
-        avg_g  = gain.rolling(14).mean()
-        avg_l  = loss.rolling(14).mean()
-        rs     = avg_g / avg_l.replace(0, float("nan"))
-        rsi    = round(float((100 - 100 / (1 + rs)).iloc[-1]), 1)
+        cur = r2(close.iloc[-1])
 
-        # ── MACD (12, 26, 9) ──
-        ema12  = close.ewm(span=12, adjust=False).mean()
-        ema26  = close.ewm(span=26, adjust=False).mean()
-        macd_l = ema12 - ema26
-        signal = macd_l.ewm(span=9, adjust=False).mean()
-        macd_bullish = bool(float(macd_l.iloc[-1]) > float(signal.iloc[-1]))
+        # ── Simple Moving Averages ──
+        def sma(p): return r2(close.rolling(p).mean().iloc[-1]) if n >= p else None
+        ma10  = sma(10);  ma20 = sma(20);  ma50 = sma(50)
+        ma100 = sma(100); ma200 = sma(200)
 
-        # ── Moving Averages ──
-        ma50  = round(float(close.rolling(50).mean().iloc[-1]), 2)  if len(close) >= 50  else None
-        ma200 = round(float(close.rolling(200).mean().iloc[-1]), 2) if len(close) >= 200 else None
-        cur   = round(float(close.iloc[-1]), 2)
+        # ── Exponential Moving Averages ──
+        def ema(p): return r2(close.ewm(span=p, adjust=False).mean().iloc[-1])
+        ema9   = ema(9);  ema21 = ema(21)
+        ema50  = ema(50); ema200 = ema(200)
+
         above_ma50  = bool(cur > ma50)  if ma50  else None
         above_ma200 = bool(cur > ma200) if ma200 else None
+        golden_cross = bool(ma50 > ma200) if (ma50 and ma200) else False
+        death_cross  = bool(ma50 < ma200) if (ma50 and ma200) else False
+
+        # ── RSI (14) ──
+        delta = close.diff()
+        gain  = delta.where(delta > 0, 0.0)
+        loss  = (-delta).where(delta < 0, 0.0)
+        avg_g = gain.rolling(14).mean()
+        avg_l = loss.rolling(14).mean()
+        rs    = avg_g / avg_l.replace(0, float("nan"))
+        rsi   = r1((100 - 100 / (1 + rs)).iloc[-1])
+
+        # ── MACD (12, 26, 9) ──
+        ema12   = close.ewm(span=12, adjust=False).mean()
+        ema26   = close.ewm(span=26, adjust=False).mean()
+        macd_line   = ema12 - ema26
+        macd_signal = macd_line.ewm(span=9, adjust=False).mean()
+        macd_hist_s = macd_line - macd_signal
+        macd_val        = r2(macd_line.iloc[-1])
+        macd_signal_val = r2(macd_signal.iloc[-1])
+        macd_hist_val   = r2(macd_hist_s.iloc[-1])
+        macd_bullish    = bool(float(macd_line.iloc[-1]) > float(macd_signal.iloc[-1]))
+        macd_increasing = bool(macd_hist_s.iloc[-1] > macd_hist_s.iloc[-2]) if n >= 2 else False
+
+        # ── Bollinger Bands (20, 2σ) ──
+        bb_mid_s   = close.rolling(20).mean()
+        bb_std     = close.rolling(20).std()
+        bb_upper_s = bb_mid_s + 2 * bb_std
+        bb_lower_s = bb_mid_s - 2 * bb_std
+        bb_mid_v   = r2(bb_mid_s.iloc[-1])
+        bb_upper_v = r2(bb_upper_s.iloc[-1])
+        bb_lower_v = r2(bb_lower_s.iloc[-1])
+        bb_width_v = r1(((bb_upper_s - bb_lower_s) / bb_mid_s * 100).iloc[-1]) if bb_mid_v else None
+        # %B = (price - lower) / (upper - lower)
+        if bb_upper_v and bb_lower_v and bb_upper_v != bb_lower_v:
+            bb_pct_v = r1((cur - bb_lower_v) / (bb_upper_v - bb_lower_v) * 100)
+        else:
+            bb_pct_v = None
+
+        # ── Stochastic (14, 3) ──
+        low14    = low.rolling(14).min()
+        high14   = high.rolling(14).max()
+        stoch_k_s = ((close - low14) / (high14 - low14).replace(0, float("nan"))) * 100
+        stoch_d_s = stoch_k_s.rolling(3).mean()
+        stoch_k_v = r1(stoch_k_s.iloc[-1])
+        stoch_d_v = r1(stoch_d_s.iloc[-1])
+        stoch_bullish = bool(stoch_k_v > stoch_d_v) if (stoch_k_v is not None and stoch_d_v is not None) else False
+
+        # ── ATR (14) — Average True Range ──
+        tr = (high - low).combine(abs(high - close.shift()), max).combine(abs(low - close.shift()), max)
+        atr_v = r2(tr.rolling(14).mean().iloc[-1])
+        atr_pct_v = r1(atr_v / cur * 100) if (atr_v and cur) else None
+
+        # ── ADX (14) ──
+        try:
+            plus_dm  = high.diff().clip(lower=0)
+            minus_dm = (-low.diff()).clip(lower=0)
+            plus_dm[plus_dm < (-low.diff()).clip(lower=0)]  = 0
+            minus_dm[minus_dm < high.diff().clip(lower=0)] = 0
+            atr14    = tr.rolling(14).mean()
+            plus_di  = 100 * (plus_dm.rolling(14).mean()  / atr14.replace(0, float("nan")))
+            minus_di = 100 * (minus_dm.rolling(14).mean() / atr14.replace(0, float("nan")))
+            dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di).replace(0, float("nan"))
+            adx_v = r1(dx.rolling(14).mean().iloc[-1])
+        except: adx_v = None
+
+        # ── CCI (20) ──
+        try:
+            tp    = (high + low + close) / 3
+            tp_ma = tp.rolling(20).mean()
+            tp_md = tp.rolling(20).apply(lambda x: abs(x - x.mean()).mean(), raw=True)
+            cci_v = r1(((tp - tp_ma) / (0.015 * tp_md.replace(0, float("nan")))).iloc[-1])
+        except: cci_v = None
+
+        # ── VWAP (uses full history) ──
+        try:
+            typical = (high + low + close) / 3
+            vwap_v  = r2((typical * volume).cumsum().iloc[-1] / volume.cumsum().iloc[-1])
+        except: vwap_v = None
 
         # ── 52-Week High / Low ──
-        high_52w = round(float(hist["High"].max()), 2)
-        low_52w  = round(float(hist["Low"].min()), 2)
+        high_52w     = r2(hist["High"].max())
+        low_52w      = r2(hist["Low"].min())
+        pct_from_52h = r1((cur - high_52w) / high_52w * 100) if high_52w else None
+        pct_from_52l = r1((cur - low_52w)  / low_52w  * 100) if low_52w  else None
 
-        # ── Overall signal ──
-        bull_signals = sum([
-            rsi < 70 and rsi > 50,
-            macd_bullish,
-            above_ma50  is True,
-            above_ma200 is True,
-        ])
-        if bull_signals >= 3:
-            overall = "STRONG BUY"
-        elif bull_signals == 2:
-            overall = "BUY"
-        elif bull_signals == 1:
-            overall = "NEUTRAL"
+        # ── % Changes ──
+        def pct_chg(days):
+            if n <= days: return None
+            old = float(close.iloc[-(days+1)])
+            return r1((cur - old) / old * 100) if old else None
+        change_1d = pct_chg(1); change_1w = pct_chg(5)
+        change_1m = pct_chg(21); change_3m = pct_chg(63)
+
+        # ── Classic Pivot Points (from last completed session H/L/C) ──
+        prev_h = r2(high.iloc[-2]); prev_l = r2(low.iloc[-2]); prev_c = r2(close.iloc[-2])
+        if prev_h and prev_l and prev_c:
+            pivot = r2((prev_h + prev_l + prev_c) / 3)
+            r1p   = r2(2 * pivot - prev_l)
+            r2p   = r2(pivot + (prev_h - prev_l))
+            s1p   = r2(2 * pivot - prev_h)
+            s2p   = r2(pivot - (prev_h - prev_l))
         else:
-            overall = "SELL"
+            pivot = r1p = r2p = s1p = s2p = None
+
+        # ── Support / Resistance zones (20-day swing) ──
+        support_v    = r2(low.rolling(20).min().iloc[-1])
+        resistance_v = r2(high.rolling(20).max().iloc[-1])
+
+        # ── Volume ratio (today vs 20-day avg) ──
+        avg_vol = float(volume.rolling(20).mean().iloc[-1])
+        vol_today = float(volume.iloc[-1])
+        vol_ratio = r1(vol_today / avg_vol) if avg_vol else None
+        vol_spike = bool(vol_ratio > 2.0) if vol_ratio else False
+
+        # ── Signal count ──
+        signals_bull = sum(filter(None, [
+            rsi is not None and 50 < rsi < 70,
+            macd_bullish,
+            above_ma50 is True,
+            above_ma200 is True,
+            golden_cross,
+            stoch_bullish and stoch_k_v is not None and stoch_k_v > 50,
+            bb_pct_v is not None and bb_pct_v > 50,
+            adx_v is not None and adx_v > 25 and macd_bullish,
+        ]))
+        signals_bear = sum(filter(None, [
+            rsi is not None and rsi > 70,
+            not macd_bullish,
+            above_ma50 is False,
+            above_ma200 is False,
+            death_cross,
+            stoch_k_v is not None and stoch_k_v < 30,
+        ]))
+        total_signals = signals_bull + signals_bear
+        if signals_bull >= 6:    overall = "STRONG BUY"
+        elif signals_bull >= 4:  overall = "BUY"
+        elif signals_bear >= 4:  overall = "SELL"
+        elif signals_bear >= 6:  overall = "STRONG SELL"
+        else:                    overall = "NEUTRAL"
 
         return jsonify({
-            "symbol":      sym_upper,
-            "rsi":         rsi,
-            "macd_bullish":macd_bullish,
-            "macd_val":    round(float(macd_l.iloc[-1]), 3),
-            "signal_val":  round(float(signal.iloc[-1]), 3),
-            "ma50":        ma50,
-            "ma200":       ma200,
-            "above_ma50":  above_ma50,
-            "above_ma200": above_ma200,
-            "high_52w":    high_52w,
-            "low_52w":     low_52w,
-            "overall":     overall,
+            # Core
+            "symbol": sym_upper, "currency": currency,
+            "overall": overall, "buy_signals": signals_bull,
+            "sell_signals": signals_bear, "total_signals": total_signals,
+            # RSI
+            "rsi": rsi,
+            # MACD
+            "macd_bullish": macd_bullish, "macd_increasing": macd_increasing,
+            "macd": macd_val, "macd_signal": macd_signal_val, "macd_hist": macd_hist_val,
+            # Moving Averages
+            "ma10": ma10, "ma20": ma20, "ma50": ma50, "ma100": ma100, "ma200": ma200,
+            "ema9": ema9, "ema21": ema21, "ema50": ema50, "ema200": ema200,
+            "above_ma50": above_ma50, "above_ma200": above_ma200,
+            "golden_cross": golden_cross, "death_cross": death_cross,
+            # VWAP
+            "vwap": vwap_v,
+            # Bollinger Bands
+            "bb_upper": bb_upper_v, "bb_lower": bb_lower_v, "bb_mid": bb_mid_v,
+            "bb_width": bb_width_v, "bb_pct": bb_pct_v,
+            # Oscillators
+            "stoch_k": stoch_k_v, "stoch_d": stoch_d_v, "stoch_bullish": stoch_bullish,
+            "adx": adx_v, "cci": cci_v,
+            # Volatility
+            "atr": atr_v, "atr_pct": atr_pct_v,
+            # Pivot Points
+            "pivot": pivot, "r1": r1p, "r2": r2p, "s1": s1p, "s2": s2p,
+            # Support / Resistance
+            "support": support_v, "resistance": resistance_v,
+            # 52-Week
+            "high_52w": high_52w, "low_52w": low_52w,
+            "pct_from_52h": pct_from_52h, "pct_from_52l": pct_from_52l,
+            # % Changes
+            "change_1d": change_1d, "change_1w": change_1w,
+            "change_1m": change_1m, "change_3m": change_3m,
+            # Volume
+            "vol_ratio": vol_ratio, "vol_spike": vol_spike,
+            # Meta
             "last_updated": datetime.now().isoformat(),
         })
 
@@ -1225,6 +1401,12 @@ def api_earnings():
 
 def fetch_live_ipo_data():
     """
+    Fetch live IPO data from multiple sources.
+    1. BSE IPO listing page (api.bseindia.com)
+    2. NSE upcoming IPOs via allorigins proxy
+    3. Chittorgarh scrape
+    Returns: {upcoming:[], open:[], allotment:[], listed:[]}
+    """    """
     Fetch live IPO data from multiple sources.
     1. BSE IPO listing page (api.bseindia.com)
     2. NSE upcoming IPOs via allorigins proxy
@@ -1486,7 +1668,7 @@ def api_ipo():
             {"name":"Laxmi Dental","listDate":"20 Jan 2026","issuePrice":"₹428","listPrice":"₹513","gain":"+19.9%","current":"₹498"},
             {"name":"Capital Infra Trust InvIT","listDate":"12 Feb 2026","issuePrice":"₹99","listPrice":"₹102","gain":"+3.0%","current":"₹101"},
         ],
-        "last_updated": datetime.now().isoformat(),
+        "last_updated": _dt2.now().isoformat(),
         "source": "Static (updated Mar 2026)",
     }
 
@@ -1498,7 +1680,7 @@ def api_ipo():
     cache_stale = True
     if cache_ts:
         try:
-            age = (datetime.now() - datetime.fromisoformat(cache_ts)).total_seconds()
+            age = (_dt2.now() - _dt2.fromisoformat(cache_ts)).total_seconds()
             cache_stale = age > 1800  # 30 min
         except: pass
 
@@ -1515,7 +1697,7 @@ def api_ipo():
                     live[key] = static_data[key]
             with _ipo_lock:
                 _ipo_cache["data"]         = live
-                _ipo_cache["last_updated"] = datetime.now().isoformat()
+                _ipo_cache["last_updated"] = _dt2.now().isoformat()
             return jsonify(live)
 
     # Return static if live fails
@@ -1523,8 +1705,6 @@ def api_ipo():
 
 
 # ── Options chain cache ──
-
-
 @app.route("/api/nifty-spot")
 def api_nifty_spot():
     """Returns live Nifty 50 and Bank Nifty spot prices."""

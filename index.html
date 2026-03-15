@@ -3261,47 +3261,14 @@ async function openStockModal(sym, name) {
     ]);
     clearTimeout(timer);
     const d  = qRes.ok  ? await qRes.json()  : staticQ  || null;
-    const _taRaw = taRes.ok ? await taRes.json() : null;
-    // Merge live technicals with static fallback, then compute missing fields
+    const _taLive   = (taRes.ok && !((await taRes.clone().json())?.error)) ? await taRes.json() : null;
+    // Prefer 100% live data; fall back to STATIC_TECH only for fields the server doesn't return
     const _taStatic = staticTA || {};
-    const _taLive   = _taRaw || {};
-    // Base: prefer live data, fall back to static
-    const ta = { ..._taStatic, ..._taLive };
-    // ── Compute fields the server doesn't return yet ──
-    const _price = parseFloat(d?.price) || parseFloat(_taStatic.price) || 0;
-    const _h52   = ta.high_52w || _taStatic.high_52w || _price * 1.15;
-    const _l52   = ta.low_52w  || _taStatic.low_52w  || _price * 0.85;
-    // Classic Pivot Point (approximation using 52w range / 252 trading days as proxy for H/L/C)
-    // Real pivot = (H + L + C) / 3 on daily bar — we approximate with recent range
-    if (!ta.pivot && _price) {
-      const _range = _h52 - _l52;
-      const _atr   = _range * 0.015; // ~1.5% of range as daily ATR proxy
-      ta.pivot = +(_price).toFixed(2);
-      ta.r1 = +(_price + _atr * 2).toFixed(2);
-      ta.r2 = +(_price + _atr * 4).toFixed(2);
-      ta.s1 = +(_price - _atr * 2).toFixed(2);
-      ta.s2 = +(_price - _atr * 4).toFixed(2);
-    }
-    // Support & Resistance zones
-    if (!ta.support  && _price) ta.support  = +(_price * 0.965).toFixed(2);
-    if (!ta.resistance && _price) ta.resistance = +(_price * 1.035).toFixed(2);
-    // 52W distance
-    if (ta.high_52w && _price && !ta.pct_from_52h)
-      ta.pct_from_52h = +((_price - ta.high_52w) / ta.high_52w * 100).toFixed(1);
-    if (ta.low_52w && _price && !ta.pct_from_52l)
-      ta.pct_from_52l = +((_price - ta.low_52w)  / ta.low_52w  * 100).toFixed(1);
-    // 1D change from quote chg field (e.g. "+1.23%")
-    if (!ta.change_1d && d?.chg) {
-      const _chgStr = String(d.chg).replace('%','').replace('+','');
-      const _chgNum = parseFloat(_chgStr);
-      if (!isNaN(_chgNum)) ta.change_1d = +_chgNum.toFixed(2);
-    }
-    // Buy/Sell signal counts
-    if (ta.overall && !ta.buy_signals) {
-      const _bs = ta.overall.includes('STRONG BUY') ? 4 : ta.overall.includes('BUY') ? 3 : ta.overall.includes('SELL') ? 1 : 2;
-      ta.buy_signals  = _bs;
-      ta.sell_signals = 6 - _bs;
-      ta.total_signals = 6;
+    const ta = _taLive ? { ..._taStatic, ..._taLive } : { ..._taStatic };
+    // If live data available, enrich change_1d from live quote if server didn't return it
+    if (_taLive && !ta.change_1d && d?.chg) {
+      const _n = parseFloat(String(d.chg).replace('%','').replace('+',''));
+      if (!isNaN(_n)) ta.change_1d = +_n.toFixed(2);
     }
 
     if (!d || d.price === 'N/A') {
