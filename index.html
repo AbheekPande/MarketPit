@@ -180,7 +180,7 @@ header {
   margin-top:2px;
 }
 
-/* ── NAV TABS ── */
+/* ── NAV TABS — Professional Terminal Style ── */
 .nav-tabs {
   display:flex;
   gap:0;
@@ -196,7 +196,6 @@ header {
   -webkit-mask-image:linear-gradient(to right, transparent 0px, black 12px, black calc(100% - 32px), transparent 100%);
 }
 .nav-tabs::-webkit-scrollbar { display:none; }
-/* Scroll hint arrows */
 .nav-tabs-wrap {
   display:flex;
   align-items:stretch;
@@ -209,36 +208,35 @@ header {
 .nav-tab {
   display:inline-flex;
   align-items:center;
-  gap:5px;
-  padding:0 13px;
-  font-size:12px;
-  font-weight:600;
+  gap:0;
+  padding:0 14px;
+  font-size:10px;
+  font-weight:700;
   cursor:pointer;
   border:none;
   border-bottom:2px solid transparent;
+  border-top:2px solid transparent;
   background:none;
   color:var(--text3);
   white-space:nowrap;
-  transition:color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
-  font-family:'DM Sans',sans-serif;
-  letter-spacing:0.1px;
+  transition:color 0.15s, border-color 0.15s, background 0.15s;
+  font-family:'Space Mono',monospace;
+  letter-spacing:0.8px;
+  text-transform:uppercase;
 }
-.nav-tab .ti {
-  font-size:13px;
-  line-height:1;
-  opacity:0.85;
-}
+/* Hide all SVG icons in nav tabs */
+.nav-tab .ti { display:none; }
 .nav-tab.active {
-  color:var(--accent);
+  color:var(--text);
   border-bottom-color:var(--accent);
-  background:rgba(0,112,243,0.06);
+  border-top-color:transparent;
+  background:transparent;
   font-weight:700;
 }
 .nav-tab:hover:not(.active) {
-  color:var(--accent);
-  background:rgba(0,112,243,0.08);
-  border-bottom-color:rgba(0,112,243,0.35);
-  transform:translateY(-1px);
+  color:var(--text2);
+  border-bottom-color:var(--border);
+  background:rgba(0,0,0,0.03);
 }
 .header-search { flex:1; max-width:340px; margin-left:auto; position:relative; }
 .header-search input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:6px 12px 6px 32px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
@@ -835,13 +833,14 @@ header {
 
 /* Soft ambient glow — sized to tiles */
 #ebGlow {
-  position:absolute; width:110px; height:110px; border-radius:50%;
-  transform:translate(-50%,-50%); pointer-events:none; z-index:1;
+  position:absolute; width:140px; height:140px; border-radius:50%;
+  pointer-events:none; z-index:1;
   opacity:0;
-  transition:opacity 0.3s ease;
-  filter:blur(20px);
+  transition:opacity 0.25s ease, left 0.05s linear, top 0.05s linear;
+  filter:blur(22px);
+  will-change:left,top,opacity;
 }
-#eyesBanner:hover #ebGlow { opacity:0.7; }
+#eyesBanner:hover #ebGlow { opacity:0.85; }
 
 #ebTileGrid {
   position:absolute; left:0; right:0; top:0; bottom:0;
@@ -849,6 +848,10 @@ header {
   pointer-events:none;
   align-content:center; justify-content:flex-start;
   padding:8px 10px; overflow:hidden;
+}
+/* tiles themselves must be hit-testable for findSub() */
+#ebTileGrid .eb-sub {
+  pointer-events:auto;
 }
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
@@ -1015,7 +1018,7 @@ header {
 
     <button class="nav-tab active" onclick="switchTab(this,'feed')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
-      Market Feed
+      Feed
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'watchlist')">
@@ -1025,12 +1028,12 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'paper')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/></svg>
-      Paper Trading
+      Paper Trade
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'screener')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>
-      Stock Screener
+      Screener
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'trending')">
@@ -1040,32 +1043,32 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'news')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h11A1.5 1.5 0 0 1 14 2.5v10.528c0 .3-.05.654-.238.972h.738a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 1 1 0v9a1.5 1.5 0 0 1-1.5 1.5H1.497A1.497 1.497 0 0 1 0 13.5v-11zM12 14c.37 0 .654-.211.853-.441.092-.106.147-.279.147-.531V2.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v11c0 .278.223.5.497.5H12z"/><path d="M2 3h10v2H2V3zm0 3h4v3H2V6zm0 4h4v1H2v-1zm0 2h4v1H2v-1zm5-6h2v1H7V6zm3 0h2v1h-2V6zM7 8h2v1H7V8zm3 0h2v1h-2V8zm-3 2h2v1H7v-1zm3 0h2v1h-2v-1zm-3 2h2v1H7v-1zm3 0h2v1h-2v-1z"/></svg>
-      Market News
+      News
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'heatmap')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
-      Market Heatmap
+      Heatmap
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'optpnl')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
-      Option Strategies
+      Options
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'fii')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/></svg>
-      FII / DII Flow
+      FII / DII
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'econocal')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/><path d="M8.5 8.5V10H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V11H6a.5.5 0 0 1 0-1h1.5V8.5a.5.5 0 0 1 1 0z"/></svg>
-      Economic Calendar
+      Eco Calendar
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'ipo')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
-      IPO Centre
+      IPO
     </button>
 
 
@@ -1086,7 +1089,7 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'alerts')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/></svg>
-      Price Alerts
+      Alerts
     </button>
 
 
@@ -1094,12 +1097,12 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'compare')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/></svg>
-      Compare Stocks
+      Compare
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'pits')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/><path d="M8 4.5a.5.5 0 0 1 .5.5v3h2a.5.5 0 0 1 0 1h-2.5A.5.5 0 0 1 7.5 9V5a.5.5 0 0 1 .5-.5z"/></svg>
-      Trading Pits
+      Pits
     </button>
 
 
@@ -1117,12 +1120,12 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'tv')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1zm4 10h6v1H4v-1zm3-9a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
-      TradingView
+      Charts
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'unlisted')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
-      Unlisted Shares
+      Unlisted
     </button>
 
   
@@ -1206,9 +1209,9 @@ header {
       <!-- Grid lines background -->
       <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
       <!-- Spotlight glow -->
-      <div id="spotlightGlow" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.35) 0%,rgba(0,112,243,0.12) 40%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;transition:opacity 0.3s;top:50%;left:50%;will-change:transform;"></div>
+      <div id="spotlightGlow" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.35) 0%,rgba(0,112,243,0.12) 40%,transparent 70%);margin-left:-160px;margin-top:-160px;pointer-events:none;transition:opacity 0.3s;top:50%;left:50%;will-change:left,top;opacity:0.3;"></div>
       <!-- Secondary accent glow -->
-      <div id="spotlightGlow2" style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(120,80,255,0.4) 0%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;top:50%;left:50%;will-change:transform;"></div>
+      <div id="spotlightGlow2" style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(120,80,255,0.4) 0%,transparent 70%);margin-left:-80px;margin-top:-80px;pointer-events:none;top:50%;left:50%;will-change:left,top;opacity:0.2;"></div>
       <!-- Custom cursor dot -->
       <div id="spotlightCursor" style="position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 12px rgba(255,255,255,0.9);top:50%;left:50%;will-change:transform;transition:transform 0.1s;z-index:10;"></div>
       <!-- Content -->
@@ -12502,6 +12505,9 @@ function renderHeatmap() {
     const rect = heroEl.getBoundingClientRect();
     mouseX = currentX = rect.width  / 2;
     mouseY = currentY = rect.height / 2;
+    // Set initial glow positions centred
+    if (glow)  { glow.style.left  = (currentX - 160) + 'px'; glow.style.top  = (currentY - 160) + 'px'; }
+    if (glow2) { glow2.style.left = (currentX - 80)  + 'px'; glow2.style.top = (currentY - 80)  + 'px'; }
     updatePositions();
     updateHeroPrices();
     setInterval(updateHeroPrices, 30000);
@@ -12515,8 +12521,8 @@ function renderHeatmap() {
   }
 
   function updatePositions() {
-    if (glow)   { glow.style.left   = currentX + 'px'; glow.style.top   = currentY + 'px'; }
-    if (glow2)  { glow2.style.left  = currentX + 'px'; glow2.style.top  = currentY + 'px'; }
+    if (glow)   { glow.style.left   = (currentX - 160) + 'px'; glow.style.top   = (currentY - 160) + 'px'; }
+    if (glow2)  { glow2.style.left  = (currentX - 80)  + 'px'; glow2.style.top  = (currentY - 80)  + 'px'; }
     if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
   }
 
@@ -12747,8 +12753,8 @@ function renderHeatmap() {
     const { r, g, b } = getColor(Math.max(0, Math.min(1, pct)));
 
     // Move glow (only visible when cursor is over banner via CSS opacity rule)
-    glow.style.left       = (e.clientX - bannerRect.left) + 'px';
-    glow.style.top        = (e.clientY - bannerRect.top)  + 'px';
+    glow.style.left       = (e.clientX - bannerRect.left - 70) + 'px';
+    glow.style.top        = (e.clientY - bannerRect.top  - 70) + 'px';
     glow.style.background = `radial-gradient(circle,`
       + `rgba(${r},${g},${b},0.88) 0%,`
       + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
