@@ -8878,59 +8878,143 @@ function loadStrategyDetail(key) {
 // ═══════════════════════════════════════════════════════════════════
 let _econoData=[], _econoFilter='all';
 
-// Curated Indian + Global macro events (refreshed weekly from hardcoded knowledge + live fetch)
+// ══════════════════════════════════════════════════════════════
+// ECONOMIC CALENDAR — Hardcoded from Investing.com
+// NO live fetch — all data pasted directly here
+// Source: investing.com/economic-calendar
+// ══════════════════════════════════════════════════════════════
 const ECONO_STATIC = [
-  // ══════════════════════════════════════════════════════════════
-  // HOW TO UPDATE — just message me with:
-  //   Date | Time (IST) | Country | Event | Impact | Forecast | Previous | Actual
-  // Example: "17 Mar | 19:30 | US | FOMC Rate Decision | High | 4.25% | 4.25%"
-  // I will paste it here immediately.
-  //
-  // impact: 'high' (red bull) | 'medium' (orange) | 'low' (grey)
-  // actual: set to null until event releases, then fill value
-  // ══════════════════════════════════════════════════════════════
 
-  // ── Today: 15 Mar 2026 (from screenshot) ──
-  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Exports YoY (Feb)',         impact:'medium',actual:'28.7%', forecast:null,   prev:'29.0%', category:'trade'},
-  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Trade Balance (Feb)',        impact:'medium',actual:'15.38B',forecast:null,   prev:'15.51B',category:'trade'},
-  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Imports YoY (Feb)',          impact:'medium',actual:'7.5%',  forecast:null,   prev:'7.5%',  category:'trade'},
-  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Industrial Production YoY (Feb)', impact:'medium',actual:'5.3%', forecast:null, prev:'5.2%', category:'gdp'},
-  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Chinese Unemployment Rate (Feb)',  impact:'medium',actual:'5.1%', forecast:'5.1%', prev:'5.1%', category:'employment'},
-  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Fixed Asset Investment YoY (Feb)', impact:'medium',actual:'-5.0%',forecast:null,  prev:'-3.8%',category:'gdp'},
-  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Chinese Retail Sales YTD YoY (Feb)',impact:'medium',actual:null,  forecast:null,  prev:'2.73%',category:'retail'},
-  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Retail Sales YoY (Feb)',     impact:'medium',actual:'2.6%', forecast:null,   prev:'0.9%',  category:'retail'},
-  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Inflation YoY (Feb)',    impact:'medium',actual:'2.00%',forecast:null,   prev:'1.81%', category:'inflation'},
-  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Food YoY (Feb)',         impact:'low',   actual:null,   forecast:null,   prev:'1.55%', category:'inflation'},
-  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Fuel YoY (Feb)',         impact:'low',   actual:null,   forecast:null,   prev:'-4.01%',category:'inflation'},
-  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Manufacturing Inflation YoY (Feb)',impact:'low',actual:null,forecast:null,prev:'2.86%',category:'inflation'},
-  {date:'2026-03-15',time:'14:30',country:'CN',flag:'🇨🇳',event:'FDI (Feb)',                   impact:'low',   actual:null,   forecast:null,   prev:'-5.70%',category:'trade'},
-  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Exports USD (Feb)',           impact:'medium',actual:null,   forecast:null,   prev:'36.56B',category:'trade'},
-  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Imports USD (Feb)',           impact:'medium',actual:null,   forecast:null,   prev:'71.24B',category:'trade'},
-  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Trade Balance (Feb)',         impact:'medium',actual:'-28.00B',forecast:null, prev:'-34.68B',category:'trade'},
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SUNDAY, 15 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Exports YoY (Feb)',                   impact:'medium',actual:'28.7%',  forecast:null,      prev:'29.0%',   category:'trade'},
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Trade Balance (Feb)',                  impact:'medium',actual:'15.38B', forecast:null,      prev:'15.51B',  category:'trade'},
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Imports YoY (Feb)',                    impact:'medium',actual:'7.5%',   forecast:null,      prev:'7.5%',    category:'trade'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Industrial Production YoY (Feb)',      impact:'medium',actual:'5.3%',   forecast:null,      prev:'5.2%',    category:'gdp'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Unemployment Rate (Feb)',              impact:'medium',actual:'5.1%',   forecast:'5.1%',    prev:'5.1%',    category:'employment'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Fixed Asset Investment YoY (Feb)',     impact:'medium',actual:'-5.0%',  forecast:null,      prev:'-3.8%',   category:'gdp'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Retail Sales YTD YoY (Feb)',           impact:'low',   actual:null,     forecast:null,      prev:'2.73%',   category:'retail'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Retail Sales YoY (Feb)',               impact:'medium',actual:'2.6%',   forecast:null,      prev:'0.9%',    category:'retail'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Inflation YoY (Feb)',              impact:'medium',actual:'2.00%',  forecast:null,      prev:'1.81%',   category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Food YoY (Feb)',                   impact:'low',   actual:null,     forecast:null,      prev:'1.55%',   category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Fuel YoY (Feb)',                   impact:'low',   actual:null,     forecast:null,      prev:'-4.01%',  category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Manufacturing Inflation YoY (Feb)',impact:'low',   actual:null,     forecast:null,      prev:'2.86%',   category:'inflation'},
+  {date:'2026-03-15',time:'14:30',country:'CN',flag:'🇨🇳',event:'FDI (Feb)',                            impact:'low',   actual:null,     forecast:null,      prev:'-5.70%',  category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Exports USD (Feb)',                    impact:'medium',actual:null,     forecast:null,      prev:'36.56B',  category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Imports USD (Feb)',                    impact:'medium',actual:null,     forecast:null,      prev:'71.24B',  category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Trade Balance (Feb)',                  impact:'medium',actual:'-28.00B',forecast:null,      prev:'-34.68B', category:'trade'},
+  {date:'2026-03-15',time:'16:00',country:'DE',flag:'🇩🇪',event:'German 12-Month Bubill Auction',       impact:'low',   actual:null,     forecast:null,      prev:'1.985%',  category:'macro'},
+  {date:'2026-03-15',time:'16:00',country:'DE',flag:'🇩🇪',event:'German 6-Month Bubill Auction',        impact:'low',   actual:null,     forecast:null,      prev:'1.986%',  category:'macro'},
+  {date:'2026-03-15',time:'16:30',country:'DE',flag:'🇩🇪',event:'German Buba Monthly Report',           impact:'low',   actual:null,     forecast:null,      prev:null,      category:'macro'},
+  {date:'2026-03-15',time:'16:55',country:'BR',flag:'🇧🇷',event:'BCB Focus Market Readout',             impact:'low',   actual:null,     forecast:null,      prev:null,      category:'macro'},
+  {date:'2026-03-15',time:'17:30',country:'BR',flag:'🇧🇷',event:'IBC-Br Economic Activity (Jan)',       impact:'low',   actual:null,     forecast:null,      prev:'-0.20%',  category:'gdp'},
+  {date:'2026-03-15',time:'17:45',country:'CA',flag:'🇨🇦',event:'Housing Starts (Feb)',                 impact:'medium',actual:'243.0K', forecast:null,      prev:'238.0K',  category:'housing'},
+  {date:'2026-03-15',time:'18:00',country:'CA',flag:'🇨🇦',event:'Core CPI MoM (Feb)',                   impact:'medium',actual:null,     forecast:null,      prev:'0.2%',    category:'inflation'},
+  {date:'2026-03-15',time:'18:00',country:'CA',flag:'🇨🇦',event:'CPI MoM (Feb)',                        impact:'high',  actual:'0.7%',   forecast:null,      prev:'0.0%',    category:'inflation'},
 
-  // ── India Upcoming ──
-  {date:'2026-03-17',time:'12:00',country:'IN',flag:'🇮🇳',event:'India WPI Inflation (Feb) Final',impact:'medium',actual:null,forecast:'2.3%',prev:'2.31%',category:'inflation'},
-  {date:'2026-03-19',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Mar)',   impact:'high',  actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank',desc:'Fed holds — markets watch for dot plot guidance'},
-  {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'Bank of England Rate Decision',impact:'high',actual:null,forecast:'4.50%',prev:'4.50%',category:'central-bank'},
-  {date:'2026-03-20',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Trade Balance (Feb) Final',impact:'medium',actual:null,forecast:'-$28B',prev:'-$34.68B',category:'trade'},
-  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US GDP Q4 Final',            impact:'high',  actual:null,forecast:'2.3%',  prev:'2.3%', category:'gdp'},
-  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US PCE Inflation (Feb)',      impact:'high',  actual:null,forecast:'2.5%',  prev:'2.5%', category:'inflation'},
-  {date:'2026-03-28',time:'12:00',country:'IN',flag:'🇮🇳',event:'India GDP Q3 FY26 Final',    impact:'high',  actual:null,forecast:'6.7%',  prev:'6.4%', category:'gdp'},
-  {date:'2026-03-31',time:'09:00',country:'IN',flag:'🇮🇳',event:'GST Collections (Mar)',      impact:'medium',actual:null,forecast:'₹1.85L Cr',prev:'₹1.84L Cr',category:'fiscal'},
-  {date:'2026-04-01',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',actual:null,forecast:'57.2',prev:'57.7',category:'pmi'},
-  {date:'2026-04-03',time:'09:30',country:'IN',flag:'🇮🇳',event:'India Services PMI (Mar)',   impact:'medium',actual:null,forecast:'59.0',  prev:'59.0', category:'pmi'},
-  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Non-Farm Payrolls (Mar)', impact:'high',  actual:null,forecast:'+195K', prev:'+151K',category:'employment'},
-  {date:'2026-04-07',time:'03:00',country:'CN',flag:'🇨🇳',event:'China Trade Balance (Mar)',  impact:'high',  actual:null,forecast:'$90B',   prev:'$170B',category:'trade'},
-  {date:'2026-04-07',time:'14:00',country:'US',flag:'🇺🇸',event:'US ISM Services PMI (Mar)',  impact:'medium',actual:null,forecast:'53.2',   prev:'53.5', category:'pmi'},
-  {date:'2026-04-09',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI Monetary Policy Committee Decision',impact:'high',actual:null,forecast:'6.25%',prev:'6.25%',category:'central-bank',desc:'RBI MPC rate decision — key for Nifty and Bank Nifty'},
-  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US CPI Inflation (Mar)',     impact:'high',  actual:null,forecast:'2.8%',   prev:'2.8%', category:'inflation'},
-  {date:'2026-04-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Mar)',  impact:'high',  actual:null,forecast:'3.8%',   prev:'3.9%', category:'inflation'},
-  {date:'2026-04-16',time:'03:00',country:'CN',flag:'🇨🇳',event:'China GDP Q1 2026',          impact:'high',  actual:null,forecast:'4.8%',   prev:'5.0%', category:'gdp'},
-  {date:'2026-04-17',time:'12:15',country:'EU',flag:'🇪🇺',event:'ECB Rate Decision',          impact:'high',  actual:null,forecast:'2.25%',  prev:'2.5%', category:'central-bank'},
-  {date:'2026-04-30',time:'12:00',country:'IN',flag:'🇮🇳',event:'India Fiscal Deficit (FY26)',impact:'high',  actual:null,forecast:'4.9% of GDP',prev:'5.6%',category:'fiscal'},
-  {date:'2026-05-07',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (May)',   impact:'high',  actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank'},
-  {date:'2026-06-04',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Jun)',     impact:'high',  actual:null,forecast:'6.0%',   prev:'6.25%',category:'central-bank'},
-  {date:'2026-06-18',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Jun)',   impact:'high',  actual:null,forecast:'4.00–4.25%',prev:'4.25–4.50%',category:'central-bank'},
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MONDAY, 16 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-16',time:'02:01',country:'GB',flag:'🇬🇧',event:'Rightmove House Prices MoM (Mar)',     impact:'low',   actual:null,     forecast:null,      prev:'0.5%',    category:'housing'},
+  {date:'2026-03-16',time:'05:00',country:'JP',flag:'🇯🇵',event:'Capacity Utilization MoM (Jan)',       impact:'low',   actual:null,     forecast:null,      prev:'-1.4%',   category:'gdp'},
+  {date:'2026-03-16',time:'05:00',country:'JP',flag:'🇯🇵',event:'Industrial Production MoM (Jan) Final',impact:'low',  actual:null,     forecast:'-1.1%',   prev:'-1.1%',   category:'gdp'},
+  {date:'2026-03-16',time:'10:30',country:'IN',flag:'🇮🇳',event:'Foreign Exchange Reserves (Mar 7)',    impact:'medium',actual:null,     forecast:null,      prev:'$653.97B',category:'macro'},
+  {date:'2026-03-16',time:'14:00',country:'EU',flag:'🇪🇺',event:'Current Account (Jan)',                impact:'low',   actual:null,     forecast:null,      prev:'€31.7B',  category:'macro'},
+  {date:'2026-03-16',time:'14:00',country:'EU',flag:'🇪🇺',event:'Trade Balance (Jan)',                  impact:'medium',actual:null,     forecast:'€12.8B',  prev:'€15.9B',  category:'trade'},
+  {date:'2026-03-16',time:'14:30',country:'US',flag:'🇺🇸',event:'Empire State Manufacturing Index (Mar)',impact:'medium',actual:null,    forecast:'-1.8',    prev:'-20.0',   category:'pmi'},
+  {date:'2026-03-16',time:'17:00',country:'US',flag:'🇺🇸',event:'NAHB Housing Market Index (Mar)',      impact:'medium',actual:null,     forecast:'42',      prev:'42',      category:'housing'},
+  {date:'2026-03-16',time:'20:00',country:'US',flag:'🇺🇸',event:'Net Long-term TIC Flows (Jan)',        impact:'low',   actual:null,     forecast:null,      prev:'$89.5B',  category:'macro'},
+  {date:'2026-03-16',time:'20:00',country:'US',flag:'🇺🇸',event:'Total Net TIC Flows (Jan)',            impact:'low',   actual:null,     forecast:null,      prev:'$318.2B', category:'macro'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // TUESDAY, 17 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-17',time:'05:30',country:'AU',flag:'🇦🇺',event:'RBA Meeting Minutes',                  impact:'medium',actual:null,     forecast:null,      prev:null,      category:'central-bank'},
+  {date:'2026-03-17',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Inflation (Feb) Final',            impact:'medium',actual:null,     forecast:'2.3%',    prev:'2.31%',   category:'inflation'},
+  {date:'2026-03-17',time:'14:00',country:'EU',flag:'🇪🇺',event:'CPI YoY (Feb) Final',                  impact:'high',  actual:null,     forecast:'2.3%',    prev:'2.8%',    category:'inflation'},
+  {date:'2026-03-17',time:'14:00',country:'EU',flag:'🇪🇺',event:'Core CPI YoY (Feb) Final',             impact:'high',  actual:null,     forecast:'2.6%',    prev:'2.7%',    category:'inflation'},
+  {date:'2026-03-17',time:'14:30',country:'US',flag:'🇺🇸',event:'Housing Starts (Feb)',                  impact:'medium',actual:null,     forecast:'1.380M',  prev:'1.366M',  category:'housing'},
+  {date:'2026-03-17',time:'14:30',country:'US',flag:'🇺🇸',event:'Building Permits (Feb)',                impact:'medium',actual:null,     forecast:'1.460M',  prev:'1.473M',  category:'housing'},
+  {date:'2026-03-17',time:'14:30',country:'CA',flag:'🇨🇦',event:'CPI YoY (Feb)',                        impact:'high',  actual:null,     forecast:'2.2%',    prev:'1.9%',    category:'inflation'},
+  {date:'2026-03-17',time:'19:00',country:'US',flag:'🇺🇸',event:'API Weekly Crude Oil Stock',           impact:'low',   actual:null,     forecast:null,      prev:'-4.247M', category:'energy'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // WEDNESDAY, 18 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-18',time:'05:30',country:'JP',flag:'🇯🇵',event:'BoJ Interest Rate Decision',           impact:'high',  actual:null,     forecast:'0.50%',   prev:'0.50%',   category:'central-bank'},
+  {date:'2026-03-18',time:'05:30',country:'JP',flag:'🇯🇵',event:'BoJ Monetary Policy Statement',        impact:'high',  actual:null,     forecast:null,      prev:null,      category:'central-bank'},
+  {date:'2026-03-18',time:'14:00',country:'EU',flag:'🇪🇺',event:'Construction Output MoM (Jan)',        impact:'low',   actual:null,     forecast:null,      prev:'0.5%',    category:'gdp'},
+  {date:'2026-03-18',time:'14:30',country:'US',flag:'🇺🇸',event:'EIA Crude Oil Inventories',            impact:'medium',actual:null,     forecast:'-0.758M', prev:'-1.448M', category:'energy'},
+  {date:'2026-03-18',time:'18:00',country:'US',flag:'🇺🇸',event:'20-Year Bond Auction',                 impact:'low',   actual:null,     forecast:null,      prev:'4.83%',   category:'macro'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // THURSDAY, 19 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-19',time:'14:30',country:'US',flag:'🇺🇸',event:'Initial Jobless Claims',               impact:'medium',actual:null,     forecast:'226K',    prev:'220K',    category:'employment'},
+  {date:'2026-03-19',time:'14:30',country:'US',flag:'🇺🇸',event:'Philadelphia Fed Manufacturing Index (Mar)',impact:'medium',actual:null,forecast:'-2.5',  prev:'18.1',    category:'pmi'},
+  {date:'2026-03-19',time:'14:30',country:'US',flag:'🇺🇸',event:'Current Account (Q4)',                 impact:'medium',actual:null,     forecast:'-$325B',  prev:'-$310.9B',category:'macro'},
+  {date:'2026-03-19',time:'18:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision',                   impact:'high',  actual:null,     forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank',desc:'Fed rate decision + dot plot. Key for all markets.'},
+  {date:'2026-03-19',time:'19:00',country:'US',flag:'🇺🇸',event:'FOMC Press Conference',                impact:'high',  actual:null,     forecast:null,      prev:null,      category:'central-bank'},
+  {date:'2026-03-19',time:'20:00',country:'US',flag:'🇺🇸',event:'Existing Home Sales (Feb)',             impact:'medium',actual:null,     forecast:'3.95M',   prev:'4.08M',   category:'housing'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // FRIDAY, 20 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-20',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Trade Balance (Feb) Final',      impact:'medium',actual:null,     forecast:'-$28B',   prev:'-$34.68B',category:'trade'},
+  {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'Bank of England Rate Decision',        impact:'high',  actual:null,     forecast:'4.50%',   prev:'4.50%',   category:'central-bank'},
+  {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'BoE MPC Vote (Hike)',                  impact:'medium',actual:null,     forecast:'0',       prev:'0',        category:'central-bank'},
+  {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'BoE MPC Vote (Cut)',                   impact:'medium',actual:null,     forecast:'1',       prev:'1',        category:'central-bank'},
+  {date:'2026-03-20',time:'14:30',country:'CA',flag:'🇨🇦',event:'Retail Sales MoM (Jan)',               impact:'medium',actual:null,     forecast:'0.4%',    prev:'2.5%',    category:'retail'},
+  {date:'2026-03-20',time:'15:45',country:'US',flag:'🇺🇸',event:'S&P Global Manufacturing PMI (Mar)',   impact:'medium',actual:null,     forecast:'51.9',    prev:'52.7',    category:'pmi'},
+  {date:'2026-03-20',time:'15:45',country:'US',flag:'🇺🇸',event:'S&P Global Services PMI (Mar)',        impact:'medium',actual:null,     forecast:'51.0',    prev:'51.0',    category:'pmi'},
+  {date:'2026-03-20',time:'16:00',country:'EU',flag:'🇪🇺',event:'Consumer Confidence (Mar) Flash',      impact:'medium',actual:null,     forecast:'-13.6',   prev:'-13.6',   category:'macro'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // WEEK OF 23–28 MARCH 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-24',time:'09:30',country:'IN',flag:'🇮🇳',event:'HSBC India Manufacturing PMI (Mar) Flash',impact:'medium',actual:null,forecast:null,      prev:'56.3',    category:'pmi'},
+  {date:'2026-03-24',time:'09:30',country:'IN',flag:'🇮🇳',event:'HSBC India Services PMI (Mar) Flash',  impact:'medium',actual:null,     forecast:null,      prev:'59.0',    category:'pmi'},
+  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US GDP Q4 2025 Final',                 impact:'high',  actual:null,     forecast:'2.3%',    prev:'2.3%',    category:'gdp'},
+  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US Core PCE Q4 (Final)',               impact:'high',  actual:null,     forecast:'2.5%',    prev:'2.5%',    category:'inflation'},
+  {date:'2026-03-28',time:'12:00',country:'IN',flag:'🇮🇳',event:'India GDP Q3 FY26 Final',              impact:'high',  actual:null,     forecast:'6.7%',    prev:'6.4%',    category:'gdp'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US PCE Price Index MoM (Feb)',          impact:'high',  actual:null,     forecast:'0.3%',    prev:'0.3%',    category:'inflation'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US Core PCE Price Index MoM (Feb)',     impact:'high',  actual:null,     forecast:'0.3%',    prev:'0.3%',    category:'inflation'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US Personal Income MoM (Feb)',          impact:'medium',actual:null,     forecast:'0.4%',    prev:'0.9%',    category:'macro'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US Personal Spending MoM (Feb)',        impact:'medium',actual:null,     forecast:'0.5%',    prev:'-0.2%',   category:'macro'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MARCH END / APRIL 2026
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-03-31',time:'09:00',country:'IN',flag:'🇮🇳',event:'GST Collections (Mar)',                impact:'medium',actual:null,     forecast:'₹1.85L Cr',prev:'₹1.84L Cr',category:'fiscal'},
+  {date:'2026-04-01',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Manufacturing PMI (Mar)',         impact:'medium',actual:null,     forecast:'57.2',    prev:'57.7',    category:'pmi'},
+  {date:'2026-04-01',time:'14:30',country:'US',flag:'🇺🇸',event:'US ISM Manufacturing PMI (Mar)',        impact:'high',  actual:null,     forecast:'49.5',    prev:'50.3',    category:'pmi'},
+  {date:'2026-04-02',time:'14:30',country:'US',flag:'🇺🇸',event:'US JOLTS Job Openings (Feb)',           impact:'medium',actual:null,     forecast:'7.63M',   prev:'7.74M',   category:'employment'},
+  {date:'2026-04-03',time:'09:30',country:'IN',flag:'🇮🇳',event:'India Services PMI (Mar)',              impact:'medium',actual:null,     forecast:'59.0',    prev:'59.0',    category:'pmi'},
+  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',            impact:'high',  actual:null,     forecast:'+195K',   prev:'+151K',   category:'employment'},
+  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Unemployment Rate (Mar)',            impact:'high',  actual:null,     forecast:'4.1%',    prev:'4.1%',    category:'employment'},
+  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Average Hourly Earnings MoM (Mar)', impact:'medium',actual:null,     forecast:'0.3%',    prev:'0.3%',    category:'employment'},
+  {date:'2026-04-07',time:'03:00',country:'CN',flag:'🇨🇳',event:'China Trade Balance (Mar)',             impact:'high',  actual:null,     forecast:'$90B',    prev:'$170B',   category:'trade'},
+  {date:'2026-04-07',time:'14:00',country:'US',flag:'🇺🇸',event:'US ISM Services PMI (Mar)',             impact:'medium',actual:null,     forecast:'53.2',    prev:'53.5',    category:'pmi'},
+  {date:'2026-04-09',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Rate Decision',                impact:'high',  actual:null,     forecast:'6.00%',   prev:'6.25%',   category:'central-bank',desc:'RBI MPC rate decision — key for Nifty and Bank Nifty'},
+  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US CPI YoY (Mar)',                     impact:'high',  actual:null,     forecast:'2.6%',    prev:'2.8%',    category:'inflation'},
+  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US Core CPI YoY (Mar)',                impact:'high',  actual:null,     forecast:'3.0%',    prev:'3.1%',    category:'inflation'},
+  {date:'2026-04-11',time:'12:30',country:'US',flag:'🇺🇸',event:'US PPI MoM (Mar)',                     impact:'medium',actual:null,     forecast:'0.2%',    prev:'0.0%',    category:'inflation'},
+  {date:'2026-04-14',time:'12:30',country:'US',flag:'🇺🇸',event:'US Retail Sales MoM (Mar)',             impact:'high',  actual:null,     forecast:'0.5%',    prev:'-0.9%',   category:'retail'},
+  {date:'2026-04-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Mar)',             impact:'high',  actual:null,     forecast:'3.8%',    prev:'3.9%',    category:'inflation'},
+  {date:'2026-04-16',time:'03:00',country:'CN',flag:'🇨🇳',event:'China GDP Q1 2026',                    impact:'high',  actual:null,     forecast:'4.8%',    prev:'5.0%',    category:'gdp'},
+  {date:'2026-04-17',time:'12:15',country:'EU',flag:'🇪🇺',event:'ECB Rate Decision',                    impact:'high',  actual:null,     forecast:'2.25%',   prev:'2.50%',   category:'central-bank'},
+  {date:'2026-04-17',time:'13:45',country:'EU',flag:'🇪🇺',event:'ECB Press Conference',                 impact:'high',  actual:null,     forecast:null,      prev:null,      category:'central-bank'},
+  {date:'2026-04-30',time:'12:00',country:'IN',flag:'🇮🇳',event:'India Fiscal Deficit FY26',            impact:'high',  actual:null,     forecast:'4.9% of GDP',prev:'5.6%', category:'fiscal'},
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MAY–JUNE 2026 (KEY EVENTS)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {date:'2026-05-07',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (May)',             impact:'high',  actual:null,     forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank'},
+  {date:'2026-05-07',time:'20:30',country:'US',flag:'🇺🇸',event:'FOMC Press Conference',               impact:'high',  actual:null,     forecast:null,      prev:null,      category:'central-bank'},
+  {date:'2026-06-04',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Jun)',              impact:'high',  actual:null,     forecast:'5.75%',   prev:'6.00%',   category:'central-bank'},
+  {date:'2026-06-18',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Jun)',            impact:'high',  actual:null,     forecast:'4.00–4.25%',prev:'4.25–4.50%',category:'central-bank'},
+  {date:'2026-08-06',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Aug)',              impact:'high',  actual:null,     forecast:'5.50%',   prev:'5.75%',   category:'central-bank'},
 ];
 
 function renderEcono() {
