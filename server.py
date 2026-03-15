@@ -1530,28 +1530,50 @@ def index():
 
 
 # ════════════════════════════════════════════════════════
-#  START
+#  STARTUP — works for both gunicorn (Railway) and direct
 # ════════════════════════════════════════════════════════
 
-if __name__ == "__main__":
+def _startup():
+    """Run once at startup regardless of how the server is launched."""
     print("=" * 55)
-    print("  MarketPit Backend Server")
-    print("  Stocks: Yahoo Finance | FII+Earnings: NSE India")
+    print("  MarketPit Backend — Starting up")
     print("=" * 55)
 
-    # Initial fetches before accepting requests
-    refresh_cache()
+    # Initial cache fill (non-blocking — errors are caught inside)
+    try:
+        refresh_cache()
+        print("  ✓ Stock cache ready")
+    except Exception as e:
+        print(f"  ⚠ Stock cache error: {e}")
 
-    print("Fetching FII/DII data from NSE India...")
-    refresh_fii()
+    try:
+        refresh_fii()
+        print("  ✓ FII/DII cache ready")
+    except Exception as e:
+        print(f"  ⚠ FII cache error: {e}")
 
-    print("Fetching Earnings calendar from NSE India...")
-    refresh_earnings()
+    # Earnings — fire in background so startup is fast
+    def _earn_init():
+        try:
+            refresh_earnings()
+            print("  ✓ Earnings cache ready")
+        except Exception as e:
+            print(f"  ⚠ Earnings cache error: {e}")
+
+    threading.Thread(target=_earn_init, daemon=True).start()
 
     # Start background refresh thread
     t = threading.Thread(target=background_refresher, daemon=True)
     t.start()
+    print("  ✓ Background refresher started")
+    print("=" * 55)
 
+
+# ── Run startup when imported by gunicorn OR run directly ──
+_startup()
+
+
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"\nServer running at http://localhost:{port}\n")
     app.run(host="0.0.0.0", port=port, debug=False)
