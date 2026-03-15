@@ -595,32 +595,35 @@ header {
 .pt-stat-val { font-size:20px; font-weight:800; }
 .pt-holding-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); transition:background 0.12s; }
 .pt-holding-row:hover { background:var(--bg3); }
-/* Paper trading tab active state */
-#pt_trade.pt-active, #pt_holdings.pt-active, #pt_orders.pt-active, #pt_history.pt-active, #pt_leaderboard.pt-active {
-  color: var(--accent); border-bottom-color: var(--accent);
+/* ── PAPER TRADING — Professional Terminal ── */
+#pt_trade.pt-active,#pt_holdings.pt-active,#pt_orders.pt-active,#pt_history.pt-active,#pt_leaderboard.pt-active {
+  color:var(--accent); border-bottom-color:var(--accent); background:rgba(0,112,243,0.05);
 }
-/* Paper trading input polish */
 #page-paper .form-input {
-  background: var(--bg2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  color: var(--text1);
-  font-family: 'Space Mono', monospace;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  background:var(--bg3); border:1px solid var(--border); border-radius:6px;
+  color:var(--text); font-family:'Space Mono',monospace; font-size:14px;
+  font-weight:600; padding:9px 11px; transition:border-color 0.15s,box-shadow 0.15s; width:100%;
 }
 #page-paper .form-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,112,243,0.12);
-  outline: none;
+  border-color:var(--accent); box-shadow:0 0 0 2px rgba(0,112,243,0.14); outline:none; background:var(--bg2);
 }
-/* Search dropdown polish */
-#ptSearchDrop { scrollbar-width: thin; }
-#ptSearchDrop::-webkit-scrollbar { width: 4px; }
-#ptSearchDrop::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.trade-form { padding:16px; display:flex; flex-direction:column; gap:12px; }
-.trade-form select, .trade-form input { background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:10px 12px; font-size:13px; outline:none; font-family:'DM Sans',sans-serif; }
-.buy-btn { background:var(--green); color:#fff; border:none; border-radius:8px; padding:12px; font-weight:800; font-size:14px; cursor:pointer; font-family:'DM Sans',sans-serif; }
-.sell-btn { background:var(--red); color:#fff; border:none; border-radius:8px; padding:12px; font-weight:800; font-size:14px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+#ptSearchDrop { scrollbar-width:thin; }
+#ptSearchDrop::-webkit-scrollbar { width:4px; }
+#ptSearchDrop::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.pt-lbl { font-size:9px; font-family:'Space Mono',monospace; letter-spacing:1.5px; color:var(--text3); margin-bottom:5px; text-transform:uppercase; }
+.pt-side { flex:1; padding:12px; font-weight:800; font-size:13px; cursor:pointer; border:none; letter-spacing:1px; font-family:'Space Mono',monospace; transition:all 0.15s; }
+.pt-qpill { flex:1; padding:5px 0; border-radius:5px; border:1px solid var(--border); background:var(--bg3); color:var(--text3); font-size:10px; font-weight:700; cursor:pointer; font-family:'Space Mono',monospace; text-align:center; transition:all 0.12s; }
+.pt-qpill:hover { border-color:var(--accent); color:var(--accent); }
+.pt-mtoggle { display:grid; border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-bottom:4px; }
+.pt-mbtn { padding:9px 6px; border:none; cursor:pointer; font-size:11px; font-weight:700; font-family:'Space Mono',monospace; transition:all 0.15s; text-align:center; }
+.pt-trow { display:grid; align-items:center; padding:9px 14px; border-bottom:1px solid var(--border); font-size:11px; transition:background 0.1s; }
+.pt-trow:hover { background:var(--bg3); }
+.pt-thead { font-size:8px; font-family:'Space Mono',monospace; letter-spacing:1px; color:var(--text3); padding:7px 14px; background:var(--bg3); border-bottom:1px solid var(--border); display:grid; align-items:center; }
+.pt-scell { padding:10px 14px; border-right:1px solid var(--border); }
+.pt-scell:last-child { border-right:none; }
+.pt-slbl { font-size:8px; font-family:'Space Mono',monospace; letter-spacing:1.5px; color:var(--text3); margin-bottom:3px; }
+.pt-sval { font-size:14px; font-weight:800; font-family:'Space Mono',monospace; letter-spacing:-0.5px; }
+.pt-chip { font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; letter-spacing:0.5px; }
 /* IPO */
 .ipo-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; }
 .ipo-card:hover { border-color:var(--accent); }
@@ -1510,47 +1513,48 @@ header {
   <!-- PAPER TRADING PAGE -->
   <!-- ═══════════════════════════════════════════ -->
   <div class="main-feed" id="page-paper" style="display:none;flex-direction:column;">
-    <!-- ── PAPER TRADING HEADER ── -->
-    <div style="padding:0;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0;">
-      <!-- Top bar: logo + balance + reset -->
-      <div style="padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <!-- Terminal-style logo -->
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0052cc);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,112,243,0.35);">📈</div>
-            <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;line-height:1;">PAPER TRADING</div>
-              <div id="ptMarketStatus" style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.5px;"></div>
-            </div>
+    <div style="flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);">
+      <!-- Top bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:26px;height:26px;border-radius:5px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">⚡</div>
+          <div>
+            <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;">PAPER TRADING</div>
+            <div id="ptMarketStatus" style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);margin-top:1px;"></div>
           </div>
         </div>
-        <!-- Balance card -->
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:10px;">
-            <div>
-              <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:2px;">BALANCE</div>
-              <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:16px;color:var(--accent);font-weight:700;letter-spacing:-0.5px;">₹10,00,000</div>
-            </div>
-            <div style="width:1px;height:28px;background:var(--border);"></div>
-            <button onclick="resetPaperPortfolio()" title="Reset portfolio"
-              style="padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;"
-              onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
-              onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺ RESET</button>
+        <!-- Portfolio strip -->
+        <div style="display:flex;align-items:stretch;background:var(--bg3);border:1px solid var(--border);border-radius:7px;overflow:hidden;">
+          <div class="pt-scell">
+            <div class="pt-slbl">CASH</div>
+            <div id="ptBalance" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:800;color:var(--green);">₹10,00,000</div>
           </div>
+          <div class="pt-scell">
+            <div class="pt-slbl">PORTFOLIO</div>
+            <div id="ptPortfolioVal" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:800;color:var(--accent);">—</div>
+          </div>
+          <div class="pt-scell">
+            <div class="pt-slbl">TOTAL P&amp;L</div>
+            <div id="ptHeaderPnl" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:800;color:var(--text3);">—</div>
+          </div>
+          <button onclick="resetPaperPortfolio()"
+            style="padding:0 13px;border:none;background:transparent;color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;border-left:1px solid var(--border);transition:all 0.15s;"
+            onmouseover="this.style.color='var(--red)';this.style.background='rgba(229,57,53,0.08)'"
+            onmouseout="this.style.color='var(--text3)';this.style.background='transparent'">↺ RESET</button>
         </div>
       </div>
-      <!-- Tab nav -->
-      <div style="display:flex;padding:0 20px;gap:0;">
+      <!-- Tabs -->
+      <div style="display:flex;padding:0 4px;">
         <button onclick="switchPaperTab('trade',this)" id="pt_trade"
-          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">TRADE</button>
+          style="padding:9px 15px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1.5px;border-bottom:2px solid transparent;transition:all 0.15s;">ORDER</button>
         <button onclick="switchPaperTab('holdings',this)" id="pt_holdings"
-          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">POSITIONS</button>
+          style="padding:9px 15px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1.5px;border-bottom:2px solid transparent;transition:all 0.15s;">POSITIONS</button>
         <button onclick="switchPaperTab('orders',this)" id="pt_orders"
-          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">ORDERS</button>
+          style="padding:9px 15px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1.5px;border-bottom:2px solid transparent;transition:all 0.15s;">ORDERS</button>
         <button onclick="switchPaperTab('history',this)" id="pt_history"
-          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">HISTORY</button>
+          style="padding:9px 15px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1.5px;border-bottom:2px solid transparent;transition:all 0.15s;">HISTORY</button>
         <button onclick="switchPaperTab('leaderboard',this)" id="pt_leaderboard"
-          style="padding:10px 16px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;border-bottom:2px solid transparent;transition:all 0.15s;">STATS</button>
+          style="padding:9px 15px;border:none;background:transparent;color:var(--text3);font-weight:700;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1.5px;border-bottom:2px solid transparent;transition:all 0.15s;">ANALYTICS</button>
       </div>
     </div>
     <div class="feed-scroll" id="paperBody" style="padding:0;"></div>
@@ -10020,22 +10024,34 @@ function renderPaperTrade() {
   fetchUsdInr();
   updatePtMarketBadge();
   const d = getPaperData();
+  // ── Update header stats ──
   const balEl = document.getElementById('ptBalance');
   if (balEl) balEl.textContent = '₹' + d.balance.toLocaleString('en-IN', {maximumFractionDigits:0});
+  // Portfolio value + P&L
+  const allA = getAllPtAssets();
+  let portVal = 0, invested = 0;
+  Object.entries(d.holdings).forEach(([sym, h]) => {
+    if (!h.qty) return;
+    const ds = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
+    const ltp = allA.find(a=>a.sym===ds)?.price || h.avgPrice;
+    portVal  += (h.cur==='$' ? toInr(ltp) : ltp) * h.qty;
+    invested += (h.cur==='$' ? toInr(h.avgPrice) : h.avgPrice) * h.qty;
+  });
+  const totalPnl = portVal - invested;
+  const pvEl  = document.getElementById('ptPortfolioVal');
+  const pnlEl = document.getElementById('ptHeaderPnl');
+  if (pvEl)  pvEl.textContent  = portVal > 0 ? '₹'+Math.round(portVal).toLocaleString('en-IN') : '—';
+  if (pnlEl) {
+    pnlEl.textContent = invested > 0 ? (totalPnl>=0?'+':'−')+'₹'+Math.abs(Math.round(totalPnl)).toLocaleString('en-IN') : '—';
+    if (pnlEl) pnlEl.style.color = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  }
   const el = document.getElementById('paperBody');
   if (!el) return;
-
-  if (_ptTab === 'trade') {
-    renderPtTrade(el, d);
-  } else if (_ptTab === 'holdings') {
-    renderPtHoldings(el, d);
-  } else if (_ptTab === 'orders') {
-    renderPtOrders(el);
-  } else if (_ptTab === 'history') {
-    renderPtHistory(el);
-  } else if (_ptTab === 'leaderboard') {
-    renderPtLeaderboard(el, d);
-  }
+  if (_ptTab === 'trade')       renderPtTrade(el, d);
+  else if (_ptTab === 'holdings')  renderPtHoldings(el, d);
+  else if (_ptTab === 'orders')    renderPtOrders(el);
+  else if (_ptTab === 'history')   renderPtHistory(el);
+  else if (_ptTab === 'leaderboard') renderPtLeaderboard(el, d);
 }
 
 // ── All assets list for search ──
@@ -10087,71 +10103,69 @@ function renderPtTrade(el, d) {
   // 1. TRADE MODE SELECTOR
   let modeSectionHTML = '';
   if (isStock) {
-    modeSectionHTML = '<div style="margin-bottom:18px;">'
-      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
-      + '<button onclick="setPtTradeMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptTradeMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptTradeMode==='intraday'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\u26a1 Intraday</div><div style="font-size:10px;opacity:0.8;margin-top:2px;">MIS \u00b7 5\u00d7 leverage</div></button>'
-      + '<button onclick="setPtTradeMode(\'delivery\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptTradeMode==='delivery'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptTradeMode==='delivery'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\ud83d\udce6 Delivery</div><div style="font-size:10px;opacity:0.8;margin-top:2px;">CNC \u00b7 Full payment</div></button>'
+    const iIntra = _ptTradeMode==='intraday';
+    modeSectionHTML = '<div>'
+      + '<div class="pt-lbl">TRADE TYPE</div>'
+      + '<div class="pt-mtoggle" style="grid-template-columns:1fr 1fr;">'
+      + '<button onclick="setPtTradeMode(\'intraday\')" class="pt-mbtn" style="background:' + (iIntra?'var(--accent)':'var(--bg3)') + ';color:' + (iIntra?'#fff':'var(--text3)') + ';">'
+      + '⚡ Intraday<br><span style="font-size:9px;opacity:0.8;">MIS · 5× leverage</span></button>'
+      + '<button onclick="setPtTradeMode(\'delivery\')" class="pt-mbtn" style="background:' + (!iIntra?'var(--green)':'var(--bg3)') + ';color:' + (!iIntra?'#fff':'var(--text3)') + ';border-left:1px solid var(--border);">'
+      + '📦 Delivery<br><span style="font-size:9px;opacity:0.8;">CNC · Full payment</span></button>'
       + '</div>'
-      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:' + (_ptTradeMode==='intraday'?'rgba(0,112,243,0.08)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (_ptTradeMode==='intraday'?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:11px;color:var(--text2);line-height:1.5;">'
-      + (_ptTradeMode==='intraday'
-          ? '\u26a1 <strong>5\u00d7 leverage</strong> \u2014 pay 20% margin &nbsp;\u00b7&nbsp; Auto sq-off at <strong>3:20 PM IST</strong> &nbsp;\u00b7&nbsp; STT on buy &amp; sell'
-          : '\ud83d\udce6 <strong>Full payment</strong> required &nbsp;\u00b7&nbsp; Hold overnight &nbsp;\u00b7&nbsp; T+1 settlement &nbsp;\u00b7&nbsp; STT on sell only')
+      + '<div style="margin-top:5px;padding:6px 10px;border-radius:5px;background:' + (iIntra?'rgba(0,112,243,0.07)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (iIntra?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:10px;color:var(--text2);">'
+      + (iIntra ? '⚡ <b>5× leverage</b> — 20% margin · Sq-off <b>3:20 PM</b> · STT on buy+sell'
+               : '📦 <b>Full payment</b> · Hold overnight · T+1 settlement · STT sell only')
       + '</div></div>';
   } else if (isCrypto) {
-    modeSectionHTML = '<div style="margin-bottom:18px;">'
-      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
-      + '<button onclick="setPtCryptoMode(\'spot\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCryptoMode==='spot'?'#f7931a':'var(--bg3)') + ';color:' + (_ptCryptoMode==='spot'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\ud83d\udcb1 Spot</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">Full payment \u00b7 0.1% fee</div></button>'
-      + '<button onclick="setPtCryptoMode(\'margin\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCryptoMode==='margin'?'#f7931a':'var(--bg3)') + ';color:' + (_ptCryptoMode==='margin'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\u26a1 Margin 3\u00d7</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">33% margin \u00b7 Funding 0.01%</div></button>'
+    const isSpot = _ptCryptoMode==='spot';
+    modeSectionHTML = '<div>'
+      + '<div class="pt-lbl">TRADE TYPE</div>'
+      + '<div class="pt-mtoggle" style="grid-template-columns:1fr 1fr;">'
+      + '<button onclick="setPtCryptoMode(\'spot\')" class="pt-mbtn" style="background:' + (isSpot?'#f7931a':'var(--bg3)') + ';color:' + (isSpot?'#fff':'var(--text3)') + ';">'
+      + '💱 Spot<br><span style="font-size:9px;opacity:0.85;">Full · 0.1% fee</span></button>'
+      + '<button onclick="setPtCryptoMode(\'margin\')" class="pt-mbtn" style="background:' + (!isSpot?'#f7931a':'var(--bg3)') + ';color:' + (!isSpot?'#fff':'var(--text3)') + ';border-left:1px solid var(--border);">'
+      + '⚡ Margin 3×<br><span style="font-size:9px;opacity:0.85;">33% margin</span></button>'
       + '</div>'
-      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:rgba(247,147,26,0.07);border:1px solid rgba(247,147,26,0.2);font-size:11px;color:var(--text2);line-height:1.6;">'
-      + (_ptCryptoMode==='spot'
-          ? '\ud83d\udcb1 <strong>Spot</strong> \u2014 full payment \u00b7 24\u00d77 trading \u00b7 <strong>0.1%</strong> fee both sides \u00b7 No liquidation risk'
-          : '\u26a1 <strong>3\u00d7 leverage</strong> \u2014 pay 33% margin \u00b7 Funding rate 0.01%/8h \u00b7 Liquidation at 90% drawdown \u00b7 0.1% fee')
+      + '<div style="margin-top:5px;padding:6px 10px;border-radius:5px;background:rgba(247,147,26,0.07);border:1px solid rgba(247,147,26,0.2);font-size:10px;color:var(--text2);">'
+      + (isSpot ? '💱 <b>Spot</b> — full payment · 24/7 · <b>0.1%</b> fee · No liquidation'
+                : '⚡ <b>3× leverage</b> — 33% margin · Funding 0.01%/8h · Liq at 90% loss')
       + '</div>'
-      // Order type row for crypto
-      + '<div style="margin-top:12px;">'
-      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">ORDER TYPE</div>'
-      + '<div style="display:flex;gap:6px;">'
+      + '<div style="margin-top:8px;"><div class="pt-lbl">ORDER TYPE</div>'
+      + '<div style="display:flex;gap:4px;">'
       + ['market','limit','sl'].map(function(t){
-          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s;background:' + (_ptOrderTypeAdv===t?'var(--accent)':'var(--bg3)') + ';color:' + (_ptOrderTypeAdv===t?'#fff':'var(--text3)') + ';">' + (t==='market'?'Market':t==='limit'?'Limit':'SL-M') + '</button>';
+          const active = _ptOrderTypeAdv===t;
+          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:6px 4px;border-radius:5px;border:1px solid var(--border);cursor:pointer;font-size:10px;font-weight:700;font-family:\'Space Mono\',monospace;transition:all 0.15s;background:' + (active?'var(--accent)':'var(--bg3)') + ';color:' + (active?'#fff':'var(--text3)') + ';">' + (t==='market'?'MKT':t==='limit'?'LMT':'SL-M') + '</button>';
         }).join('')
       + '</div>'
-      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\udccc BUY executes when price \u2264 limit \u00b7 SELL executes when price \u2265 limit</div>' : '')
-      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\uded1 SL-M BUY triggers when price \u2265 trigger \u00b7 SL-M SELL when price \u2264 trigger</div>' : '')
+      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:9px;color:var(--text3);margin-top:4px;">BUY fills ≤ limit · SELL fills ≥ limit</div>' : '')
+      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:9px;color:var(--text3);margin-top:4px;">SL-M: triggers at price, executes at market</div>' : '')
       + '</div></div>';
   } else {
     // Commodity
     const lotData = MCX_LOT_SIZES[asset.sym];
-    modeSectionHTML = '<div style="margin-bottom:18px;">'
-      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">TRADE TYPE</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;border:2px solid var(--border);">'
-      + '<button onclick="setPtCommMode(\'intraday\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCommMode==='intraday'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptCommMode==='intraday'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\u26a1 Intraday</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">MIS \u00b7 4\u00d7 leverage</div></button>'
-      + '<button onclick="setPtCommMode(\'nrml\')" style="padding:11px 8px;border:none;cursor:pointer;transition:all 0.15s;background:' + (_ptCommMode==='nrml'?'var(--accent)':'var(--bg3)') + ';color:' + (_ptCommMode==='nrml'?'#fff':'var(--text3)') + ';">'
-      + '<div style="font-weight:800;font-size:13px;">\ud83d\udce6 Normal</div><div style="font-size:10px;opacity:0.85;margin-top:2px;">NRML \u00b7 Full margin</div></button>'
+    const isIntra = _ptCommMode==='intraday';
+    modeSectionHTML = '<div>'
+      + '<div class="pt-lbl">TRADE TYPE</div>'
+      + '<div class="pt-mtoggle" style="grid-template-columns:1fr 1fr;">'
+      + '<button onclick="setPtCommMode(\'intraday\')" class="pt-mbtn" style="background:' + (isIntra?'var(--accent)':'var(--bg3)') + ';color:' + (isIntra?'#fff':'var(--text3)') + ';">'
+      + '⚡ Intraday<br><span style="font-size:9px;opacity:0.85;">MIS · 4× leverage</span></button>'
+      + '<button onclick="setPtCommMode(\'nrml\')" class="pt-mbtn" style="background:' + (!isIntra?'var(--green)':'var(--bg3)') + ';color:' + (!isIntra?'#fff':'var(--text3)') + ';border-left:1px solid var(--border);">'
+      + '📦 Normal<br><span style="font-size:9px;opacity:0.85;">NRML · Full margin</span></button>'
       + '</div>'
-      + '<div style="margin-top:8px;padding:9px 12px;border-radius:10px;background:' + (_ptCommMode==='intraday'?'rgba(0,112,243,0.07)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (_ptCommMode==='intraday'?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:11px;color:var(--text2);line-height:1.6;">'
-      + (_ptCommMode==='intraday'
-          ? '\u26a1 MCX <strong>4\u00d7 leverage</strong> \u00b7 Auto sq-off <strong>11:20 PM IST</strong> \u00b7 CTT 0.01% on sell \u00b7 Lot size applies'
-          : '\ud83d\udce6 <strong>Full margin</strong> \u00b7 Hold till expiry \u00b7 MCX 9AM\u201311:30PM \u00b7 CTT 0.01% on sell')
+      + '<div style="margin-top:5px;padding:6px 10px;border-radius:5px;background:' + (isIntra?'rgba(0,112,243,0.07)':'rgba(0,168,84,0.07)') + ';border:1px solid ' + (isIntra?'rgba(0,112,243,0.2)':'rgba(0,168,84,0.2)') + ';font-size:10px;color:var(--text2);">'
+      + (isIntra ? '⚡ MCX <b>4× leverage</b> · Sq-off <b>11:20 PM IST</b> · CTT 0.01% sell'
+                 : '📦 <b>Full margin</b> · Hold till expiry · MCX 9AM–11:30PM')
       + '</div>'
-      + (lotData ? '<div style="margin-top:8px;padding:7px 12px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:11px;display:flex;align-items:center;justify-content:space-between;"><span style="color:var(--text3);">MCX Lot Size</span><span style="font-weight:800;color:var(--accent);">' + lotData.lot.toLocaleString() + ' ' + lotData.unit + '</span></div>' : '')
-      // Order type for commodity
-      + '<div style="margin-top:10px;">'
-      + '<div style="font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:7px;letter-spacing:1px;">ORDER TYPE</div>'
-      + '<div style="display:flex;gap:6px;">'
+      + (lotData ? '<div style="margin-top:5px;padding:5px 10px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);font-size:10px;display:flex;justify-content:space-between;"><span style="color:var(--text3);">MCX Lot</span><b style="color:var(--accent);">' + lotData.lot.toLocaleString() + ' ' + lotData.unit + '</b></div>' : '')
+      + '<div style="margin-top:8px;"><div class="pt-lbl">ORDER TYPE</div>'
+      + '<div style="display:flex;gap:4px;">'
       + ['market','limit','sl'].map(function(t){
-          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:8px 4px;border-radius:9px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s;background:' + (_ptOrderTypeAdv===t?'var(--accent)':'var(--bg3)') + ';color:' + (_ptOrderTypeAdv===t?'#fff':'var(--text3)') + ';">' + (t==='market'?'Market':t==='limit'?'Limit':'SL-M') + '</button>';
+          const active = _ptOrderTypeAdv===t;
+          return '<button onclick="setPtOrderTypeAdv(\'' + t + '\')" style="flex:1;padding:6px 4px;border-radius:5px;border:1px solid var(--border);cursor:pointer;font-size:10px;font-weight:700;font-family:\'Space Mono\',monospace;transition:all 0.15s;background:' + (active?'var(--accent)':'var(--bg3)') + ';color:' + (active?'#fff':'var(--text3)') + ';">' + (t==='market'?'MKT':t==='limit'?'LMT':'SL-M') + '</button>';
         }).join('')
       + '</div>'
-      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\udccc BUY fills when price \u2264 limit \u00b7 SELL fills when price \u2265 limit</div>' : '')
-      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:10px;color:var(--text3);margin-top:6px;">\ud83d\uded1 SL-M triggers at set price \u2014 executes at market</div>' : '')
+      + (_ptOrderTypeAdv==='limit' ? '<div style="font-size:9px;color:var(--text3);margin-top:4px;">BUY fills ≤ limit · SELL fills ≥ limit</div>' : '')
+      + (_ptOrderTypeAdv==='sl'    ? '<div style="font-size:9px;color:var(--text3);margin-top:4px;">SL-M triggers at set price, executes at market</div>' : '')
       + '</div></div>';
   }
 
@@ -10201,123 +10215,218 @@ function renderPtTrade(el, d) {
   const execLabel = (_ptOrderType==='BUY'?'\u25b2 BUY':'\u25bc SELL') + ' ' + asset.sym + modeLabel + orderTypeLabel;
 
   el.innerHTML = `
-  <div style="padding:20px;max-width:460px;margin:0 auto;">
+  <div style="display:grid;grid-template-columns:340px 1fr;height:100%;overflow:hidden;">
 
-    <!-- Asset Search -->
-    <div style="position:relative;margin-bottom:18px;">
-      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Search Asset</div>
-      <input id="ptAssetSearch" class="form-input" placeholder="Search stocks, crypto, commodities\u2026" autocomplete="off"
-        style="padding-right:36px;"
-        oninput="onPtSearch(this.value)"
-        onfocus="onPtSearch(this.value)"
-        value="${_ptSearchQ}">
-      <div id="ptSearchDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;z-index:100;max-height:240px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15);margin-top:4px;"></div>
-    </div>
+    <!-- ═══ LEFT: Order Form ═══ -->
+    <div style="border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--bg1);">
 
-    <!-- Selected Asset Card -->
-    <div id="ptAssetCard"
-      style="background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color 0.2s;"
-      onclick="document.getElementById('ptAssetSearch').focus()"
-      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(0,112,243,0.15),rgba(0,112,243,0.04));border:1px solid rgba(0,112,243,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;letter-spacing:0.5px;">${asset.sym.slice(0,4)}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:800;font-size:16px;letter-spacing:-0.3px;">${asset.sym}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${asset.name} &middot; <span style="font-family:'Space Mono',monospace;">${asset.group}</span></div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;letter-spacing:-0.5px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:0})}</div>
-        <div style="font-size:11px;font-weight:700;margin-top:3px;padding:2px 7px;border-radius:4px;display:inline-block;
-          background:${parseFloat(asset.chg)>=0?'rgba(0,168,84,0.1)':'rgba(229,57,53,0.1)'};
-          color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg || '—'}</div>
-      </div>
-    </div>
-
-    <!-- Market status strip -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding:8px 12px;background:var(--bg3);border-radius:9px;border:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:7px;">
-        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${marketStatusLabel(asset.sym).color};box-shadow:0 0 7px ${marketStatusLabel(asset.sym).color};animation:livePulse 2s ease-in-out infinite;"></span>
-        <span style="font-size:11px;font-weight:700;color:${marketStatusLabel(asset.sym).color};">${marketStatusLabel(asset.sym).label}</span>
-      </div>
-      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">${getMarketStatus().istTime} IST</span>
-    </div>
-
-    ${modeSectionHTML}
-
-    <!-- BUY / SELL toggle -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;">
-      <button id="ptBuyBtn" onclick="setPtOrder('BUY')"
-        style="padding:13px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;
-        border:2px solid ${_ptOrderType==='BUY'?'var(--green)':'var(--border)'};
-        background:${_ptOrderType==='BUY'?'var(--green)':'transparent'};
-        color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};
-        box-shadow:${_ptOrderType==='BUY'?'0 4px 16px rgba(0,168,84,0.3)':'none'};">
-        ▲ BUY
-      </button>
-      <button id="ptSellBtn" onclick="setPtOrder('SELL')"
-        style="padding:13px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;
-        border:2px solid ${_ptOrderType==='SELL'?'var(--red)':'var(--border)'};
-        background:${_ptOrderType==='SELL'?'var(--red)':'transparent'};
-        color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};
-        box-shadow:${_ptOrderType==='SELL'?'0 4px 16px rgba(229,57,53,0.3)':'none'};">
-        ▼ SELL
-      </button>
-    </div>
-
-    <!-- Price + Qty inputs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-      <div>
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Price (${cur})</div>
-        <input type="number" id="ptPrice" class="form-input"
-          style="margin:0;font-weight:700;font-size:15px;font-family:'Space Mono',monospace;border-radius:10px;"
-          value="${asset.price}" oninput="ptCalcTotal()" step="0.01">
-      </div>
-      <div>
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">Quantity</div>
-        <input type="number" id="ptQty" class="form-input"
-          style="margin:0;font-weight:700;font-size:15px;font-family:'Space Mono',monospace;border-radius:10px;"
-          value="1" min="1" oninput="ptCalcTotal()">
-      </div>
-    </div>
-
-    <!-- Quick qty buttons -->
-    <div style="display:flex;gap:5px;margin-bottom:16px;">
-      ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})"
-        style="flex:1;padding:7px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;transition:all 0.12s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">${n}</button>`).join('')}
-    </div>
-
-    ${limitInputHTML}
-
-    <!-- Summary box -->
-    <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;overflow:hidden;">
-      <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">ORDER SUMMARY</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:12px;color:var(--text3);">Order Value</span>
-        <div style="text-align:right;">
-          <div id="ptTotal" style="font-size:15px;font-weight:800;font-family:'Space Mono',monospace;color:var(--accent);">—</div>
-          <div id="ptTotalInr" style="font-size:10px;color:var(--text3);margin-top:1px;"></div>
+      <!-- Instrument search -->
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:var(--bg2);">
+        <div class="pt-lbl">INSTRUMENT</div>
+        <div style="position:relative;">
+          <input id="ptAssetSearch" class="form-input" placeholder="Search symbol or name…"
+            autocomplete="off" oninput="onPtSearch(this.value)" onfocus="onPtSearch(this.value)"
+            value="${_ptSearchQ}" style="padding-right:28px;">
+          <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;">⌕</span>
+          <div id="ptSearchDrop" style="display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;z-index:200;max-height:240px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);"></div>
         </div>
       </div>
-      ${summaryExtrasHTML}
-      <div style="display:flex;justify-content:space-between;align-items:center;${maxSell>0?'margin-bottom:10px;':''}padding-top:10px;border-top:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text3);">Cash Available</span>
-        <span style="font-size:13px;font-weight:700;font-family:'Space Mono',monospace;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+
+      <!-- Selected instrument row -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg2);"
+           onclick="document.getElementById('ptAssetSearch').focus()">
+        <div style="width:34px;height:34px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${asset.sym.slice(0,5)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:13px;font-family:'Space Mono',monospace;">${asset.sym}</div>
+          <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${asset.name} · ${asset.group}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Space Mono',monospace;font-weight:800;font-size:14px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:0})}</div>
+          <div style="font-size:10px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg||'—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+          <span style="width:5px;height:5px;border-radius:50%;background:${marketStatusLabel(asset.sym).color};display:inline-block;animation:livePulse 2s ease-in-out infinite;"></span>
+          <span style="font-size:8px;font-family:'Space Mono',monospace;color:${marketStatusLabel(asset.sym).color};">${marketStatusLabel(asset.sym).label}</span>
+        </div>
       </div>
-      ${holdingsHTML}
+
+      <!-- Trade mode -->
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+        ${modeSectionHTML}
+      </div>
+
+      <!-- BUY / SELL tabs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;flex-shrink:0;">
+        <button id="ptBuyBtn" onclick="setPtOrder('BUY')" class="pt-side"
+          style="background:${_ptOrderType==='BUY'?'#00b84c':'var(--bg3)'};color:${_ptOrderType==='BUY'?'#fff':'var(--text3)'};border-right:1px solid var(--border);">▲ BUY</button>
+        <button id="ptSellBtn" onclick="setPtOrder('SELL')" class="pt-side"
+          style="background:${_ptOrderType==='SELL'?'#e53935':'var(--bg3)'};color:${_ptOrderType==='SELL'?'#fff':'var(--text3)'};">▼ SELL</button>
+      </div>
+
+      <!-- Inputs -->
+      <div style="padding:12px 14px 0;border-top:1px solid var(--border);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div>
+            <div class="pt-lbl">PRICE (${cur})</div>
+            <input type="number" id="ptPrice" class="form-input" value="${asset.price}" oninput="ptCalcTotal()" step="0.01" min="0">
+          </div>
+          <div>
+            <div class="pt-lbl">QUANTITY</div>
+            <input type="number" id="ptQty" class="form-input" value="1" min="1" oninput="ptCalcTotal()">
+          </div>
+        </div>
+        <!-- Quick qty -->
+        <div style="display:flex;gap:4px;margin-bottom:10px;">
+          ${[1,5,10,25,50,100].map(n=>`<button onclick="ptSetQty(${n})" class="pt-qpill">${n}</button>`).join('')}
+        </div>
+        ${limitInputHTML}
+      </div>
+
+      <!-- Order summary -->
+      <div style="margin:0 14px 10px;border:1px solid var(--border);border-radius:7px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;padding:7px 11px;background:var(--bg3);border-bottom:1px solid var(--border);">
+          <span style="font-size:8px;font-family:'Space Mono',monospace;letter-spacing:1.5px;color:var(--text3);">ORDER SUMMARY</span>
+          <span style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);">${getMarketStatus().istTime} IST</span>
+        </div>
+        <div style="padding:9px 11px;background:var(--bg2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:11px;color:var(--text3);">Order Value</span>
+            <div style="text-align:right;">
+              <div id="ptTotal" style="font-size:14px;font-weight:800;font-family:'Space Mono',monospace;">—</div>
+              <div id="ptTotalInr" style="font-size:9px;color:var(--text3);"></div>
+            </div>
+          </div>
+          ${summaryExtrasHTML}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid var(--border);margin-top:4px;">
+            <span style="font-size:11px;color:var(--text3);">Available Cash</span>
+            <span style="font-size:12px;font-weight:800;font-family:'Space Mono',monospace;color:var(--green);">₹${d.balance.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+          </div>
+          ${holdingsHTML ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);">${holdingsHTML}</div>` : ''}
+        </div>
+      </div>
+
+      <!-- Execute -->
+      <div style="padding:0 14px 14px;">
+        <button onclick="executePaperTrade()" id="ptExecBtn"
+          style="width:100%;padding:12px;border-radius:6px;border:none;
+          background:${_ptOrderType==='BUY'?'#00b84c':'#e53935'};
+          color:#fff;font-weight:800;font-size:12px;cursor:pointer;
+          font-family:'Space Mono',monospace;letter-spacing:2px;transition:all 0.15s;
+          box-shadow:${_ptOrderType==='BUY'?'0 2px 10px rgba(0,184,76,0.35)':'0 2px 10px rgba(229,57,53,0.35)'};">
+          ${execLabel}
+        </button>
+        <div id="ptMsg" style="font-size:10px;text-align:center;min-height:14px;margin-top:7px;font-weight:600;color:var(--text3);font-family:'Space Mono',monospace;line-height:1.4;"></div>
+      </div>
     </div>
 
-    <!-- Execute button -->
-    <button onclick="executePaperTrade()" id="ptExecBtn"
-      style="width:100%;padding:15px;border-radius:14px;border:none;
-      background:${_ptOrderType==='BUY'?'linear-gradient(135deg,#00c950,#00a854)':'linear-gradient(135deg,#ff4444,#e53935)'};
-      color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;
-      transition:all 0.15s;letter-spacing:0.5px;
-      box-shadow:${_ptOrderType==='BUY'?'0 4px 20px rgba(0,168,84,0.4)':'0 4px 20px rgba(229,57,53,0.4)'};">
-      ${execLabel}
-    </button>
+    <!-- ═══ RIGHT: Market info panel ═══ -->
+    <div style="display:flex;flex-direction:column;overflow-y:auto;background:var(--bg1);">
 
-    <div id="ptMsg" style="font-size:12px;text-align:center;min-height:18px;margin-top:12px;font-weight:600;padding:0 4px;line-height:1.4;"></div>
+      <!-- Price header -->
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2);">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+          <span style="font-family:'Space Mono',monospace;font-size:26px;font-weight:800;letter-spacing:-1px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2})}</span>
+          <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:4px;
+            background:${parseFloat(asset.chg)>=0?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};
+            color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg||'—'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">${asset.sym} · ${asset.name}</div>
+      </div>
+
+      <!-- Market Depth -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+        <div class="pt-lbl" style="margin-bottom:8px;">MARKET DEPTH</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;">
+          <!-- Asks (sell orders) — shown top to bottom, highest first -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:2px;">
+            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;">ORDERS</div>
+            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;text-align:center;">PRICE</div>
+            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;text-align:right;">QTY</div>
+          </div>
+          ${(()=>{
+            const p = parseFloat(asset.price)||1;
+            const tick = p>10000?5:p>1000?0.5:p>100?0.1:p>10?0.05:0.01;
+            const fmt  = v => v.toFixed(tick<0.1?2:tick<1?1:0);
+            let rows = '';
+            // 5 ask rows (red, sell side)
+            for(let i=4;i>=0;i--){
+              const ap = p + tick*(i+1);
+              const aq = Math.floor(p>1000?(10+i*8):(100+i*80));
+              const ao = Math.floor(Math.random()*3+1);
+              const w  = Math.min(100, 20+i*15);
+              rows += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;position:relative;margin-bottom:1px;">
+                <div style="position:absolute;right:0;top:0;bottom:0;width:${w}%;background:rgba(229,57,53,0.07);z-index:0;"></div>
+                <div style="font-size:10px;color:var(--text3);padding:3px 0;position:relative;z-index:1;">${ao}</div>
+                <div style="font-size:11px;font-weight:700;color:var(--red);padding:3px 0;text-align:center;position:relative;z-index:1;">${fmt(ap)}</div>
+                <div style="font-size:10px;color:var(--text3);padding:3px 0;text-align:right;position:relative;z-index:1;">${aq.toLocaleString()}</div>
+              </div>`;
+            }
+            // Spread line
+            rows += `<div style="text-align:center;padding:3px 0;font-size:9px;color:var(--text3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:3px 0;letter-spacing:1px;">── LTP ${fmt(p)} ──</div>`;
+            // 5 bid rows (green, buy side)
+            for(let i=0;i<5;i++){
+              const bp = p - tick*(i+1);
+              const bq = Math.floor(p>1000?(12+i*9):(120+i*90));
+              const bo = Math.floor(Math.random()*3+1);
+              const w  = Math.min(100, 20+i*15);
+              rows += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;position:relative;margin-bottom:1px;">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:rgba(0,168,84,0.07);z-index:0;"></div>
+                <div style="font-size:10px;color:var(--text3);padding:3px 0;position:relative;z-index:1;">${bo}</div>
+                <div style="font-size:11px;font-weight:700;color:var(--green);padding:3px 0;text-align:center;position:relative;z-index:1;">${fmt(bp)}</div>
+                <div style="font-size:10px;color:var(--text3);padding:3px 0;text-align:right;position:relative;z-index:1;">${bq.toLocaleString()}</div>
+              </div>`;
+            }
+            return rows;
+          })()}
+        </div>
+      </div>
+
+      <!-- OHLC + session stats -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+        <div class="pt-lbl" style="margin-bottom:8px;">SESSION</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          ${(()=>{
+            const p = parseFloat(asset.price)||1;
+            const chgPct = parseFloat((asset.chg||'0').replace('%','').replace('+',''));
+            const prevClose = p / (1 + chgPct/100);
+            const hi = (p*(1+Math.abs(chgPct/100)*1.4)).toFixed(p>1000?0:2);
+            const lo = (p*(1-Math.abs(chgPct/100)*1.6)).toFixed(p>1000?0:2);
+            const open = prevClose * (1 + (Math.random()*0.004 - 0.002));
+            const cur2 = isUsd ? '$' : '₹';
+            const items = [
+              ['OPEN',    cur2+open.toFixed(p>1000?0:2)],
+              ['HIGH',    cur2+hi],
+              ['LOW',     cur2+lo],
+              ['PREV CLO',cur2+prevClose.toFixed(p>1000?0:2)],
+              ['52W HIGH',cur2+(p*1.32).toFixed(p>1000?0:2)],
+              ['52W LOW', cur2+(p*0.72).toFixed(p>1000?0:2)],
+            ];
+            return items.map(([l,v])=>`
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px 9px;">
+              <div class="pt-slbl">${l}</div>
+              <div style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;">${v}</div>
+            </div>`).join('');
+          })()}
+        </div>
+      </div>
+
+      <!-- Account snapshot -->
+      <div style="padding:12px 16px;">
+        <div class="pt-lbl" style="margin-bottom:8px;">ACCOUNT</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;display:flex;flex-direction:column;gap:6px;">
+          ${[
+            ['Starting Capital', '₹10,00,000', 'var(--text)'],
+            ['Available Cash',   '₹'+d.balance.toLocaleString('en-IN',{maximumFractionDigits:0}), 'var(--green)'],
+            ['Open Positions',   Object.values(d.holdings).filter(h=>h.qty>0).length+' positions', 'var(--accent)'],
+            ['USD/INR',          '₹'+_usdInr.toFixed(2), 'var(--text)'],
+          ].map(([l,v,c])=>`
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">${l}</span>
+            <span style="font-weight:700;color:${c};">${v}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
   </div>`;
 
   ptCalcTotal();
@@ -10603,113 +10712,112 @@ function renderPtHoldings(el, d) {
     return;
   }
 
+  const allA = getAllPtAssets();
   const totalInvested = holdings.reduce((a,[,h]) => a + (h.cur==='$'?toInr(h.avgPrice):h.avgPrice) * h.qty, 0);
   const currentValue  = holdings.reduce((a,[sym,h]) => {
-    const displaySym2 = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
-    const ltp2 = getAllPtAssets().find(s=>s.sym===displaySym2)?.price || h.avgPrice;
-    return a + (h.cur==='$'?toInr(ltp2):ltp2) * h.qty;
+    const ds  = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
+    const ltp = allA.find(s=>s.sym===ds)?.price || h.avgPrice;
+    return a + (h.cur==='$'?toInr(ltp):ltp) * h.qty;
   }, 0);
   const pnl    = currentValue - totalInvested;
   const pnlPct = totalInvested > 0 ? ((pnl/totalInvested)*100).toFixed(2) : '0.00';
-  const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  const pnlUp  = pnl >= 0;
 
-  // Build holding cards
-  const holdingCards = holdings.map(([sym, h]) => {
-    const displaySym = (h.sym || sym).replace('_MIS','').replace('_MARGIN','');
-    const asset      = getAllPtAssets().find(s => s.sym === displaySym);
-    const isUsd      = h.cur === '$';
-    const isMIS      = h.tradeMode === 'intraday';
-    const isMargin   = h.tradeMode === 'margin';
-    const isSpot     = h.tradeMode === 'spot';
-    const isNRML     = h.tradeMode === 'nrml';
-    const ltp        = asset?.price || h.avgPrice;
-    const ltpInr     = isUsd ? toInr(ltp) : ltp;
-    const avgInr     = isUsd ? toInr(h.avgPrice) : h.avgPrice;
-    const plInr      = (ltpInr - avgInr) * h.qty;
-    const plPct      = avgInr > 0 ? ((ltpInr-avgInr)/avgInr*100).toFixed(2) : '0.00';
-    const plPos      = plInr >= 0;
-    const nativeCur  = isUsd ? '$' : '\u20b9';
-    const chgN       = parseFloat(asset?.chg) || 0;
-    const nowIst     = new Date(Date.now() + 5.5*3600000);
-    const minsLeft   = isMIS ? (15*60+20) - (nowIst.getUTCHours()*60+nowIst.getUTCMinutes()) : null;
-    const sqWarn     = (isMIS && minsLeft !== null && minsLeft > 0 && minsLeft < 90);
+  // ── Stats strip ──
+  const statsHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);background:var(--bg2);">
+      <div class="pt-scell">
+        <div class="pt-slbl">INVESTED</div>
+        <div class="pt-sval">₹${Math.round(totalInvested).toLocaleString('en-IN')}</div>
+      </div>
+      <div class="pt-scell">
+        <div class="pt-slbl">CURRENT</div>
+        <div class="pt-sval" style="color:var(--accent);">₹${Math.round(currentValue).toLocaleString('en-IN')}</div>
+      </div>
+      <div class="pt-scell">
+        <div class="pt-slbl">TOTAL P&L</div>
+        <div class="pt-sval" style="color:${pnlUp?'var(--green)':'var(--red)'};">${pnlUp?'+':'−'}₹${Math.abs(Math.round(pnl)).toLocaleString('en-IN')}</div>
+        <div style="font-size:9px;font-weight:700;color:${pnlUp?'var(--green)':'var(--red)'};">${pnlUp?'+':''}${pnlPct}%</div>
+      </div>
+      <div class="pt-scell">
+        <div class="pt-slbl">POSITIONS</div>
+        <div class="pt-sval" style="color:var(--text);">${holdings.length}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">USD/INR ₹${_usdInr.toFixed(2)}</div>
+      </div>
+    </div>`;
 
-    // Mode badge
-    const modeLabel  = isMIS?'MIS':isMargin?'3\u00d7':isSpot?'SPOT':isNRML?'NRML':'CNC';
-    const modeBg     = isMIS?'rgba(245,166,35,0.12)':isMargin?'rgba(247,147,26,0.12)':isSpot?'rgba(247,147,26,0.08)':'rgba(0,168,84,0.1)';
-    const modeCol    = isMIS?'#f5a623':isMargin?'#f7931a':isSpot?'#f7931a':'var(--green)';
+  // ── Table header ──
+  const theadHTML = `
+    <div class="pt-thead" style="grid-template-columns:2fr 1fr 1fr 1fr 1.2fr 1fr;">
+      <span>INSTRUMENT</span><span style="text-align:right;">QTY</span>
+      <span style="text-align:right;">AVG COST</span><span style="text-align:right;">LTP</span>
+      <span style="text-align:right;">UNREAL P&L</span><span style="text-align:right;">ACTION</span>
+    </div>`;
 
-    const sellLabel  = isMIS||isMargin ? 'Close' : 'Sell All';
+  // ── Position rows ──
+  const rowsHTML = holdings.map(([sym, h]) => {
+    const ds       = (h.sym||sym).replace('_MIS','').replace('_MARGIN','');
+    const asset    = allA.find(s=>s.sym===ds);
+    const isUsd    = h.cur==='$';
+    const ltp      = asset?.price || h.avgPrice;
+    const ltpInr   = isUsd ? toInr(ltp)       : ltp;
+    const avgInr   = isUsd ? toInr(h.avgPrice) : h.avgPrice;
+    const plInr    = (ltpInr - avgInr) * h.qty;
+    const plPct    = avgInr > 0 ? ((ltpInr-avgInr)/avgInr*100).toFixed(2) : '0.00';
+    const plUp     = plInr >= 0;
+    const nc       = isUsd ? '$' : '₹';
+    const fmt      = (v,d=0) => Number(v).toLocaleString(undefined,{maximumFractionDigits:d});
 
-    return '<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;padding:0;margin-bottom:10px;overflow:hidden;transition:border-color 0.15s;"'
-      + ' onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-      // Top row
-      + '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px 10px;">'
-        // Logo
-        + '<div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:\'Space Mono\',monospace;letter-spacing:0.5px;'
-        + 'background:linear-gradient(135deg,rgba(0,112,243,0.12),rgba(0,112,243,0.04));border:1px solid rgba(0,112,243,0.2);color:var(--accent);">' + displaySym.slice(0,4) + '</div>'
-        // Name + mode badge
-        + '<div style="flex:1;min-width:0;">'
-          + '<div style="display:flex;align-items:center;gap:6px;">'
-            + '<span style="font-weight:800;font-size:14px;">' + displaySym + '</span>'
-            + '<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:0.5px;background:' + modeBg + ';color:' + modeCol + ';">' + modeLabel + '</span>'
-            + (sqWarn ? '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(245,166,35,0.12);color:#f5a623;font-weight:700;">\u23f0 ' + minsLeft + 'm</span>' : '')
-          + '</div>'
-          + '<div style="font-size:10px;color:var(--text3);margin-top:3px;font-family:\'Space Mono\',monospace;">'
-            + 'Avg ' + nativeCur + Number(h.avgPrice).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2})
-            + ' &middot; ' + h.qty + ' units'
-          + '</div>'
-        + '</div>'
-        // LTP + day chg
-        + '<div style="text-align:right;flex-shrink:0;">'
-          + '<div style="font-family:\'Space Mono\',monospace;font-weight:700;font-size:14px;">' + nativeCur + Number(ltp).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2}) + '</div>'
-          + '<div style="font-size:11px;font-weight:700;margin-top:2px;color:' + (chgN>=0?'var(--green)':'var(--red)') + ';">' + (asset?.chg||'\u2014') + '</div>'
-        + '</div>'
-      + '</div>'
-      // P&L bar
-      + '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:' + (plPos?'rgba(0,168,84,0.05)':'rgba(229,57,53,0.05)') + ';border-top:1px solid var(--border);">'
-        + '<div style="display:flex;align-items:center;gap:8px;">'
-          + '<span style="font-size:10px;color:var(--text3);">Unrealised P&amp;L</span>'
-          + '<span style="font-size:12px;font-weight:800;font-family:\'Space Mono\',monospace;color:' + (plPos?'var(--green)':'var(--red)') + ';">'
-            + (plPos?'+':'\u2212') + '\u20b9' + Math.abs(Math.round(plInr)).toLocaleString('en-IN')
-            + ' <span style="font-weight:600;font-size:10px;">(' + (plPos?'+':'') + plPct + '%)</span>'
-          + '</span>'
-        + '</div>'
-        + '<button onclick="quickSellAll(\'' + sym + '\')"'
-          + ' style="padding:5px 14px;border-radius:7px;border:1px solid ' + (plPos?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)') + ';background:' + (plPos?'rgba(0,168,84,0.08)':'rgba(229,57,53,0.08)') + ';color:' + (plPos?'var(--green)':'var(--red)') + ';font-size:11px;font-weight:700;cursor:pointer;transition:all 0.12s;"'
-          + ' onmouseover="this.style.opacity=\'0.75\'" onmouseout="this.style.opacity=\'1\'">'
-          + sellLabel
-        + '</button>'
-      + '</div>'
-    + '</div>';
+    const nowIst   = new Date(Date.now() + 5.5*3600000);
+    const minsLeft = h.tradeMode==='intraday'
+      ? (15*60+20) - (nowIst.getUTCHours()*60+nowIst.getUTCMinutes()) : null;
+    const sqWarn   = minsLeft !== null && minsLeft > 0 && minsLeft < 90;
+
+    const modeColors = {intraday:['#f59e0b','rgba(245,158,11,0.12)'], margin:['#f97316','rgba(249,115,22,0.12)'],
+                        spot:['#f97316','rgba(249,115,22,0.1)'], nrml:['#10b981','rgba(16,185,129,0.1)'], delivery:['var(--green)','rgba(0,168,84,0.1)']};
+    const [mc,mb] = modeColors[h.tradeMode||'delivery'] || ['var(--green)','rgba(0,168,84,0.1)'];
+    const modeLabel = {intraday:'MIS',margin:'3×',spot:'SPOT',nrml:'NRML',delivery:'CNC'}[h.tradeMode||'delivery']||'CNC';
+
+    return `<div class="pt-trow" style="grid-template-columns:2fr 1fr 1fr 1fr 1.2fr 1fr;">
+      <!-- Instrument -->
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <div style="width:28px;height:28px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;">${ds.slice(0,5)}</div>
+        <div style="min-width:0;">
+          <div style="font-weight:800;font-size:12px;font-family:'Space Mono',monospace;">${ds}</div>
+          <div style="display:flex;gap:4px;margin-top:2px;flex-wrap:wrap;">
+            <span class="pt-chip" style="background:${mb};color:${mc};">${modeLabel}</span>
+            ${sqWarn ? `<span class="pt-chip" style="background:rgba(245,158,11,0.15);color:#f59e0b;">⏰ ${minsLeft}m</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <!-- Qty -->
+      <div style="text-align:right;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;">${fmt(h.qty,isUsd?4:0)}</div>
+      <!-- Avg -->
+      <div style="text-align:right;font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);">${nc}${fmt(h.avgPrice,isUsd?4:2)}</div>
+      <!-- LTP -->
+      <div style="text-align:right;">
+        <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;">${nc}${fmt(ltp,isUsd?4:2)}</div>
+        <div style="font-size:9px;color:${parseFloat(asset?.chg||0)>=0?'var(--green)':'var(--red)'};">${asset?.chg||'—'}</div>
+      </div>
+      <!-- P&L -->
+      <div style="text-align:right;">
+        <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:800;color:${plUp?'var(--green)':'var(--red)'};">${plUp?'+':'−'}₹${Math.abs(Math.round(plInr)).toLocaleString('en-IN')}</div>
+        <div style="font-size:9px;font-weight:700;color:${plUp?'var(--green)':'var(--red)'};">${plUp?'+':''}${plPct}%</div>
+      </div>
+      <!-- Close button -->
+      <div style="text-align:right;">
+        <button onclick="quickSellAll('${sym}')"
+          style="padding:4px 10px;border-radius:4px;border:1px solid ${plUp?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)'};
+          background:${plUp?'rgba(0,168,84,0.08)':'rgba(229,57,53,0.08)'};
+          color:${plUp?'var(--green)':'var(--red)'};font-size:10px;font-weight:700;
+          cursor:pointer;font-family:'Space Mono',monospace;transition:all 0.12s;"
+          onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">CLOSE</button>
+      </div>
+    </div>`;
   }).join('');
 
-  el.innerHTML = `
-    <!-- Portfolio summary strip -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg1);">
-      <div style="padding:14px 16px;border-right:1px solid var(--border);">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">INVESTED</div>
-        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;">\u20b9${Math.round(totalInvested).toLocaleString('en-IN')}</div>
-      </div>
-      <div style="padding:14px 16px;border-right:1px solid var(--border);">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">CURRENT</div>
-        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;color:var(--accent);">\u20b9${Math.round(currentValue).toLocaleString('en-IN')}</div>
-      </div>
-      <div style="padding:14px 16px;">
-        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;margin-bottom:5px;">P&amp;L</div>
-        <div style="font-weight:800;font-size:14px;font-family:'Space Mono',monospace;color:${pnlColor};">${pnl>=0?'+':'\u2212'}\u20b9${Math.abs(Math.round(pnl)).toLocaleString('en-IN')}</div>
-        <div style="font-size:10px;font-weight:700;color:${pnlColor};">${pnl>=0?'+':''}${pnlPct}%</div>
-      </div>
-    </div>
-    <!-- USD/INR + refresh note -->
-    <div style="padding:7px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">USD/INR <span style="color:var(--accent);font-weight:700;">\u20b9${_usdInr.toFixed(2)}</span></span>
-      <span style="font-size:10px;color:var(--text3);">Live P&amp;L</span>
-    </div>
-    <!-- Positions list -->
-    <div style="padding:14px 16px;">
-      ${holdingCards}
-    </div>`;
+  el.innerHTML = statsHTML + theadHTML + `<div>${rowsHTML}</div>`;
+
 }
 
 function quickSellAll(key) {
