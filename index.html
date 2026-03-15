@@ -8794,142 +8794,62 @@ let _econoData=[], _econoFilter='all';
 
 // Curated Indian + Global macro events (refreshed weekly from hardcoded knowledge + live fetch)
 const ECONO_STATIC = [
-  // ── RBI ──
-  {date:'2026-04-09',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI Monetary Policy Committee Decision',impact:'high',actual:null,forecast:'6.25%',prev:'6.25%',category:'central-bank',desc:'RBI MPC rate decision — key for Nifty and Bank Nifty'},
-  {date:'2026-06-04',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Jun)',impact:'high',actual:null,forecast:'6.0%',prev:'6.25%',category:'central-bank'},
-  {date:'2026-08-06',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Aug)',impact:'high',actual:null,forecast:'6.0%',prev:'6.0%',category:'central-bank'},
-  // ── India Macro ──
-  {date:'2026-03-14',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Feb)',impact:'high',actual:null,forecast:'3.9%',prev:'4.26%',category:'inflation'},
-  {date:'2026-03-17',time:'12:00',country:'IN',flag:'🇮🇳',event:'India WPI Inflation (Feb)',impact:'medium',actual:null,forecast:'2.3%',prev:'2.31%',category:'inflation'},
-  {date:'2026-03-28',time:'12:00',country:'IN',flag:'🇮🇳',event:'India GDP Q3 FY26 Final',impact:'high',actual:null,forecast:'6.7%',prev:'6.4%',category:'gdp'},
-  {date:'2026-04-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Mar)',impact:'high',actual:null,forecast:'3.8%',prev:'3.9%',category:'inflation'},
-  {date:'2026-03-31',time:'09:00',country:'IN',flag:'🇮🇳',event:'GST Collections (Mar)',impact:'medium',actual:null,forecast:'₹1.85L Cr',prev:'₹1.84L Cr',category:'fiscal'},
-  {date:'2026-04-01',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',actual:null,forecast:'57.2',prev:'57.7',category:'pmi'},
-  {date:'2026-04-03',time:'09:30',country:'IN',flag:'🇮🇳',event:'India Services PMI (Mar)',impact:'medium',actual:null,forecast:'59.0',prev:'59.0',category:'pmi'},
-  {date:'2026-03-20',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Trade Balance (Feb)',impact:'medium',actual:null,forecast:'-$18.5B',prev:'-$17.9B',category:'trade'},
-  {date:'2026-04-30',time:'12:00',country:'IN',flag:'🇮🇳',event:'India Fiscal Deficit (FY26)',impact:'high',actual:null,forecast:'4.9% of GDP',prev:'5.6%',category:'fiscal'},
-  // ── US Fed ──
-  {date:'2026-03-19',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Mar)',impact:'high',actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank',desc:'Fed holds — markets watch for dot plot guidance'},
-  {date:'2026-05-07',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (May)',impact:'high',actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank'},
-  {date:'2026-06-18',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Jun)',impact:'high',actual:null,forecast:'4.00–4.25%',prev:'4.25–4.50%',category:'central-bank'},
-  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US PCE Inflation (Feb)',impact:'high',actual:null,forecast:'2.5%',prev:'2.5%',category:'inflation'},
-  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Non-Farm Payrolls (Mar)',impact:'high',actual:null,forecast:'+195K',prev:'+151K',category:'employment'},
-  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US CPI Inflation (Mar)',impact:'high',actual:null,forecast:'2.8%',prev:'2.8%',category:'inflation'},
-  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US GDP Q4 Final',impact:'high',actual:null,forecast:'2.3%',prev:'2.3%',category:'gdp'},
-  {date:'2026-04-07',time:'14:00',country:'US',flag:'🇺🇸',event:'US ISM Services PMI (Mar)',impact:'medium',actual:null,forecast:'53.2',prev:'53.5',category:'pmi'},
-  // ── Europe / Global ──
-  {date:'2026-04-17',time:'12:15',country:'EU',flag:'🇪🇺',event:'ECB Rate Decision',impact:'high',actual:null,forecast:'2.25%',prev:'2.5%',category:'central-bank'},
-  {date:'2026-04-07',time:'03:00',country:'CN',flag:'🇨🇳',event:'China Trade Balance (Mar)',impact:'high',actual:null,forecast:'$90B',prev:'$170B',category:'trade'},
-  {date:'2026-04-16',time:'03:00',country:'CN',flag:'🇨🇳',event:'China GDP Q1 2026',impact:'high',actual:null,forecast:'4.8%',prev:'5.0%',category:'gdp'},
+  // ══════════════════════════════════════════════════════════════
+  // HOW TO UPDATE: Add new entries at the top with today's date
+  // Fields: date, time(IST), country, flag, event, impact(high/medium/low)
+  //         actual(string or null), forecast(string), prev(string)
+  // ══════════════════════════════════════════════════════════════
+
+  // ── Today: 15 Mar 2026 (from screenshot) ──
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Exports YoY (Feb)',         impact:'medium',actual:'28.7%', forecast:null,   prev:'29.0%', category:'trade'},
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Trade Balance (Feb)',        impact:'medium',actual:'15.38B',forecast:null,   prev:'15.51B',category:'trade'},
+  {date:'2026-03-15',time:'05:30',country:'KR',flag:'🇰🇷',event:'Imports YoY (Feb)',          impact:'medium',actual:'7.5%',  forecast:null,   prev:'7.5%',  category:'trade'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Industrial Production YoY (Feb)', impact:'medium',actual:'5.3%', forecast:null, prev:'5.2%', category:'gdp'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Chinese Unemployment Rate (Feb)',  impact:'medium',actual:'5.1%', forecast:'5.1%', prev:'5.1%', category:'employment'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Fixed Asset Investment YoY (Feb)', impact:'medium',actual:'-5.0%',forecast:null,  prev:'-3.8%',category:'gdp'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Chinese Retail Sales YTD YoY (Feb)',impact:'medium',actual:null,  forecast:null,  prev:'2.73%',category:'retail'},
+  {date:'2026-03-15',time:'07:30',country:'CN',flag:'🇨🇳',event:'Retail Sales YoY (Feb)',     impact:'medium',actual:'2.6%', forecast:null,   prev:'0.9%',  category:'retail'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Inflation YoY (Feb)',    impact:'medium',actual:'2.00%',forecast:null,   prev:'1.81%', category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Food YoY (Feb)',         impact:'low',   actual:null,   forecast:null,   prev:'1.55%', category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Fuel YoY (Feb)',         impact:'low',   actual:null,   forecast:null,   prev:'-4.01%',category:'inflation'},
+  {date:'2026-03-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'WPI Manufacturing Inflation YoY (Feb)',impact:'low',actual:null,forecast:null,prev:'2.86%',category:'inflation'},
+  {date:'2026-03-15',time:'14:30',country:'CN',flag:'🇨🇳',event:'FDI (Feb)',                   impact:'low',   actual:null,   forecast:null,   prev:'-5.70%',category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Exports USD (Feb)',           impact:'medium',actual:null,   forecast:null,   prev:'36.56B',category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Imports USD (Feb)',           impact:'medium',actual:null,   forecast:null,   prev:'71.24B',category:'trade'},
+  {date:'2026-03-15',time:'14:30',country:'IN',flag:'🇮🇳',event:'Trade Balance (Feb)',         impact:'medium',actual:'-28.00B',forecast:null, prev:'-34.68B',category:'trade'},
+
+  // ── India Upcoming ──
+  {date:'2026-03-17',time:'12:00',country:'IN',flag:'🇮🇳',event:'India WPI Inflation (Feb) Final',impact:'medium',actual:null,forecast:'2.3%',prev:'2.31%',category:'inflation'},
+  {date:'2026-03-19',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Mar)',   impact:'high',  actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank',desc:'Fed holds — markets watch for dot plot guidance'},
   {date:'2026-03-20',time:'12:00',country:'GB',flag:'🇬🇧',event:'Bank of England Rate Decision',impact:'high',actual:null,forecast:'4.50%',prev:'4.50%',category:'central-bank'},
+  {date:'2026-03-20',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Trade Balance (Feb) Final',impact:'medium',actual:null,forecast:'-$28B',prev:'-$34.68B',category:'trade'},
+  {date:'2026-03-27',time:'12:30',country:'US',flag:'🇺🇸',event:'US GDP Q4 Final',            impact:'high',  actual:null,forecast:'2.3%',  prev:'2.3%', category:'gdp'},
+  {date:'2026-03-28',time:'12:30',country:'US',flag:'🇺🇸',event:'US PCE Inflation (Feb)',      impact:'high',  actual:null,forecast:'2.5%',  prev:'2.5%', category:'inflation'},
+  {date:'2026-03-28',time:'12:00',country:'IN',flag:'🇮🇳',event:'India GDP Q3 FY26 Final',    impact:'high',  actual:null,forecast:'6.7%',  prev:'6.4%', category:'gdp'},
+  {date:'2026-03-31',time:'09:00',country:'IN',flag:'🇮🇳',event:'GST Collections (Mar)',      impact:'medium',actual:null,forecast:'₹1.85L Cr',prev:'₹1.84L Cr',category:'fiscal'},
+  {date:'2026-04-01',time:'09:00',country:'IN',flag:'🇮🇳',event:'India Manufacturing PMI (Mar)',impact:'medium',actual:null,forecast:'57.2',prev:'57.7',category:'pmi'},
+  {date:'2026-04-03',time:'09:30',country:'IN',flag:'🇮🇳',event:'India Services PMI (Mar)',   impact:'medium',actual:null,forecast:'59.0',  prev:'59.0', category:'pmi'},
+  {date:'2026-04-03',time:'12:30',country:'US',flag:'🇺🇸',event:'US Non-Farm Payrolls (Mar)', impact:'high',  actual:null,forecast:'+195K', prev:'+151K',category:'employment'},
+  {date:'2026-04-07',time:'03:00',country:'CN',flag:'🇨🇳',event:'China Trade Balance (Mar)',  impact:'high',  actual:null,forecast:'$90B',   prev:'$170B',category:'trade'},
+  {date:'2026-04-07',time:'14:00',country:'US',flag:'🇺🇸',event:'US ISM Services PMI (Mar)',  impact:'medium',actual:null,forecast:'53.2',   prev:'53.5', category:'pmi'},
+  {date:'2026-04-09',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI Monetary Policy Committee Decision',impact:'high',actual:null,forecast:'6.25%',prev:'6.25%',category:'central-bank',desc:'RBI MPC rate decision — key for Nifty and Bank Nifty'},
+  {date:'2026-04-10',time:'12:30',country:'US',flag:'🇺🇸',event:'US CPI Inflation (Mar)',     impact:'high',  actual:null,forecast:'2.8%',   prev:'2.8%', category:'inflation'},
+  {date:'2026-04-15',time:'12:00',country:'IN',flag:'🇮🇳',event:'India CPI Inflation (Mar)',  impact:'high',  actual:null,forecast:'3.8%',   prev:'3.9%', category:'inflation'},
+  {date:'2026-04-16',time:'03:00',country:'CN',flag:'🇨🇳',event:'China GDP Q1 2026',          impact:'high',  actual:null,forecast:'4.8%',   prev:'5.0%', category:'gdp'},
+  {date:'2026-04-17',time:'12:15',country:'EU',flag:'🇪🇺',event:'ECB Rate Decision',          impact:'high',  actual:null,forecast:'2.25%',  prev:'2.5%', category:'central-bank'},
+  {date:'2026-04-30',time:'12:00',country:'IN',flag:'🇮🇳',event:'India Fiscal Deficit (FY26)',impact:'high',  actual:null,forecast:'4.9% of GDP',prev:'5.6%',category:'fiscal'},
+  {date:'2026-05-07',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (May)',   impact:'high',  actual:null,forecast:'4.25–4.50%',prev:'4.25–4.50%',category:'central-bank'},
+  {date:'2026-06-04',time:'10:00',country:'IN',flag:'🇮🇳',event:'RBI MPC Decision (Jun)',     impact:'high',  actual:null,forecast:'6.0%',   prev:'6.25%',category:'central-bank'},
+  {date:'2026-06-18',time:'19:30',country:'US',flag:'🇺🇸',event:'FOMC Rate Decision (Jun)',   impact:'high',  actual:null,forecast:'4.00–4.25%',prev:'4.25–4.50%',category:'central-bank'},
 ];
 
 function renderEcono() {
   const el=document.getElementById('econoBody'); if(!el) return;
-  _econoData = ECONO_STATIC; // show immediately
-  renderEconoPage();
-  fetchLiveEconoData(); // then try to enrich with live data
-}
-
-async function fetchLiveEconoData() {
-  // ═══════════════════════════════════════════════════════════
-  // DATA SOURCES:
-  // 1. TradingEconomics free tier (guest:guest) — works without key
-  //    API: api.tradingeconomics.com/calendar?c=guest:guest&country=india
-  // 2. RBI website: rbi.org.in/scripts/BS_PressReleaseDisplay.aspx
-  //    via CORS proxy for upcoming RBI events
-  // 3. ECONO_STATIC — curated comprehensive data (always present)
-  //    Covers: RBI MPC, FOMC, ECB, India CPI/GDP/PMI, US NFP/CPI
-  // ═══════════════════════════════════════════════════════════
-
-  // ── Source 1: TradingEconomics free guest API ──
-  try {
-    const countries = ['india','united+states','euro+area','china','united+kingdom'];
-    const url = `https://api.tradingeconomics.com/calendar/country/${countries.join(',')}?c=guest:guest&f=json`;
-    const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {
-      signal: AbortSignal.timeout(12000)
-    });
-    if (r.ok) {
-      const raw = await r.json();
-      const arr = raw.contents ? JSON.parse(raw.contents) : null;
-      if (Array.isArray(arr) && arr.length > 5) {
-        const mapped = arr.map(ev => {
-          const country = (ev.Country||'').toLowerCase();
-          const countryMap = { india:'IN','united states':'US','euro area':'EU','china':'CN','united kingdom':'GB','japan':'JP' };
-          const flagMap = { IN:'🇮🇳',US:'🇺🇸',EU:'🇪🇺',CN:'🇨🇳',GB:'🇬🇧',JP:'🇯🇵' };
-          const cc = countryMap[country] || 'US';
-          let date = ''; let time = '';
-          try {
-            const dt = new Date(ev.Date||ev.date||'');
-            if (!isNaN(dt)) {
-              date = dt.toISOString().split('T')[0];
-              time = dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Kolkata'});
-            }
-          } catch(e) {}
-          if (!date) return null;
-          const imp = (ev.Importance||0);
-          const impact = imp >= 3 ? 'high' : imp >= 2 ? 'medium' : 'low';
-          return {
-            date, time, country: cc, flag: flagMap[cc]||'🌍',
-            event: ev.Event||ev.event||'Economic Event',
-            impact,
-            actual: ev.Actual != null ? String(ev.Actual) : null,
-            forecast: ev.Forecast != null ? String(ev.Forecast) : null,
-            prev: ev.Previous != null ? String(ev.Previous) : null,
-            category: 'macro',
-          };
-        }).filter(Boolean);
-
-        // Merge with static — live data takes priority for same date+event
-        const liveKeys = new Set(mapped.map(e => e.date+'_'+e.event.substring(0,20)));
-        const mergedStatic = ECONO_STATIC.filter(e => !liveKeys.has(e.date+'_'+e.event.substring(0,20)));
-        _econoData = [...mapped, ...mergedStatic].sort((a,b) => a.date.localeCompare(b.date));
-        _econoSource = '✅ TradingEconomics (live)';
-        renderEconoPage();
-        return;
-      }
-    }
-  } catch(e) {}
-
-  // ── Source 2: Fetch actual results from NSE for recent Indian events ──
-  // NSE has a free corporate events API we can piggyback off
-  try {
-    const NSE_EVENTS = 'https://www.nseindia.com/api/event-calendar';
-    const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(NSE_EVENTS)}`, {
-      signal: AbortSignal.timeout(10000)
-    });
-    if (r.ok) {
-      const raw = await r.json();
-      const arr = raw.contents ? JSON.parse(raw.contents) : null;
-      if (Array.isArray(arr) && arr.length > 0) {
-        // Add these as actual economic events with results
-        const mapped = arr.slice(0,20).map(ev => ({
-          date: ev.date || '',
-          time: '09:00',
-          country: 'IN', flag: '🇮🇳',
-          event: ev.purpose || ev.subject || 'NSE Corporate Event',
-          impact: 'medium',
-          actual: ev.actual || null,
-          forecast: ev.forecast || null,
-          prev: ev.previous || null,
-          category: 'corporate',
-        })).filter(e => e.date);
-        if (mapped.length > 0) {
-          _econoData = [...ECONO_STATIC, ...mapped].sort((a,b) => a.date.localeCompare(b.date));
-          _econoSource = '✅ NSE + Curated calendar';
-          renderEconoPage();
-          return;
-        }
-      }
-    }
-  } catch(e) {}
-
-  // ── Fallback: Use ECONO_STATIC (already rendered) ──
-  _econoSource = '📋 Curated calendar (RBI · FOMC · India Macro)';
+  _econoData = ECONO_STATIC.slice(); // always use static data
   renderEconoPage();
 }
 
-let _econoSource = '📋 Curated calendar';
+
 
 function filterEcono(f,btn) {
   _econoFilter=f;
@@ -9041,11 +8961,7 @@ function renderEconoPage() {
   el.innerHTML = html;
 }
 // Refresh econo calendar every 30 min (TradingEconomics updates hourly)
-setInterval(() => {
-  if (document.getElementById('page-econocal')?.style.display !== 'none') {
-    fetchLiveEconoData(); // fetch fresh + re-render
-  }
-}, 30 * 60 * 1000);
+// Economic calendar is static — update ECONO_STATIC directly
 
 // ═══════════════════════════════════════════════════════════════════
 // TRADINGVIEW LIVE CHARTS PAGE
