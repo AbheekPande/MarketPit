@@ -760,7 +760,7 @@ header {
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
   .feed-scroll { overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; will-change: scroll-position; }
-  .main-feed { contain: layout style; }
+  .main-feed { /* contain removed: breaks getBoundingClientRect */ }
   .right-sidebar { contain: layout style; }
   .nav-tab { -webkit-tap-highlight-color: transparent; }
   .post-card, .ipo-card { will-change: transform; }
@@ -791,7 +791,6 @@ header {
 
 </style>
 <body>
-<div id="_bannerDbg" style="position:fixed;bottom:4px;right:4px;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:6px 10px;border-radius:6px;z-index:99999;max-height:120px;overflow:auto;pointer-events:none;"></div>
 
 <!-- EYES BANNER -->
 <style>
@@ -12457,71 +12456,62 @@ function renderHeatmap() {
 
 // ── CURSOR SPOTLIGHT HERO ──
 (function() {
-  let heroEl, glow, glow2, cursor, animFrame;
-  let mouseX = 0, mouseY = 0;
-  let currentX = 0, currentY = 0;
+  var heroEl, glow, glow2, cursor, animFrame;
+  var mouseX=0,mouseY=0,currentX=0,currentY=0;
 
-  function initSpotlight() {
+  function init() {
     heroEl = document.getElementById('spotlightHero');
     glow   = document.getElementById('spotlightGlow');
     glow2  = document.getElementById('spotlightGlow2');
     cursor = document.getElementById('spotlightCursor');
-    if (!heroEl || !glow) return;
+    if(!heroEl||!glow) return;
+    var rect=heroEl.getBoundingClientRect();
+    mouseX=currentX=rect.width/2; mouseY=currentY=rect.height/2;
+    setPos(currentX,currentY);
 
-    const rect = heroEl.getBoundingClientRect();
-    mouseX = currentX = rect.width  / 2;
-    mouseY = currentY = rect.height / 2;
-    setPos(currentX, currentY);
-
-    heroEl.addEventListener('mousemove', function(e) {
-      const r = heroEl.getBoundingClientRect();
-      mouseX = e.clientX - r.left;
-      mouseY = e.clientY - r.top;
-      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    heroEl.addEventListener('mousemove',function(e){
+      var r=heroEl.getBoundingClientRect();
+      mouseX=e.clientX-r.left; mouseY=e.clientY-r.top;
+      if(!animFrame)animFrame=requestAnimationFrame(animate);
     });
-
-    heroEl.addEventListener('mouseenter', function() {
-      glow.style.opacity   = '1';
-      glow2.style.opacity  = '0.6';
-      cursor.style.opacity = '1';
+    heroEl.addEventListener('mouseenter',function(){
+      glow.style.opacity='1';
+      if(glow2)glow2.style.opacity='0.6';
+      if(cursor)cursor.style.opacity='1';
     });
-
-    heroEl.addEventListener('mouseleave', function() {
-      glow.style.opacity   = '0.3';
-      glow2.style.opacity  = '0.2';
-      cursor.style.opacity = '0';
-      cancelAnimationFrame(animFrame);
-      animFrame = null;
+    heroEl.addEventListener('mouseleave',function(){
+      glow.style.opacity='0.3';
+      if(glow2)glow2.style.opacity='0.2';
+      if(cursor)cursor.style.opacity='0';
+      cancelAnimationFrame(animFrame);animFrame=null;
     });
-
-    heroEl.addEventListener('click', function(e) {
-      const r = heroEl.getBoundingClientRect();
-      const x = e.clientX - r.left, y = e.clientY - r.top;
-      const ripple = document.createElement('div');
-      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);left:${x}px;top:${y}px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
-      heroEl.appendChild(ripple);
-      requestAnimationFrame(() => { ripple.style.transform = 'translate(-50%,-50%) scale(20)'; ripple.style.opacity = '0'; });
-      setTimeout(() => ripple.remove(), 700);
-    });
-
     updateHeroPrices();
     setInterval(updateHeroPrices, 30000);
+    heroEl.addEventListener('click',function(e){
+      var r=heroEl.getBoundingClientRect();
+      var x=e.clientX-r.left,y=e.clientY-r.top;
+      var ripple=document.createElement('div');
+      ripple.style.cssText='position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);left:'+x+'px;top:'+y+'px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;';
+      heroEl.appendChild(ripple);
+      requestAnimationFrame(function(){ripple.style.transform='translate(-50%,-50%) scale(20)';ripple.style.opacity='0';});
+      setTimeout(function(){ripple.remove();},700);
+    });
   }
 
-  function setPos(x, y) {
-    if (glow)   { glow.style.left   = x + 'px'; glow.style.top   = y + 'px'; }
-    if (glow2)  { glow2.style.left  = x + 'px'; glow2.style.top  = y + 'px'; }
-    if (cursor) { cursor.style.left = x + 'px'; cursor.style.top = y + 'px'; }
+  function setPos(x,y){
+    if(glow){glow.style.left=x+'px';glow.style.top=y+'px';}
+    if(glow2){glow2.style.left=x+'px';glow2.style.top=y+'px';}
+    if(cursor){cursor.style.left=x+'px';cursor.style.top=y+'px';}
   }
 
-  function animate() {
-    currentX += (mouseX - currentX) * 0.12;
-    currentY += (mouseY - currentY) * 0.12;
-    setPos(currentX, currentY);
-    // Keep cursor exactly at mouse, no lag
-    if (cursor) { cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px'; }
-    animFrame = requestAnimationFrame(animate);
+  function animate(){
+    currentX+=(mouseX-currentX)*0.12;
+    currentY+=(mouseY-currentY)*0.12;
+    setPos(currentX,currentY);
+    if(cursor){cursor.style.left=mouseX+'px';cursor.style.top=mouseY+'px';}
+    animFrame=requestAnimationFrame(animate);
   }
+
 
   const HERO_SYMBOLS = [
     { id: 'heroNifty',     yfSym: '%5ENSEI',    label: 'NIFTY 50',   prefix: '',  color: '#0070f3', fmt: 'IN' },
@@ -12617,74 +12607,58 @@ function renderHeatmap() {
 
   window.updateHeroPrices = updateHeroPrices;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSpotlight);
-  } else {
-    setTimeout(initSpotlight, 100);
-  }
+  // Direct call - spotlightHero is in DOM before this script runs
+  setTimeout(init, 0);
 })();
 
 // ── EYES BANNER: glow + cube + pupils ──
 (function() {
-  // ── DEBUG helper ──
-  function dbg(msg) {
-    console.log('[BANNER]', msg);
-    var d = document.getElementById('_bannerDbg');
-    if (d) d.innerHTML += '<br>' + msg;
-  }
-
   var banner, glow, allSubs, activeSub = null;
   var BRI = [1.0, 0.76, 0.66, 0.50];
 
   function setup() {
-    banner = document.getElementById('eyesBanner');
-    glow   = document.getElementById('ebGlow');
-    dbg('setup() called. banner=' + !!banner + ' glow=' + !!glow);
-    if (!banner || !glow) { dbg('ABORT: elements missing'); return; }
+    banner  = document.getElementById('eyesBanner');
+    glow    = document.getElementById('ebGlow');
+    if (!banner || !glow) return;
     allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
-    dbg('allSubs.length=' + allSubs.length);
     banner.addEventListener('mousemove', onMove);
     banner.addEventListener('mouseleave', onLeave);
     document.addEventListener('mousemove', onDocMove);
-    dbg('listeners attached OK');
   }
 
   function getCol(pct) {
-    var p=Math.max(0,Math.min(1,pct)), r,g,b;
-    if (p<0.5){var t=p*2;r=255;g=Math.round(90+130*t);b=Math.round(10+80*t);}
+    var p=Math.max(0,Math.min(1,pct)),r,g,b;
+    if(p<0.5){var t=p*2;r=255;g=Math.round(90+130*t);b=Math.round(10+80*t);}
     else{var t=(p-0.5)*2;r=Math.round(255-120*t);g=Math.round(220-80*t);b=Math.round(90+165*t);}
     return [r,g,b];
   }
 
   function onMove(e) {
-    var br = banner.getBoundingClientRect();
-    var lx = e.clientX - br.left, ly = e.clientY - br.top;
-    var c = getCol(lx / br.width), r=c[0], g=c[1], b=c[2];
-    glow.style.left       = lx + 'px';
-    glow.style.top        = ly + 'px';
-    glow.style.background = 'radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 32%,rgba('+r+','+g+','+b+',0.1) 60%,transparent 75%)';
-    glow.style.opacity    = '1';
-    var hit = null;
-    for (var i=0; i<allSubs.length; i++) {
-      var rc = allSubs[i].getBoundingClientRect();
-      if (e.clientX>=rc.left && e.clientX<=rc.right && e.clientY>=rc.top && e.clientY<=rc.bottom) {
-        var qi = Array.prototype.indexOf.call(allSubs[i].parentElement.children, allSubs[i]);
-        hit = {el:allSubs[i], qi:qi};
-        break;
+    var br=banner.getBoundingClientRect();
+    var lx=e.clientX-br.left, ly=e.clientY-br.top;
+    var c=getCol(lx/br.width), r=c[0],g=c[1],b=c[2];
+    // GLOW
+    glow.style.left=lx+'px'; glow.style.top=ly+'px';
+    glow.style.background='radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 35%,transparent 70%)';
+    glow.style.opacity='1';
+    // CUBE
+    var hit=null;
+    for(var i=0;i<allSubs.length;i++){
+      var rc=allSubs[i].getBoundingClientRect();
+      if(e.clientX>=rc.left&&e.clientX<=rc.right&&e.clientY>=rc.top&&e.clientY<=rc.bottom){
+        var qi=Array.prototype.indexOf.call(allSubs[i].parentElement.children,allSubs[i]);
+        hit={el:allSubs[i],qi:qi}; break;
       }
     }
-    if (hit) {
-      if (hit.el !== activeSub) { hideSub(activeSub); activeSub = hit.el; }
-      showSub(activeSub, hit.qi, r, g, b);
-    } else { hideSub(activeSub); activeSub = null; }
+    if(hit){
+      if(hit.el!==activeSub){hideSub(activeSub);activeSub=hit.el;}
+      showSub(activeSub,hit.qi,r,g,b);
+    }else{hideSub(activeSub);activeSub=null;}
   }
 
-  function onLeave() {
-    glow.style.opacity = '0';
-    hideSub(activeSub); activeSub = null;
-  }
+  function onLeave(){glow.style.opacity='0';hideSub(activeSub);activeSub=null;}
 
-  function showSub(sub, qi, r, g, b) {
+  function showSub(sub,qi,r,g,b){
     var k=BRI[qi]!==undefined?BRI[qi]:0.7;
     var fr=Math.round(r*k),fg=Math.round(g*k),fb=Math.round(b*k);
     var isTop=qi<2,isLeft=qi%2===0;
@@ -12698,38 +12672,34 @@ function renderHeatmap() {
     sub.style.boxShadow='inset 0 1px 5px rgba(255,255,255,0.22),0 0 8px rgba('+r+','+g+','+b+',0.45)';
   }
 
-  function hideSub(sub) {
-    if (!sub) return;
-    sub.style.opacity='0'; sub.style.background='transparent';
+  function hideSub(sub){
+    if(!sub)return;
+    sub.style.opacity='0';sub.style.background='transparent';
     sub.style.borderTopColor=sub.style.borderLeftColor=
     sub.style.borderBottomColor=sub.style.borderRightColor='transparent';
     sub.style.boxShadow='none';
   }
 
-  function onDocMove(e) {
-    if (!banner) return;
-    var eyes = banner.querySelectorAll('.eyeball');
-    for (var i=0; i<eyes.length; i++) {
-      var pupil = eyes[i].querySelector('.pupil');
-      if (!pupil) continue;
-      var er = eyes[i].getBoundingClientRect();
-      var ex = er.left+er.width/2, ey = er.top+er.height/2;
-      var dx = e.clientX-ex, dy = e.clientY-ey;
-      var dist = Math.sqrt(dx*dx+dy*dy);
-      var maxT = er.width*0.3;
-      var travel = dist<1?0:maxT*(1-1/(1+dist/50));
-      var angle = Math.atan2(dy,dx);
+  function onDocMove(e){
+    if(!banner)return;
+    var eyes=banner.querySelectorAll('.eyeball');
+    for(var i=0;i<eyes.length;i++){
+      var pupil=eyes[i].querySelector('.pupil');
+      if(!pupil)continue;
+      var er=eyes[i].getBoundingClientRect();
+      var ex=er.left+er.width/2,ey=er.top+er.height/2;
+      var dx=e.clientX-ex,dy=e.clientY-ey;
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      var maxT=er.width*0.3;
+      var travel=dist<1?0:maxT*(1-1/(1+dist/50));
+      var angle=Math.atan2(dy,dx);
       pupil.style.transform='translate('+(Math.cos(angle)*travel).toFixed(1)+'px,'+(Math.sin(angle)*travel).toFixed(1)+'px)';
     }
   }
 
-  if (document.readyState === 'loading') {
-    dbg('waiting for DOMContentLoaded');
-    document.addEventListener('DOMContentLoaded', setup);
-  } else {
-    dbg('DOM ready, calling setup() now');
-    setup();
-  }
+  // Always call setup() - element is already in DOM when this script runs
+  // (script tag is after eyesBanner in HTML)
+  setup();
 })();
 
 </script>
