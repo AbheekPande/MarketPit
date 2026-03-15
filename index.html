@@ -8135,7 +8135,21 @@ setInterval(() => {
 // ═══════════════════════════════════════════════════════════════════
 // STOCK COMPARE PAGE
 // ═══════════════════════════════════════════════════════════════════
-function renderCompare(){
+// Cache for technicals so we don't re-fetch on every dropdown change
+const _techCache = {};
+
+async function fetchTechnicals(sym) {
+  if (_techCache[sym]) return _techCache[sym];
+  try {
+    const r = await fetch(`${API_BASE}/technicals/${sym}`, {signal: AbortSignal.timeout(18000)});
+    if (!r.ok) return {};
+    const d = await r.json();
+    if (!d.error) { _techCache[sym] = d; return d; }
+  } catch(e) {}
+  return {};
+}
+
+async function renderCompare(){
   const el=document.getElementById('compareBody'); if(!el) return;
   // Use STATIC_STOCKS as base (always available), enriched with live prices
   const syms = STATIC_STOCKS.map(s=>s.sym).sort();
@@ -8149,12 +8163,18 @@ function renderCompare(){
   const picks=['cmp_s1','cmp_s2','cmp_s3'].map(id=>document.getElementById(id)?.value).filter(Boolean);
   if(!picks.length){ el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);">Select stocks above to compare.</div>'; return; }
 
-  const getStock = sym => {
-    const live   = liveStocks.find(x=>x.sym===sym) || {};
-    const stat   = STATIC_STOCKS.find(x=>x.sym===sym) || {};
-    return Object.assign({}, stat, live);
+  // Show loading state
+  el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:10px;font-size:12px;">Fetching live technicals…</div></div>';
+
+  // Fetch technicals for all picks in parallel
+  const techResults = await Promise.all(picks.map(sym => fetchTechnicals(sym)));
+
+  const getStock = (sym, tech) => {
+    const live = liveStocks.find(x=>x.sym===sym) || {};
+    const stat = STATIC_STOCKS.find(x=>x.sym===sym) || {};
+    return Object.assign({}, stat, live, tech || {});
   };
-  const stocks = picks.map(sym => getStock(sym));
+  const stocks = picks.map((sym, i) => getStock(sym, techResults[i]));
   const fmt = (v,d) => v!=null&&v!==''?parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:d||2}):'—';
 
   var rows=[

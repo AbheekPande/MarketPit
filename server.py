@@ -1051,6 +1051,88 @@ def api_quote(symbol):
     return jsonify({"symbol": sym_upper, **q})
 
 
+@app.route("/api/technicals/<symbol>")
+def api_technicals(symbol):
+    """
+    Returns technical indicators for a stock: RSI, MACD, MA50, MA200, 52W High/Low.
+    Calculated from 1-year daily price history via yfinance.
+    """
+    sym_upper = symbol.upper()
+    yf_sym = sym_upper + ".NS" if "." not in sym_upper else sym_upper
+
+    try:
+        ticker = yf.Ticker(yf_sym)
+        hist   = ticker.history(period="1y")
+
+        if hist.empty or len(hist) < 20:
+            return jsonify({"error": "insufficient data", "symbol": sym_upper}), 404
+
+        close = hist["Close"]
+
+        # ── RSI (14-period) ──
+        delta  = close.diff()
+        gain   = delta.where(delta > 0, 0.0)
+        loss   = (-delta).where(delta < 0, 0.0)
+        avg_g  = gain.rolling(14).mean()
+        avg_l  = loss.rolling(14).mean()
+        rs     = avg_g / avg_l.replace(0, float("nan"))
+        rsi    = round(float((100 - 100 / (1 + rs)).iloc[-1]), 1)
+
+        # ── MACD (12, 26, 9) ──
+        ema12  = close.ewm(span=12, adjust=False).mean()
+        ema26  = close.ewm(span=26, adjust=False).mean()
+        macd_l = ema12 - ema26
+        signal = macd_l.ewm(span=9, adjust=False).mean()
+        macd_bullish = bool(float(macd_l.iloc[-1]) > float(signal.iloc[-1]))
+
+        # ── Moving Averages ──
+        ma50  = round(float(close.rolling(50).mean().iloc[-1]), 2)  if len(close) >= 50  else None
+        ma200 = round(float(close.rolling(200).mean().iloc[-1]), 2) if len(close) >= 200 else None
+        cur   = round(float(close.iloc[-1]), 2)
+        above_ma50  = bool(cur > ma50)  if ma50  else None
+        above_ma200 = bool(cur > ma200) if ma200 else None
+
+        # ── 52-Week High / Low ──
+        high_52w = round(float(hist["High"].max()), 2)
+        low_52w  = round(float(hist["Low"].min()), 2)
+
+        # ── Overall signal ──
+        bull_signals = sum([
+            rsi < 70 and rsi > 50,
+            macd_bullish,
+            above_ma50  is True,
+            above_ma200 is True,
+        ])
+        if bull_signals >= 3:
+            overall = "STRONG BUY"
+        elif bull_signals == 2:
+            overall = "BUY"
+        elif bull_signals == 1:
+            overall = "NEUTRAL"
+        else:
+            overall = "SELL"
+
+        return jsonify({
+            "symbol":      sym_upper,
+            "rsi":         rsi,
+            "macd_bullish":macd_bullish,
+            "macd_val":    round(float(macd_l.iloc[-1]), 3),
+            "signal_val":  round(float(signal.iloc[-1]), 3),
+            "ma50":        ma50,
+            "ma200":       ma200,
+            "above_ma50":  above_ma50,
+            "above_ma200": above_ma200,
+            "high_52w":    high_52w,
+            "low_52w":     low_52w,
+            "overall":     overall,
+            "last_updated": datetime.now().isoformat(),
+        })
+
+    except Exception as e:
+        print(f"[Technicals] {sym_upper}: {e}")
+        return jsonify({"error": str(e), "symbol": sym_upper}), 500
+
+
 STATIC_FII_FALLBACK = [
     {"date": "13 Mar", "fii_net": -1876.43, "dii_net": 2943.21, "net":  1066.78},
     {"date": "12 Mar", "fii_net": -2341.67, "dii_net": 3187.89, "net":   846.22},
