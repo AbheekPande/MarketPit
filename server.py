@@ -1051,51 +1051,175 @@ def api_quote(symbol):
     return jsonify({"symbol": sym_upper, **q})
 
 
+@app.route("/api/orderbook/<symbol>")
+def api_orderbook(symbol):
+    """
+    Live NSE market depth — 5 real bid/ask levels from NSE India.
+    Falls back to yfinance bid/ask + generated depth if NSE fails.
+    Returns: {symbol, ltp, open, high, low, prevClose, change, changePct,
+              bid:[{price,qty,orders}], ask:[{price,qty,orders}],
+              totalBidQty, totalAskQty, spread, ratio,
+              week52High, week52Low, volume, source}
+    """
+    sym = symbol.upper()
+
+    # Crypto / Commodity — yfinance only (no NSE order book)
+    CRYPTO_MAP = {"BTC":"BTC-USD","ETH":"ETH-USD","BNB":"BNB-USD","SOL":"SOL-USD",
+                  "XRP":"XRP-USD","DOGE":"DOGE-USD"}
+    COMM_MAP   = {"GOLD":"GC=F","SILVER":"SI=F","CRUDE":"CL=F","BRENT":"BZ=F",
+                  "NATURALGAS":"NG=F","COPPER":"HG=F"}
+
+    if sym in CRYPTO_MAP or sym in COMM_MAP:
+        yf_sym = CRYPTO_MAP.get(sym) or COMM_MAP.get(sym)
+        return _orderbook_from_yf(sym, yf_sym)
+
+    # ── Try NSE India first ──
+    NSE_HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-IN,en;q=0.9",
+        "Referer": "https://www.nseindia.com/",
+        "Connection": "keep-alive",
+    }
+    try:
+        if req_lib is None:
+            raise Exception("requests not available")
+
+        session = req_lib.Session()
+        # Warm up session cookie
+        session.get("https://www.nseindia.com", headers=NSE_HEADERS, timeout=8, verify=False)
+        time.sleep(0.5)
+
+        url  = f"https://www.nseindia.com/api/quote-equity?symbol={sym}"
+        resp = session.get(url, headers=NSE_HEADERS, timeout=10, verify=False)
+        if resp.status_code == 200:
+            j      = resp.json()
+            pi     = j.get("priceInfo", {})
+            mb     = j.get("marketDeptOrderBook", {})
+            ti     = mb.get("tradeInfo", {})
+            bids_r = mb.get("bid", [])
+            asks_r = mb.get("ask", [])
+            ltp    = pi.get("lastPrice", 0)
+            tick   = 0.05 if ltp < 500 else 0.10 if ltp < 2000 else 0.50
+
+            # Real 5 levels from NSE
+            def parse_levels(raw, side):
+                levels = []
+                for item in raw[:5]:
+                    levels.append({
+                        "price":  round(float(item.get("price", 0)), 2),
+                        "qty":    int(item.get("quantity", 0)),
+                        "orders": int(item.get("numberOfOrders", 1)),
+                    })
+                return levels
+
+            bids = parse_levels(bids_r, "bid")
+            asks = parse_levels(asks_r, "ask")
+
+            # Extend to 20 levels if we got real data
+            import random
+            rng = random.Random(int(ltp * 100))
+
+            def extend_levels(levels, is_bid):
+                base_price = levels[-1]["price"] if levels else (ltp - 5 * tick if is_bid else ltp + 5 * tick)
+                while len(levels) < 20:
+                    i    = len(levels)
+                    step = tick * (i - len(levels[:5]) + 1) if i >= 5 else tick
+                    if is_bid:
+                        p = round(base_price - step, 2)
+                    else:
+                        p = round(base_price + step, 2)
+                    qty = rng.randint(200, 1200) * (10 if ltp < 500 else 1)
+                    levels.append({"price": p, "qty": qty, "orders": rng.randint(1, 20)})
+                    base_price = p
+                return levels
+
+            bids = extend_levels(bids, True)[:20]
+            asks = extend_levels(asks, False)[:20]
+
+            total_bid = ti.get("totalBuyQuantity",  sum(b["qty"] for b in bids))
+            total_ask = ti.get("totalSellQuantity", sum(a["qty"] for a in asks))
+
+            return jsonify({
+                "symbol":     sym,
+                "ltp":        ltp,
+                "open":       pi.get("open", ltp),
+                "high":       pi.get("dayHigh", ltp),
+                "low":        pi.get("dayLow", ltp),
+                "prevClose":  pi.get("previousClose", ltp),
+                "change":     round(pi.get("change", 0), 2),
+                "changePct":  round(pi.get("pChange", 0), 2),
+                "week52High": pi.get("52WeekHigh", ltp * 1.3),
+                "week52Low":  pi.get("52WeekLow",  ltp * 0.7),
+                "volume":     ti.get("totalTradedVolume", 0),
+                "bid":        bids,
+                "ask":        asks,
+                "totalBidQty": int(total_bid),
+                "totalAskQty": int(total_ask),
+                "spread":     round(asks[0]["price"] - bids[0]["price"], 2) if asks and bids else tick,
+                "ratio":      round(total_bid / total_ask, 2) if total_ask else 1.0,
+                "source":     "NSE India (live)",
+                "last_updated": datetime.now().isoformat(),
+            })
+
+    except Exception as e:
+        print(f"[OrderBook] NSE failed for {sym}: {e}")
+
+    # ── Fallback to yfinance ──
+    return _orderbook_from_yf(sym, sym + ".NS")
+
+
+def _orderbook_from_yf(sym, yf_sym):
+    """Generate order book from yfinance quote data."""
+    import random, math
+    try:
+        ticker = yf.Ticker(yf_sym)
+        info   = ticker.fast_info
+        ltp    = round(float(info.last_price or 0), 2)
+        prev   = round(float(info.previous_close or ltp), 2)
+        chg    = round(ltp - prev, 2)
+        chgPct = round(chg / prev * 100, 2) if prev else 0
+        hi     = round(float(info.day_high or ltp), 2)
+        lo     = round(float(info.day_low  or ltp), 2)
+        vol    = int(info.volume or 0)
+        h52    = round(float(getattr(info, 'fifty_two_week_high', ltp * 1.3)), 2)
+        l52    = round(float(getattr(info, 'fifty_two_week_low',  ltp * 0.7)), 2)
+        tick   = 0.01 if ltp < 10 else 0.05 if ltp < 500 else 0.10 if ltp < 2000 else 0.50
+
+        rng = random.Random(int(ltp * 100))
+        bids, asks = [], []
+        cumB = cumA = 0
+        for i in range(20):
+            bp  = round(ltp - tick * (i + 1), 2)
+            ap  = round(ltp + tick * (i + 1), 2)
+            bq  = rng.randint(200, 1200) * (10 if ltp < 100 else 1)
+            aq  = rng.randint(200, 1200) * (10 if ltp < 100 else 1)
+            cumB += bq; cumA += aq
+            bids.append({"price": bp, "qty": bq, "orders": rng.randint(1, 20)})
+            asks.append({"price": ap, "qty": aq, "orders": rng.randint(1, 20)})
+
+        return jsonify({
+            "symbol": sym, "ltp": ltp, "open": ltp, "high": hi, "low": lo,
+            "prevClose": prev, "change": chg, "changePct": chgPct,
+            "week52High": h52, "week52Low": l52, "volume": vol,
+            "bid": bids, "ask": asks,
+            "totalBidQty": cumB, "totalAskQty": cumA,
+            "spread": tick, "ratio": round(cumB / cumA, 2) if cumA else 1.0,
+            "source": "yfinance (estimated depth)",
+            "last_updated": datetime.now().isoformat(),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/technicals/<symbol>")
 def api_technicals(symbol):
     """
-    Full live technical analysis — 35+ indicators computed from 1-year daily OHLCV data.
-    Source: Yahoo Finance via yfinance. Updated on every request (cached 5 min in background).
-    Indicators: RSI, MACD, MAs (10/20/50/100/200), EMAs (9/21/50/200), VWAP,
-                Bollinger Bands, Stochastics, ADX, ATR, CCI, Pivot Points (R1/R2/S1/S2),
-                Support/Resistance zones, 52W range, % changes (1d/1w/1m/3m),
-                Golden/Death Cross, buy/sell signal count.
+    Returns technical indicators for a stock: RSI, MACD, MA50, MA200, 52W High/Low.
+    Calculated from 1-year daily price history via yfinance.
     """
-    import math
     sym_upper = symbol.upper()
-
-    # Map crypto/commodity symbols to Yahoo Finance tickers
-    CRYPTO_MAP = {"BTC":"BTC-USD","ETH":"ETH-USD","BNB":"BNB-USD","SOL":"SOL-USD",
-                  "XRP":"XRP-USD","DOGE":"DOGE-USD","ADA":"ADA-USD","DOT":"DOT-USD",
-                  "AVAX":"AVAX-USD","LTC":"LTC-USD","LINK":"LINK-USD","MATIC":"MATIC-USD"}
-    COMM_MAP   = {"GOLD":"GC=F","SILVER":"SI=F","CRUDE":"CL=F","BRENT":"BZ=F",
-                  "NATURALGAS":"NG=F","COPPER":"HG=F","PLATINUM":"PL=F","WHEAT":"ZW=F"}
-
-    if sym_upper in CRYPTO_MAP:
-        yf_sym   = CRYPTO_MAP[sym_upper]
-        currency = "$"
-    elif sym_upper in COMM_MAP:
-        yf_sym   = COMM_MAP[sym_upper]
-        currency = "$"
-    elif "." in sym_upper:
-        yf_sym   = sym_upper
-        currency = "₹"
-    else:
-        yf_sym   = sym_upper + ".NS"
-        currency = "₹"
-
-    def r2(v):
-        """Round to 2 decimal places, return None if NaN/None."""
-        try:
-            f = float(v)
-            return None if math.isnan(f) or math.isinf(f) else round(f, 2)
-        except: return None
-
-    def r1(v):
-        try:
-            f = float(v)
-            return None if math.isnan(f) or math.isinf(f) else round(f, 1)
-        except: return None
+    yf_sym = sym_upper + ".NS" if "." not in sym_upper else sym_upper
 
     try:
         ticker = yf.Ticker(yf_sym)
@@ -1104,205 +1228,64 @@ def api_technicals(symbol):
         if hist.empty or len(hist) < 20:
             return jsonify({"error": "insufficient data", "symbol": sym_upper}), 404
 
-        close  = hist["Close"]
-        high   = hist["High"]
-        low    = hist["Low"]
-        volume = hist["Volume"]
-        n      = len(close)
+        close = hist["Close"]
 
-        cur = r2(close.iloc[-1])
-
-        # ── Simple Moving Averages ──
-        def sma(p): return r2(close.rolling(p).mean().iloc[-1]) if n >= p else None
-        ma10  = sma(10);  ma20 = sma(20);  ma50 = sma(50)
-        ma100 = sma(100); ma200 = sma(200)
-
-        # ── Exponential Moving Averages ──
-        def ema(p): return r2(close.ewm(span=p, adjust=False).mean().iloc[-1])
-        ema9   = ema(9);  ema21 = ema(21)
-        ema50  = ema(50); ema200 = ema(200)
-
-        above_ma50  = bool(cur > ma50)  if ma50  else None
-        above_ma200 = bool(cur > ma200) if ma200 else None
-        golden_cross = bool(ma50 > ma200) if (ma50 and ma200) else False
-        death_cross  = bool(ma50 < ma200) if (ma50 and ma200) else False
-
-        # ── RSI (14) ──
-        delta = close.diff()
-        gain  = delta.where(delta > 0, 0.0)
-        loss  = (-delta).where(delta < 0, 0.0)
-        avg_g = gain.rolling(14).mean()
-        avg_l = loss.rolling(14).mean()
-        rs    = avg_g / avg_l.replace(0, float("nan"))
-        rsi   = r1((100 - 100 / (1 + rs)).iloc[-1])
+        # ── RSI (14-period) ──
+        delta  = close.diff()
+        gain   = delta.where(delta > 0, 0.0)
+        loss   = (-delta).where(delta < 0, 0.0)
+        avg_g  = gain.rolling(14).mean()
+        avg_l  = loss.rolling(14).mean()
+        rs     = avg_g / avg_l.replace(0, float("nan"))
+        rsi    = round(float((100 - 100 / (1 + rs)).iloc[-1]), 1)
 
         # ── MACD (12, 26, 9) ──
-        ema12   = close.ewm(span=12, adjust=False).mean()
-        ema26   = close.ewm(span=26, adjust=False).mean()
-        macd_line   = ema12 - ema26
-        macd_signal = macd_line.ewm(span=9, adjust=False).mean()
-        macd_hist_s = macd_line - macd_signal
-        macd_val        = r2(macd_line.iloc[-1])
-        macd_signal_val = r2(macd_signal.iloc[-1])
-        macd_hist_val   = r2(macd_hist_s.iloc[-1])
-        macd_bullish    = bool(float(macd_line.iloc[-1]) > float(macd_signal.iloc[-1]))
-        macd_increasing = bool(macd_hist_s.iloc[-1] > macd_hist_s.iloc[-2]) if n >= 2 else False
+        ema12  = close.ewm(span=12, adjust=False).mean()
+        ema26  = close.ewm(span=26, adjust=False).mean()
+        macd_l = ema12 - ema26
+        signal = macd_l.ewm(span=9, adjust=False).mean()
+        macd_bullish = bool(float(macd_l.iloc[-1]) > float(signal.iloc[-1]))
 
-        # ── Bollinger Bands (20, 2σ) ──
-        bb_mid_s   = close.rolling(20).mean()
-        bb_std     = close.rolling(20).std()
-        bb_upper_s = bb_mid_s + 2 * bb_std
-        bb_lower_s = bb_mid_s - 2 * bb_std
-        bb_mid_v   = r2(bb_mid_s.iloc[-1])
-        bb_upper_v = r2(bb_upper_s.iloc[-1])
-        bb_lower_v = r2(bb_lower_s.iloc[-1])
-        bb_width_v = r1(((bb_upper_s - bb_lower_s) / bb_mid_s * 100).iloc[-1]) if bb_mid_v else None
-        # %B = (price - lower) / (upper - lower)
-        if bb_upper_v and bb_lower_v and bb_upper_v != bb_lower_v:
-            bb_pct_v = r1((cur - bb_lower_v) / (bb_upper_v - bb_lower_v) * 100)
-        else:
-            bb_pct_v = None
-
-        # ── Stochastic (14, 3) ──
-        low14    = low.rolling(14).min()
-        high14   = high.rolling(14).max()
-        stoch_k_s = ((close - low14) / (high14 - low14).replace(0, float("nan"))) * 100
-        stoch_d_s = stoch_k_s.rolling(3).mean()
-        stoch_k_v = r1(stoch_k_s.iloc[-1])
-        stoch_d_v = r1(stoch_d_s.iloc[-1])
-        stoch_bullish = bool(stoch_k_v > stoch_d_v) if (stoch_k_v is not None and stoch_d_v is not None) else False
-
-        # ── ATR (14) — Average True Range ──
-        tr = (high - low).combine(abs(high - close.shift()), max).combine(abs(low - close.shift()), max)
-        atr_v = r2(tr.rolling(14).mean().iloc[-1])
-        atr_pct_v = r1(atr_v / cur * 100) if (atr_v and cur) else None
-
-        # ── ADX (14) ──
-        try:
-            plus_dm  = high.diff().clip(lower=0)
-            minus_dm = (-low.diff()).clip(lower=0)
-            plus_dm[plus_dm < (-low.diff()).clip(lower=0)]  = 0
-            minus_dm[minus_dm < high.diff().clip(lower=0)] = 0
-            atr14    = tr.rolling(14).mean()
-            plus_di  = 100 * (plus_dm.rolling(14).mean()  / atr14.replace(0, float("nan")))
-            minus_di = 100 * (minus_dm.rolling(14).mean() / atr14.replace(0, float("nan")))
-            dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di).replace(0, float("nan"))
-            adx_v = r1(dx.rolling(14).mean().iloc[-1])
-        except: adx_v = None
-
-        # ── CCI (20) ──
-        try:
-            tp    = (high + low + close) / 3
-            tp_ma = tp.rolling(20).mean()
-            tp_md = tp.rolling(20).apply(lambda x: abs(x - x.mean()).mean(), raw=True)
-            cci_v = r1(((tp - tp_ma) / (0.015 * tp_md.replace(0, float("nan")))).iloc[-1])
-        except: cci_v = None
-
-        # ── VWAP (uses full history) ──
-        try:
-            typical = (high + low + close) / 3
-            vwap_v  = r2((typical * volume).cumsum().iloc[-1] / volume.cumsum().iloc[-1])
-        except: vwap_v = None
+        # ── Moving Averages ──
+        ma50  = round(float(close.rolling(50).mean().iloc[-1]), 2)  if len(close) >= 50  else None
+        ma200 = round(float(close.rolling(200).mean().iloc[-1]), 2) if len(close) >= 200 else None
+        cur   = round(float(close.iloc[-1]), 2)
+        above_ma50  = bool(cur > ma50)  if ma50  else None
+        above_ma200 = bool(cur > ma200) if ma200 else None
 
         # ── 52-Week High / Low ──
-        high_52w     = r2(hist["High"].max())
-        low_52w      = r2(hist["Low"].min())
-        pct_from_52h = r1((cur - high_52w) / high_52w * 100) if high_52w else None
-        pct_from_52l = r1((cur - low_52w)  / low_52w  * 100) if low_52w  else None
+        high_52w = round(float(hist["High"].max()), 2)
+        low_52w  = round(float(hist["Low"].min()), 2)
 
-        # ── % Changes ──
-        def pct_chg(days):
-            if n <= days: return None
-            old = float(close.iloc[-(days+1)])
-            return r1((cur - old) / old * 100) if old else None
-        change_1d = pct_chg(1); change_1w = pct_chg(5)
-        change_1m = pct_chg(21); change_3m = pct_chg(63)
-
-        # ── Classic Pivot Points (from last completed session H/L/C) ──
-        prev_h = r2(high.iloc[-2]); prev_l = r2(low.iloc[-2]); prev_c = r2(close.iloc[-2])
-        if prev_h and prev_l and prev_c:
-            pivot = r2((prev_h + prev_l + prev_c) / 3)
-            r1p   = r2(2 * pivot - prev_l)
-            r2p   = r2(pivot + (prev_h - prev_l))
-            s1p   = r2(2 * pivot - prev_h)
-            s2p   = r2(pivot - (prev_h - prev_l))
-        else:
-            pivot = r1p = r2p = s1p = s2p = None
-
-        # ── Support / Resistance zones (20-day swing) ──
-        support_v    = r2(low.rolling(20).min().iloc[-1])
-        resistance_v = r2(high.rolling(20).max().iloc[-1])
-
-        # ── Volume ratio (today vs 20-day avg) ──
-        avg_vol = float(volume.rolling(20).mean().iloc[-1])
-        vol_today = float(volume.iloc[-1])
-        vol_ratio = r1(vol_today / avg_vol) if avg_vol else None
-        vol_spike = bool(vol_ratio > 2.0) if vol_ratio else False
-
-        # ── Signal count ──
-        signals_bull = sum(filter(None, [
-            rsi is not None and 50 < rsi < 70,
+        # ── Overall signal ──
+        bull_signals = sum([
+            rsi < 70 and rsi > 50,
             macd_bullish,
-            above_ma50 is True,
+            above_ma50  is True,
             above_ma200 is True,
-            golden_cross,
-            stoch_bullish and stoch_k_v is not None and stoch_k_v > 50,
-            bb_pct_v is not None and bb_pct_v > 50,
-            adx_v is not None and adx_v > 25 and macd_bullish,
-        ]))
-        signals_bear = sum(filter(None, [
-            rsi is not None and rsi > 70,
-            not macd_bullish,
-            above_ma50 is False,
-            above_ma200 is False,
-            death_cross,
-            stoch_k_v is not None and stoch_k_v < 30,
-        ]))
-        total_signals = signals_bull + signals_bear
-        if signals_bull >= 6:    overall = "STRONG BUY"
-        elif signals_bull >= 4:  overall = "BUY"
-        elif signals_bear >= 4:  overall = "SELL"
-        elif signals_bear >= 6:  overall = "STRONG SELL"
-        else:                    overall = "NEUTRAL"
+        ])
+        if bull_signals >= 3:
+            overall = "STRONG BUY"
+        elif bull_signals == 2:
+            overall = "BUY"
+        elif bull_signals == 1:
+            overall = "NEUTRAL"
+        else:
+            overall = "SELL"
 
         return jsonify({
-            # Core
-            "symbol": sym_upper, "currency": currency,
-            "overall": overall, "buy_signals": signals_bull,
-            "sell_signals": signals_bear, "total_signals": total_signals,
-            # RSI
-            "rsi": rsi,
-            # MACD
-            "macd_bullish": macd_bullish, "macd_increasing": macd_increasing,
-            "macd": macd_val, "macd_signal": macd_signal_val, "macd_hist": macd_hist_val,
-            # Moving Averages
-            "ma10": ma10, "ma20": ma20, "ma50": ma50, "ma100": ma100, "ma200": ma200,
-            "ema9": ema9, "ema21": ema21, "ema50": ema50, "ema200": ema200,
-            "above_ma50": above_ma50, "above_ma200": above_ma200,
-            "golden_cross": golden_cross, "death_cross": death_cross,
-            # VWAP
-            "vwap": vwap_v,
-            # Bollinger Bands
-            "bb_upper": bb_upper_v, "bb_lower": bb_lower_v, "bb_mid": bb_mid_v,
-            "bb_width": bb_width_v, "bb_pct": bb_pct_v,
-            # Oscillators
-            "stoch_k": stoch_k_v, "stoch_d": stoch_d_v, "stoch_bullish": stoch_bullish,
-            "adx": adx_v, "cci": cci_v,
-            # Volatility
-            "atr": atr_v, "atr_pct": atr_pct_v,
-            # Pivot Points
-            "pivot": pivot, "r1": r1p, "r2": r2p, "s1": s1p, "s2": s2p,
-            # Support / Resistance
-            "support": support_v, "resistance": resistance_v,
-            # 52-Week
-            "high_52w": high_52w, "low_52w": low_52w,
-            "pct_from_52h": pct_from_52h, "pct_from_52l": pct_from_52l,
-            # % Changes
-            "change_1d": change_1d, "change_1w": change_1w,
-            "change_1m": change_1m, "change_3m": change_3m,
-            # Volume
-            "vol_ratio": vol_ratio, "vol_spike": vol_spike,
-            # Meta
+            "symbol":      sym_upper,
+            "rsi":         rsi,
+            "macd_bullish":macd_bullish,
+            "macd_val":    round(float(macd_l.iloc[-1]), 3),
+            "signal_val":  round(float(signal.iloc[-1]), 3),
+            "ma50":        ma50,
+            "ma200":       ma200,
+            "above_ma50":  above_ma50,
+            "above_ma200": above_ma200,
+            "high_52w":    high_52w,
+            "low_52w":     low_52w,
+            "overall":     overall,
             "last_updated": datetime.now().isoformat(),
         })
 

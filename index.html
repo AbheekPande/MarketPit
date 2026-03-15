@@ -10179,6 +10179,7 @@ function updatePtMarketBadge() {
 
 function switchPaperTab(tab, btn) {
   _ptTab = tab;
+  if (tab !== 'trade') stopOrderBookRefresh();
   ['trade','holdings','orders','history','leaderboard'].forEach(t => {
     const b = document.getElementById('pt_' + t);
     if (!b) return;
@@ -10487,238 +10488,42 @@ function renderPtTrade(el, d) {
       </div>
     </div>
 
-    <!-- ═══ RIGHT: Market info panel ═══ -->
-    <div style="display:flex;flex-direction:column;overflow-y:auto;background:var(--bg1);">
+    <!-- ═══ RIGHT: Live Order Book ═══ -->
+    <div style="display:flex;flex-direction:column;overflow-y:auto;background:var(--bg1);" id="ptOrderBookPanel">
 
-      <!-- Price header -->
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2);">
-        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
-          <span style="font-family:'Space Mono',monospace;font-size:26px;font-weight:800;letter-spacing:-1px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2})}</span>
-          <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:4px;
-            background:${parseFloat(asset.chg)>=0?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};
-            color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg||'—'}</span>
+      <!-- Header: symbol + price -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div>
+            <span style="font-family:'Space Mono',monospace;font-weight:800;font-size:14px;">${asset.sym}</span>
+            <span style="font-size:10px;color:var(--text3);margin-left:8px;">NSE Order Book</span>
+          </div>
+          <div style="text-align:right;">
+            <div id="obLtp" style="font-family:'Space Mono',monospace;font-size:22px;font-weight:800;letter-spacing:-1px;">${cur}${Number(asset.price).toLocaleString(undefined,{maximumFractionDigits:isUsd?4:2})}</div>
+            <div id="obChg" style="font-size:11px;font-weight:700;color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg||'—'}</div>
+          </div>
         </div>
-        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">${asset.sym} · ${asset.name}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'Space Mono',monospace;">Series: EQ · Tick: ${cur}${isUsd?'0.01':'0.05'} · Depth: 20 levels</div>
-      </div>
-
-      <!-- ═══ ORDER BOOK ═══ -->
-      <div style="padding:0;border-bottom:1px solid var(--border);">
-        ${(()=>{
-          const p    = parseFloat(asset.price)||1;
-          const tick = p>10000?5:p>1000?0.5:p>100?0.1:p>10?0.05:0.01;
-          const fmt  = v => cur + v.toFixed(tick<0.1?2:tick<1?1:0);
-          const fmtN = v => v.toLocaleString('en-IN');
-
-          // Generate 20 realistic bid + ask levels seeded from price
-          const seed = Math.round(p * 17) % 1000;
-          const rng  = (s, min, max) => min + ((s * 1103515245 + 12345) & 0x7fffffff) % (max - min);
-
-          const askLevels = [], bidLevels = [];
-          for (let i = 0; i < 20; i++) {
-            const ap  = p + tick * (i + 1);
-            const aqBase = p > 1000 ? 500 : 5000;
-            const aq  = aqBase + rng(seed + i * 7, 50, 800) * (p > 1000 ? 1 : 10);
-            const ao  = rng(seed + i * 3, 1, 25);
-            askLevels.push({ price: ap, qty: aq, orders: ao });
-          }
-          for (let i = 0; i < 20; i++) {
-            const bp  = p - tick * (i + 1);
-            const bqBase = p > 1000 ? 500 : 5000;
-            const bq  = bqBase + rng(seed + i * 11, 50, 900) * (p > 1000 ? 1 : 10);
-            const bo  = rng(seed + i * 5, 1, 22);
-            bidLevels.push({ price: bp, qty: bq, orders: bo });
-          }
-
-          // Cumulative qty
-          let cumBid = 0, cumAsk = 0;
-          const askCum = askLevels.map(a => { cumAsk += a.qty; return cumAsk; });
-          const bidCum = bidLevels.map(b => { cumBid += b.qty; return cumBid; });
-
-          const totalBid = bidCum[bidCum.length - 1];
-          const totalAsk = askCum[askCum.length - 1];
-          const ratio    = (totalBid / totalAsk).toFixed(2);
-          const spread   = (tick).toFixed(tick < 1 ? 2 : 0);
-          const maxQty   = Math.max(...askLevels.map(a=>a.qty), ...bidLevels.map(b=>b.qty));
-
-          // Summary strip
-          let html = `
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid var(--border);">
-            <div style="padding:8px 12px;border-right:1px solid var(--border);">
-              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL BID QTY</div>
-              <div style="font-size:14px;font-weight:800;color:var(--green);font-family:'Space Mono',monospace;">${fmtN(totalBid)}</div>
-            </div>
-            <div style="padding:8px 12px;border-right:1px solid var(--border);">
-              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL ASK QTY</div>
-              <div style="font-size:14px;font-weight:800;color:var(--red);font-family:'Space Mono',monospace;">${fmtN(totalAsk)}</div>
-            </div>
-            <div style="padding:8px 12px;border-right:1px solid var(--border);">
-              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">BID/ASK RATIO</div>
-              <div style="font-size:14px;font-weight:800;font-family:'Space Mono',monospace;color:${parseFloat(ratio)>=1?'var(--green)':'var(--red)'};">${ratio}</div>
-            </div>
-            <div style="padding:8px 12px;">
-              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">SPREAD</div>
-              <div style="font-size:14px;font-weight:800;font-family:'Space Mono',monospace;">${cur}${spread}</div>
-            </div>
-          </div>`;
-
-          // Table columns header
-          html += `
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;border-bottom:1px solid var(--border);background:var(--bg3);">
-            <div style="padding:5px 8px;">ORD</div>
-            <div style="padding:5px 8px;text-align:right;">QTY</div>
-            <div style="padding:5px 8px;text-align:right;">CUM</div>
-            <div style="padding:5px 8px;text-align:right;color:var(--green);">BID</div>
-            <div style="padding:5px 8px;text-align:left;color:var(--red);">ASK</div>
-            <div style="padding:5px 8px;text-align:right;">QTY</div>
-            <div style="padding:5px 8px;text-align:right;">CUM</div>
-            <div style="padding:5px 8px;text-align:right;">ORD</div>
-          </div>`;
-
-          // 20 rows — bid left, ask right
-          for (let i = 0; i < 20; i++) {
-            const bid = bidLevels[i];
-            const ask = askLevels[i];
-            const bc  = bidCum[i];
-            const ac  = askCum[i];
-            const bw  = Math.round(bid.qty / maxQty * 100);
-            const aw  = Math.round(ask.qty / maxQty * 100);
-
-            html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;font-size:10px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);position:relative;">
-              <!-- Bid background bar (left side) -->
-              <div style="position:absolute;left:0;top:0;bottom:0;width:${bw*0.5}%;background:rgba(0,168,84,0.08);pointer-events:none;"></div>
-              <!-- Ask background bar (right side) -->
-              <div style="position:absolute;right:0;top:0;bottom:0;width:${aw*0.5}%;background:rgba(229,57,53,0.08);pointer-events:none;"></div>
-              <div style="padding:5px 8px;position:relative;z-index:1;color:var(--text3);">${bid.orders}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:600;">${fmtN(bid.qty)}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${fmtN(bc)}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:800;color:var(--green);">${fmt(bid.price)}</div>
-              <div style="padding:5px 8px;text-align:left;position:relative;z-index:1;font-weight:800;color:var(--red);">${fmt(ask.price)}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:600;">${fmtN(ask.qty)}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${fmtN(ac)}</div>
-              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${ask.orders}</div>
-            </div>`;
-          }
-
-          // Best bid/ask/spread footer
-          html += `<div style="display:flex;gap:16px;padding:7px 12px;background:var(--bg3);font-size:10px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);">
-            <span>Spread: <b style="color:var(--text);">${cur}${spread}</b></span>
-            <span>Best Bid: <b style="color:var(--green);">${fmt(bidLevels[0].price)}</b></span>
-            <span>Best Ask: <b style="color:var(--red);">${fmt(askLevels[0].price)}</b></span>
-          </div>`;
-
-          // Cumulative depth chart via canvas
-          html += `
-          <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-            <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">CUMULATIVE DEPTH CHART</div>
-            <canvas id="ptDepthCanvas" width="520" height="120" style="width:100%;height:120px;"></canvas>
-          </div>`;
-
-          // Inject canvas draw via requestAnimationFrame
-          html += `<script>
-          (function() {
-            function drawDepth() {
-              const canvas = document.getElementById('ptDepthCanvas');
-              if (!canvas) return;
-              const ctx = canvas.getContext('2d');
-              const W = canvas.width, H = canvas.height;
-              ctx.clearRect(0, 0, W, H);
-              const bids = ${JSON.stringify(bidLevels.map((b,i)=>({p:b.price,c:bidCum[i]})).reverse())};
-              const asks = ${JSON.stringify(askLevels.map((a,i)=>({p:a.price,c:askCum[i]})))};
-              const allP = [...bids.map(x=>x.p), ...asks.map(x=>x.p)];
-              const minP = Math.min(...allP), maxP = Math.max(...allP);
-              const maxC = Math.max(bidCum[bidCum.length-1], askCum[askCum.length-1]);
-              const xS = W / (maxP - minP);
-              const yS = (H - 24) / maxC;
-              const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-              // Draw bid area
-              ctx.beginPath();
-              ctx.moveTo((bids[0].p - minP) * xS, H - 24);
-              bids.forEach(b => ctx.lineTo((b.p - minP) * xS, H - 24 - b.c * yS));
-              ctx.lineTo((bids[bids.length-1].p - minP) * xS, H - 24);
-              ctx.closePath();
-              ctx.fillStyle = 'rgba(0,168,84,0.18)';
-              ctx.fill();
-              ctx.strokeStyle = '#00a854';
-              ctx.lineWidth = 1.5;
-              ctx.stroke();
-              // Draw ask area
-              ctx.beginPath();
-              ctx.moveTo((asks[0].p - minP) * xS, H - 24);
-              asks.forEach(a => ctx.lineTo((a.p - minP) * xS, H - 24 - a.c * yS));
-              ctx.lineTo((asks[asks.length-1].p - minP) * xS, H - 24);
-              ctx.closePath();
-              ctx.fillStyle = 'rgba(229,57,53,0.18)';
-              ctx.fill();
-              ctx.strokeStyle = '#e53935';
-              ctx.lineWidth = 1.5;
-              ctx.stroke();
-              // X-axis labels
-              ctx.fillStyle = isDark ? '#71767b' : '#8899a6';
-              ctx.font = '9px monospace';
-              ctx.textAlign = 'center';
-              [bids[0].p, bids[Math.floor(bids.length/2)].p, asks[0].p, asks[Math.floor(asks.length/2)].p, asks[asks.length-1].p].forEach(pv => {
-                const x = (pv - minP) * xS;
-                ctx.fillText('${cur}'+pv.toFixed(${tick < 0.1 ? 2 : tick < 1 ? 1 : 0}), x, H - 6);
-              });
-            }
-            requestAnimationFrame(drawDepth);
-          })();
-          <\/script>`;
-
-          return html;
-        })()}
-      </div>
-
-      <!-- OHLC + session stats -->
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
-        <div class="pt-lbl" style="margin-bottom:8px;">SESSION</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          ${(()=>{
-            const p = parseFloat(asset.price)||1;
-            const chgPct = parseFloat((asset.chg||'0').replace('%','').replace('+',''));
-            const prevClose = p / (1 + chgPct/100);
-            const hi = (p*(1+Math.abs(chgPct/100)*1.4)).toFixed(p>1000?0:2);
-            const lo = (p*(1-Math.abs(chgPct/100)*1.6)).toFixed(p>1000?0:2);
-            const open = prevClose * (1 + (Math.random()*0.004 - 0.002));
-            const cur2 = isUsd ? '$' : '₹';
-            const items = [
-              ['OPEN',    cur2+open.toFixed(p>1000?0:2)],
-              ['HIGH',    cur2+hi],
-              ['LOW',     cur2+lo],
-              ['PREV CLO',cur2+prevClose.toFixed(p>1000?0:2)],
-              ['52W HIGH',cur2+(p*1.32).toFixed(p>1000?0:2)],
-              ['52W LOW', cur2+(p*0.72).toFixed(p>1000?0:2)],
-            ];
-            return items.map(([l,v])=>`
-            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px 9px;">
-              <div class="pt-slbl">${l}</div>
-              <div style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;">${v}</div>
-            </div>`).join('');
-          })()}
+        <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;">
+          Series: EQ · Tick: ${cur}${isUsd?'0.01':'0.05'} · Depth: 20 levels ·
+          <span id="obRefreshBadge" style="color:var(--accent);">⟳ Live</span>
         </div>
       </div>
 
-      <!-- Account snapshot -->
-      <div style="padding:12px 16px;">
-        <div class="pt-lbl" style="margin-bottom:8px;">ACCOUNT</div>
-        <div style="font-family:'Space Mono',monospace;font-size:11px;display:flex;flex-direction:column;gap:6px;">
-          ${[
-            ['Starting Capital', '₹10,00,000', 'var(--text)'],
-            ['Available Cash',   '₹'+d.balance.toLocaleString('en-IN',{maximumFractionDigits:0}), 'var(--green)'],
-            ['Open Positions',   Object.values(d.holdings).filter(h=>h.qty>0).length+' positions', 'var(--accent)'],
-            ['USD/INR',          '₹'+_usdInr.toFixed(2), 'var(--text)'],
-          ].map(([l,v,c])=>`
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
-            <span style="color:var(--text3);">${l}</span>
-            <span style="font-weight:700;color:${c};">${v}</span>
-          </div>`).join('')}
+      <!-- Order book content — filled by fetchOrderBook() -->
+      <div id="ptOrderBook" style="flex:1;overflow-y:auto;font-family:'Space Mono',monospace;">
+        <div style="display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text3);">
+          <div class="loading-spin" style="margin-right:10px;"></div>
+          <span style="font-size:12px;">Loading order book…</span>
         </div>
       </div>
-    </div>
+    </div>  </div>
   </div>`;
 
   ptCalcTotal();
+
+  // Start/restart live order book for selected asset
+  if (!isUsd) startOrderBookRefresh(asset.sym);
+  else stopOrderBookRefresh();
 
   setTimeout(() => {
     document.addEventListener('click', function ptDropClose(e) {
@@ -10728,6 +10533,309 @@ function renderPtTrade(el, d) {
     }, { once: false });
   }, 100);
 }
+// ── LIVE ORDER BOOK ──────────────────────────────────────
+let _obTimer = null, _obSym = null, _obData = null;
+
+async function fetchOrderBook(sym) {
+  if (!sym) return;
+  _obSym = sym;
+  const el = document.getElementById('ptOrderBook');
+  if (!el) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/orderbook/${sym}`, {signal: AbortSignal.timeout(10000)});
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    _obData = d;
+    renderOrderBook(d);
+    // Update LTP in header
+    const ltpEl = document.getElementById('obLtp');
+    const chgEl = document.getElementById('obChg');
+    const badge = document.getElementById('obRefreshBadge');
+    if (ltpEl) ltpEl.textContent = (d.ltp >= 1 ? '₹' : '$') + Number(d.ltp).toLocaleString('en-IN', {maximumFractionDigits: d.tick < 0.1 ? 2 : d.tick < 1 ? 1 : 0});
+    if (chgEl) { chgEl.textContent = `${d.chg} (${d.chgVal >= 0 ? '+' : ''}${d.chgVal})`; chgEl.style.color = d.up ? 'var(--green)' : 'var(--red)'; }
+    if (badge) { const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'}); badge.textContent = '✓ Live · ' + t + ' IST'; }
+  } catch(e) {
+    console.warn('[OrderBook]', e.message);
+    if (el && !_obData) el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:11px;">⚠ Could not load order book<br><span style="font-size:9px;">Market may be closed or symbol not found</span></div>`;
+  }
+}
+
+function renderOrderBook(d) {
+  const el = document.getElementById('ptOrderBook');
+  if (!el) return;
+
+  // Normalise field names from server response
+  const bids = (d.bid || d.bidLevels || []).slice(0, 20);
+  const asks = (d.ask || d.askLevels || []).slice(0, 20);
+  const totalBid = d.totalBidQty || d.totalBid || bids.reduce((s,b)=>s+b.qty,0);
+  const totalAsk = d.totalAskQty || d.totalAsk || asks.reduce((s,a)=>s+a.qty,0);
+  const ratio    = d.ratio || (totalAsk ? totalBid/totalAsk : 1);
+  const spread   = d.spread || (asks[0]&&bids[0] ? asks[0].price - bids[0].price : 0.05);
+  const ltp      = d.ltp || d.lastPrice || 0;
+  const isInr    = ltp >= 10 || (d.symbol && !['BTC','ETH','BNB','SOL','DOGE','XRP'].includes(d.symbol));
+  const cur      = isInr ? '₹' : '$';
+  const dec      = spread < 0.05 ? 4 : spread < 0.5 ? 2 : spread < 1 ? 1 : 0;
+  const fmt      = v => cur + Number(v).toFixed(dec);
+  const fmtN     = v => Number(v).toLocaleString('en-IN');
+
+  // Compute cumulative
+  let cumB = 0, cumA = 0;
+  const bidRows = bids.map(b => { cumB += b.qty; return {...b, cum: cumB}; });
+  const askRows = asks.map(a => { cumA += a.qty; return {...a, cum: cumA}; });
+  const maxQ    = Math.max(...bids.map(b=>b.qty), ...asks.map(a=>a.qty), 1);
+  const ratioC  = ratio >= 1.1 ? 'var(--green)' : ratio <= 0.9 ? 'var(--red)' : 'var(--gold)';
+
+  // Update LTP header
+  const ltpEl   = document.getElementById('obLtp');
+  const chgEl   = document.getElementById('obChg');
+  const badge   = document.getElementById('obRefreshBadge');
+  const srcBadge= document.getElementById('obSource');
+  if (ltpEl) ltpEl.textContent = fmt(ltp);
+  if (chgEl) {
+    const chg = d.change || d.chg || 0;
+    const pct = d.changePct || d.chgVal || 0;
+    chgEl.textContent = `${chg >= 0 ? '+' : ''}${Number(chg).toFixed(2)} (${pct >= 0 ? '+' : ''}${Number(pct).toFixed(2)}%)`;
+    chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  if (badge) {
+    const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Kolkata'});
+    badge.textContent = '● Live · ' + t + ' IST';
+    badge.style.color = 'var(--green)';
+  }
+  if (srcBadge) srcBadge.textContent = d.source || 'NSE India';
+
+  // ── SUMMARY STRIP ──
+  let html = `
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--bg2);border-bottom:1px solid var(--border);">
+    <div style="padding:10px 14px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:4px;">TOTAL BID QTY</div>
+      <div style="font-size:17px;font-weight:800;color:var(--green);font-family:'Space Mono',monospace;">${fmtN(totalBid)}</div>
+    </div>
+    <div style="padding:10px 14px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:4px;">TOTAL ASK QTY</div>
+      <div style="font-size:17px;font-weight:800;color:var(--red);font-family:'Space Mono',monospace;">${fmtN(totalAsk)}</div>
+    </div>
+    <div style="padding:10px 14px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:4px;">BID/ASK RATIO</div>
+      <div style="font-size:17px;font-weight:800;font-family:'Space Mono',monospace;color:${ratioC};">${ratio.toFixed(2)}</div>
+    </div>
+    <div style="padding:10px 14px;">
+      <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:4px;">SPREAD</div>
+      <div style="font-size:17px;font-weight:800;font-family:'Space Mono',monospace;">${fmt(spread)}</div>
+    </div>
+  </div>
+
+  <!-- ── TWO-PANEL SPLIT TABLE ── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;">
+
+    <!-- BID SIDE (left) -->
+    <div style="border-right:1px solid var(--border);">
+      <!-- Bid header -->
+      <div style="display:grid;grid-template-columns:32px 1fr 1fr 1fr;font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;padding:5px 0;background:var(--bg3);border-bottom:1px solid var(--border);">
+        <div style="padding:0 6px;">ORD</div>
+        <div style="text-align:right;padding:0 6px;">QTY</div>
+        <div style="text-align:right;padding:0 6px;">CUM</div>
+        <div style="text-align:right;padding:0 6px;color:var(--green);">BID ${cur}</div>
+      </div>
+      <!-- Bid rows -->
+      ${bidRows.map((b,i) => {
+        const w = Math.round(b.qty / maxQ * 100);
+        return `<div style="display:grid;grid-template-columns:32px 1fr 1fr 1fr;border-bottom:1px solid var(--border);position:relative;">
+          <div style="position:absolute;right:0;top:0;bottom:0;width:${w}%;background:rgba(0,168,84,0.1);pointer-events:none;"></div>
+          <div style="padding:4px 6px;font-size:10px;color:var(--text3);position:relative;z-index:1;">${b.orders}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:11px;font-weight:600;position:relative;z-index:1;">${fmtN(b.qty)}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:10px;color:var(--text3);position:relative;z-index:1;">${fmtN(b.cum)}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:11px;font-weight:800;color:var(--green);position:relative;z-index:1;">${fmt(b.price)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- ASK SIDE (right) -->
+    <div>
+      <!-- Ask header -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 32px;font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;padding:5px 0;background:var(--bg3);border-bottom:1px solid var(--border);">
+        <div style="text-align:left;padding:0 6px;color:var(--red);">ASK ${cur}</div>
+        <div style="text-align:right;padding:0 6px;">QTY</div>
+        <div style="text-align:right;padding:0 6px;">CUM</div>
+        <div style="text-align:right;padding:0 6px;">ORD</div>
+      </div>
+      <!-- Ask rows -->
+      ${askRows.map((a,i) => {
+        const w = Math.round(a.qty / maxQ * 100);
+        return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 32px;border-bottom:1px solid var(--border);position:relative;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:rgba(229,57,53,0.1);pointer-events:none;"></div>
+          <div style="padding:4px 6px;text-align:left;font-size:11px;font-weight:800;color:var(--red);position:relative;z-index:1;">${fmt(a.price)}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:11px;font-weight:600;position:relative;z-index:1;">${fmtN(a.qty)}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:10px;color:var(--text3);position:relative;z-index:1;">${fmtN(a.cum)}</div>
+          <div style="padding:4px 6px;text-align:right;font-size:10px;color:var(--text3);position:relative;z-index:1;">${a.orders}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- Best bid/ask footer -->
+  <div style="display:flex;gap:20px;padding:7px 14px;background:var(--bg3);font-size:10px;font-family:'Space Mono',monospace;border-top:1px solid var(--border);">
+    <span>Spread: <b style="color:var(--text);">${fmt(spread)}</b></span>
+    <span>Best Bid: <b style="color:var(--green);">${bidRows[0] ? fmt(bidRows[0].price) : '—'}</b></span>
+    <span>Best Ask: <b style="color:var(--red);">${askRows[0] ? fmt(askRows[0].price) : '—'}</b></span>
+    <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="obSource">${d.source||'NSE India'}</span>
+  </div>
+
+  <!-- Session data -->
+  <div style="padding:10px 12px;border-top:1px solid var(--border);">
+    <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;">SESSION</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+      ${[
+        ['OPEN',    d.open],
+        ['HIGH',    d.high],
+        ['LOW',     d.low],
+        ['PREV CLO',d.prevClose],
+        ['52W HIGH',d.week52High],
+        ['52W LOW', d.week52Low],
+      ].map(([l,v]) => `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:6px 8px;">
+        <div style="font-size:7px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:2px;">${l}</div>
+        <div style="font-size:11px;font-weight:700;font-family:'Space Mono',monospace;">${v ? fmt(v) : '—'}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Cumulative depth chart -->
+  <div style="padding:10px 12px;">
+    <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px;">CUMULATIVE DEPTH CHART</div>
+    <canvas id="ptDepthCanvas2" style="width:100%;height:110px;display:block;"></canvas>
+  </div>`;
+
+  el.innerHTML = html;
+
+  // Draw staircase depth chart
+  requestAnimationFrame(() => {
+    const canvas = document.getElementById('ptDepthCanvas2');
+    if (!canvas) return;
+    canvas.width  = canvas.offsetWidth || 400;
+    canvas.height = 110;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height - 20;
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    ctx.clearRect(0, 0, W, canvas.height);
+
+    // Build staircase points
+    const bPts = bidRows.slice().reverse().map(b => ({p: b.price, c: b.cum}));
+    const aPts = askRows.map(a => ({p: a.price, c: a.cum}));
+
+    const allP  = [...bPts, ...aPts].map(x => x.p);
+    const minP  = Math.min(...allP), maxP = Math.max(...allP);
+    const maxC  = Math.max(totalBid, totalAsk, 1);
+    const xS    = W / (maxP - minP || 1);
+    const yS    = H / maxC;
+
+    function drawStaircase(pts, fillColor, strokeColor) {
+      if (!pts.length) return;
+      ctx.beginPath();
+      ctx.moveTo((pts[0].p - minP) * xS, H);
+      for (let i = 0; i < pts.length; i++) {
+        const x = (pts[i].p - minP) * xS;
+        const y = H - pts[i].c * yS;
+        if (i > 0) ctx.lineTo(x, H - pts[i-1].c * yS); // horizontal step
+        ctx.lineTo(x, y); // vertical drop
+      }
+      ctx.lineTo((pts[pts.length-1].p - minP) * xS, H);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+      // Re-draw line only
+      ctx.beginPath();
+      ctx.moveTo((pts[0].p - minP) * xS, H - pts[0].c * yS);
+      for (let i = 1; i < pts.length; i++) {
+        const x = (pts[i].p - minP) * xS;
+        ctx.lineTo(x, H - pts[i-1].c * yS);
+        ctx.lineTo(x, H - pts[i].c * yS);
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    drawStaircase(bPts, 'rgba(0,168,84,0.18)', '#00a854');
+    drawStaircase(aPts, 'rgba(229,57,53,0.18)', '#e53935');
+
+    // Y-axis gridlines + labels
+    ctx.fillStyle = isDark ? '#555' : '#ccc';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      const y = H - f * maxC * yS;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      ctx.fillText(fmtN(Math.round(f * maxC)), 2, y - 2);
+    });
+
+    // X-axis price labels
+    const textC = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#888';
+    ctx.fillStyle = textC;
+    ctx.textAlign = 'center';
+    const labelPrices = [bPts[0]?.p, bPts[Math.floor(bPts.length/2)]?.p, ltp, aPts[Math.floor(aPts.length/2)]?.p, aPts[aPts.length-1]?.p].filter(Boolean);
+    labelPrices.forEach(pv => {
+      ctx.fillText(cur + Number(pv).toFixed(dec), (pv - minP) * xS, H + 14);
+    });
+
+    // LTP vertical line
+    const ltpX = (ltp - minP) * xS;
+    ctx.beginPath(); ctx.moveTo(ltpX, 0); ctx.lineTo(ltpX, H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+}
+
+  let html = `
+  <!-- Summary strip -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid var(--border);background:var(--bg2);">
+    <div style="padding:9px 12px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL BID QTY</div>
+      <div style="font-size:16px;font-weight:800;color:var(--green);">${fmtN(d.totalBid)}</div>
+    </div>
+    <div style="padding:9px 12px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL ASK QTY</div>
+      <div style="font-size:16px;font-weight:800;color:var(--red);">${fmtN(d.totalAsk)}</div>
+    </div>
+    <div style="padding:9px 12px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">BID/ASK RATIO</div>
+      <div style="font-size:16px;font-weight:800;color:${ratioC};">${d.ratio.toFixed(2)}</div>
+    </div>
+    <div style="padding:9px 12px;">
+      <div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">SPREAD</div>
+      <div style="font-size:16px;font-weight:800;">${fmt(d.spread)}</div>
+    </div>
+  </div>
+
+  <!-- Column headers -->
+  <div style="display:grid;grid-template-columns:40px 80px 80px 80px 80px 80px 80px 40px;font-size:8px;color:var(--text3);letter-spacing:1px;border-bottom:2px solid var(--border);background:var(--bg3);padding:5px 0;">
+    <div style="padding:0 8px;">ORD</div>
+    <div style="text-align:right;padding:0 8px;">QTY</div>
+    <div style="text-align:right;padding:0 8px;">CUM</div>
+    <div style="text-align:right;padding:0 8px;color:var(--green);">BID ₹</div>
+    <div style="text-align:left;padding:0 8px;color:var(--red);">ASK ₹</div>
+    <div style="text-align:right;padding:0 8px;">QTY</div>
+    <div style="text-align:right;padding:0 8px;">CUM</div>
+    <div style="text-align:right;padding:0 8px;">ORD</div>
+  </div>`;
+
+function startOrderBookRefresh(sym) {
+  stopOrderBookRefresh();
+  fetchOrderBook(sym);
+  _obTimer = setInterval(() => {
+    if (document.getElementById('ptOrderBook')) fetchOrderBook(sym);
+    else stopOrderBookRefresh();
+  }, 3000);
+}
+
+function stopOrderBookRefresh() {
+  if (_obTimer) { clearInterval(_obTimer); _obTimer = null; }
+}
+
+
 function onPtSearch(q) {
   _ptSearchQ = q;
   const drop = document.getElementById('ptSearchDrop');
@@ -10768,6 +10876,7 @@ function selectPtAsset(sym) {
   _ptSearchQ = '';
   const drop = document.getElementById('ptSearchDrop');
   if (drop) drop.style.display = 'none';
+  stopOrderBookRefresh();
   renderPaperTrade();
 }
 
