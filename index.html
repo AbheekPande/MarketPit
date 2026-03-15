@@ -9103,24 +9103,23 @@ function showTVTab(tab, btn) {
     });
 
   } else if (tab === 'commodities') {
-    // COMEX/NYMEX futures are paywalled on TradingView free embeds
-    // Using commodity ETFs (NYSE/NASDAQ listed) which are freely available
+    // TVC symbols are TradingView's own free CFD data — no paywall
     const syms = [
-      'NYSE:GLD',   // Gold ETF (SPDR)
-      'NYSE:SLV',   // Silver ETF (iShares)
-      'NYSE:USO',   // Crude Oil ETF
-      'NYSE:UNG',   // Natural Gas ETF
-      'NASDAQ:PDBC',// Diversified Commodity ETF
-      'NYSE:CPER',  // Copper ETF
+      {s:'TVC:GOLD',    l:'Gold (XAU/USD)'},
+      {s:'TVC:SILVER',  l:'Silver (XAG/USD)'},
+      {s:'TVC:USOIL',   l:'WTI Crude Oil'},
+      {s:'TVC:UKOIL',   l:'Brent Crude Oil'},
+      {s:'TVC:NATGAS',  l:'Natural Gas'},
+      {s:'TVC:COPPER',  l:'Copper'},
     ];
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
-      + '<div style="grid-column:1/-1;padding:6px 4px 2px;font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">COMMODITY ETFs (NYSE/NASDAQ) · GLD · SLV · USO · UNG · PDBC · CPER</div>'
+      + '<div style="grid-column:1/-1;padding:6px 4px 2px;font-size:10px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">COMMODITIES · GOLD · SILVER · CRUDE · BRENT · NAT GAS · COPPER</div>'
       + syms.map(function(_,i){ return '<div id="tvComm_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:210px;min-height:210px;"></div>'; }).join('')
       + '</div>';
-    syms.forEach(function(sym,i){
+    syms.forEach(function(item,i){
       setTimeout(function(){
         _tvInject('tvComm_'+i, 'embed-widget-mini-symbol-overview', {
-          symbol:sym, width:'100%', height:210,
+          symbol:item.s, width:'100%', height:210,
           locale:'en', dateRange:'1D', colorTheme:theme,
           trendLineColor:'rgba(255,193,7,1)', underLineColor:'rgba(255,193,7,0.1)',
           underLineBottomColor:'rgba(0,0,0,0)', isTransparent:true, autosize:true,
@@ -9151,7 +9150,7 @@ function showTVTab(tab, btn) {
       + '<optgroup label="US Stocks"><option value="NASDAQ:AAPL">AAPL – Apple</option><option value="NASDAQ:MSFT">MSFT – Microsoft</option><option value="NASDAQ:NVDA">NVDA – Nvidia</option><option value="NASDAQ:GOOGL">GOOGL – Alphabet</option><option value="NASDAQ:AMZN">AMZN – Amazon</option><option value="NASDAQ:META">META – Meta</option><option value="NYSE:JPM">JPM – JPMorgan</option><option value="NYSE:TSLA">TSLA – Tesla</option></optgroup>'
       + '<optgroup label="NSE Stocks">' + nseStocks.map(function(s){ return '<option value="NSE:'+s+'">'+s+'</option>'; }).join('') + '</optgroup>'
       + '<optgroup label="Crypto"><option value="BINANCE:BTCUSDT">BTC/USDT</option><option value="BINANCE:ETHUSDT">ETH/USDT</option><option value="BINANCE:SOLUSDT">SOL/USDT</option></optgroup>'
-      + '<optgroup label="Commodities"><option value="NYSE:GLD">GLD – Gold ETF</option><option value="NYSE:SLV">SLV – Silver ETF</option><option value="NYSE:USO">USO – Crude Oil ETF</option><option value="NYSE:UNG">UNG – Nat Gas ETF</option></optgroup>'
+      + '<optgroup label="Commodities"><option value="TVC:GOLD">Gold</option><option value="TVC:SILVER">Silver</option><option value="TVC:USOIL">WTI Crude</option><option value="TVC:UKOIL">Brent Crude</option><option value="TVC:NATGAS">Natural Gas</option><option value="TVC:COPPER">Copper</option></optgroup>'
       + '<optgroup label="Forex"><option value="FX_IDC:USDINR">USD/INR</option><option value="FX:EURUSD">EUR/USD</option><option value="FX:GBPUSD">GBP/USD</option></optgroup>'
       + '</select>'
       + '<select id="tvChartInterval" onchange="updateTVChart()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:13px;">'
