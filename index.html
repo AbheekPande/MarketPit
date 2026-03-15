@@ -1061,7 +1061,7 @@ header {
 
     <button class="nav-tab" onclick="switchTab(this,'earnings')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/></svg>
-      Earnings & Events
+      Earnings
     </button>
 
     <button class="nav-tab" onclick="switchTab(this,'alerts')">
@@ -1592,7 +1592,7 @@ header {
   <div class="main-feed" id="page-earnings" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
       <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">EVENTS</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">EARNINGS</div>
         <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Results · Dividends · Board Meetings · Splits · Buybacks</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -1609,6 +1609,7 @@ header {
       <button onclick="setEventsFilter('board',this)" id="evf_board" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🏛 Board Meetings</button>
       <button onclick="setEventsFilter('split',this)" id="evf_split" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">✂️ Splits</button>
       <button onclick="setEventsFilter('buyback',this)" id="evf_buyback" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🔄 Buybacks</button>
+      <button onclick="setEventsFilter('rapid',this)" id="evf_rapid" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">⚡ Rapid Results</button>
     </div>
     <div class="feed-scroll" id="earningsBody" style="padding:0;"></div>
   </div>
@@ -7600,6 +7601,26 @@ setInterval(() => {
 // EARNINGS / EVENTS PAGE
 // ═══════════════════════════════════════════════════════════════════
 let _eventsFilter='all', _eventsWeekOffset=0;
+
+// ── RAPID RESULTS DATA ─────────────────────────────────────────────
+// HOW TO ADD: prepend a new entry to RAPID_RESULTS array
+// Fields: name, date, price, chgPct, quarter, type(Consolidated/Standalone)
+//         rev_cur, rev_prev, gp_cur, gp_prev, np_cur, np_prev (all in Rs. Cr.)
+const RAPID_RESULTS = [
+  // ── ADD NEW RESULTS AT TOP ──────────────────────────────────────
+  {name:'Vivimed Labs',     date:'March 13, 2026',price:'6.88', chgPct:'-1.15%',quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Consolidated',
+   rev_cur:16,  rev_prev:37,  gp_cur:-16, gp_prev:-6,  np_cur:-17, np_prev:-6},
+  {name:'Simbhaoli Sugar',  date:'March 11, 2026',price:'7.95', chgPct:'-2.57%',quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Standalone',
+   rev_cur:203, rev_prev:221, gp_cur:-11, gp_prev:-7,  np_cur:-5,  np_prev:-3},
+  {name:'Shree Secu',       date:'March 10, 2026',price:'0.19', chgPct:'0.00',  quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Standalone',
+   rev_cur:0,   rev_prev:0,   gp_cur:0,   gp_prev:0,   np_cur:0,   np_prev:0},
+  {name:'ELITECON INTL.',   date:'March 07, 2026',price:'51.89',chgPct:'-4.84%',quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Standalone',
+   rev_cur:503, rev_prev:48,  gp_cur:14,  gp_prev:6,   np_cur:10,  np_prev:7},
+  {name:'Aye Finance',      date:'March 06, 2026',price:'99.50',chgPct:'-5.61%',quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Standalone',
+   rev_cur:443, rev_prev:361, gp_cur:182, gp_prev:136, np_cur:43,  np_prev:23},
+  {name:'DCM Shriram Int',  date:'March 06, 2026',price:'62.90',chgPct:'-8.62%',quarter:'Q3 FY25-26',period:'Dec 25 vs Dec 24',type:'Standalone',
+   rev_cur:118, rev_prev:146, gp_cur:4,   gp_prev:18,  np_cur:4,   np_prev:15},
+];
 let _eventsData=[];
 async function renderEarnings() {
   const el=document.getElementById('earningsBody');
@@ -7611,27 +7632,9 @@ async function renderEarnings() {
   // Refresh from API in background (non-blocking)
   refreshEarningsData();
 }
-async function refreshEarningsData() {
-  try {
-    const res=await fetch(`${API_BASE}/earnings`,{signal:AbortSignal.timeout(14000)});
-    if(!res.ok) throw new Error();
-    const j=await res.json();
-    const data=j.data||[];
-    if(data.length>=3){
-      // Normalise fields — server sends icon/label directly now
-      _eventsData=data.map(e=>({
-        ...e,
-        icon:  e.icon  || (e.type==='results'?'📊':e.type==='dividend'?'💰':e.type==='split'?'✂️':e.type==='buyback'?'🔄':'🏛'),
-        label: e.label || (e.type==='results'?'Q Results':e.type==='dividend'?'Dividend':e.type==='board'?'Board Meeting':e.type||'Event'),
-      }));
-      // Update live status timestamp
-      const ts=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-      const el=document.getElementById('live-ts-page-earnings');
-      if(el) el.textContent='● Live · '+ts+' IST';
-    } else {
-      _eventsData=generateFallbackEvents();
-    }
-  } catch(e) { _eventsData=generateFallbackEvents(); }
+function refreshEarningsData() {
+  // Data is hardcoded — just re-render from generateFallbackEvents
+  if(!_eventsData.length) _eventsData=generateFallbackEvents();
   renderEventsPage();
 }
 function generateFallbackEvents() {
@@ -7698,10 +7701,86 @@ function setEventsFilter(f,btn){
   _eventsFilter=f;
   document.querySelectorAll('[id^="evf_"]').forEach(b=>{b.style.borderBottomColor='transparent';b.style.color='var(--text3)';b.style.fontWeight='600';});
   btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700';
+  // Hide/show week nav for rapid results
+  const weekNav = document.querySelector('#page-earnings .feed-scroll')?.previousElementSibling?.previousElementSibling;
   renderEventsPage();
 }
 function renderEventsPage(){
   const el=document.getElementById('earningsBody'); if(!el) return;
+
+  // ── Rapid Results view ──
+  if(_eventsFilter==='rapid'){
+    if(!RAPID_RESULTS.length){
+      el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);">No rapid results yet.</div>';
+      return;
+    }
+    const pct = v => {
+      const p = v===0 ? 0 : ((v.cur - v.prev) / Math.abs(v.prev||1) * 100);
+      return isNaN(p) || !isFinite(p) ? '--' : (p>=0?'+':'')+p.toFixed(0)+'%';
+    };
+    const clr = (cur,prev) => {
+      if(prev===0) return 'var(--text3)';
+      const g = (cur-prev)/Math.abs(prev||1)*100;
+      return g>=0 ? 'var(--green)' : 'var(--red)';
+    };
+    el.innerHTML = '<div style="padding:16px;">'
+      + '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:4px;">⚡ RAPID RESULTS</div>'
+      + '<div style="font-size:10px;color:var(--text3);margin-bottom:16px;font-family:\'Space Mono\',monospace;">Latest quarterly results · Rs. Crore</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">'
+      + RAPID_RESULTS.map(r => {
+          const revGrowth = r.rev_prev!==0 ? Math.round((r.rev_cur-r.rev_prev)/Math.abs(r.rev_prev)*100) : 0;
+          const gpGrowth  = r.gp_prev!==0  ? Math.round((r.gp_cur-r.gp_prev)/Math.abs(r.gp_prev)*100)  : null;
+          const npGrowth  = r.np_prev!==0  ? Math.round((r.np_cur-r.np_prev)/Math.abs(r.np_prev)*100)  : null;
+          const chgPos    = !r.chgPct.startsWith('-');
+          const rows = [
+            ['Revenue',    r.rev_cur, r.rev_prev, revGrowth],
+            ['Gross Profit',r.gp_cur, r.gp_prev,  gpGrowth],
+            ['Net Profit',  r.np_cur, r.np_prev,  npGrowth],
+          ];
+          return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">'
+            // Header
+            + '<div style="padding:12px 14px 8px;border-bottom:1px solid var(--border);">'
+              + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+                + '<div style="font-size:10px;color:var(--text3);">' + r.date + '</div>'
+                + '<div style="font-size:10px;color:var(--text3);">Rs.Cr.</div>'
+              + '</div>'
+              + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                + '<div style="font-weight:800;font-size:14px;">' + r.name + '</div>'
+                + '<div style="font-weight:700;font-size:13px;font-family:\'Space Mono\',monospace;">'
+                  + r.price + ' <span style="color:' + (chgPos?'var(--green)':'var(--red)') + ';font-size:11px;">(' + r.chgPct + ')</span>'
+                + '</div>'
+              + '</div>'
+            + '</div>'
+            // Table
+            + '<div style="padding:10px 14px;">'
+              + '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px 12px;margin-bottom:8px;">'
+                + '<div style="font-size:10px;color:var(--text3);">' + r.quarter + '</div>'
+                + '<div style="font-size:10px;color:var(--text3);text-align:right;">' + (r.period||'').split(' vs ')[0] + '</div>'
+                + '<div style="font-size:10px;color:var(--text3);text-align:right;">' + (r.period||'').split(' vs ')[1] + '</div>'
+                + '<div style="font-size:10px;color:var(--text3);text-align:right;">Growth</div>'
+              + '</div>'
+              + rows.map(([label, cur, prev, growth]) => {
+                  const gc = growth===null ? 'var(--text3)' : growth>=0 ? 'var(--green)' : 'var(--red)';
+                  const gs = growth===null ? '--' : (growth>=0?'+':'')+growth+'%';
+                  return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px 12px;padding:5px 0;border-top:1px solid var(--border);">'
+                    + '<div style="font-size:12px;">' + label + '</div>'
+                    + '<div style="font-size:12px;font-family:\'Space Mono\',monospace;text-align:right;">' + cur + '</div>'
+                    + '<div style="font-size:12px;font-family:\'Space Mono\',monospace;text-align:right;color:var(--text3);">' + prev + '</div>'
+                    + '<div style="font-size:12px;font-weight:700;text-align:right;color:' + gc + ';">' + gs + '</div>'
+                  + '</div>';
+                }).join('')
+            + '</div>'
+            // Footer badge
+            + '<div style="padding:6px 14px 10px;">'
+              + '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);">' + r.type + '</span>'
+            + '</div>'
+          + '</div>';
+        }).join('')
+      + '</div></div>';
+    return;
+  }
+
+  // ── Standard calendar view ──
   const today=new Date(); today.setHours(0,0,0,0);
   const mon=new Date(today); mon.setDate(today.getDate()-today.getDay()+1+_eventsWeekOffset*7);
   const sun=new Date(mon); sun.setDate(mon.getDate()+6);
@@ -7733,7 +7812,7 @@ function renderEventsPage(){
       </div>`).join('')}`;
   }).join('');
 }
-setInterval(()=>{ if(document.getElementById('page-earnings')?.style.display!=='none') refreshEarningsData(); },3*60*1000);
+// Earnings data is static — no auto-refresh needed
 
 // ═══════════════════════════════════════════════════════════════════
 // PRICE ALERTS PAGE
