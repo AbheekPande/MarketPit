@@ -1595,21 +1595,11 @@ header {
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">EARNINGS</div>
         <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Results · Dividends · Board Meetings · Splits · Buybacks</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button onclick="switchEventsWeek(-1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:13px;">←</button>
-        <span id="eventsWeekLabel" style="font-size:12px;font-weight:700;color:var(--text);min-width:160px;text-align:center;"></span>
-        <button onclick="switchEventsWeek(1)" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:13px;">→</button>
-      </div>
+
     </div>
-    <!-- Filter tabs -->
-    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
-      <button onclick="setEventsFilter('all',this)" id="evf_all" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">All</button>
-      <button onclick="setEventsFilter('results',this)" id="evf_results" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">📊 Results</button>
-      <button onclick="setEventsFilter('dividend',this)" id="evf_dividend" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">💰 Dividends</button>
-      <button onclick="setEventsFilter('board',this)" id="evf_board" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🏛 Board Meetings</button>
-      <button onclick="setEventsFilter('split',this)" id="evf_split" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">✂️ Splits</button>
-      <button onclick="setEventsFilter('buyback',this)" id="evf_buyback" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🔄 Buybacks</button>
-      <button onclick="setEventsFilter('rapid',this)" id="evf_rapid" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">⚡ Rapid Results</button>
+    <!-- Only Rapid Results tab -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="setEventsFilter('rapid',this)" id="evf_rapid" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">⚡ Rapid Results</button>
     </div>
     <!-- ── Summary Strip from screenshot ── -->
     <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--bg1);">
@@ -7665,15 +7655,10 @@ const RAPID_RESULTS = [
    rev_cur:118, rev_prev:146, gp_cur:4,   gp_prev:18,  np_cur:4,   np_prev:15},
 ];
 let _eventsData=[];
-async function renderEarnings() {
-  const el=document.getElementById('earningsBody');
-  if(!el) return;
-  updateEventsWeekLabel();
-  // Show fallback data immediately — don't wait for API
-  if(!_eventsData.length) _eventsData=generateFallbackEvents();
+function renderEarnings() {
+  // Show Rapid Results immediately
+  _eventsFilter = 'rapid';
   renderEventsPage();
-  // Refresh from API in background (non-blocking)
-  refreshEarningsData();
 }
 function refreshEarningsData() {
   // Data is hardcoded — just re-render from generateFallbackEvents
@@ -7743,16 +7728,14 @@ function switchEventsWeek(dir){ _eventsWeekOffset+=dir; updateEventsWeekLabel();
 function setEventsFilter(f,btn){
   _eventsFilter=f;
   document.querySelectorAll('[id^="evf_"]').forEach(b=>{b.style.borderBottomColor='transparent';b.style.color='var(--text3)';b.style.fontWeight='600';});
-  btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700';
-  // Hide/show week nav for rapid results
-  const weekNav = document.querySelector('#page-earnings .feed-scroll')?.previousElementSibling?.previousElementSibling;
+  if(btn){btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700';}
   renderEventsPage();
 }
 function renderEventsPage(){
   const el=document.getElementById('earningsBody'); if(!el) return;
-
-  // ── Rapid Results view ──
-  if(_eventsFilter==='rapid'){
+  // Always show rapid results (other filters removed)
+  _eventsFilter='rapid';
+  if(true){
     if(!RAPID_RESULTS.length){
       el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);">No rapid results yet.</div>';
       return;
