@@ -1336,76 +1336,165 @@ header {
     </div>
 
     <!-- FILTER CONTROLS -->
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;flex-shrink:0;">
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);">
+      <!-- Row 1: Price action + momentum -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;align-items:flex-end;">
 
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">CHANGE %</label>
-        <select id="f_change" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="">Any</option>
-          <option value="up5">Gainers &gt;5%</option>
-          <option value="up2">Gainers &gt;2%</option>
-          <option value="up">All Gainers</option>
-          <option value="dn">All Losers</option>
-          <option value="dn2">Losers &gt;2%</option>
-          <option value="dn5">Losers &gt;5%</option>
-        </select>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">CHANGE %</label>
+          <select id="f_change" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="up10">Gainers &gt;10%</option>
+            <option value="up5">Gainers &gt;5%</option>
+            <option value="up2">Gainers &gt;2%</option>
+            <option value="up">All Gainers</option>
+            <option value="flat">Flat (±0.5%)</option>
+            <option value="dn">All Losers</option>
+            <option value="dn2">Losers &gt;2%</option>
+            <option value="dn5">Losers &gt;5%</option>
+            <option value="dn10">Losers &gt;10%</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;" id="techFilters">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">SIGNAL</label>
+          <select id="f_signal" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:120px;">
+            <option value="">Any</option>
+            <option value="STRONG BUY">Strong Buy</option>
+            <option value="BUY">Buy</option>
+            <option value="NEUTRAL">Neutral</option>
+            <option value="SELL">Sell</option>
+            <option value="STRONG SELL">Strong Sell</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">RSI (14)</label>
+          <select id="f_rsi" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:140px;">
+            <option value="">Any</option>
+            <option value="oversold">Oversold (&lt;30)</option>
+            <option value="near_oversold">Near Oversold (30–40)</option>
+            <option value="neutral">Neutral (40–60)</option>
+            <option value="near_overbought">Near OB (60–70)</option>
+            <option value="overbought">Overbought (&gt;70)</option>
+            <option value="extreme_ob">Extreme OB (&gt;80)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">MACD</label>
+          <select id="f_macd" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:140px;">
+            <option value="">Any</option>
+            <option value="bullish">Bullish (MACD &gt; Signal)</option>
+            <option value="bullish_rising">Bullish &amp; Rising</option>
+            <option value="bearish">Bearish (MACD &lt; Signal)</option>
+            <option value="bearish_falling">Bearish &amp; Falling</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">STOCHASTIC</label>
+          <select id="f_stoch" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:140px;">
+            <option value="">Any</option>
+            <option value="oversold">Oversold (%K &lt;20)</option>
+            <option value="overbought">Overbought (%K &gt;80)</option>
+            <option value="bullish_cross">Bullish Cross (%K &gt; %D)</option>
+            <option value="bearish_cross">Bearish Cross (%K &lt; %D)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">ADX TREND</label>
+          <select id="f_adx" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="trending">Strong Trend (&gt;25)</option>
+            <option value="strong">Very Strong (&gt;40)</option>
+            <option value="weak">Weak/Range (&lt;20)</option>
+          </select>
+        </div>
       </div>
 
-      <span id="techFilters" style="display:contents;">
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">SIGNAL</label>
-        <select id="f_signal" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="">Any</option>
-          <option value="STRONG BUY">Strong Buy</option>
-          <option value="BUY">Buy</option>
-          <option value="HOLD">Hold</option>
-          <option value="SELL">Sell</option>
-          <option value="STRONG SELL">Strong Sell</option>
-        </select>
-      </div>
+      <!-- Row 2: Moving averages + range + volume -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;">
 
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">RSI</label>
-        <select id="f_rsi" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="">Any</option>
-          <option value="oversold">Oversold (&lt;30)</option>
-          <option value="neutral">Neutral (30-70)</option>
-          <option value="overbought">Overbought (&gt;70)</option>
-        </select>
-      </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">VS MA50</label>
+          <select id="f_ma50" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="above">Above MA50</option>
+            <option value="below">Below MA50</option>
+            <option value="near">Near MA50 (±2%)</option>
+          </select>
+        </div>
 
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">MACD</label>
-        <select id="f_macd" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="">Any</option>
-          <option value="bullish">Bullish Crossover</option>
-          <option value="bearish">Bearish Crossover</option>
-        </select>
-      </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">VS MA200</label>
+          <select id="f_ma200" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="above">Above MA200</option>
+            <option value="below">Below MA200</option>
+          </select>
+        </div>
 
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">VS 50D MA</label>
-        <select id="f_ma50" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="">Any</option>
-          <option value="above">Price Above MA50</option>
-          <option value="below">Price Below MA50</option>
-        </select>
-      </div>
-      </span>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">MA CROSS</label>
+          <select id="f_macross" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="golden">Golden Cross (MA50&gt;MA200)</option>
+            <option value="death">Death Cross (MA50&lt;MA200)</option>
+          </select>
+        </div>
 
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <label style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;">SORT BY</label>
-        <select id="f_sort" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;cursor:pointer;outline:none;">
-          <option value="chg_desc">Change % High→Low</option>
-          <option value="chg_asc">Change % Low→High</option>
-          <option value="rsi_desc">RSI High→Low</option>
-          <option value="rsi_asc">RSI Low→High</option>
-          <option value="alpha">A→Z</option>
-        </select>
-      </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">BOLLINGER %B</label>
+          <select id="f_bb" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:140px;">
+            <option value="">Any</option>
+            <option value="upper">Near Upper Band (&gt;80%)</option>
+            <option value="middle">Mid Range (40–60%)</option>
+            <option value="lower">Near Lower Band (&lt;20%)</option>
+            <option value="squeeze">Squeeze (Width &lt;3%)</option>
+          </select>
+        </div>
 
-      <div style="display:flex;align-items:flex-end;">
-        <button onclick="resetScreener()" style="background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;">✕ Reset</button>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">52W RANGE</label>
+          <select id="f_52w" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:140px;">
+            <option value="">Any</option>
+            <option value="near_high">Near 52W High (&gt;90%)</option>
+            <option value="high_half">Upper Half (&gt;50%)</option>
+            <option value="low_half">Lower Half (&lt;50%)</option>
+            <option value="near_low">Near 52W Low (&lt;10%)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">VOLUME</label>
+          <select id="f_vol" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:130px;">
+            <option value="">Any</option>
+            <option value="spike">Volume Spike (&gt;2×)</option>
+            <option value="high">High Vol (&gt;1.5×)</option>
+            <option value="low">Low Vol (&lt;0.5×)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">SORT BY</label>
+          <select id="f_sort" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;outline:none;min-width:150px;">
+            <option value="chg_desc">Change % High→Low</option>
+            <option value="chg_asc">Change % Low→High</option>
+            <option value="rsi_desc">RSI High→Low</option>
+            <option value="rsi_asc">RSI Low→High (Oversold)</option>
+            <option value="adx_desc">ADX High→Low (Trending)</option>
+            <option value="vol_desc">Volume Ratio High→Low</option>
+            <option value="bb_desc">BB %B High→Low</option>
+            <option value="alpha">A→Z</option>
+          </select>
+        </div>
+
+        <div style="display:flex;align-items:flex-end;gap:6px;">
+          <button onclick="runScreener()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;">▶ RUN</button>
+          <button onclick="resetScreener()" style="background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;">✕</button>
+        </div>
       </div>
     </div>
 
@@ -7155,60 +7244,55 @@ function setAssetType(type, btn) {
 
 async function runScreener() {
   const resultsEl = document.getElementById('screenerResults');
-  const fChange = document.getElementById('f_change').value;
-  const fSignal = document.getElementById('f_signal').value;
-  const fRsi    = document.getElementById('f_rsi').value;
-  const fMacd   = document.getElementById('f_macd').value;
-  const fMa50   = document.getElementById('f_ma50').value;
-  const fSort   = document.getElementById('f_sort').value;
+  const fChange  = document.getElementById('f_change').value;
+  const fSignal  = document.getElementById('f_signal').value;
+  const fRsi     = document.getElementById('f_rsi').value;
+  const fMacd    = document.getElementById('f_macd').value;
+  const fStoch   = document.getElementById('f_stoch').value;
+  const fAdx     = document.getElementById('f_adx').value;
+  const fMa50    = document.getElementById('f_ma50').value;
+  const fMa200   = document.getElementById('f_ma200').value;
+  const fMacross = document.getElementById('f_macross').value;
+  const fBb      = document.getElementById('f_bb').value;
+  const f52w     = document.getElementById('f_52w').value;
+  const fVol     = document.getElementById('f_vol').value;
+  const fSort    = document.getElementById('f_sort').value;
 
-  // Build base list depending on asset type
+  // Build base list
   let stocks = [];
   if (_assetType === 'stocks') {
-    // Only include stocks with live prices
     const liveNse = liveStocks.filter(s => s.price && s.price !== '—' && !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym));
     if (!liveNse.length) {
-      resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:13px;font-weight:600;">Fetching live prices…</div><div style="font-size:11px;margin-top:6px;">Connecting to Railway backend</div></div>`;
+      resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:13px;font-weight:600;">Fetching live prices…</div></div>`;
       return;
     }
     stocks = liveNse;
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Scanning ${liveNse.length} NSE stocks…</div></div>`;
   } else if (_assetType === 'crypto') {
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching crypto prices…</div></div>`;
+    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;color:var(--text3);">Fetching crypto…</div></div>`;
     stocks = await Promise.all(CRYPTO_LIST.map(async c => {
-      try {
-        const r = await fetch(`${API_BASE}/quote/${c.sym}`);
-        const d = await r.json();
-        return {sym:c.sym, name:c.name, price:d.price, chg:d.chg, up:d.up, currency:'$'};
-      } catch(e) { return {sym:c.sym, name:c.name, price:'—', chg:'—', up:false}; }
+      try { const r = await fetch(`${API_BASE}/quote/${c.sym}`); const d = await r.json(); return {sym:c.sym,name:c.name,price:d.price,chg:d.chg,up:d.up,currency:'$'}; }
+      catch(e) { return {sym:c.sym,name:c.name,price:'—',chg:'—',up:false}; }
     }));
-  } else if (_assetType === 'commodities') {
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching commodity prices…</div></div>`;
+  } else {
+    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;color:var(--text3);">Fetching commodities…</div></div>`;
     stocks = await Promise.all(COMM_LIST.map(async c => {
-      try {
-        const r = await fetch(`${API_BASE}/quote/${c.sym}`);
-        const d = await r.json();
-        return {sym:c.sym, name:c.name, price:d.price, chg:d.chg, up:d.up, currency:'$'};
-      } catch(e) { return {sym:c.sym, name:c.name, price:'—', chg:'—', up:false}; }
+      try { const r = await fetch(`${API_BASE}/quote/${c.sym}`); const d = await r.json(); return {sym:c.sym,name:c.name,price:d.price,chg:d.chg,up:d.up,currency:'$'}; }
+      catch(e) { return {sym:c.sym,name:c.name,price:'—',chg:'—',up:false}; }
     }));
   }
 
-  // If we need technical data, fetch it
-  const needTech = fSignal || fRsi || fMacd || fMa50;
+  // Fetch technicals if any tech filter active
+  const needTech = fSignal||fRsi||fMacd||fStoch||fAdx||fMa50||fMa200||fMacross||fBb||f52w||fVol||
+                   fSort==='rsi_desc'||fSort==='rsi_asc'||fSort==='adx_desc'||fSort==='vol_desc'||fSort==='bb_desc';
 
   if (needTech) {
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;" id="screenProgress">Fetching technical data… (0/${stocks.length})</div></div>`;
-
-    const results = [];
-    let done = 0;
-    // Fetch in batches of 5 to avoid overwhelming server
+    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;color:var(--text3);" id="screenProgress">Fetching technical data… (0/${stocks.length})</div></div>`;
+    const results = []; let done = 0;
     for (let i = 0; i < stocks.length; i += 5) {
       const batch = stocks.slice(i, i+5);
       const fetched = await Promise.all(batch.map(async s => {
         const key = s.sym;
-        if (_screenerCache[key] && (Date.now() - _screenerCache[key].ts < 300000)) {
-          return {...s, ..._screenerCache[key].data};
-        }
+        if (_screenerCache[key] && (Date.now() - _screenerCache[key].ts < 300000)) return {...s, ..._screenerCache[key].data};
         try {
           const r = await fetch(`${API_BASE}/technicals/${s.sym}`);
           if (!r.ok) return s;
@@ -7225,101 +7309,190 @@ async function runScreener() {
     stocks = results;
   }
 
-  // ── APPLY FILTERS ──
+  // ── APPLY ALL FILTERS ──
   let filtered = stocks.filter(s => {
     const chgNum = parseFloat((s.chg||'0%').replace('%','').replace('+',''));
+    const price  = parseFloat(String(s.price||0).replace(/,/g,''));
 
-    if (fChange === 'up5'  && chgNum <= 5)  return false;
-    if (fChange === 'up2'  && chgNum <= 2)  return false;
-    if (fChange === 'up'   && chgNum <= 0)  return false;
-    if (fChange === 'dn'   && chgNum >= 0)  return false;
-    if (fChange === 'dn2'  && chgNum >= -2) return false;
-    if (fChange === 'dn5'  && chgNum >= -5) return false;
+    // Change %
+    if (fChange === 'up10' && chgNum <= 10)  return false;
+    if (fChange === 'up5'  && chgNum <= 5)   return false;
+    if (fChange === 'up2'  && chgNum <= 2)   return false;
+    if (fChange === 'up'   && chgNum <= 0)   return false;
+    if (fChange === 'flat' && Math.abs(chgNum) > 0.5) return false;
+    if (fChange === 'dn'   && chgNum >= 0)   return false;
+    if (fChange === 'dn2'  && chgNum >= -2)  return false;
+    if (fChange === 'dn5'  && chgNum >= -5)  return false;
+    if (fChange === 'dn10' && chgNum >= -10) return false;
 
+    // Signal
     if (fSignal && s.overall !== fSignal) return false;
 
-    if (fRsi === 'oversold'   && (!s.rsi || s.rsi >= 30)) return false;
-    if (fRsi === 'neutral'    && (!s.rsi || s.rsi < 30 || s.rsi > 70)) return false;
-    if (fRsi === 'overbought' && (!s.rsi || s.rsi <= 70)) return false;
+    // RSI
+    if (fRsi === 'oversold'        && (!s.rsi || s.rsi >= 30))         return false;
+    if (fRsi === 'near_oversold'   && (!s.rsi || s.rsi < 30 || s.rsi > 40)) return false;
+    if (fRsi === 'neutral'         && (!s.rsi || s.rsi < 40 || s.rsi > 60)) return false;
+    if (fRsi === 'near_overbought' && (!s.rsi || s.rsi < 60 || s.rsi > 70)) return false;
+    if (fRsi === 'overbought'      && (!s.rsi || s.rsi <= 70))         return false;
+    if (fRsi === 'extreme_ob'      && (!s.rsi || s.rsi <= 80))         return false;
 
-    if (fMacd === 'bullish'  && !s.macd_bullish) return false;
-    if (fMacd === 'bearish'  && s.macd_bullish)  return false;
+    // MACD
+    if (fMacd === 'bullish'         && !s.macd_bullish)                    return false;
+    if (fMacd === 'bullish_rising'  && (!s.macd_bullish || !s.macd_increasing)) return false;
+    if (fMacd === 'bearish'         && s.macd_bullish)                     return false;
+    if (fMacd === 'bearish_falling' && (s.macd_bullish || s.macd_increasing)) return false;
 
-    if (fMa50 === 'above' && (!s.ma50 || !s.price || s.price <= s.ma50)) return false;
-    if (fMa50 === 'below' && (!s.ma50 || !s.price || s.price >= s.ma50)) return false;
+    // Stochastic
+    if (fStoch === 'oversold'      && (!s.stoch_k || s.stoch_k >= 20))  return false;
+    if (fStoch === 'overbought'    && (!s.stoch_k || s.stoch_k <= 80))  return false;
+    if (fStoch === 'bullish_cross' && (!s.stoch_k || !s.stoch_d || s.stoch_k <= s.stoch_d)) return false;
+    if (fStoch === 'bearish_cross' && (!s.stoch_k || !s.stoch_d || s.stoch_k >= s.stoch_d)) return false;
+
+    // ADX
+    if (fAdx === 'trending' && (!s.adx || s.adx <= 25)) return false;
+    if (fAdx === 'strong'   && (!s.adx || s.adx <= 40)) return false;
+    if (fAdx === 'weak'     && (!s.adx || s.adx >= 20)) return false;
+
+    // MA50
+    if (fMa50 === 'above' && (!s.ma50 || price <= s.ma50))  return false;
+    if (fMa50 === 'below' && (!s.ma50 || price >= s.ma50))  return false;
+    if (fMa50 === 'near'  && (!s.ma50 || Math.abs(price - s.ma50) / s.ma50 > 0.02)) return false;
+
+    // MA200
+    if (fMa200 === 'above' && (!s.ma200 || price <= s.ma200)) return false;
+    if (fMa200 === 'below' && (!s.ma200 || price >= s.ma200)) return false;
+
+    // MA Cross
+    if (fMacross === 'golden' && !s.golden_cross) return false;
+    if (fMacross === 'death'  && !s.death_cross)  return false;
+
+    // Bollinger Bands %B
+    if (fBb === 'upper'   && (!s.bb_pct || s.bb_pct <= 80)) return false;
+    if (fBb === 'middle'  && (!s.bb_pct || s.bb_pct < 40 || s.bb_pct > 60)) return false;
+    if (fBb === 'lower'   && (!s.bb_pct || s.bb_pct >= 20)) return false;
+    if (fBb === 'squeeze' && (!s.bb_width || s.bb_width >= 3)) return false;
+
+    // 52W Range position
+    if (s.high_52w && s.low_52w && price) {
+      const rangePct = (price - s.low_52w) / (s.high_52w - s.low_52w) * 100;
+      if (f52w === 'near_high' && rangePct <= 90)  return false;
+      if (f52w === 'high_half' && rangePct <= 50)  return false;
+      if (f52w === 'low_half'  && rangePct >= 50)  return false;
+      if (f52w === 'near_low'  && rangePct >= 10)  return false;
+    } else if (f52w) return false;
+
+    // Volume ratio
+    if (fVol === 'spike' && (!s.vol_ratio || s.vol_ratio <= 2))   return false;
+    if (fVol === 'high'  && (!s.vol_ratio || s.vol_ratio <= 1.5)) return false;
+    if (fVol === 'low'   && (!s.vol_ratio || s.vol_ratio >= 0.5)) return false;
 
     return true;
   });
 
   // ── SORT ──
-  filtered.sort((a,b) => {
+  filtered.sort((a, b) => {
     const ca = parseFloat((a.chg||'0%').replace('%','').replace('+',''));
     const cb = parseFloat((b.chg||'0%').replace('%','').replace('+',''));
-    if (fSort === 'chg_desc') return cb - ca;
-    if (fSort === 'chg_asc')  return ca - cb;
-    if (fSort === 'rsi_desc') return (b.rsi||0) - (a.rsi||0);
-    if (fSort === 'rsi_asc')  return (a.rsi||0) - (b.rsi||0);
-    if (fSort === 'alpha')    return a.sym.localeCompare(b.sym);
+    if (fSort === 'chg_desc')  return cb - ca;
+    if (fSort === 'chg_asc')   return ca - cb;
+    if (fSort === 'rsi_desc')  return (b.rsi||0) - (a.rsi||0);
+    if (fSort === 'rsi_asc')   return (a.rsi||0) - (b.rsi||0);
+    if (fSort === 'adx_desc')  return (b.adx||0) - (a.adx||0);
+    if (fSort === 'vol_desc')  return (b.vol_ratio||0) - (a.vol_ratio||0);
+    if (fSort === 'bb_desc')   return (b.bb_pct||0) - (a.bb_pct||0);
+    if (fSort === 'alpha')     return a.sym.localeCompare(b.sym);
     return cb - ca;
   });
 
-  // ── RENDER RESULTS ──
+  // ── RENDER ──
   if (!filtered.length) {
-    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:32px;margin-bottom:12px;">🚫</div><div style="font-size:14px;color:var(--text2);font-weight:600;">No stocks match your filters</div><div style="font-size:12px;margin-top:6px;">Try relaxing some filters</div></div>`;
+    resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:32px;margin-bottom:12px;">🚫</div><div style="font-size:14px;font-weight:600;">No results match your filters</div><div style="font-size:12px;margin-top:6px;">Try relaxing some criteria</div></div>`;
     return;
   }
 
-  const signalColor = s => s==='STRONG BUY'?'var(--green)':s==='BUY'?'#44ff88':s==='HOLD'?'var(--gold)':s==='SELL'?'#ff8844':s==='STRONG SELL'?'var(--red)':'var(--text3)';
+  const sigColor = s => s==='STRONG BUY'?'var(--green)':s==='BUY'?'#44dd88':s==='NEUTRAL'?'var(--gold)':s==='SELL'?'#ff8844':'var(--red)';
   const assetLabel = _assetType==='crypto'?'Cryptos':_assetType==='commodities'?'Commodities':'Stocks';
-  const assetColor = _assetType==='crypto'?'var(--gold)':_assetType==='commodities'?'var(--accent2)':'var(--accent)';
+  const assetC     = _assetType==='crypto'?'var(--gold)':_assetType==='commodities'?'var(--accent2)':'var(--accent)';
 
   resultsEl.innerHTML = `
-    <div style="padding:10px 0 6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);">${filtered.length} <span style="color:${assetColor}">${assetLabel}</span> found</div>
+    <div style="padding:8px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);">
+        <span style="color:${assetC};font-weight:800;">${filtered.length}</span> ${assetLabel} matched
+      </span>
+      <span style="font-size:10px;color:var(--text3);">Click any row to open full analysis →</span>
+    </div>
     <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
       <thead>
-        <tr style="border-bottom:2px solid var(--border);">
-          <th style="text-align:left;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">SYMBOL</th>
-          <th style="text-align:right;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">PRICE</th>
-          <th style="text-align:right;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">CHANGE</th>
-          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">SIGNAL</th>
-          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">RSI</th>
-          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">MACD</th>
-          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">VS MA50</th>
-          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;font-weight:600;">ACTION</th>
+        <tr style="border-bottom:2px solid var(--border);background:var(--bg3);">
+          <th style="text-align:left;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;white-space:nowrap;">SYMBOL</th>
+          <th style="text-align:right;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">PRICE</th>
+          <th style="text-align:right;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">CHG %</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">SIGNAL</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">RSI</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">STOCH %K</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">MACD</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">ADX</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">BB %B</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">MA50</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">MA200</th>
+          <th style="text-align:center;padding:8px 10px;font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">VOL×</th>
         </tr>
       </thead>
       <tbody>
         ${filtered.map(s => {
           const chgNum = parseFloat((s.chg||'0%').replace('%','').replace('+',''));
-          const up = chgNum >= 0;
-          const sc = signalColor(s.overall);
-          const rsiC = !s.rsi?'var(--text3)':s.rsi<30?'var(--green)':s.rsi>70?'var(--red)':'var(--gold)';
-          const vsMA = s.ma50 && s.price ? (parseFloat(s.price.toString().replace(/,/g,'')) > s.ma50 ? '▲ Above':'▼ Below') : '—';
-          const vsMAC = vsMA==='▲ Above'?'var(--green)':vsMA==='▼ Below'?'var(--red)':'var(--text3)';
-          const cur = s.currency || (_assetType==='stocks'?'₹':'$');
-          return `
-          <tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;"
+          const price  = parseFloat(String(s.price||0).replace(/,/g,''));
+          const up     = chgNum >= 0;
+          const sc     = sigColor(s.overall);
+          const cur    = s.currency || (_assetType==='stocks' ? '₹' : '$');
+
+          // RSI color
+          const rsiC = !s.rsi ? 'var(--text3)' : s.rsi<30?'var(--green)':s.rsi>70?'var(--red)':'var(--gold)';
+
+          // Stoch color
+          const stochC = !s.stoch_k?'var(--text3)':s.stoch_k<20?'var(--green)':s.stoch_k>80?'var(--red)':'var(--text)';
+
+          // ADX
+          const adxC = !s.adx?'var(--text3)':s.adx>40?'var(--accent)':s.adx>25?'var(--text)':'var(--text3)';
+          const adxBadge = s.adx ? (s.adx>40?'🔥':s.adx>25?'📈':'〰️') : '';
+
+          // BB %B
+          const bbC = s.bb_pct==null?'var(--text3)':s.bb_pct>80?'var(--red)':s.bb_pct<20?'var(--green)':'var(--text)';
+
+          // MA50/200
+          const vsMA50  = s.ma50  ? (price>s.ma50  ?'▲':'▼') : '—';
+          const vsMA200 = s.ma200 ? (price>s.ma200 ?'▲':'▼') : '—';
+          const ma50C   = vsMA50==='▲'?'var(--green)':vsMA50==='▼'?'var(--red)':'var(--text3)';
+          const ma200C  = vsMA200==='▲'?'var(--green)':vsMA200==='▼'?'var(--red)':'var(--text3)';
+
+          // Golden/death cross badge
+          const crossBadge = s.golden_cross ? ' <span style="font-size:8px;color:#ffd700;">GX</span>'
+                           : s.death_cross  ? ' <span style="font-size:8px;color:var(--red);">DX</span>' : '';
+
+          // Vol ratio
+          const volC = !s.vol_ratio?'var(--text3)':s.vol_ratio>2?'var(--accent)':s.vol_ratio>1.5?'var(--text)':'var(--text3)';
+
+          return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;"
             onmouseover="this.style.background='rgba(0,112,243,0.04)'" onmouseout="this.style.background=''"
             onclick="openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')">
-            <td style="padding:10px;font-family:'Space Mono',monospace;">
-              <div style="font-weight:700;color:var(--text);">${s.sym}</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">${s.name||''}</div>
+            <td style="padding:9px 10px;font-family:'Space Mono',monospace;white-space:nowrap;">
+              <div style="font-weight:800;font-size:12px;">${s.sym}${crossBadge}</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:1px;">${(s.name||'').slice(0,18)}</div>
             </td>
-            <td style="padding:10px;text-align:right;font-family:'Space Mono',monospace;font-weight:700;">${cur}${s.price||'—'}</td>
-            <td style="padding:10px;text-align:right;font-family:'Space Mono',monospace;font-weight:700;color:${up?'var(--green)':'var(--red)'};">${s.chg||'—'}</td>
-            <td style="padding:10px;text-align:center;">
-              ${s.overall ? `<span style="font-size:10px;font-weight:700;color:${sc};background:${sc}18;border:1px solid ${sc}33;border-radius:6px;padding:3px 7px;">${s.overall}</span>` : '<span style="color:var(--text3);">—</span>'}
+            <td style="padding:9px 10px;text-align:right;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap;">${cur}${s.price||'—'}</td>
+            <td style="padding:9px 10px;text-align:right;font-family:'Space Mono',monospace;font-weight:800;color:${up?'var(--green)':'var(--red)'};">${s.chg||'—'}</td>
+            <td style="padding:9px 10px;text-align:center;">
+              ${s.overall ? `<span style="font-size:9px;font-weight:700;color:${sc};background:${sc}18;border:1px solid ${sc}33;border-radius:4px;padding:2px 6px;white-space:nowrap;">${s.overall}</span>` : '<span style="color:var(--text3);">—</span>'}
             </td>
-            <td style="padding:10px;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:${rsiC};">${s.rsi||'—'}</td>
-            <td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:${s.macd_bullish!=null?(s.macd_bullish?'var(--green)':'var(--red)'):'var(--text3)'};">${s.macd_bullish!=null?(s.macd_bullish?'📈 Bull':'📉 Bear'):'—'}</td>
-            <td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:${vsMAC};">${vsMA}</td>
-            <td style="padding:10px;text-align:center;">
-              <button onclick="event.stopPropagation();openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')"
-                style="background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.25);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">
-                Analyse
-              </button>
-            </td>
+            <td style="padding:9px 10px;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:${rsiC};">${s.rsi!=null?s.rsi.toFixed(1):'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:${stochC};">${s.stoch_k!=null?s.stoch_k.toFixed(1):'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-size:11px;font-weight:600;color:${s.macd_bullish!=null?(s.macd_bullish?'var(--green)':'var(--red)'):'var(--text3)'};">${s.macd_bullish!=null?(s.macd_bullish?(s.macd_increasing?'▲▲ Bull':'▲ Bull'):(s.macd_increasing?'▼ Bear':'▼▼ Bear')):'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:${adxC};">${s.adx!=null?adxBadge+s.adx.toFixed(0):'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:${bbC};">${s.bb_pct!=null?s.bb_pct.toFixed(0)+'%':'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:800;color:${ma50C};">${vsMA50}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:800;color:${ma200C};">${vsMA200}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${volC};">${s.vol_ratio!=null?s.vol_ratio.toFixed(1)+'×':'—'}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -7329,13 +7502,12 @@ async function runScreener() {
 
 function resetScreener() {
   setAssetType('stocks', document.getElementById('at_stocks'));
-  document.getElementById('f_change').value = '';
-  document.getElementById('f_signal').value = '';
-  document.getElementById('f_rsi').value = '';
-  document.getElementById('f_macd').value = '';
-  document.getElementById('f_ma50').value = '';
-  document.getElementById('f_sort').value = 'chg_desc';
-  document.getElementById('screenerResults').innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:32px;margin-bottom:12px;">🔍</div><div style="font-size:14px;color:var(--text2);font-weight:600;">Set your filters and click Run Screen</div><div style="font-size:12px;margin-top:6px;">Screens NSE stocks, Crypto & Commodities in real-time</div></div>`;
+  ['f_change','f_signal','f_rsi','f_macd','f_stoch','f_adx',
+   'f_ma50','f_ma200','f_macross','f_bb','f_52w','f_vol'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sortEl = document.getElementById('f_sort'); if (sortEl) sortEl.value = 'chg_desc';
+  document.getElementById('screenerResults').innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);"><div style="font-size:32px;margin-bottom:12px;">🔍</div><div style="font-size:14px;color:var(--text2);font-weight:600;">Set your filters and click Run Screen</div><div style="font-size:12px;margin-top:6px;">12 filters · Stocks · Crypto · Commodities</div></div>`;
 }
 
 function setFilter(btn) {
