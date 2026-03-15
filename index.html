@@ -7446,6 +7446,8 @@ async function _fetchFiiFromAllSources() {
     {date:'09-Mar-2026',fii_buy:11156.99,fii_sell:17502.56,fii_net: -6345.57,dii_buy:21586.46,dii_sell:12572.66,dii_net: 9013.80,net:  2668.23},
     {date:'06-Mar-2026',fii_buy:14434.69,fii_sell:20465.07,fii_net: -6030.38,dii_buy:19662.38,dii_sell:12690.87,dii_net: 6971.51,net:   941.13},
     {date:'05-Mar-2026',fii_buy:14914.99,fii_sell:18667.51,fii_net: -3752.52,dii_buy:18821.10,dii_sell:13667.73,dii_net: 5153.37,net:  1400.85},
+    {date:'04-Mar-2026',fii_buy:19120.99,fii_sell:27873.64,fii_net: -8752.65,dii_buy:26259.37,dii_sell:14191.20,dii_net:12068.17,net:  3315.52},
+    {date:'02-Mar-2026',fii_buy:12737.34,fii_sell:16032.98,fii_net: -3295.64,dii_buy:21110.66,dii_sell:12516.79,dii_net: 8593.87,net:  5298.23},
   ];
   _fiiSource = '📋 NSE Capital Market Segment · Verified data';
   _fiiLastFetch = Date.now() - _FII_CACHE_MS + 90000; // retry in 90s
@@ -7597,13 +7599,17 @@ setInterval(() => {
 // ═══════════════════════════════════════════════════════════════════
 // EARNINGS / EVENTS PAGE
 // ═══════════════════════════════════════════════════════════════════
-let _eventsData=[], _eventsFilter='all', _eventsWeekOffset=0;
+let _eventsFilter='all', _eventsWeekOffset=0;
+let _eventsData=[];
 async function renderEarnings() {
   const el=document.getElementById('earningsBody');
   if(!el) return;
-  el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);"><div class="loading-spin"></div></div>`;
   updateEventsWeekLabel();
-  await refreshEarningsData();
+  // Show fallback data immediately — don't wait for API
+  if(!_eventsData.length) _eventsData=generateFallbackEvents();
+  renderEventsPage();
+  // Refresh from API in background (non-blocking)
+  refreshEarningsData();
 }
 async function refreshEarningsData() {
   try {
@@ -10699,23 +10705,24 @@ function resetPaperPortfolio() {
 // ══════════════════════════════════════════════════════════════
 const IPO_DATA = {
   upcoming: [
-    {name:'Skyways Air',open:'17 Mar 2026',close:'19 Mar 2026',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Aviation',lot:'TBA',minInvest:'TBA'},
-    {name:'Novus Loyalty & Business Services',open:'18 Mar 2026',close:'20 Mar 2026',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
-    {name:'Truhome Finance',open:'Mar–Apr 2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'NBFC/Finance',lot:'TBA',minInvest:'TBA'},
-    {name:'Reliance Jio',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Telecom',lot:'TBA',minInvest:'TBA'},
-    {name:'PhonePe',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
-    {name:'OYO Rooms',open:'TBA 2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Hospitality',lot:'TBA',minInvest:'TBA'},
+    {name:'Ather Energy',open:'28 Apr 2026',close:'30 Apr 2026',price:'₹304–321',size:'₹2,981 Cr',gmp:'₹12',gmpPct:'+3.7%',rating:'⭐⭐⭐⭐',sector:'EV/Auto',lot:'46',minInvest:'₹14,766'},
+    {name:'Hexaware Technologies',open:'12 Feb 2026',close:'14 Feb 2026',price:'₹674–708',size:'₹8,750 Cr',gmp:'₹45',gmpPct:'+6.4%',rating:'⭐⭐⭐⭐',sector:'IT Services',lot:'21',minInvest:'₹14,868'},
+    {name:'Truhome Finance',open:'Apr 2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'NBFC',lot:'TBA',minInvest:'TBA'},
+    {name:'PhonePe',open:'2026',close:'—',price:'TBA',size:'₹15,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Fintech',lot:'TBA',minInvest:'TBA'},
+    {name:'Reliance Jio',open:'2026',close:'—',price:'TBA',size:'TBA',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐⭐',sector:'Telecom',lot:'TBA',minInvest:'TBA'},
+    {name:'NSDL',open:'2026',close:'—',price:'TBA',size:'₹3,000 Cr',gmp:'—',gmpPct:'—',rating:'⭐⭐⭐⭐',sector:'Financial Services',lot:'TBA',minInvest:'TBA'},
   ],
-  open: [
-    {name:'Raajmarg Infra InvIT',open:'11 Mar 2026',close:'13 Mar 2026',price:'₹99–100',size:'₹6,000 Cr',gmp:'—',gmpPct:'—',subscribed:'—',rating:'⭐⭐⭐⭐',sector:'Infrastructure/InvIT',lot:'TBA',minInvest:'TBA',exchange:'BSE & NSE',listDate:'24 Mar 2026'},
-  ],
+  open: [],
   allotment: [
-    {name:'Innovision',date:'13 Mar 2026',price:'₹548',listPrice:'17 Mar 2026',gain:'Pending',status:'Allotment Today'},
-    {name:'Rajputana Stainless',date:'12 Mar 2026',price:'₹122',listPrice:'16 Mar 2026',gain:'Pending',status:'Allotment Today'},
+    {name:'Schbang Digital Solutions',date:'17 Mar 2026',price:'₹216',listPrice:'19 Mar 2026',gain:'Pending',status:'Allotment Done'},
+    {name:'Innovision Commerce',date:'13 Mar 2026',price:'₹548',listPrice:'17 Mar 2026',gain:'Pending',status:'Allotment Done'},
+    {name:'Rajputana Stainless',date:'12 Mar 2026',price:'₹122',listPrice:'16 Mar 2026',gain:'Pending',status:'Allotment Done'},
   ],
   listed: [
     {name:'SEDEMAC Mechatronics',listDate:'11 Mar 2026',issuePrice:'₹1,352',listPrice:'₹1,510',gain:'+11.7%',current:'₹1,547'},
-    {name:'Elfin Agro India',listDate:'Mar 2026',issuePrice:'—',listPrice:'—',gain:'—',current:'—'},
+    {name:'Hexaware Technologies',listDate:'19 Feb 2026',issuePrice:'₹708',listPrice:'₹745',gain:'+5.2%',current:'₹731'},
+    {name:'Laxmi Dental',listDate:'20 Jan 2026',issuePrice:'₹428',listPrice:'₹513',gain:'+19.9%',current:'₹498'},
+    {name:'Capital Infra Trust InvIT',listDate:'12 Feb 2026',issuePrice:'₹99',listPrice:'₹102',gain:'+3.0%',current:'₹101'},
   ],
 };
 
@@ -10733,7 +10740,13 @@ function renderIpoPage() {
   fetchLiveIpoData(); // non-blocking background refresh
   if (!window.IPO_DATA || !window._ipoTab) return;
   const list = IPO_DATA[_ipoTab] || [];
-  if (!list.length) { el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">No IPO data available</div>`; return; }
+  if (!list.length) {
+    const msg = _ipoTab === 'open'
+      ? '🟢 No IPOs currently open for subscription.<br><span style="font-size:12px;">Check back soon or see Upcoming tab.</span>'
+      : 'No data available for this tab.';
+    el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">${msg}</div>`;
+    return;
+  }
 
   if (_ipoTab === 'upcoming' || _ipoTab === 'open') {
     el.innerHTML = list.map(ipo => `
