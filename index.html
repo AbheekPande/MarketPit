@@ -1110,6 +1110,11 @@ header {
       TradingView
     </button>
 
+    <button class="nav-tab" onclick="switchTab(this,'unlisted')">
+      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+      Unlisted Shares
+    </button>
+
   </div>
   <button id="navScrollRight" onclick="document.querySelector('.nav-tabs').scrollBy({left:200,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(to left,var(--bg2),transparent);border:none;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;padding:0;">›</button>
   </div>
@@ -1702,6 +1707,22 @@ header {
 
     <!-- RISK CALCULATOR PAGE -->
   <!-- ECONOMIC CALENDAR -->
+
+  <!-- UNLISTED SHARES PAGE -->
+  <div class="main-feed" id="page-unlisted" style="display:none;flex-direction:column;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🔒 UNLISTED SHARES</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Derived Prices · As on 15 Mar, 09:03</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
+      <button onclick="switchUnlistedTab('top',this)" id="utab_top" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid var(--accent);color:var(--accent);">Top Companies</button>
+      <button onclick="switchUnlistedTab('gainers',this)" id="utab_gainers" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">Top Gainers</button>
+      <button onclick="switchUnlistedTab('losers',this)" id="utab_losers" style="padding:9px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">Top Losers</button>
+    </div>
+    <div class="feed-scroll" id="unlistedBody" style="padding:0;"></div>
+  </div>
   <div class="main-feed" id="page-econocal" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
       <div>
@@ -5555,7 +5576,7 @@ function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5578,6 +5599,7 @@ function _switchTabSilent(btn, page) {
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
+  if (page==='unlisted')  renderUnlisted();
 }
 
 function _switchScreenerTabSilent(tab) {
@@ -5610,7 +5632,7 @@ function switchTabMobile(btn, page) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5634,6 +5656,7 @@ function switchTabMobile(btn, page) {
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
+  if (page==='unlisted')  renderUnlisted();
   } catch(e) { console.warn('Tab render error:', e); }
 }
 
@@ -5643,7 +5666,7 @@ function switchTab(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5675,6 +5698,7 @@ function switchTab(btn, page) {
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
+  if (page==='unlisted')  renderUnlisted();
   } catch(e) { console.warn('Tab render error:', e); }
 }
 
@@ -9225,6 +9249,85 @@ window.addEventListener('unhandledrejection', (e) => {
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _mpInit);
+
+// ══════════════════════════════════════════════════════════════
+// UNLISTED SHARES
+// HOW TO UPDATE: edit the arrays below — price, chg, chgPct, prevClose, week1
+// ══════════════════════════════════════════════════════════════
+const UNLISTED_DATA = {
+  top: [
+    // {name, price, chg, chgPct, prevClose, week1}
+    {name:'Orbis Financial',       price:426.00,  chg:-4.00,  chgPct:-0.93, prevClose:430.00,  week1:-0.60},
+    {name:'Care Health Insurance', price:141.50,  chg:-1.50,  chgPct:-1.05, prevClose:143.00,  week1:-4.81},
+    {name:'SBI Funds Management',  price:780.00,  chg:-10.00, chgPct:-1.27, prevClose:790.00,  week1:-0.06},
+    {name:'PharmEasy (API)',        price:6.50,    chg:-0.10,  chgPct:-1.52, prevClose:6.60,    week1:null},
+    {name:'Chennai Super Kings',   price:246.00,  chg:-4.00,  chgPct:-1.60, prevClose:250.00,  week1:-0.41},
+    {name:'Metropolitan Stock',    price:5.05,    chg:-0.10,  chgPct:-1.94, prevClose:5.15,    week1:-3.61},
+    {name:'National Stock Exchange',price:1995.00,chg:-40.00, chgPct:-1.97, prevClose:2035.00, week1:null},
+    {name:'NCDEX Ltd',             price:416.00,  chg:-9.00,  chgPct:-2.12, prevClose:425.00,  week1:null},
+  ],
+  gainers: [
+    {name:'Binani Industries',     price:1.43,    chg:0.01,   chgPct:0.35,  prevClose:1.42,    week1:0.35},
+    {name:'Hind Ispat Limited',    price:2.01,    chg:0.01,   chgPct:0.25,  prevClose:2.01,    week1:0.25},
+    {name:'Amol Minechem Ltd',     price:902.00,  chg:2.00,   chgPct:0.22,  prevClose:900.00,  week1:0.22},
+  ],
+  losers: [
+    {name:'Hicks Thermomet',       price:1616.33, chg:-33.67, chgPct:-2.04, prevClose:1650.00, week1:-10.20},
+    {name:'ESDS Software Solutions',price:419.00, chg:-5.75,  chgPct:-1.35, prevClose:424.75,  week1:-9.65},
+    {name:'Zepto (Unlisted)',       price:58.00,  chg:-2.00,  chgPct:-3.33, prevClose:60.00,   week1:-3.33},
+    {name:'GFCL EV Products',       price:42.28,  chg:-0.01,  chgPct:-0.01, prevClose:42.28,   week1:-2.61},
+    {name:'Sterling Estate',        price:42.84,  chg:-0.01,  chgPct:-0.01, prevClose:42.84,   week1:-0.01},
+    {name:'Maryada Commerce',       price:44.31,  chg:-0.01,  chgPct:-0.01, prevClose:44.31,   week1:-0.01},
+    {name:'Dr Fresh Assets',        price:44.31,  chg:-0.01,  chgPct:-0.01, prevClose:44.31,   week1:-0.01},
+    {name:'Crescent Finstock',      price:44.31,  chg:-0.01,  chgPct:-0.01, prevClose:44.31,   week1:-0.01},
+  ],
+};
+
+let _unlistedTab = 'top';
+function switchUnlistedTab(tab, btn) {
+  _unlistedTab = tab;
+  document.querySelectorAll('[id^="utab_"]').forEach(b => {
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--text3)';
+    b.style.fontWeight = '600';
+  });
+  if (btn) { btn.style.borderBottomColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; btn.style.fontWeight = '700'; }
+  renderUnlisted();
+}
+
+function renderUnlisted() {
+  const el = document.getElementById('unlistedBody');
+  if (!el) return;
+  const list = UNLISTED_DATA[_unlistedTab] || [];
+
+  el.innerHTML = '<div style="overflow-x:auto;">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:600px;">'
+    + '<thead><tr style="background:var(--bg3);border-bottom:2px solid var(--border);">'
+    + '<th style="padding:11px 16px;text-align:left;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">SYMBOL</th>'
+    + '<th style="padding:11px 12px;text-align:right;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">PRICE</th>'
+    + '<th style="padding:11px 12px;text-align:right;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">CHG</th>'
+    + '<th style="padding:11px 12px;text-align:right;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">CHG%</th>'
+    + '<th style="padding:11px 12px;text-align:right;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">PREV CLOSE</th>'
+    + '<th style="padding:11px 16px;text-align:right;font-family:\'Space Mono\',monospace;font-size:10px;color:var(--text3);font-weight:600;">1W %</th>'
+    + '</tr></thead><tbody>'
+    + list.map(function(s, i) {
+        var pos = s.chg >= 0;
+        var col = pos ? 'var(--green)' : 'var(--red)';
+        var bg  = i % 2 === 0 ? '' : 'background:var(--bg3);';
+        return '<tr style="border-bottom:1px solid var(--border);' + bg + '" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'' + (i%2===0?'':'var(--bg3)') + '\'">'
+          + '<td style="padding:12px 16px;font-weight:700;">' + s.name + '</td>'
+          + '<td style="padding:12px 12px;text-align:right;font-family:\'Space Mono\',monospace;font-weight:700;">' + s.price.toFixed(2) + '</td>'
+          + '<td style="padding:12px 12px;text-align:right;font-family:\'Space Mono\',monospace;color:' + col + ';font-weight:600;">' + (pos?'+':'') + s.chg.toFixed(2) + '</td>'
+          + '<td style="padding:12px 12px;text-align:right;font-family:\'Space Mono\',monospace;color:' + col + ';font-weight:700;">' + (pos?'+':'') + s.chgPct.toFixed(2) + '%</td>'
+          + '<td style="padding:12px 12px;text-align:right;font-family:\'Space Mono\',monospace;color:var(--text3);">' + s.prevClose.toFixed(2) + '</td>'
+          + '<td style="padding:12px 16px;text-align:right;font-family:\'Space Mono\',monospace;color:' + (s.week1===null?'var(--text3)':s.week1>=0?'var(--green)':'var(--red)') + ';font-weight:600;">'
+            + (s.week1===null ? '-' : (s.week1>=0?'+':'') + s.week1.toFixed(2) + '%') + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>'
+    + '<div style="padding:10px 16px;font-size:10px;color:var(--text3);text-align:center;">Derived Prices · Unlisted shares are not traded on NSE/BSE · As on 15 Mar 2026, 09:03</div>'
+    + '</div>';
+}
 } else {
   _mpInit(); // DOM already ready
 }
