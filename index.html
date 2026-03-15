@@ -8899,17 +8899,6 @@ function renderEconoPage() {
   const impactColor = {high:'var(--red)', medium:'#f5a623', low:'var(--text3)'};
   const impactBg    = {high:'rgba(229,57,53,0.12)', medium:'rgba(245,166,35,0.12)', low:'rgba(100,100,100,0.08)'};
 
-  // Inject TradingView iframe once — above econoBody, not inside it
-  if (!document.getElementById('econoTVFrame')) {
-    const tvDiv = document.createElement('div');
-    tvDiv.id = 'econoTVFrame';
-    tvDiv.style.cssText = 'margin:0 14px 14px;border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;';
-    tvDiv.innerHTML =
-      '<div style="padding:8px 14px;font-size:9px;font-family:\'Space Mono\',monospace;color:var(--text3);letter-spacing:1px;background:var(--bg3);border-bottom:1px solid var(--border);">LIVE ECONOMIC CALENDAR — TRADINGVIEW</div>'
-      + '<iframe src="https://s.tradingview.com/external-embedding/embed-widget-events.html?locale=en&importanceFilter=high%2Cmedium&countryFilter=IN%2CUS%2CGB%2CEU%2CCN%2CJP&colorTheme=dark&isTransparent=true&width=100%25&height=280" style="width:100%;height:280px;border:none;display:block;" scrolling="no" frameborder="0" allowtransparency="true"></iframe>';
-    el.parentElement.insertBefore(tvDiv, el);
-  }
-
   if (!Object.keys(grouped).length) {
     el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3);">No events found for this filter.</div>';
     return;
