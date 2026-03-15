@@ -766,7 +766,6 @@ header {
   .post-card, .ipo-card { will-change: transform; }
   /* GPU-composited layers for key animated elements */
   .ticker-track { will-change: transform; }
-  #eyesBanner { will-change: transform; }
   /* Layout containment for large lists */
   #feedBody, #chatMsgs, #earningsBody, #mfBody, #alertsBody { contain: content; }
   /* Smooth scrollbar */
@@ -792,6 +791,7 @@ header {
 
 </style>
 <body>
+<div id="_bannerDbg" style="position:fixed;bottom:4px;right:4px;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:6px 10px;border-radius:6px;z-index:99999;max-height:120px;overflow:auto;pointer-events:none;"></div>
 
 <!-- EYES BANNER -->
 <style>
@@ -12626,44 +12626,50 @@ function renderHeatmap() {
 
 // ── EYES BANNER: glow + cube + pupils ──
 (function() {
+  // ── DEBUG helper ──
+  function dbg(msg) {
+    console.log('[BANNER]', msg);
+    var d = document.getElementById('_bannerDbg');
+    if (d) d.innerHTML += '<br>' + msg;
+  }
+
   var banner, glow, allSubs, activeSub = null;
   var BRI = [1.0, 0.76, 0.66, 0.50];
 
   function setup() {
-    banner  = document.getElementById('eyesBanner');
-    glow    = document.getElementById('ebGlow');
-    if (!banner || !glow) return;
+    banner = document.getElementById('eyesBanner');
+    glow   = document.getElementById('ebGlow');
+    dbg('setup() called. banner=' + !!banner + ' glow=' + !!glow);
+    if (!banner || !glow) { dbg('ABORT: elements missing'); return; }
     allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
+    dbg('allSubs.length=' + allSubs.length);
     banner.addEventListener('mousemove', onMove);
     banner.addEventListener('mouseleave', onLeave);
     document.addEventListener('mousemove', onDocMove);
+    dbg('listeners attached OK');
   }
 
   function getCol(pct) {
     var p=Math.max(0,Math.min(1,pct)), r,g,b;
-    if (p<0.5) { var t=p*2; r=255; g=Math.round(90+130*t); b=Math.round(10+80*t); }
-    else { var t=(p-0.5)*2; r=Math.round(255-120*t); g=Math.round(220-80*t); b=Math.round(90+165*t); }
+    if (p<0.5){var t=p*2;r=255;g=Math.round(90+130*t);b=Math.round(10+80*t);}
+    else{var t=(p-0.5)*2;r=Math.round(255-120*t);g=Math.round(220-80*t);b=Math.round(90+165*t);}
     return [r,g,b];
   }
 
   function onMove(e) {
     var br = banner.getBoundingClientRect();
     var lx = e.clientX - br.left, ly = e.clientY - br.top;
-    var c  = getCol(lx / br.width), r=c[0], g=c[1], b=c[2];
-
-    // GLOW — margin-left/top in CSS centers the 280px div on lx/ly
+    var c = getCol(lx / br.width), r=c[0], g=c[1], b=c[2];
     glow.style.left       = lx + 'px';
     glow.style.top        = ly + 'px';
     glow.style.background = 'radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 32%,rgba('+r+','+g+','+b+',0.1) 60%,transparent 75%)';
     glow.style.opacity    = '1';
-
-    // CUBE — BoundingClientRect hit test; qi = 0-3 within parent tile
     var hit = null;
     for (var i=0; i<allSubs.length; i++) {
       var rc = allSubs[i].getBoundingClientRect();
       if (e.clientX>=rc.left && e.clientX<=rc.right && e.clientY>=rc.top && e.clientY<=rc.bottom) {
         var qi = Array.prototype.indexOf.call(allSubs[i].parentElement.children, allSubs[i]);
-        hit = { el:allSubs[i], qi:qi };
+        hit = {el:allSubs[i], qi:qi};
         break;
       }
     }
@@ -12680,16 +12686,16 @@ function renderHeatmap() {
 
   function showSub(sub, qi, r, g, b) {
     var k=BRI[qi]!==undefined?BRI[qi]:0.7;
-    var fr=Math.round(r*k), fg=Math.round(g*k), fb=Math.round(b*k);
-    var isTop=qi<2, isLeft=qi%2===0;
-    var hi='rgba(255,255,255,0.4)', sh='rgba(0,0,0,0.5)';
-    sub.style.opacity           = '1';
-    sub.style.background        = 'rgba('+fr+','+fg+','+fb+',0.85)';
-    sub.style.borderTopColor    = isTop  ? hi : sh;
-    sub.style.borderLeftColor   = isLeft ? hi : sh;
-    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = 'inset 0 1px 5px rgba(255,255,255,0.22),0 0 8px rgba('+r+','+g+','+b+',0.45)';
+    var fr=Math.round(r*k),fg=Math.round(g*k),fb=Math.round(b*k);
+    var isTop=qi<2,isLeft=qi%2===0;
+    var hi='rgba(255,255,255,0.4)',sh='rgba(0,0,0,0.5)';
+    sub.style.opacity='1';
+    sub.style.background='rgba('+fr+','+fg+','+fb+',0.85)';
+    sub.style.borderTopColor=isTop?hi:sh;
+    sub.style.borderLeftColor=isLeft?hi:sh;
+    sub.style.borderBottomColor=isTop?sh:'rgba(0,0,0,0.65)';
+    sub.style.borderRightColor=isLeft?sh:'rgba(0,0,0,0.65)';
+    sub.style.boxShadow='inset 0 1px 5px rgba(255,255,255,0.22),0 0 8px rgba('+r+','+g+','+b+',0.45)';
   }
 
   function hideSub(sub) {
@@ -12700,7 +12706,6 @@ function renderHeatmap() {
     sub.style.boxShadow='none';
   }
 
-  // PUPILS — follow cursor from anywhere on page
   function onDocMove(e) {
     if (!banner) return;
     var eyes = banner.querySelectorAll('.eyeball');
@@ -12711,16 +12716,18 @@ function renderHeatmap() {
       var ex = er.left+er.width/2, ey = er.top+er.height/2;
       var dx = e.clientX-ex, dy = e.clientY-ey;
       var dist = Math.sqrt(dx*dx+dy*dy);
-      var maxT = er.width * 0.3;
-      var travel = dist<1 ? 0 : maxT*(1 - 1/(1+dist/50));
-      var angle  = Math.atan2(dy, dx);
-      pupil.style.transform = 'translate('+(Math.cos(angle)*travel).toFixed(1)+'px,'+(Math.sin(angle)*travel).toFixed(1)+'px)';
+      var maxT = er.width*0.3;
+      var travel = dist<1?0:maxT*(1-1/(1+dist/50));
+      var angle = Math.atan2(dy,dx);
+      pupil.style.transform='translate('+(Math.cos(angle)*travel).toFixed(1)+'px,'+(Math.sin(angle)*travel).toFixed(1)+'px)';
     }
   }
 
   if (document.readyState === 'loading') {
+    dbg('waiting for DOMContentLoaded');
     document.addEventListener('DOMContentLoaded', setup);
   } else {
+    dbg('DOM ready, calling setup() now');
     setup();
   }
 })();
