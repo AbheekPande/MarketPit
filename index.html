@@ -10499,54 +10499,175 @@ function renderPtTrade(el, d) {
             color:${parseFloat(asset.chg)>=0?'var(--green)':'var(--red)'};">${asset.chg||'—'}</span>
         </div>
         <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">${asset.sym} · ${asset.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'Space Mono',monospace;">Series: EQ · Tick: ${cur}${isUsd?'0.01':'0.05'} · Depth: 20 levels</div>
       </div>
 
-      <!-- Market Depth -->
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
-        <div class="pt-lbl" style="margin-bottom:8px;">MARKET DEPTH</div>
-        <div style="font-family:'Space Mono',monospace;font-size:11px;">
-          <!-- Asks (sell orders) — shown top to bottom, highest first -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:2px;">
-            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;">ORDERS</div>
-            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;text-align:center;">PRICE</div>
-            <div style="font-size:8px;color:var(--text3);letter-spacing:1px;padding:3px 0;text-align:right;">QTY</div>
-          </div>
-          ${(()=>{
-            const p = parseFloat(asset.price)||1;
-            const tick = p>10000?5:p>1000?0.5:p>100?0.1:p>10?0.05:0.01;
-            const fmt  = v => v.toFixed(tick<0.1?2:tick<1?1:0);
-            let rows = '';
-            // 5 ask rows (red, sell side)
-            for(let i=4;i>=0;i--){
-              const ap = p + tick*(i+1);
-              const aq = Math.floor(p>1000?(10+i*8):(100+i*80));
-              const ao = Math.floor(Math.random()*3+1);
-              const w  = Math.min(100, 20+i*15);
-              rows += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;position:relative;margin-bottom:1px;">
-                <div style="position:absolute;right:0;top:0;bottom:0;width:${w}%;background:rgba(229,57,53,0.07);z-index:0;"></div>
-                <div style="font-size:10px;color:var(--text3);padding:3px 0;position:relative;z-index:1;">${ao}</div>
-                <div style="font-size:11px;font-weight:700;color:var(--red);padding:3px 0;text-align:center;position:relative;z-index:1;">${fmt(ap)}</div>
-                <div style="font-size:10px;color:var(--text3);padding:3px 0;text-align:right;position:relative;z-index:1;">${aq.toLocaleString()}</div>
-              </div>`;
+      <!-- ═══ ORDER BOOK ═══ -->
+      <div style="padding:0;border-bottom:1px solid var(--border);">
+        ${(()=>{
+          const p    = parseFloat(asset.price)||1;
+          const tick = p>10000?5:p>1000?0.5:p>100?0.1:p>10?0.05:0.01;
+          const fmt  = v => cur + v.toFixed(tick<0.1?2:tick<1?1:0);
+          const fmtN = v => v.toLocaleString('en-IN');
+
+          // Generate 20 realistic bid + ask levels seeded from price
+          const seed = Math.round(p * 17) % 1000;
+          const rng  = (s, min, max) => min + ((s * 1103515245 + 12345) & 0x7fffffff) % (max - min);
+
+          const askLevels = [], bidLevels = [];
+          for (let i = 0; i < 20; i++) {
+            const ap  = p + tick * (i + 1);
+            const aqBase = p > 1000 ? 500 : 5000;
+            const aq  = aqBase + rng(seed + i * 7, 50, 800) * (p > 1000 ? 1 : 10);
+            const ao  = rng(seed + i * 3, 1, 25);
+            askLevels.push({ price: ap, qty: aq, orders: ao });
+          }
+          for (let i = 0; i < 20; i++) {
+            const bp  = p - tick * (i + 1);
+            const bqBase = p > 1000 ? 500 : 5000;
+            const bq  = bqBase + rng(seed + i * 11, 50, 900) * (p > 1000 ? 1 : 10);
+            const bo  = rng(seed + i * 5, 1, 22);
+            bidLevels.push({ price: bp, qty: bq, orders: bo });
+          }
+
+          // Cumulative qty
+          let cumBid = 0, cumAsk = 0;
+          const askCum = askLevels.map(a => { cumAsk += a.qty; return cumAsk; });
+          const bidCum = bidLevels.map(b => { cumBid += b.qty; return cumBid; });
+
+          const totalBid = bidCum[bidCum.length - 1];
+          const totalAsk = askCum[askCum.length - 1];
+          const ratio    = (totalBid / totalAsk).toFixed(2);
+          const spread   = (tick).toFixed(tick < 1 ? 2 : 0);
+          const maxQty   = Math.max(...askLevels.map(a=>a.qty), ...bidLevels.map(b=>b.qty));
+
+          // Summary strip
+          let html = `
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid var(--border);">
+            <div style="padding:8px 12px;border-right:1px solid var(--border);">
+              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL BID QTY</div>
+              <div style="font-size:14px;font-weight:800;color:var(--green);font-family:'Space Mono',monospace;">${fmtN(totalBid)}</div>
+            </div>
+            <div style="padding:8px 12px;border-right:1px solid var(--border);">
+              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">TOTAL ASK QTY</div>
+              <div style="font-size:14px;font-weight:800;color:var(--red);font-family:'Space Mono',monospace;">${fmtN(totalAsk)}</div>
+            </div>
+            <div style="padding:8px 12px;border-right:1px solid var(--border);">
+              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">BID/ASK RATIO</div>
+              <div style="font-size:14px;font-weight:800;font-family:'Space Mono',monospace;color:${parseFloat(ratio)>=1?'var(--green)':'var(--red)'};">${ratio}</div>
+            </div>
+            <div style="padding:8px 12px;">
+              <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">SPREAD</div>
+              <div style="font-size:14px;font-weight:800;font-family:'Space Mono',monospace;">${cur}${spread}</div>
+            </div>
+          </div>`;
+
+          // Table columns header
+          html += `
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;border-bottom:1px solid var(--border);background:var(--bg3);">
+            <div style="padding:5px 8px;">ORD</div>
+            <div style="padding:5px 8px;text-align:right;">QTY</div>
+            <div style="padding:5px 8px;text-align:right;">CUM</div>
+            <div style="padding:5px 8px;text-align:right;color:var(--green);">BID</div>
+            <div style="padding:5px 8px;text-align:left;color:var(--red);">ASK</div>
+            <div style="padding:5px 8px;text-align:right;">QTY</div>
+            <div style="padding:5px 8px;text-align:right;">CUM</div>
+            <div style="padding:5px 8px;text-align:right;">ORD</div>
+          </div>`;
+
+          // 20 rows — bid left, ask right
+          for (let i = 0; i < 20; i++) {
+            const bid = bidLevels[i];
+            const ask = askLevels[i];
+            const bc  = bidCum[i];
+            const ac  = askCum[i];
+            const bw  = Math.round(bid.qty / maxQty * 100);
+            const aw  = Math.round(ask.qty / maxQty * 100);
+
+            html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;font-size:10px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);position:relative;">
+              <!-- Bid background bar (left side) -->
+              <div style="position:absolute;left:0;top:0;bottom:0;width:${bw*0.5}%;background:rgba(0,168,84,0.08);pointer-events:none;"></div>
+              <!-- Ask background bar (right side) -->
+              <div style="position:absolute;right:0;top:0;bottom:0;width:${aw*0.5}%;background:rgba(229,57,53,0.08);pointer-events:none;"></div>
+              <div style="padding:5px 8px;position:relative;z-index:1;color:var(--text3);">${bid.orders}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:600;">${fmtN(bid.qty)}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${fmtN(bc)}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:800;color:var(--green);">${fmt(bid.price)}</div>
+              <div style="padding:5px 8px;text-align:left;position:relative;z-index:1;font-weight:800;color:var(--red);">${fmt(ask.price)}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;font-weight:600;">${fmtN(ask.qty)}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${fmtN(ac)}</div>
+              <div style="padding:5px 8px;text-align:right;position:relative;z-index:1;color:var(--text3);">${ask.orders}</div>
+            </div>`;
+          }
+
+          // Best bid/ask/spread footer
+          html += `<div style="display:flex;gap:16px;padding:7px 12px;background:var(--bg3);font-size:10px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);">
+            <span>Spread: <b style="color:var(--text);">${cur}${spread}</b></span>
+            <span>Best Bid: <b style="color:var(--green);">${fmt(bidLevels[0].price)}</b></span>
+            <span>Best Ask: <b style="color:var(--red);">${fmt(askLevels[0].price)}</b></span>
+          </div>`;
+
+          // Cumulative depth chart via canvas
+          html += `
+          <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
+            <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">CUMULATIVE DEPTH CHART</div>
+            <canvas id="ptDepthCanvas" width="520" height="120" style="width:100%;height:120px;"></canvas>
+          </div>`;
+
+          // Inject canvas draw via requestAnimationFrame
+          html += `<script>
+          (function() {
+            function drawDepth() {
+              const canvas = document.getElementById('ptDepthCanvas');
+              if (!canvas) return;
+              const ctx = canvas.getContext('2d');
+              const W = canvas.width, H = canvas.height;
+              ctx.clearRect(0, 0, W, H);
+              const bids = ${JSON.stringify(bidLevels.map((b,i)=>({p:b.price,c:bidCum[i]})).reverse())};
+              const asks = ${JSON.stringify(askLevels.map((a,i)=>({p:a.price,c:askCum[i]})))};
+              const allP = [...bids.map(x=>x.p), ...asks.map(x=>x.p)];
+              const minP = Math.min(...allP), maxP = Math.max(...allP);
+              const maxC = Math.max(bidCum[bidCum.length-1], askCum[askCum.length-1]);
+              const xS = W / (maxP - minP);
+              const yS = (H - 24) / maxC;
+              const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+              // Draw bid area
+              ctx.beginPath();
+              ctx.moveTo((bids[0].p - minP) * xS, H - 24);
+              bids.forEach(b => ctx.lineTo((b.p - minP) * xS, H - 24 - b.c * yS));
+              ctx.lineTo((bids[bids.length-1].p - minP) * xS, H - 24);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(0,168,84,0.18)';
+              ctx.fill();
+              ctx.strokeStyle = '#00a854';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+              // Draw ask area
+              ctx.beginPath();
+              ctx.moveTo((asks[0].p - minP) * xS, H - 24);
+              asks.forEach(a => ctx.lineTo((a.p - minP) * xS, H - 24 - a.c * yS));
+              ctx.lineTo((asks[asks.length-1].p - minP) * xS, H - 24);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(229,57,53,0.18)';
+              ctx.fill();
+              ctx.strokeStyle = '#e53935';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+              // X-axis labels
+              ctx.fillStyle = isDark ? '#71767b' : '#8899a6';
+              ctx.font = '9px monospace';
+              ctx.textAlign = 'center';
+              [bids[0].p, bids[Math.floor(bids.length/2)].p, asks[0].p, asks[Math.floor(asks.length/2)].p, asks[asks.length-1].p].forEach(pv => {
+                const x = (pv - minP) * xS;
+                ctx.fillText('${cur}'+pv.toFixed(${tick < 0.1 ? 2 : tick < 1 ? 1 : 0}), x, H - 6);
+              });
             }
-            // Spread line
-            rows += `<div style="text-align:center;padding:3px 0;font-size:9px;color:var(--text3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:3px 0;letter-spacing:1px;">── LTP ${fmt(p)} ──</div>`;
-            // 5 bid rows (green, buy side)
-            for(let i=0;i<5;i++){
-              const bp = p - tick*(i+1);
-              const bq = Math.floor(p>1000?(12+i*9):(120+i*90));
-              const bo = Math.floor(Math.random()*3+1);
-              const w  = Math.min(100, 20+i*15);
-              rows += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;position:relative;margin-bottom:1px;">
-                <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:rgba(0,168,84,0.07);z-index:0;"></div>
-                <div style="font-size:10px;color:var(--text3);padding:3px 0;position:relative;z-index:1;">${bo}</div>
-                <div style="font-size:11px;font-weight:700;color:var(--green);padding:3px 0;text-align:center;position:relative;z-index:1;">${fmt(bp)}</div>
-                <div style="font-size:10px;color:var(--text3);padding:3px 0;text-align:right;position:relative;z-index:1;">${bq.toLocaleString()}</div>
-              </div>`;
-            }
-            return rows;
-          })()}
-        </div>
+            requestAnimationFrame(drawDepth);
+          })();
+          <\/script>`;
+
+          return html;
+        })()}
       </div>
 
       <!-- OHLC + session stats -->
