@@ -1079,6 +1079,11 @@ header {
       Mutual Funds
     </button>
 
+    <button class="nav-tab" onclick="switchTab(this,'etf')">
+      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M0 0h1v15h15v1H0V0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07z"/></svg>
+      ETFs
+    </button>
+
     <button class="nav-tab" onclick="switchTab(this,'alerts')">
       <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/></svg>
       Price Alerts
@@ -1235,6 +1240,30 @@ header {
     </div>
 
 
+
+    <!-- ── NEWS STORIES BAR ── -->
+    <div id="storiesBar" style="padding:12px 12px 4px;display:flex;gap:10px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- ── STORY MODAL ── -->
+    <div id="storyModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);" onclick="if(event.target===this)closeStoryModal()">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(460px,94vw);background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+        <!-- Story header -->
+        <div id="storyModalHeader" style="padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+          <div id="storyModalIcon" style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;"></div>
+          <div>
+            <div id="storyModalTitle" style="font-weight:800;font-size:15px;"></div>
+            <div id="storyModalSub" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+          </div>
+          <button onclick="closeStoryModal()" style="margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;color:var(--text3);display:flex;align-items:center;justify-content:center;">×</button>
+        </div>
+        <!-- News items -->
+        <div id="storyModalBody" style="max-height:70vh;overflow-y:auto;padding:12px;">
+          <div style="text-align:center;padding:32px;"><div class="loading-spin"></div></div>
+        </div>
+      </div>
+    </div>
 
     <div class="feed-filters">
       <button class="filter-btn active" onclick="setFilter(this)">🔥 Hot</button>
@@ -1877,6 +1906,27 @@ header {
       <button onclick="showTVTab('chart',this)" id="tvtab_chart" style="padding:10px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text3);">🕯 Live Chart</button>
     </div>
     <div class="feed-scroll" id="tvBody" style="padding:0;"></div>
+  </div>
+
+  <!-- ETF TRACKER -->
+  <div class="main-feed" id="page-etf" style="display:none;flex-direction:column;">
+    <!-- Header -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">📊 ETF TRACKER</div>
+        <div style="font-size:11px;color:var(--text3);">Exchange Traded Funds · Live NAV · India + Global</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="etfCatBtns">
+        <button onclick="filterETF('all',this)" class="pcat-btn active-pcat">All</button>
+        <button onclick="filterETF('index',this)" class="pcat-btn">📈 Index</button>
+        <button onclick="filterETF('sectoral',this)" class="pcat-btn">🏭 Sectoral</button>
+        <button onclick="filterETF('gold',this)" class="pcat-btn">🥇 Gold/Silver</button>
+        <button onclick="filterETF('debt',this)" class="pcat-btn">💰 Debt</button>
+        <button onclick="filterETF('global',this)" class="pcat-btn">🌍 Global</button>
+      </div>
+    </div>
+    <div id="etfNavStatus" style="padding:6px 18px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);background:var(--bg3);flex-shrink:0;"></div>
+    <div class="feed-scroll" id="etfBody" style="padding:14px;"></div>
   </div>
 
   <!-- OPTIONS STRATEGIES PAGE -->
@@ -5714,7 +5764,7 @@ window.addEventListener('popstate', function(e) {
 function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','alerts','compare','pits','rooms','messages','tv','unlisted'];
+  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','etf','alerts','compare','pits','rooms','messages','tv','unlisted'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
@@ -5734,6 +5784,7 @@ function _switchTabSilent(btn, page) {
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='etf')        { renderETF(); fetchLiveETFs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
@@ -5768,7 +5819,7 @@ function switchTabMobile(btn, page) {
   _activePage = page;
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','alerts','compare','pits','rooms','messages','tv','unlisted'];
+  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','etf','alerts','compare','pits','rooms','messages','tv','unlisted'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = p === page ? 'flex' : 'none';
@@ -5789,6 +5840,7 @@ function switchTabMobile(btn, page) {
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='etf')        { renderETF(); fetchLiveETFs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
@@ -5800,7 +5852,7 @@ function switchTab(btn, page) {
   _activePage = page;
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','alerts','compare','pits','rooms','messages','tv','unlisted'];
+  const ALL_PAGES = ['feed','watchlist','paper','screener','trending','news','heatmap','optpnl','fii','econocal','ipo','earnings','mf','etf','alerts','compare','pits','rooms','messages','tv','unlisted'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
     if (!el) return;
@@ -5829,6 +5881,7 @@ function switchTab(btn, page) {
   if (page==='compare')   renderCompare();
   if (page==='econocal')  renderEcono();
   if (page==='mf')        { renderMF(); fetchLiveMFNavs(); }
+  if (page==='etf')        { renderETF(); fetchLiveETFs(); }
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
@@ -9516,6 +9569,7 @@ function onLiveDataUpdate(){
 function _mpInit() {
   updateAvatars();
   renderPosts();
+  loadStoriesBar();
   renderTrendingTags();
   renderChat();
   renderLeaderboard();
@@ -9673,6 +9727,273 @@ function renderUnlisted() {
 } else {
   _mpInit(); // DOM already ready
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// NEWS STORIES BAR — Top 4 market news shown as clickable story circles
+// ═══════════════════════════════════════════════════════════════════
+
+const STORY_TOPICS = [
+  { id:'markets',   icon:'📊', label:'Markets',   color:'#0070f3', query:'NSE Nifty stock market India' },
+  { id:'results',   icon:'📋', label:'Results',   color:'#00a854', query:'India quarterly earnings results 2026' },
+  { id:'rbi',       icon:'🏛️', label:'RBI/Macro', color:'#8b5cf6', query:'RBI monetary policy India economy 2026' },
+  { id:'global',    icon:'🌍', label:'Global',    color:'#f59e0b', query:'global stock market Fed economy 2026' },
+  { id:'crypto',    icon:'₿',  label:'Crypto',    color:'#f7931a', query:'Bitcoin cryptocurrency market 2026' },
+  { id:'ipo',       icon:'🚀', label:'IPO',       color:'#e53935', query:'India IPO listing 2026' },
+];
+
+let _storyCache = {};
+
+async function loadStoriesBar() {
+  const bar = document.getElementById('storiesBar');
+  if (!bar) return;
+  bar.innerHTML = STORY_TOPICS.map(t => `
+    <div onclick="openStory('${t.id}')" style="flex-shrink:0;cursor:pointer;text-align:center;width:62px;">
+      <div style="width:54px;height:54px;border-radius:50%;border:2.5px solid ${t.color};background:${t.color}18;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 5px;transition:transform 0.15s;box-shadow:0 2px 12px ${t.color}33;"
+           onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+        ${t.icon}
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--text2);font-family:'Space Mono',monospace;letter-spacing:0.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:60px;">${t.label}</div>
+    </div>`).join('');
+}
+
+async function openStory(topicId) {
+  const topic = STORY_TOPICS.find(t => t.id === topicId);
+  if (!topic) return;
+
+  const modal    = document.getElementById('storyModal');
+  const iconEl   = document.getElementById('storyModalIcon');
+  const titleEl  = document.getElementById('storyModalTitle');
+  const subEl    = document.getElementById('storyModalSub');
+  const bodyEl   = document.getElementById('storyModalBody');
+
+  iconEl.textContent    = topic.icon;
+  iconEl.style.background = topic.color + '22';
+  iconEl.style.border   = '2px solid ' + topic.color;
+  titleEl.textContent   = topic.label + ' — Top Stories';
+  subEl.textContent     = 'Most important news right now';
+  bodyEl.innerHTML      = '<div style="text-align:center;padding:32px;"><div class="loading-spin"></div><div style="margin-top:10px;font-size:11px;color:var(--text3);">Fetching top stories…</div></div>';
+  modal.style.display   = 'block';
+  document.body.style.overflow = 'hidden';
+
+  // Use cache (5 min)
+  if (_storyCache[topicId] && Date.now() - _storyCache[topicId].ts < 300000) {
+    renderStoryItems(_storyCache[topicId].items, topic, bodyEl);
+    return;
+  }
+
+  try {
+    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(topic.query)}&hl=en-IN&gl=IN&ceid=IN:en`;
+    const text   = await fetchViaProxy(rssUrl);
+    if (!text) throw new Error('proxy failed');
+    const xml    = new DOMParser().parseFromString(text, 'text/xml');
+    const items  = Array.from(xml.querySelectorAll('item')).slice(0, 4).map(item => ({
+      title:  item.querySelector('title')?.textContent?.trim() || '',
+      link:   item.querySelector('link')?.textContent?.trim()  || '#',
+      date:   item.querySelector('pubDate')?.textContent?.trim() || '',
+      source: item.querySelector('source')?.textContent?.trim() || 'Google News',
+    })).filter(i => i.title.length > 10);
+
+    if (!items.length) throw new Error('empty');
+    _storyCache[topicId] = { ts: Date.now(), items };
+    renderStoryItems(items, topic, bodyEl);
+  } catch(e) {
+    bodyEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text3);">
+      <div style="font-size:28px;margin-bottom:8px;">📡</div>
+      <div style="font-size:13px;font-weight:600;">Could not load stories</div>
+      <div style="font-size:11px;margin-top:4px;">Check your connection</div>
+    </div>`;
+  }
+}
+
+function renderStoryItems(items, topic, bodyEl) {
+  bodyEl.innerHTML = items.map((item, i) => {
+    const ago = _timeAgo(item.date);
+    return `<a href="${item.link}" target="_blank" rel="noopener" style="display:block;text-decoration:none;padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:8px;background:var(--bg3);transition:all 0.15s;"
+         onmouseover="this.style.borderColor='${topic.color}';this.style.background='${topic.color}0d'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:8px;background:${topic.color}22;border:1px solid ${topic.color}44;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;">${i + 1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:13px;line-height:1.4;color:var(--text);margin-bottom:5px;">${item.title}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;color:var(--text3);">${item.source}</span>
+            <span style="font-size:10px;color:var(--text3);">·</span>
+            <span style="font-size:10px;color:var(--text3);">${ago}</span>
+            <span style="margin-left:auto;font-size:10px;color:${topic.color};font-weight:600;">Read ↗</span>
+          </div>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function closeStoryModal() {
+  document.getElementById('storyModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function _timeAgo(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  } catch(e) { return ''; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ETF TRACKER — Live NAV from AMFI + yfinance
+// ═══════════════════════════════════════════════════════════════════
+
+const ETF_LIST = [
+  // ── Index ETFs (NSE) ──
+  { id:'120503',  sym:'NIFTYBEES',  name:'Nippon Nifty BeES',           cat:'index',    amc:'Nippon MF',   underlying:'Nifty 50',            cur:'₹', nav:null, chg:null },
+  { id:'120218',  sym:'BANKBEES',   name:'Nippon Bank BeES',            cat:'index',    amc:'Nippon MF',   underlying:'Bank Nifty',          cur:'₹', nav:null, chg:null },
+  { id:'120716',  sym:'AXISBNKETF', name:'Axis Bank Nifty ETF',         cat:'index',    amc:'Axis MF',     underlying:'Bank Nifty',          cur:'₹', nav:null, chg:null },
+  { id:'118989',  sym:'ICICIB22',   name:'ICICI Pru Nifty Next 50 ETF', cat:'index',    amc:'ICICI Pru',   underlying:'Nifty Next 50',       cur:'₹', nav:null, chg:null },
+  { id:'120828',  sym:'HDFCNIFTY',  name:'HDFC Nifty 50 ETF',           cat:'index',    amc:'HDFC MF',     underlying:'Nifty 50',            cur:'₹', nav:null, chg:null },
+  { id:'120465',  sym:'UTINIFTETF', name:'UTI Nifty 50 ETF',            cat:'index',    amc:'UTI MF',      underlying:'Nifty 50',            cur:'₹', nav:null, chg:null },
+  { id:'120847',  sym:'MAFANG',     name:'Mirae FANG+ ETF',             cat:'global',   amc:'Mirae Asset', underlying:'NYSE FANG+',          cur:'₹', nav:null, chg:null },
+  // ── Sectoral ETFs ──
+  { id:'118834',  sym:'ITBEES',     name:'Nippon India IT ETF',         cat:'sectoral', amc:'Nippon MF',   underlying:'Nifty IT',            cur:'₹', nav:null, chg:null },
+  { id:'120219',  sym:'PHARMABEES', name:'Nippon India Pharma ETF',     cat:'sectoral', amc:'Nippon MF',   underlying:'Nifty Pharma',        cur:'₹', nav:null, chg:null },
+  { id:'100016',  sym:'AUTOBEES',   name:'Nippon Auto ETF',             cat:'sectoral', amc:'Nippon MF',   underlying:'Nifty Auto',          cur:'₹', nav:null, chg:null },
+  { id:'130503',  sym:'INFRABEES',  name:'Nippon Infra BeES',           cat:'sectoral', amc:'Nippon MF',   underlying:'Nifty Infra',         cur:'₹', nav:null, chg:null },
+  // ── Gold / Silver ETFs ──
+  { id:'118778',  sym:'GOLDBEES',   name:'Nippon Gold BeES',            cat:'gold',     amc:'Nippon MF',   underlying:'Gold (domestic)',     cur:'₹', nav:null, chg:null },
+  { id:'119598',  sym:'HDFCGOLD',   name:'HDFC Gold ETF',               cat:'gold',     amc:'HDFC MF',     underlying:'Physical Gold',       cur:'₹', nav:null, chg:null },
+  { id:'118825',  sym:'SILVERBEES', name:'Nippon Silver ETF',           cat:'gold',     amc:'Nippon MF',   underlying:'Silver (domestic)',   cur:'₹', nav:null, chg:null },
+  // ── Debt ETFs ──
+  { id:'119270',  sym:'LICNETFN50', name:'LIC Nifty Liquid ETF',        cat:'debt',     amc:'LIC MF',      underlying:'Nifty 1D Rate',       cur:'₹', nav:null, chg:null },
+  { id:'119775',  sym:'CPSEETF',    name:'SBI CPSE ETF',                cat:'debt',     amc:'SBI MF',      underlying:'Nifty CPSE',          cur:'₹', nav:null, chg:null },
+  // ── Global ETFs (India-listed) ──
+  { id:'120684',  sym:'HNGSNGBEES', name:'Nippon Hang Seng BeES',       cat:'global',   amc:'Nippon MF',   underlying:'Hang Seng Index',     cur:'₹', nav:null, chg:null },
+  { id:'125354',  sym:'MON100',     name:'Mirae Nasdaq 100 ETF',        cat:'global',   amc:'Mirae Asset', underlying:'Nasdaq 100',          cur:'₹', nav:null, chg:null },
+];
+
+// Deduplicate
+const _etfSeen = new Set();
+const ETF_LIST_UNIQUE = ETF_LIST.filter(f => {
+  const k = f.sym;
+  if (_etfSeen.has(k)) return false;
+  _etfSeen.add(k);
+  return true;
+});
+
+let _etfFilter = 'all', _etfFetched = false, _etfFetching = false, _etfLastFetch = 0;
+const _ETF_CACHE_MS = 4 * 60 * 60 * 1000;
+
+function filterETF(cat, btn) {
+  _etfFilter = cat;
+  document.querySelectorAll('#etfCatBtns .pcat-btn').forEach(b => b.classList.remove('active-pcat'));
+  btn?.classList.add('active-pcat');
+  renderETF();
+}
+
+async function fetchLiveETFs(force = false) {
+  if (_etfFetching) return;
+  if (!force && _etfFetched && Date.now() - _etfLastFetch < _ETF_CACHE_MS) return;
+  _etfFetching = true;
+
+  const statusEl = document.getElementById('etfNavStatus');
+  if (statusEl) statusEl.innerHTML = `<span style="color:var(--gold);">⏳ Fetching live ETF data from AMFI India…</span>`;
+
+  let loaded = 0;
+  await Promise.allSettled(ETF_LIST_UNIQUE.map(async f => {
+    try {
+      const r = await fetch(`https://api.mfapi.in/mf/${f.id}`, { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) return;
+      const j = await r.json();
+      if (!j?.data?.length) return;
+      const data = j.data;
+      const nav  = parseFloat(data[0].nav);
+      const prev = data.length > 1 ? parseFloat(data[1].nav) : nav;
+      f.nav     = nav;
+      f.navDate = data[0].date;
+      f.chg     = prev ? +((nav - prev) / prev * 100).toFixed(2) : 0;
+      f.navChg  = +(nav - prev).toFixed(3);
+      // 1Y / 3Y returns
+      f.ret1y   = data[252]  ? +((nav - parseFloat(data[252].nav))  / parseFloat(data[252].nav)  * 100).toFixed(1) : null;
+      f.ret3y   = data[756]  ? +((nav - parseFloat(data[756].nav))  / parseFloat(data[756].nav)  * 100).toFixed(1) : null;
+      if (j.meta?.scheme_name) f.fullName = j.meta.scheme_name;
+      loaded++;
+      if (loaded % 3 === 0) renderETF();
+    } catch(e) {}
+  }));
+
+  _etfFetched = loaded > 3;
+  _etfLastFetch = Date.now();
+  _etfFetching = false;
+
+  if (statusEl) {
+    const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    statusEl.innerHTML = `Source: <b>AMFI India</b> via <b>mfapi.in</b> · ${loaded}/${ETF_LIST_UNIQUE.length} ETFs loaded · <span style="color:var(--green);">✓ Live</span> · ${now} IST`;
+  }
+  renderETF();
+}
+
+function renderETF() {
+  const el = document.getElementById('etfBody'); if (!el) return;
+  const funds = _etfFilter === 'all' ? ETF_LIST_UNIQUE : ETF_LIST_UNIQUE.filter(f => f.cat === _etfFilter);
+
+  const catColor = { index:'var(--accent)', sectoral:'var(--accent2)', gold:'var(--gold)', debt:'var(--green)', global:'#8b5cf6' };
+  const catLabel = { index:'Index', sectoral:'Sectoral', gold:'Gold/Silver', debt:'Debt', global:'Global' };
+
+  const fmtNav = f => {
+    if (!f.nav) return '<span style="color:var(--text3);font-size:10px;">Loading…</span>';
+    const c = f.chg >= 0 ? 'var(--green)' : 'var(--red)';
+    return `₹${f.nav.toFixed(3)} <span style="font-size:10px;color:${c};">${f.chg >= 0 ? '▲' : '▼'}${Math.abs(f.chg).toFixed(2)}%</span>`;
+  };
+  const fmtRet = v => {
+    if (v == null) return '<span style="color:var(--text3);">—</span>';
+    const c = v >= 15 ? 'var(--green)' : v >= 5 ? 'var(--accent)' : v >= 0 ? 'var(--text)' : 'var(--red)';
+    return `<span style="color:${c};font-weight:800;">${v >= 0 ? '+' : ''}${v}%</span>`;
+  };
+
+  el.innerHTML = funds.map(f => {
+    const cc = catColor[f.cat] || 'var(--accent)';
+    const cl = catLabel[f.cat] || f.cat;
+    return `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;transition:border-color 0.15s,box-shadow 0.15s;"
+         onmouseover="this.style.borderColor='${cc}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow=''">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+        <!-- Symbol badge -->
+        <div style="width:42px;height:42px;border-radius:8px;background:${cc}18;border:1px solid ${cc}44;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:${cc};font-family:'Space Mono',monospace;flex-shrink:0;text-align:center;letter-spacing:0;">${f.sym.slice(0,6)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:13px;margin-bottom:2px;">${f.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:9px;color:var(--text3);">${f.amc}</span>
+            <span style="font-size:9px;padding:1px 7px;border-radius:10px;background:${cc}18;color:${cc};font-weight:700;">${cl}</span>
+            <span style="font-size:9px;color:var(--text3);">↳ ${f.underlying}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-weight:800;font-size:14px;">${fmtNav(f)}</div>
+          <div style="font-size:8px;color:var(--text3);margin-top:2px;">NAV${f.navDate ? ' · ' + f.navDate : ''}</div>
+        </div>
+      </div>
+      <!-- Returns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">1Y RETURN</div>
+          <div style="font-size:14px;">${fmtRet(f.ret1y)}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:8px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1px;margin-bottom:3px;">3Y RETURN</div>
+          <div style="font-size:14px;">${fmtRet(f.ret3y)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Auto-refresh ETFs every 4h when page is open
+setInterval(() => {
+  if (document.getElementById('page-etf')?.style.display !== 'none') fetchLiveETFs();
+}, _ETF_CACHE_MS);
 
 // ═══════════════════════════════════════════════════════════════════
 // MARKET MOOD INDEX (MMI) — Computed from live market data
