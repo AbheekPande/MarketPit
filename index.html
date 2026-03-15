@@ -8137,39 +8137,55 @@ setInterval(() => {
 // ═══════════════════════════════════════════════════════════════════
 function renderCompare(){
   const el=document.getElementById('compareBody'); if(!el) return;
-  const syms=liveStocks.filter(s=>s.price&&!s.currency).map(s=>s.sym).sort();
+  // Use STATIC_STOCKS as base (always available), enriched with live prices
+  const syms = STATIC_STOCKS.map(s=>s.sym).sort();
   ['cmp_s1','cmp_s2','cmp_s3'].forEach((id,i)=>{
     const sel=document.getElementById(id); if(!sel) return;
     const prev=sel.value;
-    sel.innerHTML=`<option value="">— Stock ${i+1} —</option>`+syms.map(s=>`<option value="${s}">${s}</option>`).join('');
+    sel.innerHTML='<option value="">— Stock '+(i+1)+' —</option>'+syms.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
     if(prev && syms.includes(prev)) sel.value=prev;
     else { if(i===0) sel.value='RELIANCE'; if(i===1) sel.value='TCS'; if(i===2) sel.value='HDFCBANK'; }
   });
   const picks=['cmp_s1','cmp_s2','cmp_s3'].map(id=>document.getElementById(id)?.value).filter(Boolean);
-  if(!picks.length){ el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text3);">Select stocks above to compare.</div>`; return; }
-  const stocks=picks.map(sym=>{ const s=liveStocks.find(x=>x.sym===sym)||{}; const tech=window.STATIC_TECH?.[sym]||{}; return{sym,...s,...tech}; });
-  const rows=[
-    ['Price',s=>s.price?'₹'+parseFloat(s.price).toLocaleString('en-IN',{maximumFractionDigits:2}):'—',null],
-    ['Change',s=>s.chg||'—',s=>parseFloat(s.chg)>=0],
-    ['RSI',s=>s.rsi?s.rsi.toFixed(1):'—',s=>s.rsi&&s.rsi>50],
-    ['Signal',s=>s.overall||'—',s=>(s.overall||'').includes('BUY')],
-    ['MACD',s=>s.macd_bullish!=null?(s.macd_bullish?'Bullish':'Bearish'):'—',s=>s.macd_bullish],
-    ['Above MA50',s=>s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):'—',s=>s.above_ma50],
-    ['Above MA200',s=>s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):'—',s=>s.above_ma200],
-    ['52W High',s=>s.high_52w?'₹'+s.high_52w.toLocaleString('en-IN'):'—',null],
-    ['52W Low',s=>s.low_52w?'₹'+s.low_52w.toLocaleString('en-IN'):'—',null],
-    ['Sector',s=>s.sector||'—',null],
+  if(!picks.length){ el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);">Select stocks above to compare.</div>'; return; }
+
+  const getStock = sym => {
+    const live   = liveStocks.find(x=>x.sym===sym) || {};
+    const stat   = STATIC_STOCKS.find(x=>x.sym===sym) || {};
+    return Object.assign({}, stat, live);
+  };
+  const stocks = picks.map(sym => getStock(sym));
+  const fmt = (v,d) => v!=null&&v!==''?parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:d||2}):'—';
+
+  var rows=[
+    ['Price',      function(s){ return s.price?'₹'+fmt(s.price):'—'; },                        null],
+    ['Change',     function(s){ return s.chg||'—'; },                                           function(s){ return parseFloat(s.chg)>=0; }],
+    ['RSI',        function(s){ return s.rsi?s.rsi.toFixed(1):'—'; },                          function(s){ return s.rsi&&s.rsi>50; }],
+    ['Signal',     function(s){ return s.overall||'—'; },                                       function(s){ return (s.overall||'').includes('BUY'); }],
+    ['MACD',       function(s){ return s.macd_bullish!=null?(s.macd_bullish?'Bullish':'Bearish'):'—'; }, function(s){ return s.macd_bullish; }],
+    ['Above MA50', function(s){ return s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):'—'; }, function(s){ return s.above_ma50; }],
+    ['Above MA200',function(s){ return s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):'—'; },function(s){ return s.above_ma200; }],
+    ['52W High',   function(s){ return s.high_52w?'₹'+fmt(s.high_52w):'—'; },                  null],
+    ['52W Low',    function(s){ return s.low_52w?'₹'+fmt(s.low_52w):'—'; },                    null],
+    ['Sector',     function(s){ return s.sector||'—'; },                                         null],
+    ['Name',       function(s){ return s.name||'—'; },                                           null],
   ];
-  el.innerHTML=`<div style="overflow-x:auto;padding:16px;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
-    <thead><tr style="border-bottom:2px solid var(--border);">
-      <th style="padding:12px 14px;text-align:left;color:var(--text3);font-family:'Space Mono',monospace;font-size:10px;">METRIC</th>
-      ${stocks.map(s=>`<th style="padding:12px 14px;text-align:center;font-size:15px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;">${s.sym}</th>`).join('')}
-    </tr></thead>
-    <tbody>${rows.map(([label,val,isPos])=>`<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      <td style="padding:11px 14px;font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">${label}</td>
-      ${stocks.map(s=>{ const v=val(s); const pos=isPos?isPos(s):null; return`<td style="padding:11px 14px;text-align:center;font-weight:700;color:${pos===null?'var(--text)':pos?'var(--green)':'var(--red)'};">${v}</td>`; }).join('')}
-    </tr>`).join('')}
-    </tbody></table></div>`;
+
+  var thead = '<thead><tr style="border-bottom:2px solid var(--border);">'
+    + '<th style="padding:12px 14px;text-align:left;color:var(--text3);font-family:Space Mono,monospace;font-size:10px;">METRIC</th>'
+    + stocks.map(function(s){ return '<th style="padding:12px 14px;text-align:center;font-size:15px;letter-spacing:2px;font-weight:800;">'+s.sym+'</th>'; }).join('')
+    + '</tr></thead>';
+
+  var tbody = '<tbody>' + rows.map(function(row){
+    var label=row[0], val=row[1], isPos=row[2];
+    var tr = '<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background=var_bg3" onmouseout="this.style.background=empty"><td style="padding:11px 14px;font-size:11px;color:var(--text3);">'+label+'</td>';
+    tr = tr.replace('var_bg3', "'var(--bg3)'").replace('empty', "''");
+    return tr
+      + stocks.map(function(s){ var v=val(s); var pos=isPos?isPos(s):null; var col=pos===null?'var(--text)':pos?'var(--green)':'var(--red)'; return '<td style="padding:11px 14px;text-align:center;font-weight:700;color:'+col+';">'+v+'</td>'; }).join('')
+      + '</tr>';
+  }).join('') + '</tbody>';
+
+  el.innerHTML='<div style="overflow-x:auto;padding:16px;"><table style="width:100%;border-collapse:collapse;font-size:13px;">'+thead+tbody+'</table></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════════
