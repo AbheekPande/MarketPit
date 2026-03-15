@@ -220,6 +220,8 @@ FII_CACHE_TTL = 60 * 60  # refresh every 1 hour
 # ── Earnings Cache ──
 _earnings_cache = {"data": [], "last_updated": None}
 _earnings_lock  = threading.Lock()
+_ipo_cache      = {"data": None, "last_updated": None}
+_ipo_lock       = threading.Lock()
 EARNINGS_CACHE_TTL = 60 * 60 * 6  # refresh every 6 hours
 
 # ── NSE request headers (required to avoid 403) ──
@@ -1136,135 +1138,316 @@ def api_earnings():
     })
 
 
+
+def fetch_live_ipo_data():
+    """
+    Fetch live IPO data from multiple sources.
+    1. BSE IPO listing page (api.bseindia.com)
+    2. NSE upcoming IPOs via allorigins proxy
+    3. Chittorgarh scrape
+    Returns: {upcoming:[], open:[], allotment:[], listed:[]}
+    """    """
+    Fetch live IPO data from multiple sources.
+    1. BSE IPO listing page (api.bseindia.com)
+    2. NSE upcoming IPOs via allorigins proxy
+    3. Chittorgarh scrape
+    Returns: {upcoming:[], open:[], allotment:[], listed:[]}
+    """
+    if req_lib is None:
+        return None
+
+    from datetime import datetime as _dt, timedelta as _td, date as _date
+    from bs4 import BeautifulSoup
+
+    result = {"upcoming": [], "open": [], "allotment": [], "listed": []}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/html, */*",
+        "Accept-Language": "en-IN,en;q=0.9",
+    }
+
+    # ── Source 1: BSE IPO API ──────────────────────────────────────────────
+    try:
+        today   = _date.today()
+        from_dt = (today - _td(days=30)).strftime("%Y%m%d")
+        to_dt   = (today + _td(days=90)).strftime("%Y%m%d")
+
+        # BSE new listings
+        bse_listed_url = "https://api.bseindia.com/BseIndiaAPI/api/IPOListingData/w?strType=&strFlag=&ddlIssueType=IPO&ddlStatus=&ddlExchangeType="
+        r = req_lib.get(bse_listed_url, headers={**headers,
+            "Referer": "https://www.bseindia.com/markets/PublicIssues/IPOListingDt.aspx",
+            "Origin": "https://www.bseindia.com",
+        }, timeout=10)
+        if r.status_code == 200:
+            j = r.json()
+            rows = j.get("Table") or j.get("Table1") or (j if isinstance(j, list) else [])
+            for row in rows[:20]:
+                try:
+                    name       = str(row.get("SECURITY_NAME") or row.get("scrip_name") or "").strip()
+                    issue_price= str(row.get("ISSUE_PRICE") or row.get("issue_price") or "—")
+                    list_price = str(row.get("LISTING_PRICE") or row.get("listing_price") or "—")
+                    list_date  = str(row.get("LISTING_DATE") or row.get("listing_date") or "—")
+                    current    = str(row.get("CLOSE_PRICE") or row.get("close_price") or list_price)
+                    # Calculate gain
+                    gain = "—"
+                    try:
+                        ip = float(str(issue_price).replace("₹","").replace(",",""))
+                        lp = float(str(list_price).replace("₹","").replace(",",""))
+                        if ip > 0:
+                            g = ((lp - ip) / ip) * 100
+                            gain = f"{'+'if g>=0 else ''}{g:.1f}%"
+                    except: pass
+                    if name:
+                        result["listed"].append({
+                            "name": name,
+                            "listDate": list_date,
+                            "issuePrice": f"₹{issue_price}" if not issue_price.startswith("₹") else issue_price,
+                            "listPrice":  f"₹{list_price}"  if not list_price.startswith("₹")  else list_price,
+                            "gain": gain,
+                            "current": f"₹{current}" if not current.startswith("₹") else current,
+                        })
+                except: continue
+        if result["listed"]:
+            print(f"  [IPO] ✓ BSE listed: {len(result['listed'])} IPOs")
+
+        # BSE upcoming / open IPOs
+        bse_upcoming_url = "https://api.bseindia.com/BseIndiaAPI/api/IPOListingData/w?strType=&strFlag=U&ddlIssueType=IPO&ddlStatus=&ddlExchangeType="
+        r2 = req_lib.get(bse_upcoming_url, headers={**headers,
+            "Referer": "https://www.bseindia.com/markets/PublicIssues/IPOListingDt.aspx",
+            "Origin": "https://www.bseindia.com",
+        }, timeout=10)
+        if r2.status_code == 200:
+            j2   = r2.json()
+            rows2= j2.get("Table") or j2.get("Table1") or (j2 if isinstance(j2, list) else [])
+            for row in rows2[:20]:
+                try:
+                    name     = str(row.get("SECURITY_NAME") or row.get("scrip_name") or "").strip()
+                    open_dt  = str(row.get("ISSUE_OPEN_DATE")  or row.get("open_date")  or "TBA")
+                    close_dt = str(row.get("ISSUE_CLOSE_DATE") or row.get("close_date") or "—")
+                    price    = str(row.get("ISSUE_PRICE") or row.get("issue_price") or "TBA")
+                    size     = str(row.get("ISSUE_SIZE")  or row.get("issue_size")  or "—")
+                    # Determine if currently open
+                    is_open  = False
+                    try:
+                        od = _dt.strptime(open_dt, "%d/%m/%Y") if "/" in open_dt else _dt.strptime(open_dt, "%d-%m-%Y")
+                        cd = _dt.strptime(close_dt, "%d/%m/%Y") if "/" in close_dt else _dt.strptime(close_dt, "%d-%m-%Y")
+                        is_open = od.date() <= today <= cd.date()
+                    except: pass
+
+                    entry = {
+                        "name": name, "open": open_dt, "close": close_dt,
+                        "price": f"₹{price}" if price != "TBA" and not price.startswith("₹") else price,
+                        "size": f"₹{size} Cr" if size not in ("—","TBA") and not size.startswith("₹") else size,
+                        "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐",
+                        "sector": "—", "lot": "—", "minInvest": "—",
+                    }
+                    if is_open:
+                        result["open"].append(entry)
+                    else:
+                        result["upcoming"].append(entry)
+                except: continue
+        if result["open"] or result["upcoming"]:
+            print(f"  [IPO] ✓ BSE upcoming/open: {len(result['open'])} open, {len(result['upcoming'])} upcoming")
+
+    except Exception as e:
+        print(f"  [IPO] BSE API: {e}")
+
+    # ── Source 2: NSE IPO via allorigins ──────────────────────────────────
+    try:
+        nse_ipo_url = "https://www.nseindia.com/api/allIpo"
+        proxy = "https://api.allorigins.win/get?url=" + req_lib.utils.quote(nse_ipo_url, safe="")
+        r3 = req_lib.get(proxy, timeout=12)
+        if r3.status_code == 200:
+            contents = r3.json().get("contents","")
+            if contents and len(contents) > 100:
+                nse_j = json.loads(contents)
+                for section, key in [("upcoming","upcoming"), ("open","current"), ("listed","past")]:
+                    rows = nse_j.get(key, [])
+                    if not rows or result[section]:  # skip if BSE already filled this
+                        continue
+                    for row in rows[:15]:
+                        try:
+                            name      = row.get("companyName","").strip()
+                            open_dt   = row.get("bidOpenDate","TBA")
+                            close_dt  = row.get("bidCloseDate","—")
+                            price_raw = row.get("priceRange","TBA")
+                            size_raw  = row.get("issueSize","—")
+                            list_dt   = row.get("listingDate","—")
+                            issue_pr  = row.get("issuePrice","—")
+                            list_pr   = row.get("listingPrice","—")
+
+                            if section == "listed":
+                                gain = "—"
+                                try:
+                                    ip = float(str(issue_pr).replace("₹","").replace(",",""))
+                                    lp = float(str(list_pr).replace("₹","").replace(",",""))
+                                    if ip > 0:
+                                        g  = ((lp-ip)/ip)*100
+                                        gain = f"{'+'if g>=0 else ''}{g:.1f}%"
+                                except: pass
+                                result["listed"].append({
+                                    "name": name, "listDate": list_dt,
+                                    "issuePrice": issue_pr, "listPrice": list_pr,
+                                    "gain": gain, "current": list_pr,
+                                })
+                            else:
+                                result[section].append({
+                                    "name": name, "open": open_dt, "close": close_dt,
+                                    "price": price_raw, "size": size_raw,
+                                    "gmp":"—","gmpPct":"—","rating":"⭐⭐⭐",
+                                    "sector":"—","lot":"—","minInvest":"—",
+                                })
+                        except: continue
+        if result["upcoming"] or result["listed"]:
+            print(f"  [IPO] ✓ NSE allIpo proxy: total upcoming={len(result['upcoming'])} listed={len(result['listed'])}")
+    except Exception as e:
+        print(f"  [IPO] NSE proxy: {e}")
+
+    # ── Source 3: Chittorgarh scrape ──────────────────────────────────────
+    try:
+        cht_headers = {**headers, "Referer": "https://www.chittorgarh.com/"}
+
+        # Open IPOs
+        if not result["open"]:
+            r4 = req_lib.get("https://www.chittorgarh.com/ipo/ipo_subscription_status_live_day_wise.asp",
+                             headers=cht_headers, timeout=10)
+            if r4.status_code == 200:
+                soup = BeautifulSoup(r4.text, "html.parser")
+                for table in soup.find_all("table"):
+                    for tr in table.find_all("tr")[1:]:
+                        tds = [td.get_text(strip=True) for td in tr.find_all("td")]
+                        name_tag = tr.find("a")
+                        name = (name_tag.get_text(strip=True) if name_tag else tds[0] if tds else "").strip()
+                        if name and len(name) > 2 and len(tds) >= 3:
+                            result["open"].append({
+                                "name": name, "open": tds[1] if len(tds)>1 else "—",
+                                "close": tds[2] if len(tds)>2 else "—",
+                                "price": tds[3] if len(tds)>3 else "—",
+                                "subscribed": tds[4] if len(tds)>4 else "—",
+                                "gmp":"—","gmpPct":"—","size":"—","sector":"—","lot":"—","minInvest":"—",
+                            })
+
+        # Upcoming IPOs
+        if not result["upcoming"]:
+            r5 = req_lib.get("https://www.chittorgarh.com/ipo/upcoming-ipo-list-in-india.asp",
+                             headers=cht_headers, timeout=10)
+            if r5.status_code == 200:
+                soup5 = BeautifulSoup(r5.text, "html.parser")
+                for table in soup5.find_all("table"):
+                    for tr in table.find_all("tr")[1:20]:
+                        tds = [td.get_text(strip=True) for td in tr.find_all("td")]
+                        name_tag = tr.find("a")
+                        name = (name_tag.get_text(strip=True) if name_tag else tds[0] if tds else "").strip()
+                        if name and len(name) > 2:
+                            result["upcoming"].append({
+                                "name": name,
+                                "open": tds[1] if len(tds)>1 else "TBA",
+                                "close": tds[2] if len(tds)>2 else "—",
+                                "price": tds[3] if len(tds)>3 else "TBA",
+                                "size": tds[4] if len(tds)>4 else "—",
+                                "gmp":"—","gmpPct":"—","rating":"⭐⭐⭐","sector":"—","lot":"—","minInvest":"—",
+                            })
+
+        # Listed / GMP
+        if not result["listed"]:
+            r6 = req_lib.get("https://www.chittorgarh.com/ipo/ipo_performance_tracker_listed_ipo.asp",
+                             headers=cht_headers, timeout=10)
+            if r6.status_code == 200:
+                soup6 = BeautifulSoup(r6.text, "html.parser")
+                for table in soup6.find_all("table"):
+                    for tr in table.find_all("tr")[1:15]:
+                        tds = [td.get_text(strip=True) for td in tr.find_all("td")]
+                        name_tag = tr.find("a")
+                        name = (name_tag.get_text(strip=True) if name_tag else tds[0] if tds else "").strip()
+                        if name and len(name) > 2 and len(tds) >= 3:
+                            result["listed"].append({
+                                "name": name,
+                                "listDate": tds[1] if len(tds)>1 else "—",
+                                "issuePrice": tds[2] if len(tds)>2 else "—",
+                                "listPrice": tds[3] if len(tds)>3 else "—",
+                                "gain": tds[-1] if tds else "—",
+                                "current": tds[4] if len(tds)>4 else "—",
+                            })
+
+        if any(result.values()):
+            print(f"  [IPO] ✓ Chittorgarh: open={len(result['open'])} upcoming={len(result['upcoming'])} listed={len(result['listed'])}")
+
+    except Exception as e:
+        print(f"  [IPO] Chittorgarh: {e}")
+
+    # Check if we got anything useful
+    total = sum(len(v) for v in result.values())
+    if total == 0:
+        return None
+
+    result["last_updated"] = _dt.now().isoformat()
+    result["source"] = "BSE + NSE + Chittorgarh (live)"
+    return result
+
+
 @app.route("/api/ipo")
 def api_ipo():
-    """
-    Live IPO data — scraped from Chittorgarh (most reliable Indian IPO site).
-    Falls back to current static data if scraping fails.
-    """
-    import datetime as _dt
-    from datetime import date as _date
+    """Live IPO data — BSE API, NSE proxy, Chittorgarh scrape. Cache: 30 min."""
+    from datetime import datetime as _dt2
 
-    today = _dt.date.today()
 
-    # ── Rich static fallback — current as of Mar 2026 ──
+@app.route("/api/ipo")
+def api_ipo():
+    """Live IPO data — BSE API, NSE proxy, Chittorgarh scrape. Cache: 30 min."""
+    # ── Static fallback ─────────────────────────────────────────────────
     static_data = {
         "upcoming": [
-            {"name": "Ather Energy", "open": "28 Apr 2026", "close": "30 Apr 2026", "price": "₹304–321", "size": "₹2,981 Cr", "gmp": "₹12", "gmpPct": "+3.7%", "rating": "⭐⭐⭐⭐", "sector": "EV/Auto", "lot": "46", "minInvest": "₹14,766"},
-            {"name": "Hexaware Technologies", "open": "12 Feb 2026", "close": "14 Feb 2026", "price": "₹674–708", "size": "₹8,750 Cr", "gmp": "₹45", "gmpPct": "+6.4%", "rating": "⭐⭐⭐⭐", "sector": "IT Services", "lot": "21", "minInvest": "₹14,868"},
-            {"name": "Truhome Finance", "open": "Apr 2026", "close": "—", "price": "TBA", "size": "₹3,000 Cr", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐", "sector": "NBFC", "lot": "TBA", "minInvest": "TBA"},
-            {"name": "PhonePe", "open": "2026", "close": "—", "price": "TBA", "size": "₹15,000 Cr", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐⭐", "sector": "Fintech", "lot": "TBA", "minInvest": "TBA"},
-            {"name": "Reliance Jio", "open": "2026", "close": "—", "price": "TBA", "size": "TBA", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐⭐", "sector": "Telecom", "lot": "TBA", "minInvest": "TBA"},
-            {"name": "NSDL", "open": "2026", "close": "—", "price": "TBA", "size": "₹3,000 Cr", "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐⭐", "sector": "Financial Services", "lot": "TBA", "minInvest": "TBA"},
+            {"name":"Ather Energy","open":"28 Apr 2026","close":"30 Apr 2026","price":"₹304–321","size":"₹2,981 Cr","gmp":"₹12","gmpPct":"+3.7%","rating":"⭐⭐⭐⭐","sector":"EV/Auto","lot":"46","minInvest":"₹14,766"},
+            {"name":"Truhome Finance","open":"Apr 2026","close":"—","price":"TBA","size":"₹3,000 Cr","gmp":"—","gmpPct":"—","rating":"⭐⭐⭐⭐","sector":"NBFC","lot":"TBA","minInvest":"TBA"},
+            {"name":"PhonePe","open":"2026","close":"—","price":"TBA","size":"₹15,000 Cr","gmp":"—","gmpPct":"—","rating":"⭐⭐⭐⭐⭐","sector":"Fintech","lot":"TBA","minInvest":"TBA"},
+            {"name":"Reliance Jio","open":"2026","close":"—","price":"TBA","size":"TBA","gmp":"—","gmpPct":"—","rating":"⭐⭐⭐⭐⭐","sector":"Telecom","lot":"TBA","minInvest":"TBA"},
+            {"name":"NSDL","open":"2026","close":"—","price":"TBA","size":"₹3,000 Cr","gmp":"—","gmpPct":"—","rating":"⭐⭐⭐⭐","sector":"Financial Services","lot":"TBA","minInvest":"TBA"},
         ],
         "open": [],
         "allotment": [
-            {"name": "Schbang Digital Solutions", "date": "17 Mar 2026", "price": "₹216", "listPrice": "19 Mar 2026", "gain": "Pending", "status": "Allotment Done"},
-            {"name": "Innovision Commerce", "date": "13 Mar 2026", "price": "₹548", "listPrice": "17 Mar 2026", "gain": "Pending", "status": "Allotment Done"},
-            {"name": "Rajputana Stainless", "date": "12 Mar 2026", "price": "₹122", "listPrice": "16 Mar 2026", "gain": "Pending", "status": "Allotment Done"},
+            {"name":"Schbang Digital Solutions","date":"17 Mar 2026","price":"₹216","listPrice":"19 Mar 2026","gain":"Pending","status":"Allotment Done"},
+            {"name":"Innovision Commerce","date":"13 Mar 2026","price":"₹548","listPrice":"17 Mar 2026","gain":"Pending","status":"Allotment Done"},
         ],
         "listed": [
-            {"name": "SEDEMAC Mechatronics", "listDate": "11 Mar 2026", "issuePrice": "₹1,352", "listPrice": "₹1,510", "gain": "+11.7%", "current": "₹1,547"},
-            {"name": "Ather Energy", "listDate": "6 May 2026", "issuePrice": "₹321", "listPrice": "TBA", "gain": "TBA", "current": "TBA"},
-            {"name": "Hexaware Technologies", "listDate": "19 Feb 2026", "issuePrice": "₹708", "listPrice": "₹745", "gain": "+5.2%", "current": "₹731"},
-            {"name": "Laxmi Dental", "listDate": "20 Jan 2026", "issuePrice": "₹428", "listPrice": "₹513", "gain": "+19.9%", "current": "₹498"},
-            {"name": "Capital Infra Trust InvIT", "listDate": "12 Feb 2026", "issuePrice": "₹99", "listPrice": "₹102", "gain": "+3.0%", "current": "₹101"},
+            {"name":"SEDEMAC Mechatronics","listDate":"11 Mar 2026","issuePrice":"₹1,352","listPrice":"₹1,510","gain":"+11.7%","current":"₹1,547"},
+            {"name":"Hexaware Technologies","listDate":"19 Feb 2026","issuePrice":"₹708","listPrice":"₹745","gain":"+5.2%","current":"₹731"},
+            {"name":"Laxmi Dental","listDate":"20 Jan 2026","issuePrice":"₹428","listPrice":"₹513","gain":"+19.9%","current":"₹498"},
+            {"name":"Capital Infra Trust InvIT","listDate":"12 Feb 2026","issuePrice":"₹99","listPrice":"₹102","gain":"+3.0%","current":"₹101"},
         ],
-        "last_updated": today.isoformat(),
+        "last_updated": _dt2.now().isoformat(),
         "source": "Static (updated Mar 2026)",
     }
 
-    if req_lib is None:
-        return jsonify(static_data)
+    # Check cache
+    with _ipo_lock:
+        cached    = _ipo_cache["data"]
+        cache_ts  = _ipo_cache["last_updated"]
 
-    # ── Try live scrape from Chittorgarh ──
-    try:
-        from bs4 import BeautifulSoup as _BS
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-IN,en;q=0.9",
-            "Referer": "https://www.chittorgarh.com/",
-        }
+    cache_stale = True
+    if cache_ts:
+        try:
+            age = (_dt2.now() - _dt2.fromisoformat(cache_ts)).total_seconds()
+            cache_stale = age > 1800  # 30 min
+        except: pass
 
-        result = {"upcoming": [], "open": [], "allotment": [], "listed": [], "source": "Chittorgarh (live)"}
+    if cached and not cache_stale:
+        return jsonify(cached)
 
-        # ── Fetch open IPOs ──
-        r = req_lib.get("https://www.chittorgarh.com/ipo/ipo_subscription_status_live_day_wise.asp",
-                        headers=headers, timeout=10)
-        if r.status_code == 200:
-            soup = _BS(r.text, "html.parser")
-            for table in soup.find_all("table"):
-                for tr in table.find_all("tr")[1:]:
-                    tds = [td.get_text(strip=True) for td in tr.find_all("td")]
-                    if len(tds) >= 5 and tds[0]:
-                        # Extract anchor text for name
-                        name_tag = tr.find("a")
-                        name = name_tag.get_text(strip=True) if name_tag else tds[0]
-                        result["open"].append({
-                            "name": name, "open": tds[1] if len(tds)>1 else "—",
-                            "close": tds[2] if len(tds)>2 else "—",
-                            "price": tds[3] if len(tds)>3 else "—",
-                            "subscribed": tds[4] if len(tds)>4 else "—",
-                            "gmp": "—", "gmpPct": "—", "size": "—",
-                            "sector": "—", "lot": "—", "minInvest": "—",
-                        })
+    # Fetch fresh
+    if req_lib is not None:
+        live = fetch_live_ipo_data()
+        if live:
+            # Merge: use live data but fill gaps with static
+            for key in ["upcoming","open","allotment","listed"]:
+                if not live.get(key):
+                    live[key] = static_data[key]
+            with _ipo_lock:
+                _ipo_cache["data"]         = live
+                _ipo_cache["last_updated"] = _dt2.now().isoformat()
+            return jsonify(live)
 
-        # ── Fetch upcoming IPOs ──
-        r2 = req_lib.get("https://www.chittorgarh.com/ipo/upcoming-ipo-list-in-india.asp",
-                         headers=headers, timeout=10)
-        if r2.status_code == 200:
-            soup2 = _BS(r2.text, "html.parser")
-            for table in soup2.find_all("table"):
-                for tr in table.find_all("tr")[1:20]:
-                    tds = [td.get_text(strip=True) for td in tr.find_all("td")]
-                    if len(tds) >= 3 and tds[0]:
-                        name_tag = tr.find("a")
-                        name = name_tag.get_text(strip=True) if name_tag else tds[0]
-                        result["upcoming"].append({
-                            "name": name, "open": tds[1] if len(tds)>1 else "TBA",
-                            "close": tds[2] if len(tds)>2 else "—",
-                            "price": tds[3] if len(tds)>3 else "TBA",
-                            "size": tds[4] if len(tds)>4 else "—",
-                            "gmp": "—", "gmpPct": "—", "rating": "⭐⭐⭐",
-                            "sector": "—", "lot": "—", "minInvest": "—",
-                        })
-
-        # ── Fetch recently listed ──
-        r3 = req_lib.get("https://www.chittorgarh.com/ipo/ipo_performance_tracker_listed_ipo.asp",
-                         headers=headers, timeout=10)
-        if r3.status_code == 200:
-            soup3 = _BS(r3.text, "html.parser")
-            for table in soup3.find_all("table"):
-                for tr in table.find_all("tr")[1:15]:
-                    tds = [td.get_text(strip=True) for td in tr.find_all("td")]
-                    if len(tds) >= 4 and tds[0]:
-                        name_tag = tr.find("a")
-                        name = name_tag.get_text(strip=True) if name_tag else tds[0]
-                        gain_raw = tds[-1] if tds else "—"
-                        result["listed"].append({
-                            "name": name,
-                            "listDate": tds[1] if len(tds)>1 else "—",
-                            "issuePrice": tds[2] if len(tds)>2 else "—",
-                            "listPrice": tds[3] if len(tds)>3 else "—",
-                            "gain": gain_raw,
-                            "current": tds[4] if len(tds)>4 else "—",
-                        })
-
-        # Merge: use live if we got results, else fall back per-section
-        if not result["open"]:     result["open"]     = static_data["open"]
-        if not result["upcoming"]: result["upcoming"] = static_data["upcoming"]
-        if not result["listed"]:   result["listed"]   = static_data["listed"]
-        if not result.get("allotment"): result["allotment"] = static_data["allotment"]
-        result["last_updated"] = _dt.datetime.now().isoformat()
-
-        print(f"  [IPO] ✓ Chittorgarh: {len(result['open'])} open, {len(result['upcoming'])} upcoming, {len(result['listed'])} listed")
-        return jsonify(result)
-
-    except Exception as e:
-        print(f"  [IPO] Chittorgarh failed: {e} — using static")
-        return jsonify(static_data)
-
+    # Return static if live fails
+    return jsonify(static_data)
 
 
 # ── Options chain cache ──
