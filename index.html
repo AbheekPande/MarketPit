@@ -7635,52 +7635,52 @@ async function refreshEarningsData() {
   renderEventsPage();
 }
 function generateFallbackEvents() {
-  // Real upcoming NSE corporate events — updated periodically
-  // Results season: Q3 FY26 (Jan-Mar 2026) and Q4 FY26 (Apr-Jun 2026)
   const today=new Date(); today.setHours(0,0,0,0);
-  const todayStr=today.toISOString().split('T')[0];
   const base=[
-    // ── Q3 FY26 Results (upcoming) ──
-    {type:'results',sym:'RELIANCE',    date:'2026-03-17',note:'Q3 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'TCS',         date:'2026-04-10',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'HDFCBANK',    date:'2026-04-12',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'INFY',        date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'ICICIBANK',   date:'2026-04-19',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'SBIN',        date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'BAJFINANCE',  date:'2026-04-26',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'WIPRO',       date:'2026-04-16',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'HCLTECH',     date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'AXISBANK',    date:'2026-04-23',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'KOTAKBANK',   date:'2026-04-24',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'LT',          date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'TATAMOTORS',  date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'MARUTI',      date:'2026-04-25',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'SUNPHARMA',   date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'ADANIENT',    date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'BHARTIARTL',  date:'2026-04-30',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'TITAN',       date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'NESTLEIND',   date:'2026-04-24',note:'Q1 CY26 Results',icon:'📊',label:'Q Results'},
-    {type:'results',sym:'ZOMATO',      date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
-    // ── Dividends ──
-    {type:'dividend',sym:'HDFCBANK',  date:'2026-05-10',note:'Final Dividend ₹19.50/share',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'TCS',       date:'2026-04-17',note:'Final Dividend ₹28/share + Special',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'INFY',      date:'2026-04-16',note:'Final Dividend ₹21/share',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'ITC',       date:'2026-06-20',note:'Final Dividend ₹7.50/share',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'COALINDIA', date:'2026-03-20',note:'Interim Dividend ₹5.60/share',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'ONGC',      date:'2026-03-24',note:'Interim Dividend ₹2.50/share',icon:'💰',label:'Dividend'},
-    {type:'dividend',sym:'NTPC',      date:'2026-03-28',note:'Interim Dividend ₹3.25/share',icon:'💰',label:'Dividend'},
-    // ── Board Meetings ──
-    {type:'board',sym:'DLF',         date:'2026-03-28',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
-    {type:'board',sym:'HAL',         date:'2026-03-25',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
-    {type:'board',sym:'BEL',         date:'2026-03-24',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
-    {type:'board',sym:'POWERGRID',   date:'2026-03-26',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
-    // ── Splits & Buybacks ──
-    {type:'split',sym:'HAPPYFORGING',date:'2026-03-22',note:'Stock Split 2:1',icon:'✂️',label:'Stock Split'},
-    {type:'buyback',sym:'WIPRO',     date:'2026-04-08',note:'Buyback ₹305/share',icon:'🔄',label:'Buyback'},
+    // ── This week (15–21 Mar 2026) ──
+    {type:'results', sym:'RELIANCE',    date:'2026-03-17',note:'Q3 FY26 Results — Board Meeting',icon:'📊',label:'Q Results'},
+    {type:'dividend',sym:'COALINDIA',   date:'2026-03-20',note:'Interim Dividend ₹5.60/share (Ex-Date)',icon:'💰',label:'Dividend'},
+    {type:'board',   sym:'HDFC',        date:'2026-03-18',note:'Board Meeting — Q3 Results consideration',icon:'🏛',label:'Board Meeting'},
+    {type:'results', sym:'BAJAJ-AUTO',  date:'2026-03-19',note:'Q3 FY26 Results',icon:'📊',label:'Q Results'},
+    // ── Next week (22–28 Mar) ──
+    {type:'split',   sym:'HAPPYFORGING',date:'2026-03-22',note:'Stock Split 2:1 (Record Date)',icon:'✂️',label:'Stock Split'},
+    {type:'dividend',sym:'ONGC',        date:'2026-03-24',note:'Interim Dividend ₹2.50/share (Ex-Date)',icon:'💰',label:'Dividend'},
+    {type:'board',   sym:'BEL',         date:'2026-03-24',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'board',   sym:'HAL',         date:'2026-03-25',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'board',   sym:'POWERGRID',   date:'2026-03-26',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    {type:'dividend',sym:'NTPC',        date:'2026-03-28',note:'Interim Dividend ₹3.25/share (Ex-Date)',icon:'💰',label:'Dividend'},
+    {type:'board',   sym:'DLF',         date:'2026-03-28',note:'Board Meeting — Q3 FY26 Results',icon:'🏛',label:'Board Meeting'},
+    // ── April 2026 — Q4 FY26 Results season ──
+    {type:'results', sym:'TCS',         date:'2026-04-10',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'HDFCBANK',    date:'2026-04-12',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'INFY',        date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'HCLTECH',     date:'2026-04-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'dividend',sym:'TCS',         date:'2026-04-17',note:'Final Dividend ₹28/share + Special (Ex-Date)',icon:'💰',label:'Dividend'},
+    {type:'results', sym:'ICICIBANK',   date:'2026-04-19',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'WIPRO',       date:'2026-04-16',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'buyback', sym:'WIPRO',       date:'2026-04-08',note:'Buyback ₹305/share (Record Date)',icon:'🔄',label:'Buyback'},
+    {type:'results', sym:'AXISBANK',    date:'2026-04-23',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'NESTLEIND',   date:'2026-04-24',note:'Q1 CY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'KOTAKBANK',   date:'2026-04-24',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'MARUTI',      date:'2026-04-25',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'BAJFINANCE',  date:'2026-04-26',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'BHARTIARTL',  date:'2026-04-30',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'dividend',sym:'INFY',        date:'2026-04-16',note:'Final Dividend ₹21/share (Ex-Date)',icon:'💰',label:'Dividend'},
+    // ── May 2026 ──
+    {type:'results', sym:'ADANIENT',    date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'ZOMATO',      date:'2026-05-06',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'SBIN',        date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'TATAMOTORS',  date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'TITAN',       date:'2026-05-08',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'dividend',sym:'HDFCBANK',    date:'2026-05-10',note:'Final Dividend ₹19.50/share (Ex-Date)',icon:'💰',label:'Dividend'},
+    {type:'results', sym:'SUNPHARMA',   date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    {type:'results', sym:'LT',          date:'2026-05-14',note:'Q4 FY26 Results',icon:'📊',label:'Q Results'},
+    // ── June 2026 ──
+    {type:'dividend',sym:'ITC',         date:'2026-06-20',note:'Final Dividend ₹7.50/share (Ex-Date)',icon:'💰',label:'Dividend'},
   ];
-  // Filter to show ±30 days from today
-  const from=new Date(today); from.setDate(from.getDate()-7);
-  const to=new Date(today); to.setDate(to.getDate()+45);
+  // Show all events from 14 days ago to 90 days ahead
+  const from=new Date(today); from.setDate(from.getDate()-14);
+  const to=new Date(today);   to.setDate(to.getDate()+90);
   return base
     .filter(e=>e.date>=from.toISOString().split('T')[0] && e.date<=to.toISOString().split('T')[0])
     .sort((a,b)=>a.date.localeCompare(b.date));
@@ -7727,7 +7727,7 @@ function renderEventsPage(){
             <span style="font-weight:800;font-size:14px;color:var(--text);">${e.sym}</span>
             <span style="font-size:10px;padding:2px 8px;border-radius:8px;background:${typeColors[e.type]||'var(--accent)'}22;color:${typeColors[e.type]||'var(--accent)'};">${e.label}</span>
           </div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px;">${e.detail||''}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">${e.note||e.detail||''}</div>
         </div>
         <button onclick="fetchAndShowStock('${e.sym}')" style="flex-shrink:0;font-size:11px;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);cursor:pointer;">Chart</button>
       </div>`).join('')}`;
