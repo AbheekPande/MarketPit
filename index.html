@@ -799,7 +799,7 @@ header {
 #eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
 #eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
 
-/* Tile: well-proportioned, not chunky */
+/* Tile */
 .eb-tile {
   width:64px; height:64px; flex-shrink:0;
   display:grid;
@@ -810,7 +810,7 @@ header {
   box-sizing:border-box;
 }
 
-/* Sub: refined border-radius, glass feel */
+/* Sub */
 .eb-sub {
   border-radius:4px;
   background:transparent;
@@ -831,16 +831,16 @@ header {
   will-change: opacity, background;
 }
 
-/* Soft ambient glow — sized to tiles */
+/* Glow — JS controls opacity directly, no CSS :hover needed */
 #ebGlow {
-  position:absolute; width:140px; height:140px; border-radius:50%;
+  position:absolute; width:180px; height:180px; border-radius:50%;
   pointer-events:none; z-index:1;
   opacity:0;
-  transition:opacity 0.25s ease, left 0.05s linear, top 0.05s linear;
-  filter:blur(22px);
-  will-change:left,top,opacity;
+  transition:opacity 0.2s ease;
+  filter:blur(28px);
+  will-change:left,top,opacity,background;
+  top:0; left:0;
 }
-#eyesBanner:hover #ebGlow { opacity:0.85; }
 
 #ebTileGrid {
   position:absolute; left:0; right:0; top:0; bottom:0;
@@ -849,9 +849,18 @@ header {
   align-content:center; justify-content:flex-start;
   padding:8px 10px; overflow:hidden;
 }
-/* tiles themselves must be hit-testable for findSub() */
+/* eb-sub must be hit-testable so findSub() getBoundingClientRect works */
 #ebTileGrid .eb-sub {
   pointer-events:auto;
+}
+/* eyesContainer must NOT block pointer events to banner */
+#eyesContainer {
+  pointer-events:none !important;
+}
+/* Pupils transition smoothly */
+.pupil {
+  transition:transform 0.06s ease-out;
+  will-change:transform;
 }
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
@@ -1208,17 +1217,16 @@ header {
     <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
       <!-- Grid lines background -->
       <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
-      <!-- Spotlight glow -->
-      <div id="spotlightGlow" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.35) 0%,rgba(0,112,243,0.12) 40%,transparent 70%);margin-left:-160px;margin-top:-160px;pointer-events:none;transition:opacity 0.3s;top:50%;left:50%;will-change:left,top;opacity:0.3;"></div>
+      <!-- Spotlight glow — JS positions via left/top directly -->
+      <div id="spotlightGlow" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.35) 0%,rgba(0,112,243,0.12) 40%,transparent 70%);pointer-events:none;transition:opacity 0.3s;top:0;left:0;will-change:left,top;opacity:0.3;transform:translate(-50%,-50%);"></div>
       <!-- Secondary accent glow -->
-      <div id="spotlightGlow2" style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(120,80,255,0.4) 0%,transparent 70%);margin-left:-80px;margin-top:-80px;pointer-events:none;top:50%;left:50%;will-change:left,top;opacity:0.2;"></div>
+      <div id="spotlightGlow2" style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(120,80,255,0.4) 0%,transparent 70%);pointer-events:none;top:0;left:0;will-change:left,top;opacity:0.2;transform:translate(-50%,-50%);"></div>
       <!-- Custom cursor dot -->
-      <div id="spotlightCursor" style="position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 12px rgba(255,255,255,0.9);top:50%;left:50%;will-change:transform;transition:transform 0.1s;z-index:10;"></div>
+      <div id="spotlightCursor" style="position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;pointer-events:none;box-shadow:0 0 12px rgba(255,255,255,0.9);top:0;left:0;will-change:left,top;z-index:10;transform:translate(-50%,-50%);opacity:0;"></div>
       <!-- Content -->
-      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
+      <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
         <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
-        <!-- TradingView Mini Ticker for live hero prices -->
         <div style="display:flex;gap:20px;margin-top:8px;pointer-events:all;" id="heroPricesRow">
           <div style="text-align:center;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
@@ -1237,9 +1245,9 @@ header {
         </div>
       </div>
       <!-- Corner decorations -->
-      <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;">NSE · BSE · CRYPTO</div>
-      <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;">● LIVE</div>
-      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;">NSE · BSE · CRYPTO · COMMODITIES</div>
+      <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO</div>
+      <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;pointer-events:none;">● LIVE</div>
+      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO · COMMODITIES</div>
     </div>
 
 
@@ -12461,69 +12469,61 @@ function renderHeatmap() {
     glow   = document.getElementById('spotlightGlow');
     glow2  = document.getElementById('spotlightGlow2');
     cursor = document.getElementById('spotlightCursor');
-    if (!heroEl) return;
+    if (!heroEl || !glow) return;
 
-    heroEl.addEventListener('mousemove', function(e) {
-      const rect = heroEl.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-      if (!animFrame) animFrame = requestAnimationFrame(animate);
-    });
-
-    heroEl.addEventListener('mouseleave', function() {
-      if (glow)   glow.style.opacity   = '0.3';
-      if (glow2)  glow2.style.opacity  = '0.2';
-      if (cursor) cursor.style.opacity = '0';
-      cancelAnimationFrame(animFrame);
-      animFrame = null;
-      const rect = heroEl.getBoundingClientRect();
-      mouseX = rect.width  / 2;
-      mouseY = rect.height / 2;
-    });
-
-    heroEl.addEventListener('mouseenter', function() {
-      if (glow)   glow.style.opacity   = '1';
-      if (glow2)  glow2.style.opacity  = '1';
-      if (cursor) cursor.style.opacity = '1';
-    });
-
-    heroEl.addEventListener('click', function(e) {
-      const rect = heroEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const ripple = document.createElement('div');
-      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);transform:translate(-50%,-50%) scale(1);left:${x}px;top:${y}px;pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
-      heroEl.appendChild(ripple);
-      requestAnimationFrame(() => {
-        ripple.style.transform = `translate(-50%,-50%) scale(20)`;
-        ripple.style.opacity = '0';
-      });
-      setTimeout(() => ripple.remove(), 700);
-    });
-
-    if (cursor) cursor.style.opacity = '0';
     const rect = heroEl.getBoundingClientRect();
     mouseX = currentX = rect.width  / 2;
     mouseY = currentY = rect.height / 2;
-    // Set initial glow positions centred
-    if (glow)  { glow.style.left  = (currentX - 160) + 'px'; glow.style.top  = (currentY - 160) + 'px'; }
-    if (glow2) { glow2.style.left = (currentX - 80)  + 'px'; glow2.style.top = (currentY - 80)  + 'px'; }
-    updatePositions();
+    setPos(currentX, currentY);
+
+    heroEl.addEventListener('mousemove', function(e) {
+      const r = heroEl.getBoundingClientRect();
+      mouseX = e.clientX - r.left;
+      mouseY = e.clientY - r.top;
+      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    });
+
+    heroEl.addEventListener('mouseenter', function() {
+      glow.style.opacity   = '1';
+      glow2.style.opacity  = '0.6';
+      cursor.style.opacity = '1';
+    });
+
+    heroEl.addEventListener('mouseleave', function() {
+      glow.style.opacity   = '0.3';
+      glow2.style.opacity  = '0.2';
+      cursor.style.opacity = '0';
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+    });
+
+    heroEl.addEventListener('click', function(e) {
+      const r = heroEl.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const ripple = document.createElement('div');
+      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);left:${x}px;top:${y}px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
+      heroEl.appendChild(ripple);
+      requestAnimationFrame(() => { ripple.style.transform = 'translate(-50%,-50%) scale(20)'; ripple.style.opacity = '0'; });
+      setTimeout(() => ripple.remove(), 700);
+    });
+
     updateHeroPrices();
     setInterval(updateHeroPrices, 30000);
+  }
+
+  function setPos(x, y) {
+    if (glow)   { glow.style.left   = x + 'px'; glow.style.top   = y + 'px'; }
+    if (glow2)  { glow2.style.left  = x + 'px'; glow2.style.top  = y + 'px'; }
+    if (cursor) { cursor.style.left = x + 'px'; cursor.style.top = y + 'px'; }
   }
 
   function animate() {
     currentX += (mouseX - currentX) * 0.12;
     currentY += (mouseY - currentY) * 0.12;
-    updatePositions();
+    setPos(currentX, currentY);
+    // Keep cursor exactly at mouse, no lag
+    if (cursor) { cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px'; }
     animFrame = requestAnimationFrame(animate);
-  }
-
-  function updatePositions() {
-    if (glow)   { glow.style.left   = (currentX - 160) + 'px'; glow.style.top   = (currentY - 160) + 'px'; }
-    if (glow2)  { glow2.style.left  = (currentX - 80)  + 'px'; glow2.style.top  = (currentY - 80)  + 'px'; }
-    if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
   }
 
   const HERO_SYMBOLS = [
@@ -12633,93 +12633,75 @@ function renderHeatmap() {
   const glow   = document.getElementById('ebGlow');
   if (!banner || !glow) return;
 
-  // Build a fresh list of sub elements (no cached rects — always live)
   function getAllSubs() {
-    const result = [];
-    banner.querySelectorAll('.eb-tile').forEach(tile => {
-      tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
-        result.push({ el: sub, qi });
-      });
-    });
-    return result;
+    return Array.from(banner.querySelectorAll('.eb-sub'));
   }
 
   let _allSubs = [];
   let _activeSub = null;
 
+  // Init after full layout paint so getBoundingClientRect is accurate
   function init() {
     _allSubs = getAllSubs();
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Delay init until after first paint + wait for layout
+  setTimeout(init, 300);
   window.addEventListener('resize', init);
 
-  // Color gradient: orange(left) → gold(mid) → violet(right)
+  // Color: orange(left) → gold(mid) → violet(right)
   function getColor(pct) {
     const p = Math.max(0, Math.min(1, pct));
     let r, g, b;
     if (p < 0.5) {
       const t = p * 2;
-      r = 255;
-      g = Math.round(90  + 130 * t);
-      b = Math.round(10  +  80 * t);
+      r = 255; g = Math.round(90 + 130 * t); b = Math.round(10 + 80 * t);
     } else {
       const t = (p - 0.5) * 2;
-      r = Math.round(255 - 120 * t);
-      g = Math.round(220 -  80 * t);
-      b = Math.round(90  + 165 * t);
+      r = Math.round(255 - 120 * t); g = Math.round(220 - 80 * t); b = Math.round(90 + 165 * t);
     }
     return { r, g, b };
   }
 
-  // Light from top-left: TL brightest → BR darkest
+  // Light from top-left
   const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
 
   function showSub(sub, qi, r, g, b) {
     const br = BRIGHTNESS[qi] ?? 0.7;
     const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
-    const isTop  = qi < 2, isLeft = qi % 2 === 0;
-    const hi = 'rgba(255,255,255,0.38)';
-    const sh = 'rgba(0,0,0,0.50)';
+    const isTop = qi < 2, isLeft = qi % 2 === 0;
+    const hi = 'rgba(255,255,255,0.38)', sh = 'rgba(0,0,0,0.50)';
     sub.style.opacity           = '1';
     sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
     sub.style.borderTopColor    = isTop  ? hi : sh;
     sub.style.borderLeftColor   = isLeft ? hi : sh;
     sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
     sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),`
-                                + `inset 0 -2px 5px rgba(0,0,0,0.38),`
-                                + `0 0 8px rgba(${r},${g},${b},0.45)`;
+    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),inset 0 -2px 5px rgba(0,0,0,0.38),0 0 8px rgba(${r},${g},${b},0.45)`;
   }
 
   function hideSub(sub) {
     if (!sub) return;
-    sub.style.opacity           = '0';
-    sub.style.background        = 'transparent';
-    sub.style.borderTopColor    = 'transparent';
-    sub.style.borderLeftColor   = 'transparent';
-    sub.style.borderBottomColor = 'transparent';
-    sub.style.borderRightColor  = 'transparent';
-    sub.style.boxShadow         = 'none';
+    sub.style.opacity = '0';
+    sub.style.background = sub.style.borderTopColor = sub.style.borderLeftColor =
+    sub.style.borderBottomColor = sub.style.borderRightColor = 'transparent';
+    sub.style.boxShadow = 'none';
   }
 
-  // Use live getBoundingClientRect() on every move — no stale cache
   function findSub(cx, cy) {
     for (let i = 0; i < _allSubs.length; i++) {
-      const { el, qi } = _allSubs[i];
-      const rect = el.getBoundingClientRect();
+      const rect = _allSubs[i].getBoundingClientRect();
       if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
-        return { el, qi };
+        // Determine qi (quadrant) from parent tile
+        const parent = _allSubs[i].parentElement;
+        const siblings = Array.from(parent.querySelectorAll('.eb-sub'));
+        const qi = siblings.indexOf(_allSubs[i]);
+        return { el: _allSubs[i], qi };
       }
     }
     return null;
   }
 
-  // ── Pupil tracking ──
+  // ── EYES: pupil tracking ──
   function trackPupils(cx, cy) {
     banner.querySelectorAll('.eyeball').forEach(eyeball => {
       const pupil = eyeball.querySelector('.pupil');
@@ -12727,60 +12709,43 @@ function renderHeatmap() {
       const er = eyeball.getBoundingClientRect();
       const ex = er.left + er.width  / 2;
       const ey = er.top  + er.height / 2;
-      const dx = cx - ex;
-      const dy = cy - ey;
+      const dx = cx - ex, dy = cy - ey;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      // Max travel: 3px
-      const maxTravel = 3;
-      const travel = Math.min(dist, maxTravel);
-      const angle = Math.atan2(dy, dx);
-      const ox = Math.cos(angle) * travel;
-      const oy = Math.sin(angle) * travel;
-      pupil.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px)`;
+      const travel = Math.min(dist, 3);
+      const angle  = Math.atan2(dy, dx);
+      pupil.style.transform = `translate(${(Math.cos(angle) * travel).toFixed(1)}px,${(Math.sin(angle) * travel).toFixed(1)}px)`;
     });
   }
 
-  function resetPupils() {
-    banner.querySelectorAll('.pupil').forEach(p => {
-      p.style.transform = 'translate(0,0)';
-    });
-  }
-
-  // Global cursor tracking — works no matter where on the page the cursor is
+  // ── Global mousemove: drives all 3 features ──
   document.addEventListener('mousemove', function(e) {
-    const bannerRect = banner.getBoundingClientRect();
-    const pct = (e.clientX - bannerRect.left) / bannerRect.width;
-    const { r, g, b } = getColor(Math.max(0, Math.min(1, pct)));
+    const br     = banner.getBoundingClientRect();
+    const over   = e.clientX >= br.left && e.clientX <= br.right && e.clientY >= br.top && e.clientY <= br.bottom;
+    const pct    = Math.max(0, Math.min(1, (e.clientX - br.left) / br.width));
+    const { r, g, b } = getColor(pct);
 
-    // Move glow (only visible when cursor is over banner via CSS opacity rule)
-    glow.style.left       = (e.clientX - bannerRect.left - 70) + 'px';
-    glow.style.top        = (e.clientY - bannerRect.top  - 70) + 'px';
-    glow.style.background = `radial-gradient(circle,`
-      + `rgba(${r},${g},${b},0.88) 0%,`
-      + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
-      + `transparent 72%)`;
+    // 💡 LIGHT — glow follows cursor, visible only over banner
+    glow.style.left       = (e.clientX - br.left) + 'px';
+    glow.style.top        = (e.clientY - br.top)  + 'px';
+    glow.style.background = `radial-gradient(circle,rgba(${r},${g},${b},0.9) 0%,rgba(${r},${Math.round(g*0.6)},${Math.round(b*0.3)},0.45) 50%,transparent 72%)`;
+    glow.style.opacity    = over ? '0.9' : '0';
 
-    // Light up tile sub only when cursor is physically over the banner
-    const overBanner = e.clientX >= bannerRect.left && e.clientX <= bannerRect.right
-                    && e.clientY >= bannerRect.top  && e.clientY <= bannerRect.bottom;
-    if (overBanner) {
-      const hit   = findSub(e.clientX, e.clientY);
-      const hitEl = hit ? hit.el : null;
-      if (hitEl !== _activeSub) {
-        hideSub(_activeSub);
-        _activeSub = null;
-        if (hit) {
-          showSub(hit.el, hit.qi, r, g, b);
-          _activeSub = hit.el;
-        }
+    // 🟦 CUBE — highlight sub under cursor
+    if (over) {
+      if (_allSubs.length === 0) _allSubs = getAllSubs(); // lazy reinit
+      const hit = findSub(e.clientX, e.clientY);
+      if ((hit ? hit.el : null) !== _activeSub) {
+        hideSub(_activeSub); _activeSub = null;
+        if (hit) { showSub(hit.el, hit.qi, r, g, b); _activeSub = hit.el; }
       }
     } else {
       if (_activeSub) { hideSub(_activeSub); _activeSub = null; }
     }
 
-    // Pupils follow cursor from ANYWHERE on the page
+    // 👀 EYES — pupils track cursor from anywhere on the page
     trackPupils(e.clientX, e.clientY);
   });
+
 })();
 
 </script>
