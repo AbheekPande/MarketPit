@@ -840,7 +840,7 @@ header {
   z-index:2;
   opacity:0;
   top:0; left:0;
-  transform:translate(-50%,-50%);
+  margin-left:-140px; margin-top:-140px;
   transition:opacity 0.15s ease;
 }
 #ebTileGrid {
@@ -849,11 +849,11 @@ header {
   z-index:1;
   pointer-events:none;
   align-content:center; justify-content:flex-start;
-  padding:8px 10px; overflow:hidden;
+  padding:8px 10px;
 }
 #ebTileGrid .eb-sub { pointer-events:none; }
 #eyesContainer {
-  position:relative; z-index:3;
+  position:relative; z-index:2;
   pointer-events:none !important;
 }
 .pupil { transition:transform 0.06s ease-out; will-change:transform; }
@@ -1222,7 +1222,7 @@ header {
       <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
         <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
-        <div style="display:flex;gap:20px;margin-top:8px;pointer-events:all;" id="heroPricesRow">
+        <div style="display:flex;gap:20px;margin-top:8px;pointer-events:none;" id="heroPricesRow">
           <div style="text-align:center;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
@@ -12625,105 +12625,94 @@ function renderHeatmap() {
 // ── EYES BANNER: glow + cube + pupils ──
 (function() {
   var banner, glow, allSubs, activeSub = null;
-  var BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
+  var BRI = [1.0, 0.76, 0.66, 0.50];
 
   function setup() {
     banner  = document.getElementById('eyesBanner');
     glow    = document.getElementById('ebGlow');
-    if (!banner || !glow) { setTimeout(setup, 100); return; }
+    if (!banner || !glow) return;
     allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
-
-    // Banner mousemove — always "over" when this fires
     banner.addEventListener('mousemove', onMove);
     banner.addEventListener('mouseleave', onLeave);
-    // Pupils also track document-wide
-    document.addEventListener('mousemove', trackPupils);
+    document.addEventListener('mousemove', onDocMove);
   }
 
-  function getColor(pct) {
-    var p = Math.max(0, Math.min(1, pct)), r, g, b;
-    if (p < 0.5) { var t = p*2; r=255; g=Math.round(90+130*t); b=Math.round(10+80*t); }
+  function getCol(pct) {
+    var p=Math.max(0,Math.min(1,pct)), r,g,b;
+    if (p<0.5) { var t=p*2; r=255; g=Math.round(90+130*t); b=Math.round(10+80*t); }
     else { var t=(p-0.5)*2; r=Math.round(255-120*t); g=Math.round(220-80*t); b=Math.round(90+165*t); }
-    return { r:r, g:g, b:b };
+    return [r,g,b];
   }
 
   function onMove(e) {
-    var br  = banner.getBoundingClientRect();
-    var lx  = e.clientX - br.left;
-    var ly  = e.clientY - br.top;
-    var pct = Math.max(0, Math.min(1, lx / br.width));
-    var col = getColor(pct);
-    var r = col.r, g = col.g, b = col.b;
+    var br = banner.getBoundingClientRect();
+    var lx = e.clientX - br.left, ly = e.clientY - br.top;
+    var c  = getCol(lx / br.width), r=c[0], g=c[1], b=c[2];
 
-    // 💡 GLOW
+    // GLOW — margin-left/top in CSS centers the 280px div on lx/ly
     glow.style.left       = lx + 'px';
     glow.style.top        = ly + 'px';
-    glow.style.background = 'radial-gradient(circle, rgba('+r+','+g+','+b+',0.75) 0%, rgba('+r+','+g+','+b+',0.38) 28%, rgba('+r+','+Math.round(g*.5)+','+Math.round(b*.2)+',0.12) 56%, transparent 72%)';
+    glow.style.background = 'radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 32%,rgba('+r+','+g+','+b+',0.1) 60%,transparent 75%)';
     glow.style.opacity    = '1';
 
-    // 🟦 CUBE — getBoundingClientRect loop, proven reliable
+    // CUBE — BoundingClientRect hit test; qi = 0-3 within parent tile
     var hit = null;
-    for (var i = 0; i < allSubs.length; i++) {
+    for (var i=0; i<allSubs.length; i++) {
       var rc = allSubs[i].getBoundingClientRect();
-      if (e.clientX >= rc.left && e.clientX <= rc.right && e.clientY >= rc.top && e.clientY <= rc.bottom) {
-        var siblings = allSubs[i].parentElement.querySelectorAll('.eb-sub');
-        var qi = Array.prototype.indexOf.call(siblings, allSubs[i]);
-        hit = { el: allSubs[i], qi: qi >= 0 ? qi : 0 };
+      if (e.clientX>=rc.left && e.clientX<=rc.right && e.clientY>=rc.top && e.clientY<=rc.bottom) {
+        var qi = Array.prototype.indexOf.call(allSubs[i].parentElement.children, allSubs[i]);
+        hit = { el:allSubs[i], qi:qi };
         break;
       }
     }
-    var hitEl = hit ? hit.el : null;
-    if (hitEl !== activeSub) {
-      hideSub(activeSub);
-      activeSub = hitEl;
-    }
-    if (activeSub && hit) showSub(activeSub, hit.qi, r, g, b);
+    if (hit) {
+      if (hit.el !== activeSub) { hideSub(activeSub); activeSub = hit.el; }
+      showSub(activeSub, hit.qi, r, g, b);
+    } else { hideSub(activeSub); activeSub = null; }
   }
 
   function onLeave() {
     glow.style.opacity = '0';
-    hideSub(activeSub);
-    activeSub = null;
+    hideSub(activeSub); activeSub = null;
   }
 
   function showSub(sub, qi, r, g, b) {
-    var br = BRIGHTNESS[qi] !== undefined ? BRIGHTNESS[qi] : 0.7;
-    var fr = Math.round(r*br), fg = Math.round(g*br), fb = Math.round(b*br);
-    var isTop = qi < 2, isLeft = qi % 2 === 0;
-    var hi = 'rgba(255,255,255,0.38)', sh = 'rgba(0,0,0,0.50)';
+    var k=BRI[qi]!==undefined?BRI[qi]:0.7;
+    var fr=Math.round(r*k), fg=Math.round(g*k), fb=Math.round(b*k);
+    var isTop=qi<2, isLeft=qi%2===0;
+    var hi='rgba(255,255,255,0.4)', sh='rgba(0,0,0,0.5)';
     sub.style.opacity           = '1';
     sub.style.background        = 'rgba('+fr+','+fg+','+fb+',0.85)';
     sub.style.borderTopColor    = isTop  ? hi : sh;
     sub.style.borderLeftColor   = isLeft ? hi : sh;
     sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
     sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = 'inset 0 1px 5px rgba(255,255,255,0.22),inset 0 -2px 5px rgba(0,0,0,0.38),0 0 8px rgba('+r+','+g+','+b+',0.45)';
+    sub.style.boxShadow         = 'inset 0 1px 5px rgba(255,255,255,0.22),0 0 8px rgba('+r+','+g+','+b+',0.45)';
   }
 
   function hideSub(sub) {
     if (!sub) return;
-    sub.style.opacity = '0';
-    sub.style.background = 'transparent';
-    sub.style.borderTopColor = sub.style.borderLeftColor =
-    sub.style.borderBottomColor = sub.style.borderRightColor = 'transparent';
-    sub.style.boxShadow = 'none';
+    sub.style.opacity='0'; sub.style.background='transparent';
+    sub.style.borderTopColor=sub.style.borderLeftColor=
+    sub.style.borderBottomColor=sub.style.borderRightColor='transparent';
+    sub.style.boxShadow='none';
   }
 
-  // 👀 PUPILS — track from anywhere
-  function trackPupils(e) {
+  // PUPILS — follow cursor from anywhere on page
+  function onDocMove(e) {
     if (!banner) return;
-    var eyeballs = banner.querySelectorAll('.eyeball');
-    for (var i = 0; i < eyeballs.length; i++) {
-      var pupil = eyeballs[i].querySelector('.pupil');
+    var eyes = banner.querySelectorAll('.eyeball');
+    for (var i=0; i<eyes.length; i++) {
+      var pupil = eyes[i].querySelector('.pupil');
       if (!pupil) continue;
-      var er = eyeballs[i].getBoundingClientRect();
-      var ex = er.left + er.width/2, ey = er.top + er.height/2;
-      var dx = e.clientX - ex, dy = e.clientY - ey;
-      var dist = Math.sqrt(dx*dx + dy*dy);
-      var maxT = er.width * 0.28;
-      var travel = maxT * (1 - Math.exp(-dist / 55));
+      var er = eyes[i].getBoundingClientRect();
+      var ex = er.left+er.width/2, ey = er.top+er.height/2;
+      var dx = e.clientX-ex, dy = e.clientY-ey;
+      var dist = Math.sqrt(dx*dx+dy*dy);
+      var maxT = er.width * 0.3;
+      var travel = dist<1 ? 0 : maxT*(1 - 1/(1+dist/50));
       var angle  = Math.atan2(dy, dx);
-      pupil.style.transform = 'translate(' + (Math.cos(angle)*travel).toFixed(1) + 'px,' + (Math.sin(angle)*travel).toFixed(1) + 'px)';
+      pupil.style.transform = 'translate('+(Math.cos(angle)*travel).toFixed(1)+'px,'+(Math.sin(angle)*travel).toFixed(1)+'px)';
     }
   }
 
