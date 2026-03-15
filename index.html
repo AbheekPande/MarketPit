@@ -831,38 +831,32 @@ header {
   will-change: opacity, background;
 }
 
-/* Glow — JS controls opacity directly, no CSS :hover needed */
+/* Glow */
 #ebGlow {
-  position:absolute; width:220px; height:220px; border-radius:50%;
-  pointer-events:none; z-index:1;
+  position:absolute;
+  width:280px; height:280px;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:2;
   opacity:0;
-  transition:opacity 0.15s ease;
-  filter:blur(32px);
-  will-change:left,top,opacity,background;
   top:0; left:0;
   transform:translate(-50%,-50%);
+  transition:opacity 0.15s ease;
 }
-
 #ebTileGrid {
   position:absolute; left:0; right:0; top:0; bottom:0;
-  display:flex; flex-wrap:wrap; gap:5px; z-index:2;
+  display:flex; flex-wrap:wrap; gap:5px;
+  z-index:1;
   pointer-events:none;
   align-content:center; justify-content:flex-start;
   padding:8px 10px; overflow:hidden;
 }
-/* eb-sub must be hit-testable so findSub() getBoundingClientRect works */
-#ebTileGrid .eb-sub {
-  pointer-events:none;
-}
-/* eyesContainer must NOT block pointer events to banner */
+#ebTileGrid .eb-sub { pointer-events:none; }
 #eyesContainer {
+  position:relative; z-index:3;
   pointer-events:none !important;
 }
-/* Pupils transition smoothly */
-.pupil {
-  transition:transform 0.06s ease-out;
-  will-change:transform;
-}
+.pupil { transition:transform 0.06s ease-out; will-change:transform; }
 </style>
 <div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
   <div id="ebGlow"></div>
@@ -12628,130 +12622,116 @@ function renderHeatmap() {
   }
 })();
 
-// ── CUBE HOVER TRACKER (Eyes Banner) ──
+// ── EYES BANNER: glow + cube + pupils ──
 (function() {
-  const banner = document.getElementById('eyesBanner');
-  const glow   = document.getElementById('ebGlow');
-  if (!banner || !glow) return;
+  var banner, glow, allSubs, activeSub = null;
+  var BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
 
-  function getAllSubs() {
-    return Array.from(banner.querySelectorAll('.eb-sub'));
+  function setup() {
+    banner  = document.getElementById('eyesBanner');
+    glow    = document.getElementById('ebGlow');
+    if (!banner || !glow) { setTimeout(setup, 100); return; }
+    allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
+
+    // Banner mousemove — always "over" when this fires
+    banner.addEventListener('mousemove', onMove);
+    banner.addEventListener('mouseleave', onLeave);
+    // Pupils also track document-wide
+    document.addEventListener('mousemove', trackPupils);
   }
 
-  let _allSubs = [];
-  let _activeSub = null;
-
-  // Init after full layout paint so getBoundingClientRect is accurate
-  function init() {
-    _allSubs = getAllSubs();
-  }
-  // Delay init until after first paint + wait for layout
-  setTimeout(init, 300);
-  window.addEventListener('resize', init);
-
-  // Color: orange(left) → gold(mid) → violet(right)
   function getColor(pct) {
-    const p = Math.max(0, Math.min(1, pct));
-    let r, g, b;
-    if (p < 0.5) {
-      const t = p * 2;
-      r = 255; g = Math.round(90 + 130 * t); b = Math.round(10 + 80 * t);
-    } else {
-      const t = (p - 0.5) * 2;
-      r = Math.round(255 - 120 * t); g = Math.round(220 - 80 * t); b = Math.round(90 + 165 * t);
-    }
-    return { r, g, b };
+    var p = Math.max(0, Math.min(1, pct)), r, g, b;
+    if (p < 0.5) { var t = p*2; r=255; g=Math.round(90+130*t); b=Math.round(10+80*t); }
+    else { var t=(p-0.5)*2; r=Math.round(255-120*t); g=Math.round(220-80*t); b=Math.round(90+165*t); }
+    return { r:r, g:g, b:b };
   }
 
-  // Light from top-left
-  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
+  function onMove(e) {
+    var br  = banner.getBoundingClientRect();
+    var lx  = e.clientX - br.left;
+    var ly  = e.clientY - br.top;
+    var pct = Math.max(0, Math.min(1, lx / br.width));
+    var col = getColor(pct);
+    var r = col.r, g = col.g, b = col.b;
+
+    // 💡 GLOW
+    glow.style.left       = lx + 'px';
+    glow.style.top        = ly + 'px';
+    glow.style.background = 'radial-gradient(circle, rgba('+r+','+g+','+b+',0.75) 0%, rgba('+r+','+g+','+b+',0.38) 28%, rgba('+r+','+Math.round(g*.5)+','+Math.round(b*.2)+',0.12) 56%, transparent 72%)';
+    glow.style.opacity    = '1';
+
+    // 🟦 CUBE — getBoundingClientRect loop, proven reliable
+    var hit = null;
+    for (var i = 0; i < allSubs.length; i++) {
+      var rc = allSubs[i].getBoundingClientRect();
+      if (e.clientX >= rc.left && e.clientX <= rc.right && e.clientY >= rc.top && e.clientY <= rc.bottom) {
+        var siblings = allSubs[i].parentElement.querySelectorAll('.eb-sub');
+        var qi = Array.prototype.indexOf.call(siblings, allSubs[i]);
+        hit = { el: allSubs[i], qi: qi >= 0 ? qi : 0 };
+        break;
+      }
+    }
+    var hitEl = hit ? hit.el : null;
+    if (hitEl !== activeSub) {
+      hideSub(activeSub);
+      activeSub = hitEl;
+    }
+    if (activeSub && hit) showSub(activeSub, hit.qi, r, g, b);
+  }
+
+  function onLeave() {
+    glow.style.opacity = '0';
+    hideSub(activeSub);
+    activeSub = null;
+  }
 
   function showSub(sub, qi, r, g, b) {
-    const br = BRIGHTNESS[qi] ?? 0.7;
-    const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
-    const isTop = qi < 2, isLeft = qi % 2 === 0;
-    const hi = 'rgba(255,255,255,0.38)', sh = 'rgba(0,0,0,0.50)';
+    var br = BRIGHTNESS[qi] !== undefined ? BRIGHTNESS[qi] : 0.7;
+    var fr = Math.round(r*br), fg = Math.round(g*br), fb = Math.round(b*br);
+    var isTop = qi < 2, isLeft = qi % 2 === 0;
+    var hi = 'rgba(255,255,255,0.38)', sh = 'rgba(0,0,0,0.50)';
     sub.style.opacity           = '1';
-    sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
+    sub.style.background        = 'rgba('+fr+','+fg+','+fb+',0.85)';
     sub.style.borderTopColor    = isTop  ? hi : sh;
     sub.style.borderLeftColor   = isLeft ? hi : sh;
     sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
     sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),inset 0 -2px 5px rgba(0,0,0,0.38),0 0 8px rgba(${r},${g},${b},0.45)`;
+    sub.style.boxShadow         = 'inset 0 1px 5px rgba(255,255,255,0.22),inset 0 -2px 5px rgba(0,0,0,0.38),0 0 8px rgba('+r+','+g+','+b+',0.45)';
   }
 
   function hideSub(sub) {
     if (!sub) return;
     sub.style.opacity = '0';
-    sub.style.background = sub.style.borderTopColor = sub.style.borderLeftColor =
+    sub.style.background = 'transparent';
+    sub.style.borderTopColor = sub.style.borderLeftColor =
     sub.style.borderBottomColor = sub.style.borderRightColor = 'transparent';
     sub.style.boxShadow = 'none';
   }
 
-  function findSub(cx, cy) {
-    for (let i = 0; i < _allSubs.length; i++) {
-      const rect = _allSubs[i].getBoundingClientRect();
-      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
-        // Determine qi (quadrant) from parent tile
-        const parent = _allSubs[i].parentElement;
-        const siblings = Array.from(parent.querySelectorAll('.eb-sub'));
-        const qi = siblings.indexOf(_allSubs[i]);
-        return { el: _allSubs[i], qi };
-      }
+  // 👀 PUPILS — track from anywhere
+  function trackPupils(e) {
+    if (!banner) return;
+    var eyeballs = banner.querySelectorAll('.eyeball');
+    for (var i = 0; i < eyeballs.length; i++) {
+      var pupil = eyeballs[i].querySelector('.pupil');
+      if (!pupil) continue;
+      var er = eyeballs[i].getBoundingClientRect();
+      var ex = er.left + er.width/2, ey = er.top + er.height/2;
+      var dx = e.clientX - ex, dy = e.clientY - ey;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      var maxT = er.width * 0.28;
+      var travel = maxT * (1 - Math.exp(-dist / 55));
+      var angle  = Math.atan2(dy, dx);
+      pupil.style.transform = 'translate(' + (Math.cos(angle)*travel).toFixed(1) + 'px,' + (Math.sin(angle)*travel).toFixed(1) + 'px)';
     }
-    return null;
   }
 
-  // ── EYES: pupil tracking ──
-  function trackPupils(cx, cy) {
-    banner.querySelectorAll('.eyeball').forEach(eyeball => {
-      const pupil = eyeball.querySelector('.pupil');
-      if (!pupil) return;
-      const er = eyeball.getBoundingClientRect();
-      const ex = er.left + er.width  / 2;
-      const ey = er.top  + er.height / 2;
-      const dx = cx - ex, dy = cy - ey;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxTravel = er.width * 0.22; // 22% of eyeball radius
-      const travel = Math.min(dist * 0.15, maxTravel);
-      const angle  = Math.atan2(dy, dx);
-      pupil.style.transform = `translate(${(Math.cos(angle) * travel).toFixed(1)}px,${(Math.sin(angle) * travel).toFixed(1)}px)`;
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
   }
-
-  // ── Global mousemove: drives all 3 features ──
-  document.addEventListener('mousemove', function(e) {
-    const br     = banner.getBoundingClientRect();
-    const over   = e.clientX >= br.left && e.clientX <= br.right && e.clientY >= br.top && e.clientY <= br.bottom;
-    const pct    = Math.max(0, Math.min(1, (e.clientX - br.left) / br.width));
-    const { r, g, b } = getColor(pct);
-
-    // 💡 LIGHT — glow follows cursor, centered on cursor, visible only over banner
-    glow.style.left       = (e.clientX - br.left) + 'px';
-    glow.style.top        = (e.clientY - br.top)  + 'px';
-    glow.style.background = `radial-gradient(circle,rgba(${r},${g},${b},1) 0%,rgba(${r},${Math.round(g*0.6)},${Math.round(b*0.3)},0.55) 45%,transparent 70%)`;
-    glow.style.opacity    = over ? '1' : '0';
-
-    // 🟦 CUBE — highlight sub under cursor
-    if (over) {
-      if (_allSubs.length === 0) _allSubs = getAllSubs(); // lazy reinit
-      const hit = findSub(e.clientX, e.clientY);
-      const hitEl = hit ? hit.el : null;
-      if (hitEl !== _activeSub) {
-        hideSub(_activeSub); _activeSub = null;
-        if (hit) { showSub(hit.el, hit.qi, r, g, b); _activeSub = hit.el; }
-      } else if (_activeSub && hit) {
-        // Re-color the active sub as color shifts with cursor movement
-        showSub(_activeSub, hit.qi, r, g, b);
-      }
-    } else {
-      if (_activeSub) { hideSub(_activeSub); _activeSub = null; }
-    }
-
-    // 👀 EYES — pupils track cursor from anywhere on the page
-    trackPupils(e.clientX, e.clientY);
-  });
-
 })();
 
 </script>
