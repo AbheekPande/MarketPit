@@ -9169,20 +9169,16 @@ function showTVTab(tab, btn) {
   const theme = document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
 
   if (tab === 'indices') {
-    const syms = ['NASDAQ:AAPL','NASDAQ:MSFT','NASDAQ:GOOGL','NASDAQ:NVDA','NASDAQ:AMZN','NYSE:JPM'];
-    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">'
-      + syms.map(function(_,i){ return '<div id="tvIdx_'+i+'" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:220px;min-height:220px;"></div>'; }).join('')
+    el.innerHTML = '<div style="padding:14px;">'
+      + '<div id="tvUSScreener" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:620px;"></div>'
       + '</div>';
-    syms.forEach(function(sym,i){
-      setTimeout(function(){
-        _tvInject('tvIdx_'+i, 'embed-widget-mini-symbol-overview', {
-          symbol:sym, width:'100%', height:220,
-          locale:'en', dateRange:'1D', colorTheme:theme,
-          trendLineColor:'rgba(0,112,243,1)', underLineColor:'rgba(0,112,243,0.1)',
-          underLineBottomColor:'rgba(0,0,0,0)', isTransparent:true, autosize:true,
-        });
-      }, i*150);
-    });
+    setTimeout(function(){
+      _tvInject('tvUSScreener', 'embed-widget-screener', {
+        width:'100%', height:620,
+        defaultColumn:'overview', defaultScreen:'most_capitalized',
+        market:'america', showToolbar:true, colorTheme:theme, locale:'en', isTransparent:true,
+      });
+    }, 120);
 
   } else if (tab === 'stocks') {
     el.innerHTML = '<div style="padding:14px;">'
