@@ -3640,7 +3640,7 @@ function renderPosts() {
     // Map interest IDs to pit names and keywords
     const pitMap = {stocks:'Stocks',largecap:'Stocks',smallcap:'Stocks',ipo:'Stocks',dividends:'Stocks',intraday:'Stocks',swing:'Stocks',options:'Options',futures:'Options',technicals:'Stocks',scalping:'Stocks',bitcoin:'Crypto',ethereum:'Crypto',altcoins:'Crypto',defi:'Crypto',nft:'Crypto',web3:'Crypto',rbi:'Macro',fii:'Macro',inflation:'Macro',gdp:'Macro',globalmarkets:'Macro',gold:'Commodities',crudeoil:'Commodities',silver:'Commodities',agri:'Commodities',banking:'Stocks',it:'Stocks',pharma:'Stocks',auto:'Stocks',realestate:'Stocks',fmcg:'Stocks',energy:'Commodities',infra:'Stocks'};
     const interestedPits = new Set(interests.map(id => pitMap[id]).filter(Boolean));
-    const kwMap = {bitcoin:'btc',ethereum:'eth',gold:'gold',crudeoil:'crude oil',silver:'silver',options:futures:'futures',technicals:'technical',banking:'bank',pharma:'pharma',auto:'auto',intraday:'intraday',swing:'swing',ipo:'ipo'};
+    const kwMap = {bitcoin:'btc',ethereum:'eth',gold:'gold',crudeoil:'crude oil',silver:'silver',options:'options',futures:'futures',technicals:'technical',banking:'bank',pharma:'pharma',auto:'auto',intraday:'intraday',swing:'swing',ipo:'ipo'};
     const keywords = interests.map(id => kwMap[id]).filter(Boolean);
     filtered = posts.filter(p => {
       if (interestedPits.has(p.pit)) return true;
@@ -4791,7 +4791,7 @@ const INTEREST_TOPICS = [
   // Trading
   { id:'intraday',   label:'Intraday',          emoji:'⚡', cat:'Trading' },
   { id:'swing',      label:'Swing Trading',     emoji:'🎯', cat:'Trading' },
-  { id:    label:'Options',           emoji:'📈', cat:'Trading' },
+  { id:'options',    label:'Options',           emoji:'📈', cat:'Trading' },
   { id:'futures',    label:'Futures',           emoji:'🔮', cat:'Trading' },
   { id:'technicals', label:'Technical Analysis',emoji:'📐', cat:'Trading' },
   { id:'scalping',   label:'Scalping',          emoji:'⚡', cat:'Trading' },
