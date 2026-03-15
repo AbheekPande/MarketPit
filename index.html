@@ -1561,10 +1561,8 @@ header {
         <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Data as of March 2026 · Source: NSE/BSE/IPOWatch</div>
       </div>
       <div style="display:flex;gap:6px;">
-        <button onclick="switchIpoTab('open',this)" id="ipo_open" class="pcat-btn active-pcat">Open Now</button>
-        <button onclick="switchIpoTab('upcoming',this)" id="ipo_upcoming" class="pcat-btn">Upcoming</button>
-        <button onclick="switchIpoTab('allotment',this)" id="ipo_allotment" class="pcat-btn">Allotment</button>
-        <button onclick="switchIpoTab('listed',this)" id="ipo_listed" class="pcat-btn">Recently Listed</button>
+        <button onclick="switchIpoTab('upcoming',this)" id="ipo_upcoming" class="pcat-btn active-pcat">Upcoming</button>
+        <button onclick="switchIpoTab('open',this)" id="ipo_open" class="pcat-btn">Open Now</button>
       </div>
     </div>
     <div class="feed-scroll" id="ipoBody" style="padding:16px;"></div>
@@ -10732,22 +10730,16 @@ const IPO_DATA = {
   // ──────────────────────────────────────────────────────────────────────
 
   open: [
-    // ── ADD OPEN IPOs HERE ──
+    // ── ADD OPEN IPOs HERE (currently subscribed) ──
+  ],
+
+  upcoming: [
+    // ── ADD UPCOMING/RECENTLY CLOSED IPOs HERE (newest first) ──
     {name:'Innovision',open:'10 Mar 2026',close:'17 Mar 2026',price:'₹494–519',size:'₹305.76 Cr',
      lot:'27',minInvest:'₹14,013',exchange:'BSE & NSE',
      subscribed:'0.3x',qib:'0.95x',nii:'0.35x',rii:'0.26x',
      listDate:'20 Mar 2026',
      gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Commerce/Retail'},
-    {name:'GSP Crop Science Ltd',open:'16 Mar 2026',close:'18 Mar 2026',price:'₹304–320',size:'₹400 Cr',
-     lot:'46',minInvest:'₹14,720',exchange:'BSE & NSE',listDate:'24 Mar 2026',
-     gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Agriculture'},
-    {name:'Novus Loyalty Ltd',open:'17 Mar 2026',close:'20 Mar 2026',price:'₹139–146',size:'₹60.15 Cr',
-     lot:'1000',minInvest:'₹1,46,000',exchange:'BSE',listDate:'25 Mar 2026',
-     gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Fintech/SME'},
-  ],
-
-  upcoming: [
-    // ── ADD UPCOMING IPOs HERE ──
     {name:'GSP Crop Science Ltd',open:'16 Mar 2026',close:'18 Mar 2026',price:'₹304–320',size:'₹400 Cr',
      lot:'46',minInvest:'₹14,720',exchange:'BSE & NSE',listDate:'24 Mar 2026',
      gmp:'—',gmpPct:'—',rating:'⭐⭐⭐',sector:'Agriculture'},
@@ -10781,7 +10773,7 @@ const IPO_DATA = {
   ],
 };
 
-let _ipoTab = 'open';
+let _ipoTab = 'upcoming';
 function switchIpoTab(tab, btn) {
   _ipoTab = tab;
   document.querySelectorAll('#page-ipo .pcat-btn').forEach(b=>b.classList.remove('active-pcat'));
