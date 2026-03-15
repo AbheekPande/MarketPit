@@ -1731,6 +1731,8 @@ header {
       </div>
       <div style="display:flex;gap:6px;">
         <button class="pcat-btn active-pcat" onclick="filterEcono('all',this)">All</button>
+        <button class="pcat-btn" onclick="filterEcono('today',this)">📅 Today</button>
+        <button class="pcat-btn" onclick="filterEcono('tomorrow',this)">⏭ Tomorrow</button>
         <button class="pcat-btn" onclick="filterEcono('india',this)">🇮🇳 India</button>
         <button class="pcat-btn" onclick="filterEcono('global',this)">🌍 Global</button>
         <button class="pcat-btn" onclick="filterEcono('high',this)">🔴 High Impact</button>
@@ -8876,7 +8878,7 @@ function loadStrategyDetail(key) {
 // ═══════════════════════════════════════════════════════════════════
 // ECONOMIC CALENDAR
 // ═══════════════════════════════════════════════════════════════════
-let _econoData=[], _econoFilter='all';
+let _econoData=[], _econoFilter='all', _econoSource='Investing.com';
 
 // ══════════════════════════════════════════════════════════════
 // ECONOMIC CALENDAR — Hardcoded from Investing.com
@@ -9035,16 +9037,19 @@ function filterEcono(f,btn) {
 function renderEconoPage() {
   const el = document.getElementById('econoBody'); if (!el) return;
 
-  // Ensure we have data — if _econoData is empty, seed from static immediately
+  // Always seed from static
   if (!_econoData || !_econoData.length) _econoData = ECONO_STATIC.slice();
 
   const today = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr    = today.toISOString().split('T')[0];
+  const tomorrowStr = new Date(today.getTime() + 86400000).toISOString().split('T')[0];
 
   let data = _econoData.slice().sort((a,b) => a.date.localeCompare(b.date));
-  if (_econoFilter === 'india')  data = data.filter(d => d.country === 'IN');
-  else if (_econoFilter === 'global') data = data.filter(d => d.country !== 'IN');
-  else if (_econoFilter === 'high')   data = data.filter(d => d.impact === 'high');
+  if      (_econoFilter === 'today')    data = data.filter(d => d.date === todayStr);
+  else if (_econoFilter === 'tomorrow') data = data.filter(d => d.date === tomorrowStr);
+  else if (_econoFilter === 'india')    data = data.filter(d => d.country === 'IN');
+  else if (_econoFilter === 'global')   data = data.filter(d => d.country !== 'IN');
+  else if (_econoFilter === 'high')     data = data.filter(d => d.impact === 'high');
 
   const grouped = {};
   data.forEach(e => { if (!grouped[e.date]) grouped[e.date] = []; grouped[e.date].push(e); });
@@ -9057,24 +9062,26 @@ function renderEconoPage() {
     return;
   }
 
-  // Source badge
   let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px;">'
-    + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">MACRO EVENTS</div>'
-    + '<div style="font-size:9px;color:var(--text3);">' + (_econoSource||'') + '</div>'
+    + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">MACRO EVENTS — ' + data.length + ' EVENTS</div>'
+    + '<div style="font-size:9px;color:var(--text3);">Source: Investing.com</div>'
     + '</div>';
 
   Object.entries(grouped).sort(([a],[b]) => a.localeCompare(b)).forEach(([date, events]) => {
     const dObj     = new Date(date + 'T00:00:00');
-    const dayLabel = dObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    const dayLabel = dObj.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const isPast   = date < todayStr;
     const isToday  = date === todayStr;
+    const isTomorrow = date === tomorrowStr;
 
-    html += '<div style="margin-bottom:16px;' + (isPast ? 'opacity:0.55;' : '') + '">';
+    html += '<div style="margin-bottom:20px;' + (isPast ? 'opacity:0.55;' : '') + '">';
     // Date header
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px;">';
-    html += '<div style="font-weight:800;font-size:12px;color:' + (isToday ? 'var(--accent)' : isPast ? 'var(--text3)' : 'var(--text)') + ';">' + dayLabel + '</div>';
-    if (isToday) html += '<div style="font-size:9px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:6px;font-weight:800;">TODAY</div>';
-    if (isPast)  html += '<div style="font-size:9px;color:var(--text3);">Past</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 12px;background:var(--bg3);border-radius:8px;">';
+    html += '<div style="font-weight:800;font-size:12px;font-family:\'Space Mono\',monospace;color:' + (isToday ? 'var(--accent)' : isTomorrow ? 'var(--green)' : isPast ? 'var(--text3)' : 'var(--text)') + ';">' + dayLabel.toUpperCase() + '</div>';
+    if (isToday)    html += '<div style="font-size:9px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:6px;font-weight:800;">TODAY</div>';
+    if (isTomorrow) html += '<div style="font-size:9px;background:var(--green);color:#fff;padding:2px 8px;border-radius:6px;font-weight:800;">TOMORROW</div>';
+    if (isPast)     html += '<div style="font-size:9px;color:var(--text3);margin-left:4px;">Past</div>';
+    html += '<div style="margin-left:auto;font-size:10px;color:var(--text3);">' + events.length + ' events</div>';
     html += '</div>';
 
     events.forEach(e => {
@@ -9099,21 +9106,21 @@ function renderEconoPage() {
       html += '</div>';
 
       // Actual
-      html += '<div style="text-align:center;flex-shrink:0;min-width:48px;">'
-        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Actual</div>'
+      html += '<div style="text-align:center;flex-shrink:0;min-width:52px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">ACTUAL</div>'
         + '<div style="font-weight:800;font-size:12px;font-family:\'Space Mono\',monospace;color:' + (e.actual ? 'var(--green)' : 'var(--text3)') + ';">' + (e.actual||'—') + '</div>'
         + '</div>';
 
       // Forecast
-      html += '<div style="text-align:center;flex-shrink:0;min-width:52px;">'
-        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Forecast</div>'
-        + '<div style="font-weight:700;font-size:12px;font-family:\'Space Mono\',monospace;">' + (e.forecast||'—') + '</div>'
+      html += '<div style="text-align:center;flex-shrink:0;min-width:56px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">FORECAST</div>'
+        + '<div style="font-weight:700;font-size:12px;font-family:\'Space Mono\',monospace;color:var(--text2);">' + (e.forecast||'—') + '</div>'
         + '</div>';
 
       // Previous
-      html += '<div style="text-align:center;flex-shrink:0;min-width:48px;">'
-        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">Previous</div>'
-        + '<div style="font-size:12px;font-family:\'Space Mono\',monospace;color:var(--text2);">' + (e.prev||'—') + '</div>'
+      html += '<div style="text-align:center;flex-shrink:0;min-width:52px;">'
+        + '<div style="font-size:9px;color:var(--text3);margin-bottom:3px;">PREV</div>'
+        + '<div style="font-size:12px;font-family:\'Space Mono\',monospace;color:var(--text3);">' + (e.prev||'—') + '</div>'
         + '</div>';
 
       html += '</div>'; // end event row
