@@ -1388,12 +1388,6 @@ def fetch_live_ipo_data():
 @app.route("/api/ipo")
 def api_ipo():
     """Live IPO data — BSE API, NSE proxy, Chittorgarh scrape. Cache: 30 min."""
-    from datetime import datetime as _dt2
-
-
-@app.route("/api/ipo")
-def api_ipo():
-    """Live IPO data — BSE API, NSE proxy, Chittorgarh scrape. Cache: 30 min."""
     # ── Static fallback ─────────────────────────────────────────────────
     static_data = {
         "upcoming": [
