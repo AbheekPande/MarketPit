@@ -10133,6 +10133,362 @@ if (document.readyState === 'loading') {
   _mpInit();
 }
 
+
+// ═══════════════════════════════════════════════════════
+// STORIES BAR — Topics, open/close, live news
+// ═══════════════════════════════════════════════════════
+
+const STORY_TOPICS = [
+  { id:'markets',  icon:'📊', label:'Markets',   color:'#0070f3', query:'NSE Nifty stock market India today' },
+  { id:'results',  icon:'📋', label:'Results',   color:'#00a854', query:'India quarterly earnings results 2026' },
+  { id:'rbi',      icon:'🏛️', label:'RBI/Macro', color:'#8b5cf6', query:'RBI monetary policy India economy 2026' },
+  { id:'global',   icon:'🌍', label:'Global',    color:'#f59e0b', query:'global stock market Fed economy 2026' },
+  { id:'crypto',   icon:'₿',  label:'Crypto',    color:'#f7931a', query:'Bitcoin cryptocurrency market 2026' },
+  { id:'ipo',      icon:'🚀', label:'IPO',       color:'#e53935', query:'India IPO listing 2026' },
+];
+
+let _storyCache = {};
+
+async function loadStoriesBar() {
+  const bar = document.getElementById('storiesBar');
+  if (!bar) return;
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;padding-right:8px;border-right:1px solid var(--border);">
+      <span style="font-size:8px;font-weight:700;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:1.5px;white-space:nowrap;">BRIEFINGS</span>
+    </div>
+    ${STORY_TOPICS.map(t => `
+    <button onclick="openStory('${t.id}')"
+      style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all 0.15s;white-space:nowrap;font-family:'DM Sans',sans-serif;"
+      onmouseover="this.style.background='${t.color}12';this.style.borderColor='${t.color}66'"
+      onmouseout="this.style.background='var(--bg3)';this.style.borderColor='var(--border)'">
+      <span style="font-size:11px;line-height:1;">${t.icon}</span>
+      <span style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.2px;">${t.label}</span>
+    </button>`).join('')}`;
+}
+
+function closeStoryModal() {
+  document.getElementById('storyModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function _timeAgo(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff/60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m+'m ago';
+    const h = Math.floor(m/60);
+    if (h < 24) return h+'h ago';
+    return Math.floor(h/24)+'d ago';
+  } catch(e) { return ''; }
+}
+
+function renderStoryItems(items, topic, bodyEl) {
+  bodyEl.innerHTML = items.map((item, i) => {
+    const ago = _timeAgo(item.date);
+    const isTop = i === 0;
+    return `<a href="${item.link.replace(/'/g,'')}" target="_blank" rel="noopener noreferrer"
+      style="display:block;text-decoration:none;padding:12px 14px;border-bottom:1px solid var(--border);transition:background 0.12s;"
+      onmouseover="this.style.background='var(--bg3)'"
+      onmouseout="this.style.background='transparent'">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:10px;font-weight:700;color:${topic.color};letter-spacing:0.3px;flex-shrink:0;">${item.source||'News'}</span>
+        ${ago?`<span style="font-size:9px;color:var(--text3);margin-left:auto;flex-shrink:0;">${ago}</span>`:''}
+      </div>
+      <div style="font-size:${isTop?'13.5':'12.5'}px;font-weight:${isTop?'600':'500'};color:var(--text);line-height:1.5;margin-bottom:4px;">${item.title}</div>
+      <div style="font-size:10px;color:var(--accent);font-weight:600;">Read more →</div>
+    </a>`;
+  }).join('');
+}
+
+async function openStory(topicId) {
+  const topic = STORY_TOPICS.find(t => t.id === topicId);
+  if (!topic) return;
+  const modal   = document.getElementById('storyModal');
+  const iconEl  = document.getElementById('storyModalIcon');
+  const titleEl = document.getElementById('storyModalTitle');
+  const subEl   = document.getElementById('storyModalSub');
+  const bodyEl  = document.getElementById('storyModalBody');
+  if (!modal) return;
+
+  iconEl.textContent = topic.icon;
+  iconEl.style.background = topic.color+'22';
+  iconEl.style.border = '2px solid '+topic.color;
+  titleEl.textContent = topic.label+' — Live Stories';
+  subEl.textContent = 'Fetching latest news…';
+  bodyEl.innerHTML = '<div style="text-align:center;padding:40px;"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;color:var(--text3);">Loading live stories…</div></div>';
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  if (_storyCache[topicId] && Date.now()-_storyCache[topicId].ts < 180000) {
+    subEl.textContent = 'Top stories right now';
+    renderStoryItems(_storyCache[topicId].items, topic, bodyEl);
+    return;
+  }
+
+  const RSS = {
+    markets: 'https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en',
+    results: 'https://news.google.com/rss/search?q=india+quarterly+results+earnings+2026&hl=en-IN&gl=IN&ceid=IN:en',
+    rbi:     'https://news.google.com/rss/search?q=RBI+repo+rate+india+economy+2026&hl=en-IN&gl=IN&ceid=IN:en',
+    global:  'https://news.google.com/rss/search?q=global+stock+market+fed+interest+rate&hl=en&gl=US&ceid=US:en',
+    crypto:  'https://news.google.com/rss/search?q=bitcoin+ethereum+crypto+market+2026&hl=en&gl=US&ceid=US:en',
+    ipo:     'https://news.google.com/rss/search?q=india+IPO+listing+2026+NSE+BSE&hl=en-IN&gl=IN&ceid=IN:en',
+  };
+  const PROXIES = [
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  ];
+
+  let items = [];
+  const url = RSS[topicId] || RSS.markets;
+  outer: for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy(url), {signal:AbortSignal.timeout(7000)});
+      if (!res.ok) continue;
+      const raw = await res.text();
+      const text = raw.startsWith('{') ? JSON.parse(raw).contents : raw;
+      if (!text || !text.includes('<item>')) continue;
+      const xml = new DOMParser().parseFromString(text, 'text/xml');
+      items = Array.from(xml.querySelectorAll('item')).slice(0,6).map(el => ({
+        title:  el.querySelector('title')?.textContent?.trim().replace(/<[^>]+>/g,'') || '',
+        link:   el.querySelector('link')?.textContent?.trim() || '#',
+        date:   el.querySelector('pubDate')?.textContent?.trim() || '',
+        source: el.querySelector('source')?.textContent?.trim() || 'Google News',
+      })).filter(i => i.title.length > 8);
+      if (items.length >= 2) break outer;
+    } catch(e) { continue; }
+  }
+
+  if (items.length) {
+    _storyCache[topicId] = {ts:Date.now(), items};
+    subEl.textContent = items.length+' live stories';
+    renderStoryItems(items, topic, bodyEl);
+  } else {
+    bodyEl.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text3);">
+      <div style="font-size:36px;margin-bottom:10px;">📡</div>
+      <div style="font-weight:700;font-size:14px;color:var(--text2);margin-bottom:6px;">Could not load live news</div>
+      <div style="font-size:12px;">Check your internet connection and try again.</div>
+      <button onclick="openStory('${topicId}')" style="margin-top:14px;padding:8px 20px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;cursor:pointer;">↻ Retry</button>
+    </div>`;
+    subEl.textContent = 'Could not load';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// NEWS PAGE
+// ═══════════════════════════════════════════════════════
+
+const NEWS_URLS = {
+  markets:     'https://news.google.com/rss/search?q=indian+stock+market+nifty+sensex&hl=en-IN&gl=IN&ceid=IN:en',
+  stocks:      'https://news.google.com/rss/search?q=NSE+BSE+india+stocks+today&hl=en-IN&gl=IN&ceid=IN:en',
+  economy:     'https://news.google.com/rss/search?q=india+economy+RBI+inflation+2026&hl=en-IN&gl=IN&ceid=IN:en',
+  crypto:      'https://news.google.com/rss/search?q=bitcoin+crypto+cryptocurrency+today&hl=en-IN&gl=IN&ceid=IN:en',
+  commodities: 'https://news.google.com/rss/search?q=gold+price+crude+oil+india+today&hl=en-IN&gl=IN&ceid=IN:en',
+};
+
+async function loadNews(cat, btn) {
+  document.querySelectorAll('#newsCatBtns button').forEach(b => {
+    b.style.borderColor='var(--border)'; b.style.background='transparent'; b.style.color='var(--text3)';
+  });
+  if (btn) { btn.style.borderColor='var(--accent)'; btn.style.background='rgba(0,112,243,0.1)'; btn.style.color='var(--accent)'; }
+  const container = document.getElementById('newsContainer');
+  if (!container) return;
+
+  if (_storyCache['news_'+cat] && Date.now()-_storyCache['news_'+cat].ts < 300000) {
+    renderNews(_storyCache['news_'+cat].items); return;
+  }
+
+  container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching latest news…</div></div>';
+  const url = NEWS_URLS[cat] || NEWS_URLS.markets;
+  const PROXIES = [
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  ];
+
+  let items = [];
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy(url), {signal:AbortSignal.timeout(8000)});
+      if (!res.ok) continue;
+      const raw = await res.text();
+      const text = raw.startsWith('{') ? JSON.parse(raw).contents : raw;
+      if (!text || !text.includes('<item>')) continue;
+      const xml = new DOMParser().parseFromString(text,'text/xml');
+      items = Array.from(xml.querySelectorAll('item')).slice(0,14).map(el => ({
+        title:  el.querySelector('title')?.textContent?.trim() || '',
+        link:   el.querySelector('link')?.textContent?.trim() || '#',
+        date:   el.querySelector('pubDate')?.textContent?.trim() || '',
+        source: el.querySelector('source')?.textContent?.trim() || 'Google News',
+      })).filter(i => i.title.length > 5);
+      if (items.length) break;
+    } catch(e) { continue; }
+  }
+
+  if (items.length) {
+    _storyCache['news_'+cat] = {ts:Date.now(), items};
+    renderNews(items);
+  } else {
+    container.innerHTML = `<div style="text-align:center;padding:48px;">
+      <div style="font-size:32px;margin-bottom:12px;">📡</div>
+      <div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Try refreshing or check your connection.</div>
+      <button onclick="loadNews('${cat}', document.getElementById('nc_${cat}'))" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>
+    </div>`;
+  }
+}
+
+function renderNews(items) {
+  const container = document.getElementById('newsContainer');
+  if (!items || !items.length || !container) return;
+  const srcColor = src => {
+    if (!src) return 'var(--accent)';
+    const s = src.toLowerCase();
+    if (s.includes('economic times')) return '#ff6b35';
+    if (s.includes('moneycontrol'))   return '#00aaff';
+    if (s.includes('reuters'))        return '#ff9900';
+    if (s.includes('bloomberg'))      return '#6666ff';
+    if (s.includes('mint'))           return '#00cc88';
+    return 'var(--accent)';
+  };
+  container.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0 16px;">'
+    + items.map((item, i) => {
+        const col = srcColor(item.source);
+        const ago = _timeAgo(item.date);
+        const big = i === 0;
+        const url = item.link.startsWith('http') ? item.link.replace(/'/g,'') : '#';
+        return `<div style="${big?'grid-column:1/-1;':''}background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:border-color 0.2s,transform 0.15s;"
+          onmouseover="this.style.borderColor='var(--border2)';this.style.transform='translateY(-1px)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'"
+          onclick="window.open('${url}','_blank')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:10px;font-weight:700;color:${col};background:${col}18;border:1px solid ${col}33;border-radius:4px;padding:2px 8px;">${item.source}</span>
+            ${ago?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);">${ago}</span>`:''}
+          </div>
+          <div style="font-size:${big?'15':'13'}px;font-weight:700;color:var(--text);line-height:1.45;margin-bottom:6px;">${item.title}</div>
+          <div style="margin-top:10px;font-size:11px;color:var(--accent);font-weight:600;">Read more →</div>
+        </div>`;
+      }).join('')
+    + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// MISSING UI FUNCTIONS
+// ═══════════════════════════════════════════════════════
+
+// MMI tab switcher
+function switchMMITab(tab, btn) {
+  window._mmiTab = tab;
+  ['stocks','crypto','commod'].forEach(t => {
+    const b = document.getElementById('mmiTab_'+t);
+    if (!b) return;
+    b.style.background = t===tab ? 'var(--accent)' : 'transparent';
+    b.style.color      = t===tab ? '#fff' : 'var(--text3)';
+  });
+  const score = typeof _calcMMIForTab === 'function' ? _calcMMIForTab(tab) : null;
+  if (score) _updateMMIDisplay(score, tab==='crypto'?'CoinGecko · Live':tab==='commod'?'MCX/Commodity':'NSE Live Data');
+}
+
+// ETF filter
+let _etfFilter = 'all';
+function filterETF(cat, btn) {
+  _etfFilter = cat;
+  document.querySelectorAll('#etfCatBtns .pcat-btn').forEach(b => b.classList.remove('active-pcat'));
+  if (btn) btn.classList.add('active-pcat');
+  renderETF();
+}
+
+// Econo filter
+function filterEcono(f, btn) {
+  window._econoFilter = f;
+  document.querySelectorAll('#page-econocal .pcat-btn').forEach(b => b.classList.remove('active-pcat'));
+  if (btn) btn.classList.add('active-pcat');
+  if (typeof renderEconoPage === 'function') renderEconoPage();
+}
+
+// TV tab switcher
+let _tvTab = 'stocks';
+function showTVTab(tab, btn) {
+  _tvTab = tab;
+  document.querySelectorAll('[id^="tvtab_"]').forEach(b => {
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--text3)';
+    b.style.fontWeight = '600';
+  });
+  if (btn) { btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700'; }
+  const el = document.getElementById('tvBody');
+  if (!el) return;
+  const theme = document.body.classList.contains('theme-dark') || document.body.classList.contains('theme-dim') ? 'dark' : 'light';
+  if (tab==='stocks') {
+    el.innerHTML = '<div style="padding:14px;"><div id="tvScreener" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:620px;"></div></div>';
+    setTimeout(() => _tvInject('tvScreener','embed-widget-screener',{width:'100%',height:620,defaultColumn:'overview',defaultScreen:'most_capitalized',market:'india',showToolbar:true,colorTheme:theme,locale:'en',isTransparent:true}), 120);
+  } else if (tab==='crypto') {
+    const syms = ['BINANCE:BTCUSDT','BINANCE:ETHUSDT','BINANCE:BNBUSDT','BINANCE:SOLUSDT','BINANCE:XRPUSDT','BINANCE:DOGEUSDT'];
+    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">' + syms.map((_,i)=>`<div id="tvC${i}" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:210px;"></div>`).join('') + '</div>';
+    syms.forEach((sym,i) => setTimeout(()=>_tvInject('tvC'+i,'embed-widget-mini-symbol-overview',{symbol:sym,width:'100%',height:210,locale:'en',dateRange:'1D',colorTheme:theme,isTransparent:true,autosize:true}),i*120));
+  } else if (tab==='commodities') {
+    const items = [{s:'TVC:GOLD',l:'Gold'},{s:'TVC:SILVER',l:'Silver'},{s:'TVC:USOIL',l:'WTI Crude'},{s:'TVC:UKOIL',l:'Brent'},{s:'TVC:NATGAS',l:'Nat Gas'},{s:'TVC:COPPER',l:'Copper'}];
+    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;">' + items.map((_,i)=>`<div id="tvCom${i}" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:210px;"></div>`).join('') + '</div>';
+    items.forEach((item,i) => setTimeout(()=>_tvInject('tvCom'+i,'embed-widget-mini-symbol-overview',{symbol:item.s,width:'100%',height:210,locale:'en',dateRange:'1D',colorTheme:theme,isTransparent:true,autosize:true}),i*120));
+  } else if (tab==='chart') {
+    el.innerHTML = '<div style="padding:14px;"><div id="tvChartMain" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;height:500px;"></div></div>';
+    setTimeout(()=>_tvInject('tvChartMain','embed-widget-advanced-chart',{symbol:'NSE:NIFTY50',interval:'D',timezone:'Asia/Kolkata',theme,style:'1',locale:'en',width:'100%',height:500,studies:['RSI@tv-basicstudies'],isTransparent:true}),150);
+  }
+}
+
+function _tvInject(containerId, widgetName, config) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'tradingview-widget-container';
+  wrap.style.cssText = 'width:100%;height:100%;';
+  const inner = document.createElement('div');
+  inner.className = 'tradingview-widget-container__widget';
+  inner.style.cssText = 'width:100%;height:100%;';
+  wrap.appendChild(inner);
+  el.appendChild(wrap);
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/'+widgetName+'.js';
+  script.async = true;
+  script.textContent = JSON.stringify(config);
+  wrap.appendChild(script);
+}
+
+// Unlisted tab switcher
+let _unlistedTab = 'top';
+function switchUnlistedTab(tab, btn) {
+  _unlistedTab = tab;
+  document.querySelectorAll('[id^="utab_"]').forEach(b => {
+    b.style.borderBottomColor='transparent'; b.style.color='var(--text3)'; b.style.fontWeight='600';
+  });
+  if (btn) { btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.fontWeight='700'; }
+  renderUnlisted();
+}
+
+// IPO tab switcher
+function switchIpoTab(tab, btn) {
+  document.querySelectorAll('[id^="itab_"]').forEach(b => {
+    b.style.borderBottomColor='transparent'; b.style.color='var(--text3)';
+  });
+  if (btn) { btn.style.borderBottomColor='var(--accent)'; btn.style.color='var(--accent)'; }
+  renderIpoPage();
+}
+
+// Keyboard help / misc stubs
+function showKeyboardHelp() {
+  showToast('⌨ Shortcuts: Esc=close modal, / = search', 'var(--accent)');
+}
+function showPage(page) {
+  const tab = document.querySelector('.nav-tab');
+  switchTab(tab, page);
+}
+function startRoom() {
+  showToast('🎙️ Live Rooms coming soon!', 'var(--accent)');
+}
+
 </script>
 
 <!-- Brightness overlay -->
