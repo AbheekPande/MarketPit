@@ -12579,159 +12579,83 @@ function renderHeatmap() {
 
 // ── CURSOR SPOTLIGHT HERO ──
 (function() {
-  var heroEl, glow, glow2, cursor, animFrame;
-  var mouseX=0,mouseY=0,currentX=0,currentY=0;
-
   function init() {
-    heroEl = document.getElementById('spotlightHero');
-    glow   = document.getElementById('spotlightGlow');
-    glow2  = document.getElementById('spotlightGlow2');
-    cursor = document.getElementById('spotlightCursor');
-    if(!heroEl||!glow) return;
-    var rect=heroEl.getBoundingClientRect();
-    mouseX=currentX=rect.width/2; mouseY=currentY=rect.height/2;
-    setPos(currentX,currentY);
+    var hero   = document.getElementById('spotlightHero');
+    var glow   = document.getElementById('spotlightGlow');
+    var glow2  = document.getElementById('spotlightGlow2');
+    var cursor = document.getElementById('spotlightCursor');
+    if (!hero || !glow) { setTimeout(init, 100); return; }
 
-    heroEl.addEventListener('mousemove',function(e){
-      var r=heroEl.getBoundingClientRect();
-      mouseX=e.clientX-r.left; mouseY=e.clientY-r.top;
-      if(!animFrame)animFrame=requestAnimationFrame(animate);
+    // Smoothed position state
+    var tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
+
+    function setGlow(x, y) {
+      glow.style.left  = x + 'px';
+      glow.style.top   = y + 'px';
+      if (glow2)  { glow2.style.left  = x + 'px'; glow2.style.top  = y + 'px'; }
+      if (cursor) { cursor.style.left = x + 'px'; cursor.style.top = y + 'px'; }
+    }
+
+    function smooth() {
+      cx += (tx - cx) * 0.10;
+      cy += (ty - cy) * 0.10;
+      setGlow(cx, cy);
+      // Keep cursor dot exactly on mouse, glow smoothly follows
+      if (cursor) { cursor.style.left = tx + 'px'; cursor.style.top = ty + 'px'; }
+      if (Math.abs(tx - cx) > 0.3 || Math.abs(ty - cy) > 0.3) {
+        raf = requestAnimationFrame(smooth);
+      } else {
+        raf = null;
+      }
+    }
+
+    hero.addEventListener('mousemove', function(e) {
+      var r = hero.getBoundingClientRect();
+      tx = e.clientX - r.left;
+      ty = e.clientY - r.top;
+      if (!raf) raf = requestAnimationFrame(smooth);
+
+      // Show everything
+      glow.style.opacity = '1';
+      if (glow2)  glow2.style.opacity  = '0.7';
+      if (cursor) cursor.style.opacity = '1';
     });
-    heroEl.addEventListener('mouseenter',function(){
-      glow.style.opacity='1';
-      if(glow2)glow2.style.opacity='0.6';
-      if(cursor)cursor.style.opacity='1';
+
+    hero.addEventListener('mouseleave', function() {
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+      glow.style.opacity = '0';
+      if (glow2)  glow2.style.opacity  = '0';
+      if (cursor) cursor.style.opacity = '0';
     });
-    heroEl.addEventListener('mouseleave',function(){
-      glow.style.opacity='0.3';
-      if(glow2)glow2.style.opacity='0.2';
-      if(cursor)cursor.style.opacity='0';
-      cancelAnimationFrame(animFrame);animFrame=null;
+
+    // Click ripple
+    hero.addEventListener('click', function(e) {
+      var r = hero.getBoundingClientRect();
+      var ripple = document.createElement('div');
+      ripple.style.cssText = 'position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(0,112,243,0.7);left:'+(e.clientX-r.left)+'px;top:'+(e.clientY-r.top)+'px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;';
+      hero.appendChild(ripple);
+      requestAnimationFrame(function() {
+        ripple.style.transform = 'translate(-50%,-50%) scale(25)';
+        ripple.style.opacity   = '0';
+      });
+      setTimeout(function() { ripple.remove(); }, 700);
     });
-    updateHeroPrices();
-    setInterval(updateHeroPrices, 30000);
-    heroEl.addEventListener('click',function(e){
-      var r=heroEl.getBoundingClientRect();
-      var x=e.clientX-r.left,y=e.clientY-r.top;
-      var ripple=document.createElement('div');
-      ripple.style.cssText='position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);left:'+x+'px;top:'+y+'px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;';
-      heroEl.appendChild(ripple);
-      requestAnimationFrame(function(){ripple.style.transform='translate(-50%,-50%) scale(20)';ripple.style.opacity='0';});
-      setTimeout(function(){ripple.remove();},700);
-    });
-  }
 
-  function setPos(x,y){
-    if(glow){glow.style.left=x+'px';glow.style.top=y+'px';}
-    if(glow2){glow2.style.left=x+'px';glow2.style.top=y+'px';}
-    if(cursor){cursor.style.left=x+'px';cursor.style.top=y+'px';}
-  }
-
-  function animate(){
-    currentX+=(mouseX-currentX)*0.12;
-    currentY+=(mouseY-currentY)*0.12;
-    setPos(currentX,currentY);
-    if(cursor){cursor.style.left=mouseX+'px';cursor.style.top=mouseY+'px';}
-    animFrame=requestAnimationFrame(animate);
-  }
-
-
-  const HERO_SYMBOLS = [
-    { id: 'heroNifty',     yfSym: '%5ENSEI',    label: 'NIFTY 50',   prefix: '',  color: '#0070f3', fmt: 'IN' },
-    { id: 'heroBankNifty', yfSym: '%5ENSEBANK', label: 'BANK NIFTY', prefix: '',  color: '#0070f3', fmt: 'IN' },
-    { id: 'heroBtc',       yfSym: 'BTC-USD',    label: 'BITCOIN',    prefix: '$', color: '#f5a623', fmt: 'US' },
-  ];
-
-  const HERO_PROXIES = [
-    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  ];
-
-  async function fetchHeroPrice(sym) {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m&range=1d`;
-    for (const proxyFn of HERO_PROXIES) {
-      try {
-        const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(7000) });
-        if (!r.ok) continue;
-        const raw = await r.text();
-        let parsed;
-        try { const wrap = JSON.parse(raw); parsed = wrap.contents ? JSON.parse(wrap.contents) : wrap; }
-        catch(e) { parsed = JSON.parse(raw); }
-        const meta = parsed?.chart?.result?.[0]?.meta;
-        if (!meta?.regularMarketPrice) continue;
-        const price   = meta.regularMarketPrice;
-        const chgPct  = meta.regularMarketChangePercent   // direct % field — most reliable
-                     ?? (meta.previousClose && meta.previousClose > 0
-                         ? ((price - meta.previousClose) / meta.previousClose * 100)
-                         : (meta.chartPreviousClose && meta.chartPreviousClose > 0
-                             ? ((price - meta.chartPreviousClose) / meta.chartPreviousClose * 100)
-                             : null));
-        return { price, chgPct };
-      } catch(e) { continue; }
-    }
-    throw new Error('all proxies failed');
-  }
-
-  function renderHeroItem(el, s, price, chgPct, up) {
-    if (!el || !price) return;
-    const fmtPrice = s.fmt === 'IN'
-      ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-      : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
-    const sign = up ? '+' : '';
-    const chgStr = chgPct != null ? `${sign}${chgPct.toFixed(2)}%` : '';
-    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span>`
-      + (chgStr ? `<span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${chgStr}</span>` : '');
-    el.style.transform = 'scale(1.06)';
-    el.style.transition = 'transform 0.2s';
-    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
-  }
-
-  function updateHeroFromLiveStocks() {
-    const idx = window._liveIndices || {};
-    let gotNifty = false, gotBank = false, gotBtc = false;
-    const niftyEl  = document.getElementById('heroNifty');
-    const niftyData = idx['NIFTY 50'] || idx['NIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='NIFTY'||s.sym==='NIFTY50'));
-    if (niftyEl && niftyData?.price) {
-      const c = parseFloat((niftyData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(c)?null:c, (niftyData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotNifty = true;
-    }
-    const bankEl   = document.getElementById('heroBankNifty');
-    const bankData  = idx['NIFTY BANK'] || idx['BANKNIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BANKNIFTY'));
-    if (bankEl && bankData?.price) {
-      const c = parseFloat((bankData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(c)?null:c, (bankData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotBank = true;
-    }
-    const btcEl    = document.getElementById('heroBtc');
-    const btcData   = (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD'));
-    if (btcEl && btcData?.price) {
-      const c = parseFloat((btcData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(c)?null:c, (btcData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotBtc = true;
-    }
-    return gotNifty && gotBtc;
-  }
-
-  async function updateHeroPrices() {
-    const gotLive = updateHeroFromLiveStocks();
-    if (gotLive) return;
-    for (const s of HERO_SYMBOLS) {
-      const el = document.getElementById(s.id);
-      if (!el) continue;
-      try {
-        const { price, chgPct } = await fetchHeroPrice(s.yfSym);
-        if (!price) continue;
-        renderHeroItem(el, s, price, chgPct, chgPct == null ? true : chgPct >= 0);
-      } catch(e) {}
+    // Centre glow initially
+    var r = hero.getBoundingClientRect();
+    if (r.width > 0) {
+      cx = tx = r.width  / 2;
+      cy = ty = r.height / 2;
+      setGlow(cx, cy);
     }
   }
 
-  window.updateHeroPrices = updateHeroPrices;
-
-  // Direct call - spotlightHero is in DOM before this script runs
-  setTimeout(init, 0);
+  // Wait for layout — use requestAnimationFrame after DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 100); });
+  } else {
+    setTimeout(init, 100);
+  }
 })();
 
 
