@@ -1331,45 +1331,56 @@ header {
 
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
-    <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:crosshair;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
-      <!-- Grid lines background -->
-      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
-      <!-- Spotlight glow — JS positions via left/top directly -->
-      <div id="spotlightGlow" style="position:absolute;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(30,120,255,0.9) 0%,rgba(0,80,200,0.5) 35%,transparent 70%);pointer-events:none;top:0;left:0;opacity:0;transform:translate(-50%,-50%);z-index:1;mix-blend-mode:screen;"></div>
-      <!-- Secondary accent glow -->
-      <div id="spotlightGlow2" style="position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(120,60,255,0.8) 0%,transparent 70%);pointer-events:none;top:0;left:0;opacity:0;transform:translate(-50%,-50%);z-index:1;mix-blend-mode:screen;"></div>
-      <!-- Custom cursor dot -->
-      <div id="spotlightCursor" style="position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;pointer-events:none;box-shadow:0 0 0 2px rgba(0,112,243,0.8),0 0 20px rgba(255,255,255,0.9);top:0;left:0;z-index:20;transform:translate(-50%,-50%);opacity:0;"></div>
-      <!-- Content -->
-      <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
-        <div style="display:flex;gap:20px;margin-top:8px;pointer-events:none;" id="heroPricesRow">
-          <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
-          </div>
-          <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
-          <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
-          </div>
-          <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
-          <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-            <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
-          </div>
-        </div>
+    <div id="spotlightHero"
+  style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);"
+  onmousemove="
+    var r=this.getBoundingClientRect();
+    var x=event.clientX-r.left, y=event.clientY-r.top;
+    var g1=document.getElementById('sg1'), g2=document.getElementById('sg2');
+    g1.style.left=x+'px'; g1.style.top=y+'px'; g1.style.opacity='1';
+    g2.style.left=x+'px'; g2.style.top=y+'px'; g2.style.opacity='1';
+  "
+  onmouseleave="
+    document.getElementById('sg1').style.opacity='0';
+    document.getElementById('sg2').style.opacity='0';
+  ">
+
+  <!-- Grid lines -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
+
+  <!-- Spotlight glows — moved by inline onmousemove -->
+  <div id="sg1" style="position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.06) 50%,transparent 100%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:left 0.08s ease-out,top 0.08s ease-out,opacity 0.3s ease;"></div>
+  <div id="sg2" style="position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,255,255,0.4) 50%,transparent 100%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:left 0.04s ease-out,top 0.04s ease-out,opacity 0.3s ease;box-shadow:0 0 8px rgba(255,255,255,0.6),0 0 2px rgba(255,255,255,1);"></div>
+
+  <!-- Content -->
+  <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
+    <div style="display:flex;gap:20px;margin-top:8px;pointer-events:none;" id="heroPricesRow">
+      <div style="text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
       </div>
-      <!-- Corner decorations -->
-      <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO</div>
-      <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;pointer-events:none;">● LIVE</div>
-      <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO · COMMODITIES</div>
+      <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
+      </div>
+      <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
+      </div>
     </div>
+  </div>
 
+  <!-- Corner decorations -->
+  <div style="position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO</div>
+  <div style="position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(0,168,84,0.6);letter-spacing:1px;pointer-events:none;">● LIVE</div>
+  <div style="position:absolute;bottom:12px;left:14px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px;pointer-events:none;">NSE · BSE · CRYPTO · COMMODITIES</div>
+</div>
 
-
-    <!-- ── NEWS STORIES BAR ── -->
+<!-- ── NEWS STORIES BAR ── -->
     <div id="storiesBar" style="padding:12px 12px 4px;display:flex;gap:10px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
       <!-- Populated by JS -->
     </div>
@@ -12577,55 +12588,7 @@ function renderHeatmap() {
 
 
 
-// ── CURSOR SPOTLIGHT HERO ──
-(function() {
-  function setup() {
-    var hero = document.getElementById('spotlightHero');
-    var g1   = document.getElementById('spotlightGlow');
-    var g2   = document.getElementById('spotlightGlow2');
-    var dot  = document.getElementById('spotlightCursor');
 
-    if (!hero || !g1) { setTimeout(setup, 100); return; }
-
-    function move(x, y) {
-      g1.style.left = x + 'px'; g1.style.top = y + 'px'; g1.style.opacity = '1';
-      if (g2)  { g2.style.left  = x + 'px'; g2.style.top  = y + 'px'; g2.style.opacity  = '1'; }
-      if (dot) { dot.style.left = x + 'px'; dot.style.top = y + 'px'; dot.style.opacity = '1'; }
-    }
-
-    function hide() {
-      g1.style.opacity = '0';
-      if (g2)  g2.style.opacity  = '0';
-      if (dot) dot.style.opacity = '0';
-    }
-
-    var wasInside = false;
-    window.addEventListener('mousemove', function(e) {
-      var r = hero.getBoundingClientRect();
-      var x = e.clientX - r.left;
-      var y = e.clientY - r.top;
-      var inside = x >= 0 && x <= r.width && y >= 0 && y <= r.height;
-      if (inside) { wasInside = true; move(x, y); }
-      else if (wasInside) { wasInside = false; hide(); }
-    }, { passive: true });
-
-    // Click ripple
-    hero.addEventListener('click', function(e) {
-      var r = hero.getBoundingClientRect();
-      var d = document.createElement('div');
-      d.style.cssText = 'position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(30,120,255,0.8);left:'+(e.clientX-r.left)+'px;top:'+(e.clientY-r.top)+'px;transform:translate(-50%,-50%) scale(1);pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;';
-      hero.appendChild(d);
-      requestAnimationFrame(function() { d.style.transform='translate(-50%,-50%) scale(28)'; d.style.opacity='0'; });
-      setTimeout(function() { d.remove(); }, 700);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
-  } else {
-    setup();
-  }
-})();
 
 
 
