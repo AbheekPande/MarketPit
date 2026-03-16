@@ -983,57 +983,88 @@ header {
 </div>
 
 <script>
-// ── EYEBALL CURSOR TRACKING ──
+// ── EYEBALL CURSOR TRACKING — smooth lerp ──
 (function() {
-  function trackEyes(e) {
+  var mx = 0, my = 0;           // raw mouse position
+  var pupils = [];              // [{el, cx, cy, px, py, maxR, pw, ph}]
+  var raf    = null;
+
+  function buildPupils() {
+    pupils = [];
     var eyes = document.querySelectorAll('.eye');
     for (var i = 0; i < eyes.length; i++) {
-      var eye    = eyes[i];
-      var pupil  = eye.querySelector('.pupil');
-      if (!pupil) continue;
-
-      var r   = eye.getBoundingClientRect();
-      var cx  = r.left + r.width  / 2;   // eye center X
-      var cy  = r.top  + r.height / 2;   // eye center Y
-      var pw  = pupil.offsetWidth  || parseInt(pupil.style.width)  || 12;
-      var ph  = pupil.offsetHeight || parseInt(pupil.style.height) || 12;
-
-      var dx  = e.clientX - cx;
-      var dy  = e.clientY - cy;
-      var dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Max travel: how far the pupil edge can reach the eye edge
-      var maxX = (r.width  - pw) / 2;
-      var maxY = (r.height - ph) / 2;
-      var maxR = Math.min(maxX, maxY) * 0.85;
-
-      var travel = dist < 1 ? 0 : Math.min(1, dist / 80) * maxR;
-      var angle  = Math.atan2(dy, dx);
-
-      var ox = Math.cos(angle) * travel;
-      var oy = Math.sin(angle) * travel;
-
-      // Center the pupil + apply offset
-      pupil.style.left = (maxX + ox) + 'px';
-      pupil.style.top  = (maxY + oy) + 'px';
+      var p = eyes[i].querySelector('.pupil');
+      if (!p) continue;
+      var r   = eyes[i].getBoundingClientRect();
+      var pw  = p.offsetWidth  || 12;
+      var ph  = p.offsetHeight || 12;
+      var maxR = Math.min((r.width - pw), (r.height - ph)) / 2 * 0.8;
+      // Start centred
+      var cx = r.left + r.width  / 2;
+      var cy = r.top  + r.height / 2;
+      pupils.push({
+        el: p, eye: eyes[i],
+        pw: pw, ph: ph, maxR: maxR,
+        // current smooth position (starts centred)
+        sx: cx, sy: cy
+      });
+      // Centre pupil initially
+      p.style.left = ((r.width  - pw) / 2) + 'px';
+      p.style.top  = ((r.height - ph) / 2) + 'px';
     }
   }
 
-  // Smooth transition only on init, remove for real-time tracking
-  document.addEventListener('DOMContentLoaded', function() {
-    var pupils = document.querySelectorAll('.pupil');
-    for (var i = 0; i < pupils.length; i++) {
-      pupils[i].style.transition = 'left 0.05s ease-out, top 0.05s ease-out';
-      // Centre pupils initially
-      var eye = pupils[i].parentElement;
-      var pw = pupils[i].offsetWidth  || parseInt(pupils[i].style.width)  || 12;
-      var ph = pupils[i].offsetHeight || parseInt(pupils[i].style.height) || 12;
-      pupils[i].style.left = ((eye.offsetWidth  - pw) / 2) + 'px';
-      pupils[i].style.top  = ((eye.offsetHeight - ph) / 2) + 'px';
-    }
-  });
+  function tick() {
+    raf = null;
+    var needsMore = false;
 
-  window.addEventListener('mousemove', trackEyes, { passive: true });
+    for (var i = 0; i < pupils.length; i++) {
+      var p   = pupils[i];
+      var r   = p.eye.getBoundingClientRect();
+      var ecx = r.left + r.width  / 2;
+      var ecy = r.top  + r.height / 2;
+
+      // Target: direction from eye center to mouse, clamped to maxR
+      var dx   = mx - ecx;
+      var dy   = my - ecy;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      var t    = dist < 1 ? 0 : Math.min(1, dist / 100);
+      var ang  = Math.atan2(dy, dx);
+      var tx   = ecx + Math.cos(ang) * t * p.maxR;
+      var ty   = ecy + Math.sin(ang) * t * p.maxR;
+
+      // Lerp smooth position toward target (spring feel)
+      var ease = 0.12;
+      p.sx += (tx - p.sx) * ease;
+      p.sy += (ty - p.sy) * ease;
+
+      // Convert to local coords inside eye
+      var lx = p.sx - r.left - p.pw / 2;
+      var ly = p.sy - r.top  - p.ph / 2;
+
+      p.el.style.left = lx + 'px';
+      p.el.style.top  = ly + 'px';
+
+      if (Math.abs(tx - p.sx) > 0.1 || Math.abs(ty - p.sy) > 0.1) needsMore = true;
+    }
+
+    if (needsMore) raf = requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('mousemove', function(e) {
+    mx = e.clientX;
+    my = e.clientY;
+    if (!raf) raf = requestAnimationFrame(tick);
+  }, { passive: true });
+
+  // Build after layout
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(buildPupils, 100); });
+  } else {
+    setTimeout(buildPupils, 100);
+  }
+  // Rebuild on resize
+  window.addEventListener('resize', buildPupils);
 })();
 </script>
 
