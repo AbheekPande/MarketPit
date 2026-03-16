@@ -1066,6 +1066,73 @@ header {
   // Rebuild on resize
   window.addEventListener('resize', buildPupils);
 })();
+
+// ── SPOTLIGHT — smooth lerp RAF ──
+(function() {
+  var tx = 0, ty = 0;   // target (raw mouse inside hero)
+  var sx = 0, sy = 0;   // smoothed position
+  var inside = false;
+  var raf = null;
+  var g1, g2, hero;
+
+  function setup() {
+    hero = document.getElementById('spotlightHero');
+    g1   = document.getElementById('sg1');
+    g2   = document.getElementById('sg2');
+    if (!hero || !g1 || !g2) { setTimeout(setup, 50); return; }
+
+    // Initial centre
+    var r = hero.getBoundingClientRect();
+    sx = tx = r.width  / 2;
+    sy = ty = r.height / 2;
+
+    window.addEventListener('mousemove', function(e) {
+      var r = hero.getBoundingClientRect();
+      var x = e.clientX - r.left;
+      var y = e.clientY - r.top;
+      var wasInside = inside;
+      inside = x >= 0 && x <= r.width && y >= 0 && y <= r.height;
+
+      if (inside) {
+        tx = x; ty = y;
+        if (!wasInside) {
+          // Snap to cursor on first entry so it doesn't slide in from center
+          sx = x; sy = y;
+          g1.style.opacity = '1';
+          g2.style.opacity = '1';
+        }
+        if (!raf) raf = requestAnimationFrame(tick);
+      } else if (wasInside) {
+        g1.style.opacity = '0';
+        g2.style.opacity = '0';
+      }
+    }, { passive: true });
+  }
+
+  function tick() {
+    raf = null;
+    if (!inside) return;
+
+    // Lerp — outer halo lags more (0.10), inner dot snappier (0.18)
+    sx += (tx - sx) * 0.14;
+    sy += (ty - sy) * 0.14;
+
+    g1.style.left = sx + 'px';
+    g1.style.top  = sy + 'px';
+    g2.style.left = sx + 'px';
+    g2.style.top  = sy + 'px';
+
+    if (Math.abs(tx - sx) > 0.2 || Math.abs(ty - sy) > 0.2) {
+      raf = requestAnimationFrame(tick);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
 </script>
 
 <script>
@@ -1364,17 +1431,7 @@ header {
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero"
   style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);"
-  onmousemove="
-    var r=this.getBoundingClientRect();
-    var x=event.clientX-r.left, y=event.clientY-r.top;
-    var g1=document.getElementById('sg1'), g2=document.getElementById('sg2');
-    g1.style.left=x+'px'; g1.style.top=y+'px'; g1.style.opacity='1';
-    g2.style.left=x+'px'; g2.style.top=y+'px'; g2.style.opacity='1';
-  "
-  onmouseleave="
-    document.getElementById('sg1').style.opacity='0';
-    document.getElementById('sg2').style.opacity='0';
-  ">
+>
 
   <!-- Grid lines -->
   <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
