@@ -802,7 +802,7 @@ header {
 }
 /* ── CUBE TILE GRID ── */
 .eb-tile {
-  width:60px; height:60px; flex-shrink:0;
+  width:72px; height:76px; flex-shrink:0;
   display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
   gap:4px; padding:3px; background:transparent; border:none; box-sizing:border-box;
 }
@@ -821,10 +821,11 @@ header {
 }
 #ebTileGrid {
   position:absolute; left:0; right:0; top:0; bottom:0;
-  display:flex; flex-wrap:wrap; gap:4px;
+  display:flex; flex-wrap:wrap; gap:3px;
   z-index:1; pointer-events:none;
-  align-content:center; justify-content:flex-start;
-  padding:6px 8px;
+  align-content:flex-start; justify-content:flex-start;
+  padding:4px 6px;
+  overflow:hidden;
 }
 
 #eyesBanner .label {
@@ -1038,56 +1039,61 @@ header {
 
 <script>
 // ── CUBE TILE HOVER ──
-(function() {
-  var banner, glow, allSubs, activeSub = null;
-  var BRI = [1.0, 0.76, 0.66, 0.50]; // brightness per quadrant: TL, TR, BL, BR
+(function init() {
+  var banner  = document.getElementById('eyesBanner');
+  var glow    = document.getElementById('ebGlow');
+  if (!banner || !glow) { setTimeout(init, 50); return; }
+
+  var allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
+  var lastHit = null;
+  var BRI     = [1.0, 0.76, 0.54, 0.38];
 
   function getCol(pct) {
     var p = Math.max(0, Math.min(1, pct)), r, g, b;
-    if (p < 0.5) { var t = p*2; r=255; g=Math.round(90+130*t); b=Math.round(10+80*t); }
-    else { var t = (p-0.5)*2; r=Math.round(255-120*t); g=Math.round(220-80*t); b=Math.round(90+165*t); }
-    return [r, g, b];
+    if (p < 0.5) { var t=p*2; r=255; g=Math.round(80+140*t); b=Math.round(0+100*t); }
+    else { var t=(p-0.5)*2; r=Math.round(255-130*t); g=Math.round(220-90*t); b=Math.round(100+155*t); }
+    return [r,g,b];
   }
 
   function showSub(sub, qi, r, g, b) {
-    var k  = BRI[qi] !== undefined ? BRI[qi] : 0.7;
+    var k  = BRI[qi] !== undefined ? BRI[qi] : 0.6;
     var fr = Math.round(r*k), fg = Math.round(g*k), fb = Math.round(b*k);
-    var isTop  = qi < 2, isLeft = qi % 2 === 0;
-    var hi = 'rgba(255,255,255,0.45)', sh = 'rgba(0,0,0,0.55)';
-    sub.style.opacity    = '1';
-    sub.style.background = 'rgba('+fr+','+fg+','+fb+',0.85)';
-    sub.style.borderTopColor    = isTop  ? hi : sh;
-    sub.style.borderLeftColor   = isLeft ? hi : sh;
-    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.7)';
-    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.7)';
-    sub.style.boxShadow = 'inset 0 1px 5px rgba(255,255,255,0.2), 0 0 8px rgba('+r+','+g+','+b+',0.5)';
+    var isTop = qi < 2, isLeft = qi % 2 === 0;
+    sub.style.opacity         = '1';
+    sub.style.background      = 'rgba('+fr+','+fg+','+fb+',0.9)';
+    sub.style.borderTopColor    = isTop  ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)';
+    sub.style.borderLeftColor   = isLeft ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)';
+    sub.style.borderBottomColor = isTop  ? 'rgba(0,0,0,0.6)'       : 'rgba(0,0,0,0.75)';
+    sub.style.borderRightColor  = isLeft ? 'rgba(0,0,0,0.6)'       : 'rgba(0,0,0,0.75)';
+    sub.style.boxShadow = 'inset 0 1px 4px rgba(255,255,255,0.25),0 0 10px rgba('+r+','+g+','+b+',0.6)';
   }
 
   function hideSub(sub) {
     if (!sub) return;
-    sub.style.opacity    = '0';
+    sub.style.opacity = '0';
     sub.style.background = 'transparent';
     sub.style.borderTopColor = sub.style.borderLeftColor =
     sub.style.borderBottomColor = sub.style.borderRightColor = 'transparent';
-    sub.style.boxShadow  = 'none';
+    sub.style.boxShadow = 'none';
   }
 
-  function onMove(e) {
-    var br = banner.getBoundingClientRect();
-    var lx = e.clientX - br.left, ly = e.clientY - br.top;
-    var col = getCol(lx / br.width), r = col[0], g = col[1], b = col[2];
+  banner.addEventListener('mousemove', function(e) {
+    var br  = banner.getBoundingClientRect();
+    var lx  = e.clientX - br.left;
+    var ly  = e.clientY - br.top;
+    var col = getCol(lx / br.width);
+    var r   = col[0], g = col[1], b = col[2];
 
-    // Move glow
-    glow.style.left   = lx + 'px';
-    glow.style.top    = ly + 'px';
-    glow.style.background = 'radial-gradient(circle, rgba('+r+','+g+','+b+',0.85) 0%, rgba('+r+','+g+','+b+',0.35) 40%, transparent 70%)';
-    glow.style.opacity = '1';
+    glow.style.left       = lx + 'px';
+    glow.style.top        = ly + 'px';
+    glow.style.background = 'radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 40%,transparent 70%)';
+    glow.style.opacity    = '1';
 
-    // Find hovered sub-tile
     var hit = null;
     for (var i = 0; i < allSubs.length; i++) {
       var rc = allSubs[i].getBoundingClientRect();
-      if (e.clientX >= rc.left && e.clientX <= rc.right && e.clientY >= rc.top && e.clientY <= rc.bottom) {
+      if (e.clientX >= rc.left && e.clientX <= rc.right &&
+          e.clientY >= rc.top  && e.clientY <= rc.bottom) {
         var qi = Array.prototype.indexOf.call(allSubs[i].parentElement.children, allSubs[i]);
         hit = { el: allSubs[i], qi: qi };
         break;
@@ -1095,27 +1101,18 @@ header {
     }
 
     if (hit) {
-      if (hit.el !== activeSub) { hideSub(activeSub); activeSub = hit.el; }
-      showSub(activeSub, hit.qi, r, g, b);
+      if (hit.el !== lastHit) { hideSub(lastHit); lastHit = hit.el; }
+      showSub(lastHit, hit.qi, r, g, b);
     } else {
-      hideSub(activeSub);
-      activeSub = null;
+      hideSub(lastHit);
+      lastHit = null;
     }
-  }
+  }, { passive: true });
 
-  function onLeave() {
+  banner.addEventListener('mouseleave', function() {
     glow.style.opacity = '0';
-    hideSub(activeSub);
-    activeSub = null;
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    banner  = document.getElementById('eyesBanner');
-    glow    = document.getElementById('ebGlow');
-    if (!banner || !glow) return;
-    allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
-    banner.addEventListener('mousemove', onMove);
-    banner.addEventListener('mouseleave', onLeave);
+    hideSub(lastHit);
+    lastHit = null;
   });
 })();
 </script>
