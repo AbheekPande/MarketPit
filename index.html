@@ -794,205 +794,218 @@ header {
 
 <!-- EYES BANNER -->
 <style>
-#eyesBanner { transition:background 0.5s ease; cursor:default; }
-#eyesBanner:hover .eb-dot-bg { opacity:0 !important; }
-#eyesBanner:hover #ebLeftLabel { color:rgba(255,255,255,0.8) !important; }
-
-/* Tile */
-.eb-tile {
-  width:64px; height:64px; flex-shrink:0;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;
-  gap:5px; padding:3px;
-  background:transparent; border:none;
-  box-sizing:border-box;
+#eyesBanner {
+  width:100%; height:88px; background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative;
+  border-bottom:2px solid rgba(0,0,0,0.06); flex-shrink:0;
 }
-
-/* Sub */
-.eb-sub {
-  border-radius:4px;
-  background:transparent;
-  border-top:1px solid transparent;
-  border-left:1px solid transparent;
-  border-bottom:1px solid transparent;
-  border-right:1px solid transparent;
-  opacity:0;
-  box-sizing:border-box;
-  transition:
-    opacity 0.18s cubic-bezier(0.4,0,0.2,1),
-    background 0.18s cubic-bezier(0.4,0,0.2,1),
-    box-shadow 0.18s cubic-bezier(0.4,0,0.2,1),
-    border-top-color 0.18s cubic-bezier(0.4,0,0.2,1),
-    border-left-color 0.18s cubic-bezier(0.4,0,0.2,1),
-    border-bottom-color 0.18s cubic-bezier(0.4,0,0.2,1),
-    border-right-color 0.18s cubic-bezier(0.4,0,0.2,1);
-  will-change: opacity, background;
+#eyesBanner .label {
+  position:absolute; left:16px;
+  font-family:'DM Sans',sans-serif; font-size:9px; font-weight:700;
+  color:rgba(0,0,0,0.3); letter-spacing:2px; text-transform:uppercase;
 }
-
-/* Glow */
-#ebGlow {
+.creature { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.eyes-row { display:flex; gap:5px; }
+.eye {
+  position:relative; border-radius:50%; background:#fff;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.pupil {
   position:absolute;
-  width:280px; height:280px;
   border-radius:50%;
   pointer-events:none;
-  z-index:2;
-  opacity:0;
-  top:0; left:0;
-  margin-left:-140px; margin-top:-140px;
-  transition:opacity 0.15s ease;
 }
-#ebTileGrid {
-  position:absolute; left:0; right:0; top:0; bottom:0;
-  display:flex; flex-wrap:wrap; gap:5px;
-  z-index:1;
-  pointer-events:none;
-  align-content:center; justify-content:flex-start;
-  padding:8px 10px;
+.pupil-shine {
+  position:absolute; border-radius:50%; background:#fff;
+  top:2px; right:2px; pointer-events:none;
 }
-#ebTileGrid .eb-sub { pointer-events:none; }
-#eyesContainer {
-  position:relative; z-index:2;
-  pointer-events:none !important;
-}
-.pupil { transition:transform 0.06s ease-out; will-change:transform; }
+.cheek { border-radius:50%; }
 </style>
-<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
-  <div id="ebGlow"></div>
-  <div id="ebTileGrid"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
-  <!-- Soft dot pattern -->
-  <div class="eb-dot-bg" style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;transition:opacity 0.4s;"></div>
 
-  <!-- Left label -->
-  <div id="ebLeftLabel" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;left:16px;text-transform:uppercase;transition:color 0.4s;z-index:2;">👀 We see the markets</div>
+<div id="eyesBanner">
+  <div class="label">👀 we see the markets</div>
 
-  <!-- Characters row -->
-  <div id="eyesContainer" style="display:flex;align-items:flex-end;gap:22px;padding-bottom:4px;position:relative;z-index:2;pointer-events:none;">
+  <div style="display:flex;align-items:flex-end;gap:24px;padding-bottom:4px;">
 
-    <!-- Creature 1 — round chubby pink -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
-          <div class="pupil" style="width:11px;height:11px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;">
-            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+    <!-- Creature 1 — pink -->
+    <div class="creature">
+      <div class="eyes-row">
+        <div class="eye" style="width:24px;height:24px;border:2.5px solid #ffacc7;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
+          <div class="pupil" style="width:12px;height:12px;background:#222;">
+            <div class="pupil-shine" style="width:4px;height:4px;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
-          <div class="pupil" style="width:11px;height:11px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;">
-            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+        <div class="eye" style="width:24px;height:24px;border:2.5px solid #ffacc7;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
+          <div class="pupil" style="width:12px;height:12px;background:#222;">
+            <div class="pupil-shine" style="width:4px;height:4px;"></div>
           </div>
         </div>
       </div>
-      <!-- cheeks + smile -->
-      <div style="display:flex;gap:14px;margin-top:-2px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
+      <div style="display:flex;gap:14px;">
+        <div class="cheek" style="width:7px;height:4px;background:rgba(255,172,199,0.6);"></div>
+        <div class="cheek" style="width:7px;height:4px;background:rgba(255,172,199,0.6);"></div>
       </div>
     </div>
 
-    <!-- Creature 2 — star eyes yellow -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:5px;">
-        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
-          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;">
-            <div style="color:#fff;font-size:7px;line-height:1;">✦</div>
+    <!-- Creature 2 — yellow star eyes -->
+    <div class="creature">
+      <div class="eyes-row">
+        <div class="eye" style="width:26px;height:26px;border:2.5px solid #ffd166;background:#fff9e6;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
+          <div class="pupil" style="width:13px;height:13px;background:#333;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:7px;line-height:1;position:relative;z-index:1;">✦</span>
           </div>
         </div>
-        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
-          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;">
-            <div style="color:#fff;font-size:7px;line-height:1;">✦</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:16px;margin-top:-1px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
-      </div>
-    </div>
-
-    <!-- Creature 3 — big round blue (main mascot, tallest) -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:2px;">
-      <div style="display:flex;gap:5px;">
-        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
-          <div class="pupil" style="width:15px;height:15px;border-radius:50%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;">
-            <div style="width:5px;height:5px;border-radius:50%;background:#fff;margin:-3px -3px 0 0;"></div>
-          </div>
-        </div>
-        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
-          <div class="pupil" style="width:15px;height:15px;border-radius:50%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;">
-            <div style="width:5px;height:5px;border-radius:50%;background:#fff;margin:-3px -3px 0 0;"></div>
+        <div class="eye" style="width:26px;height:26px;border:2.5px solid #ffd166;background:#fff9e6;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
+          <div class="pupil" style="width:13px;height:13px;background:#333;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:7px;line-height:1;position:relative;z-index:1;">✦</span>
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:18px;">
-        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
-        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
+      <div style="display:flex;gap:16px;">
+        <div class="cheek" style="width:7px;height:4px;background:rgba(255,209,102,0.5);"></div>
+        <div class="cheek" style="width:7px;height:4px;background:rgba(255,209,102,0.5);"></div>
       </div>
     </div>
 
-    <!-- Creature 4 — sleepy half-closed green -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
-          <div class="pupil" style="width:9px;height:9px;border-radius:50%;background:#1a3a1a;display:flex;align-items:center;justify-content:center;">
-            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+    <!-- Creature 3 — blue main mascot (biggest) -->
+    <div class="creature" style="margin-bottom:3px;">
+      <div class="eyes-row">
+        <div class="eye" style="width:32px;height:32px;border:3px solid #5b8dee;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
+          <div class="pupil" style="width:17px;height:17px;background:#1a1a2e;">
+            <div class="pupil-shine" style="width:5px;height:5px;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
-          <div class="pupil" style="width:9px;height:9px;border-radius:50%;background:#1a3a1a;display:flex;align-items:center;justify-content:center;">
-            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:14px;margin-top:1px;">
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
-      </div>
-    </div>
-
-    <!-- Creature 5 — sparkly purple wide eyes -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
-          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#2d1b69;display:flex;align-items:center;justify-content:center;">
-            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
-          </div>
-        </div>
-        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
-          <div class="pupil" style="width:12px;height:12px;border-radius:50%;background:#2d1b69;display:flex;align-items:center;justify-content:center;">
-            <div style="width:4px;height:4px;border-radius:50%;background:#fff;margin:-2px -2px 0 0;"></div>
+        <div class="eye" style="width:32px;height:32px;border:3px solid #5b8dee;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
+          <div class="pupil" style="width:17px;height:17px;background:#1a1a2e;">
+            <div class="pupil-shine" style="width:5px;height:5px;"></div>
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:15px;margin-top:-1px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
+      <div style="display:flex;gap:20px;">
+        <div class="cheek" style="width:8px;height:5px;background:rgba(91,141,238,0.35);"></div>
+        <div class="cheek" style="width:8px;height:5px;background:rgba(91,141,238,0.35);"></div>
       </div>
     </div>
 
-    <!-- Creature 6 — tiny cute orange dot eyes -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
-          <div class="pupil" style="width:10px;height:10px;border-radius:50%;background:#3d1500;display:flex;align-items:center;justify-content:center;">
-            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+    <!-- Creature 4 — sleepy green -->
+    <div class="creature">
+      <div class="eyes-row">
+        <div class="eye" style="width:24px;height:17px;border:2.5px solid #4ecb71;background:#e8fdf0;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
+          <div class="pupil" style="width:10px;height:10px;background:#1a3a1a;">
+            <div class="pupil-shine" style="width:3px;height:3px;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
-          <div class="pupil" style="width:10px;height:10px;border-radius:50%;background:#3d1500;display:flex;align-items:center;justify-content:center;">
-            <div style="width:3px;height:3px;border-radius:50%;background:#fff;margin:-1px -1px 0 0;"></div>
+        <div class="eye" style="width:24px;height:17px;border:2.5px solid #4ecb71;background:#e8fdf0;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
+          <div class="pupil" style="width:10px;height:10px;background:#1a3a1a;">
+            <div class="pupil-shine" style="width:3px;height:3px;"></div>
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:12px;margin-top:0px;">
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
+      <div style="display:flex;gap:14px;">
+        <div class="cheek" style="width:6px;height:3px;background:rgba(78,203,113,0.4);"></div>
+        <div class="cheek" style="width:6px;height:3px;background:rgba(78,203,113,0.4);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 5 — purple sparkle -->
+    <div class="creature">
+      <div class="eyes-row">
+        <div class="eye" style="width:25px;height:25px;border:2.5px solid #a78bfa;background:#f5f0ff;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
+          <div class="pupil" style="width:13px;height:13px;background:#2d1b69;">
+            <div class="pupil-shine" style="width:4px;height:4px;"></div>
+          </div>
+        </div>
+        <div class="eye" style="width:25px;height:25px;border:2.5px solid #a78bfa;background:#f5f0ff;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
+          <div class="pupil" style="width:13px;height:13px;background:#2d1b69;">
+            <div class="pupil-shine" style="width:4px;height:4px;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:15px;">
+        <div class="cheek" style="width:7px;height:4px;background:rgba(167,139,250,0.45);"></div>
+        <div class="cheek" style="width:7px;height:4px;background:rgba(167,139,250,0.45);"></div>
+      </div>
+    </div>
+
+    <!-- Creature 6 — orange tiny -->
+    <div class="creature">
+      <div class="eyes-row">
+        <div class="eye" style="width:22px;height:22px;border:2.5px solid #ff8c42;background:#fff5ee;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
+          <div class="pupil" style="width:11px;height:11px;background:#3d1500;">
+            <div class="pupil-shine" style="width:3px;height:3px;"></div>
+          </div>
+        </div>
+        <div class="eye" style="width:22px;height:22px;border:2.5px solid #ff8c42;background:#fff5ee;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
+          <div class="pupil" style="width:11px;height:11px;background:#3d1500;">
+            <div class="pupil-shine" style="width:3px;height:3px;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div class="cheek" style="width:6px;height:3px;background:rgba(255,140,66,0.45);"></div>
+        <div class="cheek" style="width:6px;height:3px;background:rgba(255,140,66,0.45);"></div>
       </div>
     </div>
 
   </div>
-
 </div>
+
+<script>
+// ── EYEBALL CURSOR TRACKING ──
+(function() {
+  function trackEyes(e) {
+    var eyes = document.querySelectorAll('.eye');
+    for (var i = 0; i < eyes.length; i++) {
+      var eye    = eyes[i];
+      var pupil  = eye.querySelector('.pupil');
+      if (!pupil) continue;
+
+      var r   = eye.getBoundingClientRect();
+      var cx  = r.left + r.width  / 2;   // eye center X
+      var cy  = r.top  + r.height / 2;   // eye center Y
+      var pw  = pupil.offsetWidth  || parseInt(pupil.style.width)  || 12;
+      var ph  = pupil.offsetHeight || parseInt(pupil.style.height) || 12;
+
+      var dx  = e.clientX - cx;
+      var dy  = e.clientY - cy;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Max travel: how far the pupil edge can reach the eye edge
+      var maxX = (r.width  - pw) / 2;
+      var maxY = (r.height - ph) / 2;
+      var maxR = Math.min(maxX, maxY) * 0.85;
+
+      var travel = dist < 1 ? 0 : Math.min(1, dist / 80) * maxR;
+      var angle  = Math.atan2(dy, dx);
+
+      var ox = Math.cos(angle) * travel;
+      var oy = Math.sin(angle) * travel;
+
+      // Center the pupil + apply offset
+      pupil.style.left = (maxX + ox) + 'px';
+      pupil.style.top  = (maxY + oy) + 'px';
+    }
+  }
+
+  // Smooth transition only on init, remove for real-time tracking
+  document.addEventListener('DOMContentLoaded', function() {
+    var pupils = document.querySelectorAll('.pupil');
+    for (var i = 0; i < pupils.length; i++) {
+      pupils[i].style.transition = 'left 0.05s ease-out, top 0.05s ease-out';
+      // Centre pupils initially
+      var eye = pupils[i].parentElement;
+      var pw = pupils[i].offsetWidth  || parseInt(pupils[i].style.width)  || 12;
+      var ph = pupils[i].offsetHeight || parseInt(pupils[i].style.height) || 12;
+      pupils[i].style.left = ((eye.offsetWidth  - pw) / 2) + 'px';
+      pupils[i].style.top  = ((eye.offsetHeight - ph) / 2) + 'px';
+    }
+  });
+
+  window.addEventListener('mousemove', trackEyes, { passive: true });
+})();
+</script>
 
 <!-- HEADER -->
 <header>
@@ -12611,96 +12624,7 @@ function renderHeatmap() {
   setTimeout(init, 0);
 })();
 
-// ── EYES BANNER: glow + cube + pupils ──
-(function() {
-  var banner, glow, allSubs, activeSub = null;
-  var BRI = [1.0, 0.76, 0.66, 0.50];
 
-  function setup() {
-    banner  = document.getElementById('eyesBanner');
-    glow    = document.getElementById('ebGlow');
-    if (!banner || !glow) return;
-    allSubs = Array.from(banner.querySelectorAll('.eb-sub'));
-    banner.addEventListener('mousemove', onMove);
-    banner.addEventListener('mouseleave', onLeave);
-    document.addEventListener('mousemove', onDocMove);
-  }
-
-  function getCol(pct) {
-    var p=Math.max(0,Math.min(1,pct)),r,g,b;
-    if(p<0.5){var t=p*2;r=255;g=Math.round(90+130*t);b=Math.round(10+80*t);}
-    else{var t=(p-0.5)*2;r=Math.round(255-120*t);g=Math.round(220-80*t);b=Math.round(90+165*t);}
-    return [r,g,b];
-  }
-
-  function onMove(e) {
-    var br=banner.getBoundingClientRect();
-    var lx=e.clientX-br.left, ly=e.clientY-br.top;
-    var c=getCol(lx/br.width), r=c[0],g=c[1],b=c[2];
-    // GLOW
-    glow.style.left=lx+'px'; glow.style.top=ly+'px';
-    glow.style.background='radial-gradient(circle,rgba('+r+','+g+','+b+',0.9) 0%,rgba('+r+','+g+','+b+',0.4) 35%,transparent 70%)';
-    glow.style.opacity='1';
-    // CUBE
-    var hit=null;
-    for(var i=0;i<allSubs.length;i++){
-      var rc=allSubs[i].getBoundingClientRect();
-      if(e.clientX>=rc.left&&e.clientX<=rc.right&&e.clientY>=rc.top&&e.clientY<=rc.bottom){
-        var qi=Array.prototype.indexOf.call(allSubs[i].parentElement.children,allSubs[i]);
-        hit={el:allSubs[i],qi:qi}; break;
-      }
-    }
-    if(hit){
-      if(hit.el!==activeSub){hideSub(activeSub);activeSub=hit.el;}
-      showSub(activeSub,hit.qi,r,g,b);
-    }else{hideSub(activeSub);activeSub=null;}
-  }
-
-  function onLeave(){glow.style.opacity='0';hideSub(activeSub);activeSub=null;}
-
-  function showSub(sub,qi,r,g,b){
-    var k=BRI[qi]!==undefined?BRI[qi]:0.7;
-    var fr=Math.round(r*k),fg=Math.round(g*k),fb=Math.round(b*k);
-    var isTop=qi<2,isLeft=qi%2===0;
-    var hi='rgba(255,255,255,0.4)',sh='rgba(0,0,0,0.5)';
-    sub.style.opacity='1';
-    sub.style.background='rgba('+fr+','+fg+','+fb+',0.85)';
-    sub.style.borderTopColor=isTop?hi:sh;
-    sub.style.borderLeftColor=isLeft?hi:sh;
-    sub.style.borderBottomColor=isTop?sh:'rgba(0,0,0,0.65)';
-    sub.style.borderRightColor=isLeft?sh:'rgba(0,0,0,0.65)';
-    sub.style.boxShadow='inset 0 1px 5px rgba(255,255,255,0.22),0 0 8px rgba('+r+','+g+','+b+',0.45)';
-  }
-
-  function hideSub(sub){
-    if(!sub)return;
-    sub.style.opacity='0';sub.style.background='transparent';
-    sub.style.borderTopColor=sub.style.borderLeftColor=
-    sub.style.borderBottomColor=sub.style.borderRightColor='transparent';
-    sub.style.boxShadow='none';
-  }
-
-  function onDocMove(e){
-    if(!banner)return;
-    var eyes=banner.querySelectorAll('.eyeball');
-    for(var i=0;i<eyes.length;i++){
-      var pupil=eyes[i].querySelector('.pupil');
-      if(!pupil)continue;
-      var er=eyes[i].getBoundingClientRect();
-      var ex=er.left+er.width/2,ey=er.top+er.height/2;
-      var dx=e.clientX-ex,dy=e.clientY-ey;
-      var dist=Math.sqrt(dx*dx+dy*dy);
-      var maxT=er.width*0.3;
-      var travel=dist<1?0:maxT*(1-1/(1+dist/50));
-      var angle=Math.atan2(dy,dx);
-      pupil.style.transform='translate('+(Math.cos(angle)*travel).toFixed(1)+'px,'+(Math.sin(angle)*travel).toFixed(1)+'px)';
-    }
-  }
-
-  // Always call setup() - element is already in DOM when this script runs
-  // (script tag is after eyesBanner in HTML)
-  setup();
-})();
 
 </script>
 
