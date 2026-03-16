@@ -9809,25 +9809,50 @@ window.onLiveDataUpdate = function() {
 function updateHeroFromLiveStocks() {
   try {
     const idx = window._liveIndices || {};
-    const nifty = idx['NIFTY 50'] || idx['NIFTY'];
-    const bank  = idx['NIFTY BANK'] || idx['BANKNIFTY'];
-    const btc   = window.liveStocks && liveStocks.find(s => s.sym==='BTC');
-    const els = [
-      ['heroNifty',  nifty, '₹'],
-      ['heroBank',   bank,  '₹'],
-      ['heroBtc',    btc,   '$'],
-    ];
-    els.forEach(([id, asset, cur]) => {
-      if (!asset) return;
-      const el  = document.getElementById(id);
-      const chg = document.getElementById(id+'Chg');
-      if (el && asset.price) el.textContent = cur + parseFloat(asset.price).toLocaleString('en-IN',{maximumFractionDigits:0});
-      if (chg && asset.chg) {
-        chg.textContent = asset.chg;
-        chg.style.color = asset.up ? 'var(--green)' : 'var(--red)';
-      }
-    });
+    // Try _liveIndices first, fall back to YF fetch
+    let nifty = idx['NIFTY 50'] || idx['NIFTY'];
+    let bank  = idx['NIFTY BANK'] || idx['BANKNIFTY'];
+    const btc = liveStocks.find(s => s.sym==='BTC');
+
+    // If indices not loaded, fetch directly from Yahoo Finance
+    if (!nifty || !nifty.price) {
+      yfFetch('%5ENSEI').then(({price,chg,up}) => {
+        const chgStr = (up?'+':'')+chg.toFixed(2)+'%';
+        updateHeroEl('heroNifty', price.toLocaleString('en-IN',{maximumFractionDigits:0}), '₹', chgStr, up);
+        if (!window._liveIndices) window._liveIndices = {};
+        window._liveIndices['NIFTY 50'] = {price, chg:chgStr, up};
+      }).catch(()=>{});
+    } else {
+      updateHeroEl('heroNifty', parseFloat(nifty.price).toLocaleString('en-IN',{maximumFractionDigits:0}), '₹', nifty.chg, nifty.up);
+    }
+    if (!bank || !bank.price) {
+      yfFetch('%5ENSEBANK').then(({price,chg,up}) => {
+        const chgStr = (up?'+':'')+chg.toFixed(2)+'%';
+        updateHeroEl('heroBank', price.toLocaleString('en-IN',{maximumFractionDigits:0}), '₹', chgStr, up);
+      }).catch(()=>{});
+    } else {
+      updateHeroEl('heroBank', parseFloat(bank.price).toLocaleString('en-IN',{maximumFractionDigits:0}), '₹', bank.chg, bank.up);
+    }
+    if (btc && btc.price) {
+      updateHeroEl('heroBtc', parseFloat(btc.price).toLocaleString('en-US',{maximumFractionDigits:0}), '$', btc.chg, btc.up);
+    } else {
+      // Fetch BTC from CoinGecko directly
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+        .then(r=>r.json()).then(d=>{
+          const p = d?.bitcoin?.usd;
+          const chg = d?.bitcoin?.usd_24h_change || 0;
+          const up = chg >= 0;
+          if (p) updateHeroEl('heroBtc', p.toLocaleString('en-US',{maximumFractionDigits:0}), '$', (up?'+':'')+chg.toFixed(2)+'%', up);
+        }).catch(()=>{});
+    }
   } catch(e) {}
+}
+
+function updateHeroEl(id, priceStr, cur, chgStr, up) {
+  const el  = document.getElementById(id);
+  const chg = document.getElementById(id+'Chg');
+  if (el)  el.textContent  = cur + priceStr;
+  if (chg) { chg.textContent = chgStr||''; chg.style.color = up ? 'var(--green)' : 'var(--red)'; }
 }
 
 // ── renderHeatmap stub ──
@@ -10023,3 +10048,94 @@ function renderETF() {
 }
 
 
+
+
+// ═══════════════════════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════════════════════
+
+let _activePage = 'feed';
+
+function _mpInit() {
+  updateAvatars();
+  renderPosts();
+  loadStoriesBar();
+  renderTrendingTags();
+
+  // Seed crypto + commodities into liveStocks
+  STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
+  STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
+
+  // Show static data immediately
+  renderTrending(liveStocks.slice(0,6));
+  updateWhatsMoving();
+  onLiveDataUpdate();
+  setLiveStatus('fetching','⏳ Updating…');
+
+  // Fire live fetches in parallel
+  setTimeout(fetchCryptoLive, 100);
+  setTimeout(fetchLiveData, 200);
+  setTimeout(fetchPriorityStocks, 300);
+
+  // Load symbols for search
+  loadSymbols();
+}
+
+// ── Fast stock bootstrap from Yahoo Finance ──
+const _FAST_SYMS = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','SBIN',
+  'WIPRO','AXISBANK','BAJFINANCE','TATAMOTORS','SUNPHARMA','LT',
+  'MARUTI','BHARTIARTL','ADANIENT','NTPC','TATASTEEL','KOTAKBANK','HCLTECH','ITC'];
+
+let _bootstrapDone = false;
+async function fetchPriorityStocks() {
+  if (_bootstrapDone) return;
+  await Promise.allSettled(_FAST_SYMS.map(async sym => {
+    const yfSym = YF_STOCK_MAP[sym]; if (!yfSym) return;
+    try {
+      const {price, chg, up} = await yfFetch(yfSym);
+      if (!price) return;
+      const chgStr = (up?'+':'')+chg.toFixed(2)+'%';
+      const s = liveStocks.find(x=>x.sym===sym);
+      if (s) { s.price=price; s.chg=chgStr; s.up=up; s._live=true; }
+    } catch(e) {}
+  }));
+  _bootstrapDone = true;
+  updateWhatsMoving();
+  renderTrending(liveStocks.slice(0,6));
+  updateTickerFromLive();
+  onLiveDataUpdate();
+  updateHeroFromLiveStocks();
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+  setLiveStatus('live','● LIVE · '+ts+' IST');
+}
+
+// ── Auto-refresh every 30s ──
+setInterval(fetchLiveData, 30000);
+setInterval(fetchCryptoLive, 25000);
+
+// ── Keep Railway alive every 8 min ──
+setInterval(async function() {
+  try { await fetch(API_BASE+'/status', {signal:AbortSignal.timeout(5000)}); } catch(e) {}
+}, 8*60*1000);
+
+// ── Pause when tab hidden ──
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) { fetchLiveData(); fetchCryptoLive(); }
+});
+
+// ── Apply saved settings ──
+applySettings(getSettings());
+
+// ── Run init ──
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _mpInit);
+} else {
+  _mpInit();
+}
+
+</script>
+
+<!-- Brightness overlay -->
+
+</body>
+</html>
