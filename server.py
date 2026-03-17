@@ -41,7 +41,7 @@ INDIAN_STOCKS = [
     {"sym":"LTIM",       "yf":"LTIM.NS",        "name":"LTIMindtree",             "sector":"IT"},
     {"sym":"TATAMOTORS", "yf":"TATAMOTORS.NS",  "name":"Tata Motors",             "sector":"Auto"},
     {"sym":"MARUTI",     "yf":"MARUTI.NS",      "name":"Maruti Suzuki",           "sector":"Auto"},
-    {"sym":"M&M",        "yf":"M%26M.NS",       "name":"Mahindra & Mahindra",     "sector":"Auto"},
+    {"sym":"M&M",        "yf":"M&M.NS",         "name":"Mahindra & Mahindra",     "sector":"Auto"},
     {"sym":"HEROMOTOCO", "yf":"HEROMOTOCO.NS",  "name":"Hero MotoCorp",           "sector":"Auto"},
     {"sym":"EICHERMOT",  "yf":"EICHERMOT.NS",   "name":"Eicher Motors",           "sector":"Auto"},
     {"sym":"BAJAJ-AUTO", "yf":"BAJAJ-AUTO.NS",  "name":"Bajaj Auto",              "sector":"Auto"},
@@ -241,20 +241,54 @@ NSE_HEADERS = {
 # ════════════════════════════════════════════════════════
 
 def fetch_quote(symbol_yf):
-    """Fetch latest quote for a single Yahoo Finance symbol."""
+    """Fetch latest quote for a single Yahoo Finance symbol.
+    Method 1: fast_info (fastest, fails on some tickers with 'currentTradingPeriod' KeyError)
+    Method 2: history(5d) fallback (more compatible, handles all tickers)
+    """
+    import math
+
+    # ── Method 1: fast_info ──
     try:
         ticker = yf.Ticker(symbol_yf)
         info   = ticker.fast_info
-        price  = round(info.last_price, 2) if info.last_price else None
-        prev   = round(info.previous_close, 2) if info.previous_close else None
-        if price and prev and prev != 0:
-            chg_val = round(price - prev, 2)
-            chg_pct = round((chg_val / prev) * 100, 2)
-            up      = chg_val >= 0
-            chg_str = f"+{chg_pct}%" if up else f"{chg_pct}%"
-            return {"price": price, "chg": chg_str, "up": up, "chg_raw": chg_pct}  # price as float
+        price  = info.last_price
+        prev   = info.previous_close
+        # Validate — reject NaN/None/zero
+        if price and not math.isnan(price) and price > 0:
+            if not prev or math.isnan(prev) or prev <= 0:
+                prev = price
+            chg_pct = round((price - prev) / prev * 100, 2)
+            up      = chg_pct >= 0
+            return {
+                "price":   round(float(price), 2),
+                "chg":     f"+{chg_pct}%" if up else f"{chg_pct}%",
+                "up":      up,
+                "chg_raw": chg_pct,
+            }
+    except Exception:
+        pass  # Fall through to method 2
+
+    # ── Method 2: history (handles tickers where fast_info fails) ──
+    try:
+        ticker = yf.Ticker(symbol_yf)
+        hist   = ticker.history(period="5d", interval="1d", auto_adjust=True, timeout=8)
+        if hist is not None and not hist.empty:
+            closes = hist["Close"].dropna()
+            if len(closes) >= 1:
+                price = round(float(closes.iloc[-1]), 2)
+                prev  = round(float(closes.iloc[-2]), 2) if len(closes) >= 2 else price
+                if price > 0 and prev > 0:
+                    chg_pct = round((price - prev) / prev * 100, 2)
+                    up      = chg_pct >= 0
+                    return {
+                        "price":   price,
+                        "chg":     f"+{chg_pct}%" if up else f"{chg_pct}%",
+                        "up":      up,
+                        "chg_raw": chg_pct,
+                    }
     except Exception as e:
         print(f"  Error fetching {symbol_yf}: {e}")
+
     return {"price": "—", "chg": "—", "up": True, "chg_raw": 0}
 
 
@@ -270,7 +304,7 @@ def refresh_cache():
                 "sector": s.get("sector", "")}
 
     stocks_data = []
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=20) as ex:
         futures = {ex.submit(fetch_one, s): s for s in INDIAN_STOCKS}
         for f in as_completed(futures):
             try:
@@ -725,8 +759,14 @@ def fetch_earnings_from_nse():
                 r = req_lib.get(bse_url, headers=bse_headers, timeout=10)
                 if r.status_code == 200:
                     j = r.json()
-                    rows = j.get("Table") or j.get("data") or (j if isinstance(j, list) else [])
+                    raw_data = j.get("Table") or j.get("data") or (j if isinstance(j, list) else [])
+                    # Ensure it's a list of dicts
+                    if isinstance(raw_data, dict):
+                        raw_data = raw_data.get("Table") or raw_data.get("data") or []
+                    rows = raw_data if isinstance(raw_data, list) else []
                     for row in rows[:40]:
+                        if not isinstance(row, dict):
+                            continue
                         try:
                             sym  = str(row.get("SCRIP_CD") or row.get("scrip_cd") or row.get("SYMBOL") or "").strip()
                             name = str(row.get("LONG_NAME") or row.get("long_name") or row.get("SCRIP_NAME") or sym)
@@ -1771,25 +1811,28 @@ def index():
 # ════════════════════════════════════════════════════════
 
 def _startup():
-    """Run once at startup regardless of how the server is launched."""
+    """Run once at startup regardless of how the server is launched.
+    All cache building is done in background threads so Flask starts
+    serving requests immediately (no 60s cold-start block).
+    """
     print("=" * 55)
     print("  MarketPit Backend — Starting up")
     print("=" * 55)
 
-    # Initial cache fill (non-blocking — errors are caught inside)
-    try:
-        refresh_cache()
-        print("  ✓ Stock cache ready")
-    except Exception as e:
-        print(f"  ⚠ Stock cache error: {e}")
+    def _stock_init():
+        try:
+            refresh_cache()
+            print("  ✓ Stock cache ready")
+        except Exception as e:
+            print(f"  ⚠ Stock cache error: {e}")
 
-    try:
-        refresh_fii()
-        print("  ✓ FII/DII cache ready")
-    except Exception as e:
-        print(f"  ⚠ FII cache error: {e}")
+    def _fii_init():
+        try:
+            refresh_fii()
+            print("  ✓ FII/DII cache ready")
+        except Exception as e:
+            print(f"  ⚠ FII cache error: {e}")
 
-    # Earnings — fire in background so startup is fast
     def _earn_init():
         try:
             refresh_earnings()
@@ -1797,12 +1840,15 @@ def _startup():
         except Exception as e:
             print(f"  ⚠ Earnings cache error: {e}")
 
-    threading.Thread(target=_earn_init, daemon=True).start()
+    # All three run in background — Flask is ready to serve immediately
+    threading.Thread(target=_stock_init, daemon=True).start()
+    threading.Thread(target=_fii_init,   daemon=True).start()
+    threading.Thread(target=_earn_init,  daemon=True).start()
 
     # Start background refresh thread
     t = threading.Thread(target=background_refresher, daemon=True)
     t.start()
-    print("  ✓ Background refresher started")
+    print("  ✓ All caches building in background (server ready immediately)")
     print("=" * 55)
 
 

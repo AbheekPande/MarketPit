@@ -1,6 +1,6 @@
 flask
 flask-cors
-yfinance
+yfinance>=0.2.50
 requests
 beautifulsoup4
 gunicorn
