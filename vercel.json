@@ -1,8 +1,31 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/quote.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/indices.js",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
-    { "src": "/api/quote",   "dest": "/api/quote.js"   },
-    { "src": "/api/indices", "dest": "/api/indices.js" },
-    { "src": "/(.*)",        "dest": "/index.html"     }
+    {
+      "src": "/api/quote",
+      "dest": "/api/quote.js"
+    },
+    {
+      "src": "/api/indices",
+      "dest": "/api/indices.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
