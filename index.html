@@ -4483,9 +4483,10 @@ function filterFeed(pit, el) {
   renderPosts();
 }
 
-// ── LEADERBOARD ──` : `Unfollowed ${username}`, isFollowing(username) ? 'var(--green)' : 'var(--text3)');
-}
-;
+// ── LEADERBOARD ──
+function renderLeaderboard() {
+  const posts = getPosts();
+  const scores = {};
   posts.forEach(p => { scores[p.author] = (scores[p.author]||0) + (p.likes||0) + 1; });
   const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const ranks = ['gold','silver','bronze','',''];
