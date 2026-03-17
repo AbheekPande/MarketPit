@@ -3112,14 +3112,24 @@ async function fetchCryptoLive() {
 }
 
 async function fetchLiveData() {
-  if (!window._hasLiveData) setLiveStatus('fetching', '⏳ Loading live data…');
+  if (!window._hasLiveData) setLiveStatus('fetching', '⏳ Waking server…');
 
   // Always fetch crypto in parallel (CoinGecko, no backend needed)
   fetchCryptoLive();
 
-  // ── Primary: Railway backend (all stocks + indices + commodities in ONE call) ──
+  // ── Primary: Vercel proxy → Railway (server-side, no CORS, no cold-start timeout) ──
   try {
-    const res = await fetch(RAILWAY_URL + '/all', { signal: AbortSignal.timeout(10000) });
+    setLiveStatus('fetching', '⏳ Loading data…');
+    // Try Vercel proxy first — it calls Railway server-side (no browser timeout issue)
+    let res = null;
+    try {
+      res = await fetch('/api/all?path=all', { signal: AbortSignal.timeout(30000) });
+      if (!res.ok) res = null;
+    } catch(e) { res = null; }
+    // Fallback: call Railway directly from browser
+    if (!res) {
+      res = await fetch(RAILWAY_URL + '/all', { signal: AbortSignal.timeout(35000) });
+    }
     if (!res.ok) throw new Error('railway-error');
     const json = await res.json();
     _apiOnline = true;
@@ -10102,16 +10112,29 @@ function _mpInit() {
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
 
-  // Show static data immediately
-  renderTrending(liveStocks.slice(0,6));
+  // ── Show static data IMMEDIATELY — no waiting for network ──
+  renderTrending(liveStocks.slice(0, 6));
   updateWhatsMoving();
   onLiveDataUpdate();
-  setLiveStatus('fetching','⏳ Updating…');
+  updateTickerFromLive();
+  if (typeof buildGlobalTicker === 'function') buildGlobalTicker();
+  setLiveStatus('fetching', '⏳ Loading live prices…');
 
-  // Fire live fetches in parallel
-  setTimeout(fetchCryptoLive, 100);
-  setTimeout(fetchLiveData, 200);
-  setTimeout(fetchPriorityStocks, 300);
+  // ── Wake Railway instantly, fetch Vercel data fast ──
+  // Ping Railway to wake it from sleep (fire and forget)
+  fetch(RAILWAY_URL + '/status', { signal: AbortSignal.timeout(35000) }).catch(()=>{});
+
+  // Fetch crypto immediately (no backend needed, always fast)
+  setTimeout(fetchCryptoLive, 50);
+
+  // Fetch priority stocks via Vercel /api/quote (fast, ~1s)
+  setTimeout(fetchPriorityStocks, 100);
+
+  // Fetch indices via Vercel /api/indices  
+  setTimeout(fetchIndicesLive, 150);
+
+  // Full Railway fetch — waits for Railway to wake up (may take 20-35s on cold start)
+  setTimeout(fetchLiveData, 500);
 
   // Load symbols for search
   loadSymbols();
