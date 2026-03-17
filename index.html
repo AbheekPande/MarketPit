@@ -2421,10 +2421,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ── CONFIG ──
-// ── API CONFIG — Vercel serverless functions, no Railway needed ──
-const API_BASE = '/api';
-let _apiOnline = false, _apiWaking = false, _apiChecked = true;
-async function checkApiAndWake() { return false; }
+// ── API CONFIG ──
+// Railway backend is the primary source — has /api/all, /api/fii, /api/earnings etc.
+// Vercel serverless functions (/api/quote, /api/indices) are fallback only.
+const RAILWAY_URL = 'https://web-production-78fc1.up.railway.app/api';
+const API_BASE = RAILWAY_URL;
+
+let _apiOnline = false, _apiWaking = false, _apiChecked = false;
+
+async function checkApiAndWake() {
+  if (_apiWaking) return _apiOnline;
+  _apiWaking = true;
+  try {
+    const r = await fetch(RAILWAY_URL + '/status', { signal: AbortSignal.timeout(6000) });
+    if (r.ok) { _apiOnline = true; _apiChecked = true; _apiWaking = false; return true; }
+  } catch(e) {}
+  _apiChecked = true; _apiWaking = false;
+  return _apiOnline;
+}
 
 // ── STATIC FALLBACK DATA (shows when Railway is sleeping) ──
 // Last-known prices — updates automatically when Railway comes online
@@ -3099,10 +3113,56 @@ async function fetchCryptoLive() {
 
 async function fetchLiveData() {
   if (!window._hasLiveData) setLiveStatus('fetching', '⏳ Loading live data…');
-  // Run all three in parallel — fastest one wins the UI update
-  fetchCryptoLive();        // CoinGecko — crypto prices
-  fetchIndicesLive();       // Vercel /api/indices — Nifty/BankNifty/Sensex
-  fetchStocksLive();        // Vercel /api/quote — all NSE stocks
+
+  // Always fetch crypto in parallel (CoinGecko, no backend needed)
+  fetchCryptoLive();
+
+  // ── Primary: Railway backend (all stocks + indices + commodities in ONE call) ──
+  try {
+    const res = await fetch(RAILWAY_URL + '/all', { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error('railway-error');
+    const json = await res.json();
+    _apiOnline = true;
+
+    // Merge stocks
+    const liveMap = {};
+    (json.stocks || []).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
+    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
+    Object.values(liveMap).forEach(s => { if (!liveStocks.find(x => x.sym === s.sym)) liveStocks.push({...s, _live:true}); });
+
+    // Merge indices
+    if (json.indices && json.indices.length) {
+      window._liveIndices = {};
+      json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
+    }
+
+    // Merge commodities
+    (json.commodities || []).forEach(c => {
+      if (!c.price || c.price === '—') return;
+      const chgNum = typeof c.chg === 'number' ? c.chg : parseFloat((c.chg||'0').replace('%','').replace('+',''));
+      const chgStr = (chgNum >= 0 ? '+' : '') + Math.abs(chgNum).toFixed(2) + '%';
+      const existing = liveStocks.find(s => s.sym === c.sym);
+      if (existing) { existing.price = c.price; existing.chg = chgStr; existing.up = chgNum>=0; existing._live=true; }
+      else { liveStocks.push({...c, chg:chgStr, up:chgNum>=0, _live:true}); }
+    });
+
+    window._hasLiveData = true;
+    renderTrending(liveStocks.slice(0, 6));
+    updateTickerFromLive();
+    onLiveDataUpdate();
+    if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
+    setLiveStatus('live', '● LIVE · ' + ts);
+    showApiBanner('online');
+    return; // Railway worked — done!
+  } catch(e) {
+    _apiOnline = false;
+    console.warn('[Railway] offline, falling back:', e.message);
+  }
+
+  // ── Fallback: Vercel serverless + CoinGecko ──
+  fetchIndicesLive();
+  fetchStocksLive();
 }
 
 // ── Nifty / BankNifty / Sensex ──────────────────────────────────
@@ -10109,7 +10169,10 @@ async function fetchPriorityStocks() {
 setInterval(fetchLiveData, 30000);
 setInterval(fetchCryptoLive, 25000);
 
-// Vercel functions are always-on — no keepalive needed
+// ── Keep Railway alive — ping every 5 min to prevent sleep ──
+setInterval(async function() {
+  try { await fetch(RAILWAY_URL + '/status', {signal: AbortSignal.timeout(5000)}); } catch(e) {}
+}, 5 * 60 * 1000);
 
 // ── Pause when tab hidden ──
 document.addEventListener('visibilitychange', function() {
