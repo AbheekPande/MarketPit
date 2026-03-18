@@ -39,7 +39,6 @@
   overflow-y:auto;
   overflow-x:hidden;
   scroll-behavior:smooth;
-  contain:strict;
   padding:12px 14px;
   background:var(--bg);
 }
@@ -127,7 +126,7 @@ body.font-small  { font-size:13px; }
 body.font-normal { font-size:15px; }
 body.font-large  { font-size:17px; }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; transition:background 0.3s,color 0.3s; }
+body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','DM Sans',sans-serif; height:100vh; overflow:hidden; display:flex; flex-direction:column; transition:background 0.3s,color 0.3s; }
 /* ── GLOBAL SMOOTHNESS ── */
 button,a,.stock-item,.pcat-btn,.filter-btn,.notif-btn,.nav-tab {
   transition:background 0.15s,color 0.15s,border-color 0.15s !important;
@@ -324,7 +323,7 @@ header {
 .search-badge { font-size:9px; border-radius:4px; padding:2px 5px; border:1px solid; white-space:nowrap; }
 
 /* MAIN FEED */
-.main-feed { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; contain:layout style; }
+.main-feed { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
 .feed-filters {
   padding:8px 14px;
   border-bottom:1px solid var(--border);
@@ -926,7 +925,7 @@ header {
 
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+  html { height:100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
   .post-card, .ipo-card { will-change: transform; }
   .ticker-track { will-change: transform; }
     a, button, [onclick] { outline: none; }
@@ -1184,7 +1183,7 @@ code, .mono, [class*="Space Mono"] { font-family:'Space Mono',monospace; }
 }
 
 /* Layout background */
-.layout { display:flex; flex:1; min-height:0; overflow:hidden; background:var(--bg); }
+.layout { display:flex; flex-direction:row; flex:1; min-height:0; overflow:hidden; background:var(--bg); }
 .main-feed { background:var(--bg); }
 
 /* Sidebar tab buttons (NSE / CRYPTO / COMMOD) */
@@ -1293,11 +1292,7 @@ input[type="text"], input[type="number"], textarea, select {
 }
 
 /* Section page headers */
-.page-section-header {
-  padding:14px 18px; border-bottom:1px solid var(--border);
-  background:var(--bg2); flex-shrink:0;
-  display:flex; align-items:center; justify-content:space-between;
-}
+.page-section-header { padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg2); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
 .page-section-title {
   font-size:14px; font-weight:700; color:var(--text);
   font-family:'Plus Jakarta Sans',sans-serif;
@@ -1319,10 +1314,7 @@ input[type="text"], input[type="number"], textarea, select {
 
 
 /* Trend header in left sidebar */
-.trend-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 10px 4px;
-}
+.trend-header { display:flex; align-items:center; justify-content:space-between; padding:4px 10px; }
 .trend-label {
   font-size:9.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
   color:var(--text3); font-family:'Plus Jakarta Sans',sans-serif;
@@ -1397,7 +1389,7 @@ input[type="text"], input[type="number"], textarea, select {
 #trendingTags .htag-chip:hover { background:rgba(37,99,235,0.14); }
 
 /* Stock modal */
-.stock-modal-header { padding:16px 20px; border-bottom:1px solid var(--border); }
+.stock-modal-header { display:flex; align-items:center; justify-content:space-between; padding:10px 10px 4px; }
 .stock-modal-sym { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:var(--text); }
 .stock-modal-name { font-size:12px; color:var(--text3); margin-top:2px; }
 
@@ -1411,9 +1403,7 @@ input[type="text"], input[type="number"], textarea, select {
 }
 
 /* ── PERF: contain on all page panels ── */
-.main-feed {
-  contain: layout style;
-}
+/* .main-feed contain removed */
 
 /* ── PERF: will-change on elements with active animations ── */
 .news-ticker-track { will-change: transform; }
