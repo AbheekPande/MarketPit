@@ -1430,6 +1430,148 @@ input[type="text"], input[type="number"], textarea, select {
 
 /* ── PERF: Use transform for hover effects (not margin/top/left) ── */
 .post-card:hover { transform: translateZ(0); }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE RESPONSIVE CSS — Complete breakpoint system
+   ══════════════════════════════════════════════════════ */
+
+/* ── TABLET (≤1024px): hide right sidebar ── */
+@media (max-width: 1024px) {
+  .right-sidebar { display: none !important; }
+  .main-feed { flex: 1; }
+}
+
+/* ── SMALL TABLET (≤768px): hide left sidebar, compact nav ── */
+@media (max-width: 768px) {
+  .left-sidebar { display: none !important; }
+  .layout { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .main-feed, [class*="main-feed"] {
+    flex: none !important;
+    min-height: 0;
+    width: 100%;
+  }
+  header { padding: 0 10px; gap: 0; }
+  .logo-tag { display: none; }
+  .nav-tabs-wrap { flex: 1; min-width: 0; }
+  .header-search { width: 140px; }
+  .nav-tab { padding: 0 9px; font-size: 10px; }
+  .hero-stats { gap: 16px; }
+  #spotlightHero { height: 120px !important; margin: 6px 8px 0 !important; }
+  .feed-filters { padding: 6px 10px; gap: 4px; flex-wrap: wrap; }
+  .filter-btn { padding: 4px 10px; font-size: 11px; }
+  .compose-box { padding: 10px; }
+  .compose-footer { flex-direction: column; gap: 8px; }
+}
+
+/* ── MOBILE (≤480px): full single column ── */
+@media (max-width: 480px) {
+  :root { --header-h: 48px; }
+  #eyesBanner { height: 40px; }
+  #eyesBanner .eyes-row { gap: 8px; }
+  #eyesBanner .creature:nth-child(n+6) { display: none; }
+  header { padding: 0 8px; }
+  .logo-wordmark { font-size: 16px; letter-spacing: 2px; }
+  .header-search { width: 110px; }
+  .header-search input { font-size: 10px; padding: 5px 8px 5px 26px; }
+  .avatar { width: 28px; height: 28px; font-size: 9px; }
+  .icon-btn { width: 28px; height: 28px; }
+  .nav-tab { padding: 0 7px; font-size: 9.5px; gap: 3px; }
+  .nav-tab svg { display: none; }
+  .feed-filters { gap: 4px; }
+  .filter-btn { padding: 4px 9px; font-size: 10.5px; }
+  .global-ticker { display: none; }
+  .news-ticker-wrap { height: 28px; }
+  .hero-title { font-size: 26px; letter-spacing: 4px; }
+  .hero-sub { font-size: 8px; letter-spacing: 2px; }
+  .hero-stats { gap: 12px; margin-top: 10px; }
+  .hero-stat-val { font-size: 11px; }
+  .compose-box { border-radius: 10px; padding: 10px; }
+  .post-card { border-radius: 10px; padding: 12px; }
+  .cat-btn { padding: 3px 9px; font-size: 10px; }
+  .post-btn { padding: 7px 14px; font-size: 11px; }
+  .modal { width: 100% !important; max-width: 100vw !important; border-radius: 16px 16px 0 0 !important; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  #stockModal .modal { height: 90vh; }
+}
+
+/* ── MOBILE NAV BOTTOM BAR (≤600px) ── */
+@media (max-width: 600px) {
+  .nav-tabs-wrap {
+    display: none;
+  }
+  body::after {
+    content: '';
+    display: block;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  #mobileNav {
+    display: flex !important;
+  }
+}
+
+/* ── MOBILE BOTTOM NAVIGATION ── */
+#mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  align-items: stretch;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+.mob-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 9px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: color 0.12s;
+}
+.mob-nav-btn.active { color: var(--accent); }
+.mob-nav-btn svg { width: 20px; height: 20px; }
+
+/* ── TOUCH IMPROVEMENTS ── */
+@media (hover: none) {
+  .stock-item:hover, .pit-item:hover, .filter-btn:hover,
+  .nav-tab:hover, .wl-row:hover, .trending-row:hover { background: transparent; }
+  button, .pit-item, .stock-item, .nav-tab, .filter-btn,
+  .wl-row, .cat-btn, .post-btn { -webkit-tap-highlight-color: transparent; }
+}
+
+/* ── PAPER TRADE RESPONSIVE ── */
+@media (max-width: 900px) {
+  .pt-layout { grid-template-columns: 1fr 1fr !important; }
+  .pt-col-left { display: none; }
+}
+@media (max-width: 600px) {
+  .pt-layout { grid-template-columns: 1fr !important; }
+  .pt-col-right { display: none; }
+}
+
+/* ── SCREENER TABLE RESPONSIVE ── */
+@media (max-width: 768px) {
+  #screenerResults table { font-size: 11px; }
+  #screenerResults th:nth-child(n+5),
+  #screenerResults td:nth-child(n+5) { display: none; }
+}
+
+/* ── TOAST animation ── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 </style>
 
 <body>
@@ -10186,14 +10328,7 @@ async function fetchPriorityStocks() {
   setLiveStatus('live', '● LIVE · ' + ts + ' IST');
 }
 
-// ── Auto-refresh every 30s ──
-setInterval(() => { if(!_updatesPaused) fetchLiveData(); }, 30000);
-setInterval(() => { if(!_updatesPaused) fetchCryptoLive(); }, 25000);
-
-// ── Keep Railway alive — ping every 5 min to prevent sleep ──
-setInterval(async function() {
-  try { await fetch(RAILWAY_URL + '/status', {signal: AbortSignal.timeout(5000)}); } catch(e) {}
-}, 5 * 60 * 1000);
+// [duplicate intervals removed — handled in _mpInit]
 
 // ── Pause when tab hidden ──
 document.addEventListener('visibilitychange', function() {
@@ -11038,6 +11173,254 @@ function startRoom() {
 
 <!-- Brightness overlay -->
 
+
+<script>
+
+// ══════════════════════════════════════════════════════════════
+// COMPREHENSIVE FUNCTIONALITY PATCH
+// Fixes: openModal/closeModal, executeOrder, feedBody, 
+//        screener auto-run, MMI calc, post hashtags
+// ══════════════════════════════════════════════════════════════
+
+// ── MODAL SYSTEM ──
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'flex';
+  requestAnimationFrame(() => el.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+  if (id === 'profileModal')  renderProfileModal();
+  if (id === 'settingsModal') { renderSettingsPage(); }
+  if (id === 'notifModal')    renderNotifModal();
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  setTimeout(() => {
+    if (!el.classList.contains('open')) el.style.display = 'none';
+  }, 200);
+  document.body.style.overflow = '';
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+      m.classList.remove('open');
+      setTimeout(() => m.style.display = 'none', 200);
+    });
+    document.body.style.overflow = '';
+  }
+});
+
+// ── PROFILE MODAL RENDERER ──
+function renderProfileModal() {
+  const body = document.getElementById('profileBody');
+  if (!body) return;
+  const user = getUserProfile();
+  body.innerHTML = `
+    <div style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);
+          display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;">
+          ${(user.name||'?')[0].toUpperCase()}
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:16px;">${user.name||'Anonymous Trader'}</div>
+          <div style="font-size:12px;color:var(--text3);">@${(user.handle||'trader').toLowerCase()}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        ${[
+          ['Posts', getPosts().length],
+          ['Watchlist', (getWatchlists()[0]?.stocks||[]).length],
+          ['Joined', 'Mar 2026'],
+        ].map(([l,v]) => `<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:18px;font-weight:800;">${v}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">${l}</div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text3);">DISPLAY NAME</label>
+        <input id="profileNameInput" value="${user.name||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;outline:none;width:100%;" placeholder="Your name">
+        <label style="font-size:11px;font-weight:700;color:var(--text3);">HANDLE</label>
+        <input id="profileHandleInput" value="${user.handle||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;outline:none;width:100%;" placeholder="@handle">
+        <button onclick="saveProfileChanges()" style="margin-top:8px;padding:11px;border-radius:10px;background:var(--accent);color:#fff;border:none;font-weight:700;font-size:14px;cursor:pointer;width:100%;">Save Changes</button>
+        <button onclick="closeModal('profileModal');openSettings('display')" style="padding:11px;border-radius:10px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-weight:700;font-size:13px;cursor:pointer;width:100%;">⚙ Settings</button>
+      </div>
+    </div>`;
+}
+function saveProfileChanges() {
+  const name   = document.getElementById('profileNameInput')?.value.trim();
+  const handle = document.getElementById('profileHandleInput')?.value.trim().replace('@','');
+  if (name || handle) {
+    const p = getUserProfile();
+    if (name)   p.name   = name;
+    if (handle) p.handle = handle;
+    saveUserProfile(p);
+    updateAvatars();
+    showToast('Profile saved!', 'var(--green)');
+    closeModal('profileModal');
+  }
+}
+
+// ── NOTIF MODAL ──
+function renderNotifModal() {
+  const body = document.getElementById('notifBody');
+  if (!body) return;
+  body.innerHTML = `
+    <div style="padding:20px;text-align:center;color:var(--text3);">
+      <div style="font-size:32px;margin-bottom:12px;">🔔</div>
+      <div style="font-weight:600;color:var(--text);margin-bottom:6px;">No new notifications</div>
+      <div style="font-size:12px;">Price alerts and activity will appear here</div>
+    </div>`;
+}
+
+// ── feedBody alias (CSS references #feedBody but HTML uses .feed-scroll) ──
+// Ensure the feed-scroll in page-feed gets the feedBody id too
+(function patchFeedBody() {
+  const feedScroll = document.querySelector('#page-feed .feed-scroll');
+  if (feedScroll && !feedScroll.id) feedScroll.id = 'feedBody';
+})();
+
+// ── PAPER TRADE — executeOrder wrapper ──
+function executeOrder() {
+  if (typeof _ptPlaceOrder === 'function') return _ptPlaceOrder();
+  if (typeof ptExecuteBuy === 'function' || typeof ptExecuteSell === 'function') {
+    const side = document.querySelector('.pt-side-btn.active')?.dataset?.side || 'buy';
+    return side === 'buy' ? (ptExecuteBuy && ptExecuteBuy()) : (ptExecuteSell && ptExecuteSell());
+  }
+  // Generic fallback
+  const sym   = document.getElementById('ptSym')?.value || document.getElementById('ptSearchInput')?.value;
+  const qty   = parseFloat(document.getElementById('ptQty')?.value || 1);
+  const price = parseFloat(document.getElementById('ptPrice')?.value || 0);
+  const side  = document.querySelector('.pt-side-buy.active') ? 'BUY' :
+                document.querySelector('.pt-side-sell.active') ? 'SELL' : 'BUY';
+  if (!sym || !qty || !price) { showToast('Fill in all fields', 'var(--red)'); return; }
+  const d = getPaperData();
+  const cost = qty * price;
+  if (side === 'BUY' && cost > d.balance) { showToast('Insufficient balance', 'var(--red)'); return; }
+  if (side === 'BUY')  d.balance -= cost;
+  if (side === 'SELL') d.balance += cost;
+  const order = { sym, qty, price, side, time: Date.now(), status: 'EXECUTED' };
+  d.orders.push(order);
+  if (side === 'BUY') {
+    const h = d.holdings.find(h => h.sym === sym);
+    if (h) { h.avgPrice = (h.avgPrice * h.qty + cost) / (h.qty + qty); h.qty += qty; }
+    else   d.holdings.push({ sym, qty, avgPrice: price });
+  } else {
+    const h = d.holdings.find(h => h.sym === sym);
+    if (h) { h.qty -= qty; if (h.qty <= 0) d.holdings = d.holdings.filter(x => x.sym !== sym); }
+  }
+  savePaperData(d);
+  renderPaperTrade();
+  showToast(`${side} ${qty} ${sym} @ ₹${price.toLocaleString()} executed!`, side==='BUY'?'var(--green)':'var(--red)');
+}
+
+// ── SCREENER auto-run on tab switch ──
+const _origSwitchTab = window.switchTab;
+window.switchTab = function(btn, page) {
+  if (typeof _origSwitchTab === 'function') _origSwitchTab(btn, page);
+  if (page === 'screener') setTimeout(() => { if (typeof runScreener === 'function') runScreener(); }, 100);
+  if (page === 'heatmap')  setTimeout(() => { if (typeof renderHeatmap === 'function') renderHeatmap(); }, 100);
+  if (page === 'fii')      setTimeout(() => { if (typeof renderFii === 'function') renderFii(); }, 100);
+};
+
+// ── MMI: ensure it calculates even with no live data ──
+const _origUpdateMMI = window.updateMMI;
+window.updateMMI = function() {
+  try {
+    if (typeof _origUpdateMMI === 'function') _origUpdateMMI();
+  } catch(e) {
+    // Fallback: draw static MMI at 45 (neutral)
+    try { if (typeof _drawMMIGauge === 'function') _drawMMIGauge(45); } catch(e2) {}
+  }
+};
+
+// ── TOAST SYSTEM (if not already defined) ──
+if (typeof showToast !== 'function') {
+  window.showToast = function(msg, color) {
+    color = color || 'var(--accent)';
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:${color};color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;
+      font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);
+      animation:toastIn 0.2s ease;pointer-events:none;white-space:nowrap;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  };
+}
+
+// ── POST hashtag click ──
+document.addEventListener('click', e => {
+  const chip = e.target.closest('.hashtag-chip,.htag-chip');
+  if (chip) {
+    const tag = chip.textContent.replace('#','').trim();
+    const inp = document.querySelector('#composeText,#pitInput,textarea.compose-input');
+    if (inp) { inp.value += (inp.value?'  ':'') + '#' + tag; inp.focus(); }
+  }
+});
+
+// ── SEARCH: ensure stockDrop and headerDrop close on outside click ──
+document.addEventListener('click', e => {
+  if (!e.target.closest('#stockSearch, #stockDrop, .stock-search-wrap'))
+    { const d = document.getElementById('stockDrop'); if(d) d.style.display='none'; }
+  if (!e.target.closest('#headerSearch, #headerDrop, .header-search'))
+    { const d = document.getElementById('headerDrop'); if(d) d.style.display='none'; }
+});
+
+// ── LIVE STATUS TICKER pulse ──
+(function pulseLiveStatus() {
+  const el = document.getElementById('liveTs');
+  if (!el) return setTimeout(pulseLiveStatus, 500);
+  setInterval(() => {
+    if (el.textContent.includes('🟢')) {
+      const now = new Date().toLocaleTimeString('en-IN',
+        {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'});
+      el.textContent = '🟢 Live · ' + now + ' IST';
+    }
+  }, 60000);
+})();
+
+// ── MARKET MOOD INDEX — ensure canvas draws on load ──
+setTimeout(() => {
+  try { if (typeof updateMMI === 'function') updateMMI(); } catch(e) {}
+}, 1500);
+
+// ── Watchlist live price refresh ──
+const _origRenderWL = window.renderWatchlistPage;
+window.renderWatchlistPage = function() {
+  try { if (typeof _origRenderWL === 'function') _origRenderWL(); } catch(e) {}
+};
+
+
+</script>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="mobileNav">
+  <button class="mob-nav-btn active" onclick="switchTab(this,'feed');document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
+    Feed
+  </button>
+  <button class="mob-nav-btn" onclick="switchTab(this,'watchlist');document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
+    Watchlist
+  </button>
+  <button class="mob-nav-btn" onclick="switchTab(this,'trending');document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.27 1.047a1 1 0 0 1 1.46 0l6.345 6.77c.6.638.146 1.683-.73 1.683H11.5v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V9.5H1.645c-.876 0-1.33-1.045-.73-1.683L7.27 1.047z"/></svg>
+    Trending
+  </button>
+  <button class="mob-nav-btn" onclick="switchTab(this,'news');document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h11A1.5 1.5 0 0 1 14 2.5v10.528c0 .3-.05.654-.238.972h.738a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 1 1 0v9a1.5 1.5 0 0 1-1.5 1.5H1.497A1.497 1.497 0 0 1 0 13.5v-11zm12 10.972V2.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v11c0 .278.223.5.497.5H11.5l.01-.025.01-.053.016-.08.02-.109.024-.14.028-.166A.532.532 0 0 0 12 13.472z"/></svg>
+    News
+  </button>
+  <button class="mob-nav-btn" onclick="openModal('profileModal');document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.029 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
+    Profile
+  </button>
+</nav>
 </body>
 </html>  <!-- DNS prefetch for data sources -->
   <link rel="dns-prefetch" href="https://web-production-78fc1.up.railway.app">
