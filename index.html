@@ -3275,342 +3275,275 @@ const getColor = name => AV_COLORS[name.length % AV_COLORS.length];
 // Client-side YF proxies (last resort only — used if ALL Vercel functions fail)
 const YF_BASE  = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 const YF_BASE2 = 'https://query2.finance.yahoo.com/v8/finance/chart/';
+// ═══════════════════════════════════════════════════════════════════
+// LIVE DATA ENGINE v5 — Multi-source, auto-polling, robust fallbacks
+// Sources: Yahoo Finance (via 4 CORS proxies) + CoinGecko (direct)
+// Updates: every 15s stocks, every 30s crypto, every 60s indices
+// ═══════════════════════════════════════════════════════════════════
+
+// ── CORS PROXY CHAIN ── (rotates through all until one works)
 const YF_PROXIES = [
-  url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
 ];
+let _proxyIndex = 0; // rotate proxies to avoid rate limits
+
+function _nextProxy() {
+  const p = YF_PROXIES[_proxyIndex % YF_PROXIES.length];
+  _proxyIndex++;
+  return p;
+}
+
+// ── YAHOO FINANCE PARSER ──
 function _parseYFChart(parsed) {
-  const meta = parsed && parsed.chart && parsed.chart.result && parsed.chart.result[0] && parsed.chart.result[0].meta;
+  const meta = parsed?.chart?.result?.[0]?.meta;
   if (!meta || !meta.regularMarketPrice) return null;
   const price = meta.regularMarketPrice;
   const prev  = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen || price;
   const chg   = prev ? ((price - prev) / prev * 100) : 0;
   return { price, chg, up: chg >= 0 };
 }
+
+function _parseYFQuote(data) {
+  const quotes = data?.quoteResponse?.result || [];
+  return quotes.map(q => ({
+    yfSym: q.symbol,
+    price: q.regularMarketPrice,
+    chg:   q.regularMarketChangePercent || 0,
+    up:    (q.regularMarketChangePercent || 0) >= 0,
+    name:  q.shortName || q.symbol,
+  })).filter(q => q.price);
+}
+
+// ── SINGLE SYMBOL via chart API ──
 async function yfFetch(yfSym) {
-  const urls = [YF_BASE + yfSym + '?interval=1m&range=1d', YF_BASE2 + yfSym + '?interval=1m&range=1d'];
-  for (const proxyFn of YF_PROXIES) {
-    for (const u of urls) {
-      try {
-        const r = await fetch(proxyFn(u), { signal: AbortSignal.timeout(7000) });
-        if (!r.ok) continue;
-        const raw = await r.text();
-        let parsed; try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
-        const result = _parseYFChart(parsed);
-        if (result) return result;
-      } catch(e) { continue; }
-    }
-  }
-  throw new Error('yfFetch failed: ' + yfSym);
-}
-
-// Batch fetch via Vercel /api/quote — primary method
-async function vercelQuote(yfSymsCSV) {
-  const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSymsCSV), { signal: AbortSignal.timeout(12000) });
-  if (!r.ok) {
-    // 502 means Vercel function couldn't reach Yahoo Finance — throw to trigger fallback
-    throw new Error('vercelQuote HTTP ' + r.status);
-  }
-  const data = await r.json();
-  const quotes = (data && data.quoteResponse && data.quoteResponse.result) || [];
-  if (!quotes.length) throw new Error('no quotes returned');
-  return quotes;
-}
-
-// Direct Yahoo Finance fetch — bypasses Vercel, tries browser-direct (works in some regions)
-async function yfDirectFetch(yfSymsCSV) {
-  const url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + encodeURIComponent(yfSymsCSV) + '&fields=regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,shortName';
-  // Try direct first (Yahoo Finance allows some CORS requests)
-  for (const makeUrl of [u => u, u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u)]) {
-    try {
-      const r = await fetch(makeUrl(url), { signal: AbortSignal.timeout(10000) });
-      if (!r.ok) continue;
-      const raw = await r.text();
-      let data;
-      try { const w = JSON.parse(raw); data = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
-      const quotes = (data && data.quoteResponse && data.quoteResponse.result) || [];
-      if (quotes.length) return quotes;
-    } catch(e) { continue; }
-  }
-  throw new Error('yfDirectFetch failed');
-}
-
-// CoinGecko symbol map — free API, no key needed, very reliable
-const CG_IDS = {
-  'BTC':'bitcoin','ETH':'ethereum','BNB':'binancecoin','SOL':'solana',
-  'XRP':'ripple','DOGE':'dogecoin','ADA':'cardano','MATIC':'matic-network',
-  'DOT':'polkadot','AVAX':'avalanche-2','LTC':'litecoin','LINK':'chainlink',
-};
-
-// Yahoo Finance symbol map for NSE stocks
-const YF_STOCK_MAP = {
-  // ═══ NIFTY 50 ═══
-  'HDFCBANK':'HDFCBANK.NS','ICICIBANK':'ICICIBANK.NS','SBIN':'SBIN.NS',
-  'AXISBANK':'AXISBANK.NS','KOTAKBANK':'KOTAKBANK.NS','INDUSINDBK':'INDUSINDBK.NS',
-  'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','HCLTECH':'HCLTECH.NS',
-  'TECHM':'TECHM.NS','LTIM':'LTIM.NS',
-  'TATAMOTORS':'TATAMOTORS.NS','MARUTI':'MARUTI.NS','M&M':'M%26M.NS',
-  'HEROMOTOCO':'HEROMOTOCO.NS','EICHERMOT':'EICHERMOT.NS','BAJAJ-AUTO':'BAJAJ-AUTO.NS',
-  'SUNPHARMA':'SUNPHARMA.NS','DRREDDY':'DRREDDY.NS','CIPLA':'CIPLA.NS',
-  'DIVISLAB':'DIVISLAB.NS','APOLLOHOSP':'APOLLOHOSP.NS',
-  'RELIANCE':'RELIANCE.NS','ONGC':'ONGC.NS','BPCL':'BPCL.NS',
-  'IOC':'IOC.NS','NTPC':'NTPC.NS','POWERGRID':'POWERGRID.NS',
-  'TATASTEEL':'TATASTEEL.NS','JSWSTEEL':'JSWSTEEL.NS',
-  'HINDALCO':'HINDALCO.NS','COALINDIA':'COALINDIA.NS',
-  'NESTLEIND':'NESTLEIND.NS','BRITANNIA':'BRITANNIA.NS',
-  'ITC':'ITC.NS','HINDUNILVR':'HINDUNILVR.NS','TATACONSUM':'TATACONSUM.NS',
-  'BAJFINANCE':'BAJFINANCE.NS','BAJAJFINSV':'BAJAJFINSV.NS',
-  'TITAN':'TITAN.NS','ASIANPAINT':'ASIANPAINT.NS',
-  'DMART':'DMART.NS','LT':'LT.NS',
-  'ADANIENT':'ADANIENT.NS','ULTRACEMCO':'ULTRACEMCO.NS',
-  'GRASIM':'GRASIM.NS','BHARTIARTL':'BHARTIARTL.NS',
-  'JUBLFOOD':'JUBLFOOD.NS','SHRIRAMFIN':'SHRIRAMFIN.NS',
-  // ═══ NIFTY NEXT 50 ═══
-  'ADANIPORTS':'ADANIPORTS.NS','ADANIPOWER':'ADANIPOWER.NS',
-  'AMBUJACEM':'AMBUJACEM.NS','BANKBARODA':'BANKBARODA.NS',
-  'BERGEPAINT':'BERGEPAINT.NS','BEL':'BEL.NS','BHEL':'BHEL.NS',
-  'BOSCHLTD':'BOSCHLTD.NS','CANBK':'CANBK.NS','CHOLAFIN':'CHOLAFIN.NS',
-  'COLPAL':'COLPAL.NS','DLF':'DLF.NS','GAIL':'GAIL.NS',
-  'GODREJCP':'GODREJCP.NS','HAL':'HAL.NS','HAVELLS':'HAVELLS.NS',
-  'HDFCLIFE':'HDFCLIFE.NS','HINDPETRO':'HINDPETRO.NS',
-  'INDUSTOWER':'INDUSTOWER.NS','IRCTC':'IRCTC.NS','JSWENERGY':'JSWENERGY.NS',
-  'LICI':'LICI.NS','LUPIN':'LUPIN.NS','MARICO':'MARICO.NS',
-  'MUTHOOTFIN':'MUTHOOTFIN.NS','NAUKRI':'NAUKRI.NS','NMDC':'NMDC.NS',
-  'OFSS':'OFSS.NS','PERSISTENT':'PERSISTENT.NS','PETRONET':'PETRONET.NS',
-  'PIDILITIND':'PIDILITIND.NS','PNB':'PNB.NS','RECLTD':'RECLTD.NS',
-  'SAIL':'SAIL.NS','SBICARD':'SBICARD.NS','SBILIFE':'SBILIFE.NS',
-  'SHREECEM':'SHREECEM.NS','SIEMENS':'SIEMENS.NS',
-  'TORNTPHARM':'TORNTPHARM.NS','TRENT':'TRENT.NS','TVSMOTOR':'TVSMOTOR.NS',
-  'UPL':'UPL.NS','VEDL':'VEDL.NS','ZOMATO':'ZOMATO.NS','ZYDUSLIFE':'ZYDUSLIFE.NS',
-  // ═══ MID-CAPS ═══
-  'ABCAPITAL':'ABCAPITAL.NS','ALKEM':'ALKEM.NS',
-  'AUBANK':'AUBANK.NS','AUROPHARMA':'AUROPHARMA.NS',
-  'BANDHANBNK':'BANDHANBNK.NS','BIOCON':'BIOCON.NS',
-  'COFORGE':'COFORGE.NS','DEEPAKNTR':'DEEPAKNTR.NS','DIXON':'DIXON.NS',
-  'FEDERALBNK':'FEDERALBNK.NS','FORTIS':'FORTIS.NS',
-  'GLENMARK':'GLENMARK.NS','GODREJPROP':'GODREJPROP.NS',
-  'HDFCAMC':'HDFCAMC.NS','IDFCFIRSTB':'IDFCFIRSTB.NS',
-  'INDHOTEL':'INDHOTEL.NS','JINDALSTEL':'JINDALSTEL.NS',
-  'LAURUSLABS':'LAURUSLABS.NS','LICHSGFIN':'LICHSGFIN.NS',
-  'LTTS':'LTTS.NS','MANAPPURAM':'MANAPPURAM.NS',
-  'MOTHERSON':'MOTHERSON.NS','MPHASIS':'MPHASIS.NS','MRF':'MRF.NS',
-  'NYKAA':'FSN.NS','PAGEIND':'PAGEIND.NS','PAYTM':'PAYTM.NS',
-  'PHOENIXLTD':'PHOENIXLTD.NS','PIIND':'PIIND.NS',
-  'POLYCAB':'POLYCAB.NS','PRESTIGE':'PRESTIGE.NS',
-  'PVRINOX':'PVRINOX.NS','SOLARINDS':'SOLARINDS.NS','SRF':'SRF.NS',
-  'SYNGENE':'SYNGENE.NS','TATAELXSI':'TATAELXSI.NS',
-  'TATACHEM':'TATACHEM.NS','TATACOMM':'TATACOMM.NS',
-  'TORNTPOWER':'TORNTPOWER.NS','UNIONBANK':'UNIONBANK.NS',
-  'VARUNBEV':'VARUNBEV.NS','VOLTAS':'VOLTAS.NS',
-  'YESBANK':'YESBANK.NS','ZEEL':'ZEEL.NS',
-  'POLICYBZR':'POLICYBZR.NS','DELHIVERY':'DELHIVERY.NS',
-  'RVNL':'RVNL.NS','IRFC':'IRFC.NS',
-  'COCHINSHIP':'COCHINSHIP.NS','HUDCO':'HUDCO.NS',
-  'KAYNES':'KAYNES.NS','RAILTEL':'RAILTEL.NS',
-  // ═══ Indices ═══
-  'NIFTY':'%5ENSEI','BANKNIFTY':'%5ENSEBANK','SENSEX':'%5EBSESN',
-  // ═══ Commodities ═══
-  'GOLD':'GC=F','SILVER':'SI=F','CRUDE':'CL=F','BRENT':'BZ=F',
-  'NATURALGAS':'NG=F','COPPER':'HG=F','PLATINUM':'PL=F','WHEAT':'ZW=F','CORN':'ZC=F',
-};
-
-// ── LIVE FETCH FUNCTIONS ──────────────────────────────────────
-
-// Fetch one stock/index/commodity via Yahoo Finance — tries multiple proxies
-async function yfFetch(yfSym) {
-  const url = `${YF_BASE}${yfSym}?interval=1m&range=1d`;
-  for (const proxyFn of YF_PROXIES) {
+  const u1 = `https://query1.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`;
+  const u2 = `https://query2.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`;
+  for (let attempt = 0; attempt < YF_PROXIES.length * 2; attempt++) {
+    const proxyFn = YF_PROXIES[attempt % YF_PROXIES.length];
+    const url = attempt % 2 === 0 ? u1 : u2;
     try {
       const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(8000) });
       if (!r.ok) continue;
       const raw = await r.text();
       let parsed;
-      try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; }
-      catch(e) { parsed = JSON.parse(raw); }
-      const meta = parsed?.chart?.result?.[0]?.meta;
-      if (!meta?.regularMarketPrice) continue;
-      const price = meta.regularMarketPrice;
-      const prev  = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen || price;
-      const chg   = prev ? ((price - prev) / prev * 100) : 0;
-      return { price, prev, chg, up: chg >= 0 };
+      try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
+      const result = _parseYFChart(parsed);
+      if (result) return result;
     } catch(e) { continue; }
   }
-  throw new Error('all YF proxies failed for ' + yfSym);
+  throw new Error('yfFetch failed: ' + yfSym);
 }
 
-// Fetch crypto prices from CoinGecko (free, no key, very reliable)
-let _cgCache = null;
-let _cgCacheTime = 0;
-async function cgFetchAll() {
-  if (_cgCache && Date.now() - _cgCacheTime < 25000) return _cgCache; // 25s TTL — fresh on every 30s tick
-  const ids = Object.values(CG_IDS).join(',');
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-  const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-  if (!r.ok) throw new Error('CoinGecko error');
-  const data = await r.json();
-  _cgCache = data;
-  _cgCacheTime = Date.now();
-  return data;
-}
+// ── BATCH SYMBOLS via v7 quote API (faster, fewer requests) ──
+async function yfBatchFetch(yfSymsCSV) {
+  const fields = 'regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,shortName';
+  const u1 = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yfSymsCSV)}&fields=${fields}`;
+  const u2 = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yfSymsCSV)}&fields=${fields}`;
 
-// Fetch a single crypto price
-async function cgFetch(sym) {
-  const id = CG_IDS[sym];
-  if (!id) throw new Error('no CG id for ' + sym);
-  const data = await cgFetchAll();
-  const coin = data[id];
-  if (!coin) throw new Error('no data for ' + id);
-  const price = coin.usd;
-  const chg   = coin.usd_24h_change || 0;
-  return { price, chg, up: chg >= 0 };
-}
-
-// Stocks to fetch via Yahoo Finance when Railway is offline
-const LIVE_SIDEBAR_SYMS = [
-  // Banking
-  {sym:'HDFCBANK',  name:'HDFC Bank',           sector:'Banking'},
-  {sym:'SBIN',      name:'SBI',                 sector:'Banking'},
-  {sym:'ICICIBANK', name:'ICICI Bank',          sector:'Banking'},
-  {sym:'AXISBANK',  name:'Axis Bank',           sector:'Banking'},
-  {sym:'KOTAKBANK', name:'Kotak Mahindra',      sector:'Banking'},
-  {sym:'INDUSINDBK',name:'IndusInd Bank',       sector:'Banking'},
-  // IT
-  {sym:'TCS',       name:'Tata Consultancy',    sector:'IT'},
-  {sym:'INFY',      name:'Infosys',             sector:'IT'},
-  {sym:'WIPRO',     name:'Wipro',               sector:'IT'},
-  {sym:'HCLTECH',   name:'HCL Tech',            sector:'IT'},
-  {sym:'TECHM',     name:'Tech Mahindra',       sector:'IT'},
-  {sym:'LTIM',      name:'LTIMindtree',         sector:'IT'},
-  // Auto
-  {sym:'TATAMOTORS',name:'Tata Motors',         sector:'Auto'},
-  {sym:'MARUTI',    name:'Maruti Suzuki',       sector:'Auto'},
-  {sym:'HEROMOTOCO',name:'Hero MotoCorp',       sector:'Auto'},
-  {sym:'EICHERMOT', name:'Eicher Motors',       sector:'Auto'},
-  {sym:'M&M',       name:'Mahindra & Mahindra', sector:'Auto'},
-  // Pharma
-  {sym:'SUNPHARMA', name:'Sun Pharma',          sector:'Pharma'},
-  {sym:'DRREDDY',   name:"Dr. Reddy's",         sector:'Pharma'},
-  {sym:'CIPLA',     name:'Cipla',               sector:'Pharma'},
-  {sym:'DIVISLAB',  name:"Divi's Labs",         sector:'Pharma'},
-  {sym:'APOLLOHOSP',name:'Apollo Hospitals',    sector:'Pharma'},
-  // Energy
-  {sym:'RELIANCE',  name:'Reliance Industries', sector:'Energy'},
-  {sym:'ONGC',      name:'ONGC',                sector:'Energy'},
-  {sym:'BPCL',      name:'BPCL',                sector:'Energy'},
-  {sym:'IOC',       name:'Indian Oil',          sector:'Energy'},
-  {sym:'NTPC',      name:'NTPC',                sector:'Energy'},
-  // Metals
-  {sym:'TATASTEEL', name:'Tata Steel',          sector:'Metal'},
-  {sym:'JSWSTEEL',  name:'JSW Steel',           sector:'Metal'},
-  {sym:'HINDALCO',  name:'Hindalco',            sector:'Metal'},
-  {sym:'COALINDIA', name:'Coal India',          sector:'Metal'},
-  // FMCG
-  {sym:'NESTLEIND', name:'Nestle India',        sector:'FMCG'},
-  {sym:'BRITANNIA', name:'Britannia',           sector:'FMCG'},
-  {sym:'ITC',       name:'ITC',                 sector:'FMCG'},
-  {sym:'HINDUNILVR',name:'HUL',                 sector:'FMCG'},
-  // Infra
-  {sym:'LT',        name:'L&T',                 sector:'Infra'},
-  {sym:'POWERGRID', name:'Power Grid',          sector:'Infra'},
-  {sym:'ADANIENT',  name:'Adani Enterprises',   sector:'Infra'},
-  {sym:'ULTRACEMCO',name:'UltraTech Cement',    sector:'Cement'},
-  // Finance/Consumer
-  {sym:'BAJFINANCE',name:'Bajaj Finance',       sector:'Finance'},
-  {sym:'BAJAJFINSV',name:'Bajaj Finserv',       sector:'Finance'},
-  {sym:'TITAN',     name:'Titan',               sector:'Consumer'},
-  {sym:'ASIANPAINT',name:'Asian Paints',        sector:'Consumer'},
-  {sym:'DMART',     name:'DMart',               sector:'Consumer'},
-  {sym:'JUBLFOOD',  name:'Jubilant Foods',      sector:'Consumer'},
-];
-
-// Priority stocks to fetch first for What's Moving
-
-let _lastWMHash = "";
-function updateWhatsMoving() {
-  // PERF: Skip render if live data hasn't changed
-  const newHash = liveStocks.slice(0,30).map(s=>s.chg).join(',');
-  if (newHash === updateWhatsMoving._lastHash) return;
-  updateWhatsMoving._lastHash = newHash;
-    // Skip if data unchanged (avoid DOM thrash every 30s)
-  const hash = liveStocks.slice(0,20).map(s=>s.sym+(s.chg||'')).join('');
-  if (hash === _lastWMHash) return;
-  _lastWMHash = hash;
-  // Always use all stocks that have price + chg — static or live, doesn't matter
-  // liveStocks is pre-seeded from STATIC_STOCKS so this is never empty
-  const source = liveStocks && liveStocks.length ? liveStocks : STATIC_STOCKS;
-
-  // Only NSE stocks (exclude crypto/commodities), must have a valid chg value
-  const stocks = source.filter(s =>
-    s.price && s.price !== '—' &&
-    s.chg && s.chg !== '—' &&
-    !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym)
-  );
-
-  const getPct = s => parseFloat((s.chg||'0').replace('%','').replace('+','')) || 0;
-
-  const sorted  = [...stocks].sort((a,b) => getPct(b) - getPct(a));
-  const gainers = sorted.filter(s => getPct(s) > 0).slice(0, 5);
-  const losers  = sorted.filter(s => getPct(s) < 0).reverse().slice(0, 5);
-
-  const renderItem = (s, isGainer) => {
-    const chgVal = getPct(s);
-    const chgDisplay = (chgVal >= 0 ? '+' : '') + chgVal.toFixed(2) + '%';
-    const rawPrice = typeof s.price === 'string' ? parseFloat(s.price.replace(/,/g,'')) : (s.price || 0);
-    const priceDisplay = rawPrice ? '₹' + rawPrice.toLocaleString('en-IN', {maximumFractionDigits: rawPrice < 100 ? 2 : 0}) : '';
-    return `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;cursor:pointer;border-bottom:1px solid var(--border);" onclick="fetchAndShowStock('${s.sym}')">
-      <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-weight:700;font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.sym}</div>
-        ${priceDisplay ? `<div style="font-size:9px;color:var(--text3);">${priceDisplay}</div>` : ''}
-      </div>
-      <span style="font-size:11px;font-weight:800;color:${isGainer?'var(--green)':'var(--red)'};flex-shrink:0;">${chgDisplay}</span>
-    </div>`;
-  };
-
-  const g = document.getElementById('wmGainers');
-  const l = document.getElementById('wmLosers');
-  if (g) g.innerHTML = gainers.length
-    ? gainers.map(s => renderItem(s, true)).join('')
-    : '<div style="font-size:10px;color:var(--text3);padding:4px 0;">—</div>';
-  if (l) l.innerHTML = losers.length
-    ? losers.map(s => renderItem(s, false)).join('')
-    : '<div style="font-size:10px;color:var(--text3);padding:4px 0;">—</div>';
-
-  // Update timestamp
-  const wm = document.getElementById('whatsMoving');
-  let tsEl = wm?.querySelector('.wm-ts');
-  if (wm && !tsEl) {
-    tsEl = document.createElement('div');
-    tsEl.className = 'wm-ts';
-    tsEl.style.cssText = 'font-size:9px;color:var(--text3);margin-top:6px;text-align:right;';
-    wm.appendChild(tsEl);
-  }
-  if (tsEl) {
-    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-    tsEl.textContent = 'Updated ' + ts + ' IST';
-  }
-}
-const PRIORITY_SYMS = [
-  'RELIANCE','TCS','HDFCBANK','INFY','SBIN','ICICIBANK','TATAMOTORS',
-  'WIPRO','AXISBANK','BAJFINANCE','TATASTEEL','TECHM','NTPC','JSWSTEEL',
-  'ASIANPAINT','MARUTI','SUNPHARMA','KOTAKBANK','HCLTECH','LT'
-];
-
-// Fetch priority stocks from Yahoo Finance immediately on load
-async function fetchPriorityStocks() {
-  await Promise.allSettled(PRIORITY_SYMS.map(async sym => {
-    const yfSym = YF_STOCK_MAP[sym];
-    if (!yfSym) return;
+  // Try proxies in order
+  for (let attempt = 0; attempt < YF_PROXIES.length * 2; attempt++) {
+    const proxyFn = YF_PROXIES[attempt % YF_PROXIES.length];
+    const url = attempt % 2 === 0 ? u1 : u2;
     try {
-      const { price, chg, up } = await yfFetch(yfSym);
-      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
-      const s = liveStocks.find(x => x.sym === sym);
-      if (s) { s.price = price; s.chg = chgStr; s.up = up; }
-    } catch(e) {}
-  }));
-  onLiveDataUpdate(); // single call updates everything
+      const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) continue;
+      const raw = await r.text();
+      let data;
+      try { const w = JSON.parse(raw); data = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
+      const results = _parseYFQuote(data);
+      if (results.length) return results;
+    } catch(e) { continue; }
+  }
+  return [];
 }
 
-// ── CRYPTO LIVE UPDATER — runs every 30s regardless of Railway status ──
+// ── VERCEL /api/quote proxy (works when deployed on Vercel) ──
+async function vercelQuote(yfSymsCSV) {
+  const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSymsCSV), {
+    signal: AbortSignal.timeout(12000)
+  });
+  if (!r.ok) throw new Error('vercelQuote HTTP ' + r.status);
+  const data = await r.json();
+  const quotes = _parseYFQuote(data);
+  if (!quotes.length) throw new Error('no quotes returned');
+  return quotes;
+}
+
+// ── VERCEL /api/indices (Nifty, BankNifty, Sensex) ──
+async function vercelIndices() {
+  const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error('indices ' + r.status);
+  return r.json();
+}
+
+// ── DIRECT Yahoo Finance (for Vercel/deployed environments) ──
+async function yfDirectFetch(yfSymsCSV) {
+  try { return await vercelQuote(yfSymsCSV); } catch(e) {}
+  return yfBatchFetch(yfSymsCSV);
+}
+
+// ═══════════════════════════════════════
+// COINGECKO — direct API, no CORS issues
+// ═══════════════════════════════════════
+const CG_IDS = {
+  'BTC':'bitcoin','ETH':'ethereum','BNB':'binancecoin','SOL':'solana',
+  'XRP':'ripple','DOGE':'dogecoin','ADA':'cardano','AVAX':'avalanche-2',
+  'DOT':'polkadot','MATIC':'matic-network','LINK':'chainlink',
+  'UNI':'uniswap','LTC':'litecoin','ATOM':'cosmos','XLM':'stellar',
+};
+const CG_BATCH_SIZE = 15;
+
+async function cgFetchAll() {
+  const ids = Object.values(CG_IDS).join(',');
+  const urls = [
+    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`,
+    `https://api.coincap.io/v2/assets?ids=${ids.replace(/,/g,'%2C')}&limit=20`,
+  ];
+  // Try CoinGecko first (most reliable)
+  try {
+    const r = await fetch(urls[0], { signal: AbortSignal.timeout(10000) });
+    if (r.ok) {
+      const d = await r.json();
+      if (d && Object.keys(d).length > 0) return d;
+    }
+  } catch(e) {}
+  // Fallback: try via proxy
+  try {
+    const proxyUrl = YF_PROXIES[0](urls[0]);
+    const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+    if (r.ok) {
+      const raw = await r.text();
+      const w = JSON.parse(raw);
+      const d = w.contents ? JSON.parse(w.contents) : w;
+      if (d && Object.keys(d).length > 0) return d;
+    }
+  } catch(e) {}
+  return {};
+}
+
+// ═══════════════════════════════════════
+// NSE INDICES via Yahoo Finance symbols
+// ═══════════════════════════════════════
+const INDEX_MAP = {
+  '%5ENSEI':   { key: 'nifty',     label: 'NIFTY 50' },
+  '%5ENSEBANK':{ key: 'banknifty', label: 'NIFTY BANK' },
+  '%5EBSESN':  { key: 'sensex',    label: 'SENSEX' },
+};
+
+async function fetchIndicesLive() {
+  // Try Vercel proxy first
+  try {
+    const d = await vercelIndices();
+    if (!window._liveIndices) window._liveIndices = {};
+    if (d.nifty?.price)      { window._liveIndices['NIFTY 50']  = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
+    if (d.banknifty?.price)  { window._liveIndices['NIFTY BANK']= d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
+    if (d.sensex?.price)     { window._liveIndices['SENSEX']    = d.sensex; }
+    _updateIndicesUI();
+    return;
+  } catch(e) {}
+
+  // Fallback: fetch indices via Yahoo Finance batch
+  try {
+    const syms = '%5ENSEI,%5ENSEBANK,%5EBSESN';
+    const results = await yfBatchFetch(syms);
+    if (!window._liveIndices) window._liveIndices = {};
+    for (const q of results) {
+      const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
+      const mapped = q.yfSym === '^NSEI'    ? ['NIFTY 50','NIFTY']
+                   : q.yfSym === '^NSEBANK' ? ['NIFTY BANK','BANKNIFTY']
+                   : q.yfSym === '^BSESN'   ? ['SENSEX']
+                   : null;
+      if (mapped) mapped.forEach(k => {
+        window._liveIndices[k] = { price: q.price, chg: chgStr, up: q.up, sym: q.yfSym, name: q.name };
+      });
+    }
+    _updateIndicesUI();
+  } catch(e) {}
+}
+
+function _updateIndicesUI() {
+  if (!window._liveIndices) return;
+  const idx = window._liveIndices;
+  // Update hero banner
+  const heroN = document.getElementById('heroNifty');
+  const heroB = document.getElementById('heroBankNifty');
+  if (heroN && idx['NIFTY 50']) {
+    const v = idx['NIFTY 50'];
+    heroN.textContent = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
+    heroN.style.color = v.up ? '#22c55e' : '#ef4444';
+  }
+  if (heroB && idx['NIFTY BANK']) {
+    const v = idx['NIFTY BANK'];
+    heroB.textContent = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
+    heroB.style.color = v.up ? '#22c55e' : '#ef4444';
+  }
+  // Update ticker bar
+  updateTickerFromLive();
+}
+
+// ═══════════════════════════════════════
+// STOCK BATCH FETCHER — NSE stocks
+// ═══════════════════════════════════════
+const YF_STOCK_MAP = {
+  'HDFCBANK':'HDFCBANK.NS','ICICIBANK':'ICICIBANK.NS','SBIN':'SBIN.NS',
+  'AXISBANK':'AXISBANK.NS','KOTAKBANK':'KOTAKBANK.NS','RELIANCE':'RELIANCE.NS',
+  'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','LT':'LT.NS',
+  'BAJFINANCE':'BAJFINANCE.NS','HCLTECH':'HCLTECH.NS','MARUTI':'MARUTI.NS',
+  'SUNPHARMA':'SUNPHARMA.NS','TATAMOTORS':'TATAMOTORS.NS','TATASTEEL':'TATASTEEL.NS',
+  'NTPC':'NTPC.NS','JSWSTEEL':'JSWSTEEL.NS','ASIANPAINT':'ASIANPAINT.NS',
+  'TECHM':'TECHM.NS','INDUSINDBK':'INDUSINDBK.NS','BAJAJFINSV':'BAJAJFINSV.NS',
+  'POWERGRID':'POWERGRID.NS','ONGC':'ONGC.NS','COALINDIA':'COALINDIA.NS',
+  'TITAN':'TITAN.NS','ADANIENT':'ADANIENT.NS','ADANIPORTS':'ADANIPORTS.NS',
+  'HINDUNILVR':'HINDUNILVR.NS','ULTRACEMCO':'ULTRACEMCO.NS',
+  'ZOMATO':'ZOMATO.NS','SOLARINDS':'SOLARINDS.NS','TRENT':'TRENT.NS',
+  'DIXON':'DIXON.NS','ADANIPOWER':'ADANIPOWER.NS','AIAENG':'AIAENG.NS',
+  'ZEEL':'ZEEL.NS',
+};
+
+const PRIORITY_SYMS = [
+  'HDFCBANK','ICICIBANK','SBIN','AXISBANK','RELIANCE','TCS','INFY',
+  'WIPRO','LT','BAJFINANCE','TATAMOTORS','TATASTEEL','JSWSTEEL',
+  'ZOMATO','SOLARINDS','ADANIPOWER','TRENT','DIXON','INDUSINDBK','ASIANPAINT'
+];
+
+// Fetch all priority stocks in ONE batch request (much faster)
+let _stocksFetching = false;
+async function fetchPriorityStocks() {
+  if (_stocksFetching) return;
+  _stocksFetching = true;
+  try {
+    const yfSyms = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean);
+    const symsBatches = [];
+    // Split into batches of 10 to avoid URL length limits
+    for (let i = 0; i < yfSyms.length; i += 10) {
+      symsBatches.push(yfSyms.slice(i, i + 10));
+    }
+
+    for (const batch of symsBatches) {
+      const results = await yfBatchFetch(batch.join(','));
+      for (const q of results) {
+        // Map back from YF symbol to app symbol
+        const appSym = Object.entries(YF_STOCK_MAP).find(([k,v]) => v === q.yfSym)?.[0];
+        if (!appSym) continue;
+        const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
+        const s = liveStocks.find(x => x.sym === appSym);
+        if (s) { s.price = q.price; s.chg = chgStr; s.up = q.up; s._live = true; }
+      }
+    }
+    onLiveDataUpdate();
+  } catch(e) {
+    console.warn('fetchPriorityStocks error:', e);
+  } finally {
+    _stocksFetching = false;
+  }
+}
+
+// ═══════════════════════════════════════
+// CRYPTO LIVE UPDATER
+// ═══════════════════════════════════════
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -3627,248 +3560,71 @@ async function fetchCryptoLive() {
       const chgStr = (up ? '+' : '') + Math.abs(chg).toFixed(2) + '%';
       const existing = liveStocks.find(s => s.sym === sym);
       if (existing) {
-        existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true;
+        existing.price = price; existing.chg = chgStr; existing.up = up;
+        existing._live = true; existing._loading = false;
+        updated++;
       } else {
-        const staticEntry = STATIC_CRYPTO.find(s => s.sym === sym);
-        liveStocks.push({ ...(staticEntry || {sym, name:sym, currency:'$'}), price, chg: chgStr, up, _live: true });
+        liveStocks.push({ sym, name: sym, price, chg: chgStr, up, _live: true, _loading: false });
+        updated++;
       }
-      updated++;
     }
     if (updated > 0) {
-      renderTrending(liveStocks.slice(0, 6));
-      buildGlobalTicker();
-      updateWhatsMoving();
-      if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
+      onLiveDataUpdate();
+      setLiveStatus('live', '🟢 Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST');
     }
   } catch(e) {
-    console.warn('[CoinGecko] Failed:', e.message);
+    console.warn('fetchCryptoLive error:', e);
   } finally {
     _cryptoFetching = false;
   }
 }
 
-
-// ── PERF: API response cache — prevents redundant network calls ──
-const _apiCache = new Map();
-const _API_CACHE_TTL = 8000; // 8 seconds
-async function _cachedFetch(url, options) {
-  const now = Date.now();
-  const cached = _apiCache.get(url);
-  if (cached && (now - cached.ts) < _API_CACHE_TTL) {
-    return cached.data;
-  }
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  _apiCache.set(url, { ts: now, data });
-  return data;
-}
-
+// ═══════════════════════════════════════
+// MAIN DATA LOADER — orchestrates all fetches
+// ═══════════════════════════════════════
+let _fetchCount = 0;
 async function fetchLiveData() {
-  if (!window._hasLiveData) setLiveStatus('fetching', '⏳ Waking server…');
+  _fetchCount++;
+  setLiveStatus('fetching', '⏳ Fetching live data…');
 
-  // Always fetch crypto in parallel (CoinGecko, no backend needed)
+  // Always fetch crypto (CoinGecko direct, no CORS issues)
   fetchCryptoLive();
 
-  // ── Primary: Vercel proxy → Railway (server-side, no CORS, no cold-start timeout) ──
+  // Fetch stocks in parallel
   try {
-    setLiveStatus('fetching', '⏳ Loading data…');
-    // Try Vercel proxy first — it calls Railway server-side (no browser timeout issue)
-    let res = null;
-    try {
-      res = await fetch('/api/all?path=all', { signal: AbortSignal.timeout(30000) });
-      if (!res.ok) res = null;
-    } catch(e) { res = null; }
-    // Fallback: call Railway directly from browser
-    if (!res) {
-      res = await fetch(RAILWAY_URL + '/all', { signal: AbortSignal.timeout(35000) });
-    }
-    if (!res.ok) throw new Error('railway-error');
-    const json = await res.json();
-    _apiOnline = true;
-
-    // Merge stocks;
-    (json.stocks || []).forEach(s => { if (s.price && s.price !== '—') liveMap[s.sym] = s; });
-    liveStocks = liveStocks.map(s => liveMap[s.sym] ? {...s, ...liveMap[s.sym], _live:true} : s);
-    Object.values(liveMap).forEach(s => { if (!liveStocks.find(x => x.sym === s.sym)) liveStocks.push({...s, _live:true}); });
-
-    // Merge indices
-    if (json.indices && json.indices.length) {;
-      json.indices.forEach(idx => { window._liveIndices[idx.sym] = idx; });
-    }
-
-    // Merge commodities
-    (json.commodities || []).forEach(c => {
-      if (!c.price || c.price === '—') return;
-      const chgNum = typeof c.chg === 'number' ? c.chg : parseFloat((c.chg||'0').replace('%','').replace('+',''));
-      const chgStr = (chgNum >= 0 ? '+' : '') + Math.abs(chgNum).toFixed(2) + '%';
-      const existing = liveStocks.find(s => s.sym === c.sym);
-      if (existing) { existing.price = c.price; existing.chg = chgStr; existing.up = chgNum>=0; existing._live=true; }
-      else { liveStocks.push({...c, chg:chgStr, up:chgNum>=0, _live:true}); }
-    });
-
+    await fetchPriorityStocks();
+    setLiveStatus('live', '🟢 Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST');
     window._hasLiveData = true;
-    renderTrending(liveStocks.slice(0, 6));
-    updateTickerFromLive();
-    onLiveDataUpdate();
-    if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
-    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
-    setLiveStatus('live', '● LIVE · ' + ts);
-    showApiBanner('online');
-    return; // Railway worked — done!
   } catch(e) {
-    _apiOnline = false;
-    console.warn('[Railway] offline, falling back:', e.message);
+    setLiveStatus('error', '⚠ Retrying…');
   }
 
-  // ── Fallback: Vercel serverless + CoinGecko ──
+  // Fetch indices
   fetchIndicesLive();
-  fetchStocksLive();
-}
 
-// ── Nifty / BankNifty / Sensex ──────────────────────────────────
-async function fetchIndicesLive() {
+  // Try Railway backend for additional data (non-blocking)
   try {
-    const r = await fetch('/api/indices', { signal: AbortSignal.timeout(8000) });
-    if (!r.ok) throw new Error('indices ' + r.status);
-    const d = await r.json();
-    if (!window._liveIndices) window._liveIndices = {};
-    if (d.nifty     && d.nifty.price)     { window._liveIndices['NIFTY 50']  = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
-    if (d.banknifty && d.banknifty.price) { window._liveIndices['NIFTY BANK']= d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
-    if (d.sensex    && d.sensex.price)      window._liveIndices['SENSEX']    = d.sensex;
-    if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
-    if (typeof updateTickerFromLive     === 'function') updateTickerFromLive();
-  } catch(e) {
-    // Client-side fallback for indices
-    try {
-      const [ni, bk] = await Promise.allSettled([yfFetch('%5ENSEI'), yfFetch('%5ENSEBANK')]);
-      if (!window._liveIndices) window._liveIndices = {};
-      if (ni.status==='fulfilled' && ni.value.price) {
-        const cs = (ni.value.up?'+':'') + ni.value.chg.toFixed(2) + '%';
-        window._liveIndices['NIFTY 50'] = window._liveIndices['NIFTY'] = {price:ni.value.price, chg:cs, up:ni.value.up};
-      }
-      if (bk.status==='fulfilled' && bk.value.price) {
-        const cs = (bk.value.up?'+':'') + bk.value.chg.toFixed(2) + '%';
-        window._liveIndices['NIFTY BANK'] = window._liveIndices['BANKNIFTY'] = {price:bk.value.price, chg:cs, up:bk.value.up};
-      }
-      if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
-    } catch(e2) {}
-  }
-}
-
-// ── NSE Stocks — batched via Vercel /api/quote ──────────────────
-let _stocksFetching = false;
-async function fetchStocksLive() {
-  if (_stocksFetching) return;
-  _stocksFetching = true;
-  try {
-    const allItems = STATIC_STOCKS.filter(s => YF_STOCK_MAP[s.sym]);
-    const BATCH = 20;
-    let totalUpdated = 0;
-
-    for (let i = 0; i < allItems.length; i += BATCH) {
-      const batch     = allItems.slice(i, i + BATCH);
-      const yfSymsCSV = batch.map(s => YF_STOCK_MAP[s.sym]).join(',');
-      let quotes = [];
-
-      // Primary: Vercel /api/quote (server-side, no CORS)
-      try {
-        quotes = await vercelQuote(yfSymsCSV);
-      } catch(e) {
-        // Fallback 1: Direct Yahoo Finance (works without proxy in some regions)
-        try {
-          quotes = await yfDirectFetch(yfSymsCSV);
-        } catch(e2) {
-          // Fallback 2: allorigins proxy
-          try {;
-            batch.forEach(s => { batchMap[s.sym] = YF_STOCK_MAP[s.sym]; });
-            quotes = await _batchFallback(batchMap);
-          } catch(e3) {}
-        }
-      }
-
-      for (const q of quotes) {
-        // Match quote back to NSE sym (q.symbol is the YF sym like RELIANCE.NS)
-        const entry = batch.find(s => YF_STOCK_MAP[s.sym] === q.symbol);
-        if (!entry) continue;
-        const price = q.regularMarketPrice;
-        const chg   = q.regularMarketChangePercent || 0;
-        if (!price) continue;
-        const chgStr = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-        const up     = chg >= 0;
-        const existing = liveStocks.find(s => s.sym === entry.sym);
-        if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true; }
-        else { liveStocks.push({...entry, price, chg:chgStr, up, _live:true}); }
-        updateSidebarItem(entry.sym, price, chgStr, up, '₹');
-        totalUpdated++;
-      }
-
-      // Progressive UI update
-      if (i === 0 && totalUpdated > 0) {
-        // First batch — update everything visible immediately
-        renderTrending(liveStocks.slice(0, 6));
-        updateTickerFromLive();
-        onLiveDataUpdate();
-        updateHeroFromLiveStocks();
-        const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-        setLiveStatus('live', '● LIVE · ' + ts + ' IST');
-        window._hasLiveData = true;
-      } else {
-        updateWhatsMoving();
-        refreshHeatmapFromLive();
+    const res = await fetch('/api/all?path=all', { signal: AbortSignal.timeout(15000) });
+    if (res.ok) {
+      const d = await res.json();
+      if (d?.stocks?.length) {
+        d.stocks.forEach(s => {
+          const existing = liveStocks.find(x => x.sym === s.sym);
+          if (existing && s.price) {
+            existing.price = s.price; existing.chg = s.chg;
+            existing.up = (parseFloat(s.chg) >= 0); existing._live = true;
+          }
+        });
         onLiveDataUpdate();
       }
-      await new Promise(r => setTimeout(r, 80));
     }
-
-    // ── Commodities ──
-    const commMap = {'GC=F':'GOLD','SI=F':'SILVER','CL=F':'CRUDE','BZ=F':'BRENT','NG=F':'NATURALGAS','HG=F':'COPPER','PL=F':'PLATINUM','ZW=F':'WHEAT','ZC=F':'CORN'};
-    try {
-      const commSyms = Object.keys(commMap).join(',');
-      const cq = await vercelQuote(commSyms);
-      cq.forEach(q => {
-        const sym = commMap[q.symbol]; if (!sym || !q.regularMarketPrice) return;
-        const chg = q.regularMarketChangePercent || 0;
-        const chgStr = (chg>=0?'+':'') + chg.toFixed(2) + '%';
-        const existing = liveStocks.find(s => s.sym === sym);
-        if (existing) { existing.price = q.regularMarketPrice; existing.chg = chgStr; existing.up = chg>=0; }
-        else { const st = STATIC_COMMODITIES.find(s => s.sym === sym); liveStocks.push({...(st||{sym,name:sym,currency:'$'}), price:q.regularMarketPrice, chg:chgStr, up:chg>=0}); }
-      });
-    } catch(e) {}
-
-    if (totalUpdated === 0) {
-      setLiveStatus('static', '📊 Cached — check console');
-    } else {
-      renderTrending(liveStocks.slice(0, 6));
-      updateTickerFromLive();
-      onLiveDataUpdate();
-      showApiBanner('yfDirect');
-    }
-  } finally { _stocksFetching = false; }
+  } catch(e) {}
 }
 
-// Batch fallback — client-side proxy (used only when Vercel function fails)
-async function _batchFallback(symMap) {
-  const yfSymsCSV = Object.values(symMap).join(',');
-  const url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + encodeURIComponent(yfSymsCSV);
-  const entries = Object.entries(symMap);
-  for (const proxyFn of YF_PROXIES) {
-    try {
-      const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      const raw = await r.text();
-      let parsed; try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
-      const quotes = (parsed && parsed.quoteResponse && parsed.quoteResponse.result) || [];
-      if (quotes.length) return quotes;
-    } catch(e) { continue; }
-  }
-  return [];
-}
-
-// ── MULTI-SOURCE FALLBACK (kept for compatibility) ───────────────
-let _yfFetching = false;
-async function fetchYFDirect() { return fetchStocksLive(); }
+// ── Compatibility stubs ──
+async function fetchYFDirect() { return fetchLiveData(); }
 async function _fetchYFDirectInner() { return fetchStocksLive(); }
+
 
 // Helper to update the live status text in header
 function setLiveStatus(state, text) {
@@ -10250,8 +10006,71 @@ function _initDOMCache() {
 // Fast element getter — falls back to live query if not cached
 function _el(id) { return _DOM[id] || (_DOM[id] = document.getElementById(id)); }
 
+
+// ══════════════════════════════════════════════════════
+// MISSING FUNCTION DEFINITIONS — injected fix
+// ══════════════════════════════════════════════════════
+
+// Guard flag for auto-polling pause (e.g. tab hidden)
+let _updatesPaused = false;
+document.addEventListener('visibilitychange', () => {
+  _updatesPaused = document.hidden;
+  if (!document.hidden) {
+    // Resume: fetch immediately when tab becomes visible again
+    setTimeout(fetchCryptoLive, 200);
+    setTimeout(fetchPriorityStocks, 500);
+  }
+});
+
+// FII fetch throttle flag
+let _fiiLastFetch = 0;
+
+// fetchStocksLive — alias for the new engine
+async function fetchStocksLive() { return fetchLiveData(); }
+
+// updateWhatsMoving — populates the Market Movers right-sidebar widget
+function updateWhatsMoving() {
+  const live = liveStocks.filter(s => s.price != null && s._live);
+  if (!live.length) return;
+
+  const parseChg = s => {
+    const v = parseFloat((s.chg || '0').replace('%','').replace('+',''));
+    return isNaN(v) ? 0 : v;
+  };
+
+  const sorted   = [...live].sort((a,b) => parseChg(b) - parseChg(a));
+  const gainers  = sorted.filter(s => parseChg(s) > 0).slice(0, 6);
+  const losers   = [...live].sort((a,b) => parseChg(a) - parseChg(b))
+                            .filter(s => parseChg(s) < 0).slice(0, 6);
+
+  const fmtRow = s => {
+    const chgVal = parseChg(s);
+    const up = chgVal >= 0;
+    const chgDisplay = s.chg || (up ? '+' : '') + chgVal.toFixed(2) + '%';
+    const isCrypto = typeof STATIC_CRYPTO !== 'undefined' && STATIC_CRYPTO.find(c => c.sym === s.sym);
+    const cur = isCrypto ? '$' : '₹';
+    const fmtP = cur === '₹'
+      ? '₹' + Number(s.price).toLocaleString('en-IN', {maximumFractionDigits:2})
+      : '$' + Number(s.price).toLocaleString('en-US', {maximumFractionDigits: s.price < 1 ? 4 : 2});
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:var(--text)">${s.sym}</div>
+        <div style="font-size:9px;color:var(--text3)">${fmtP}</div>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:${up ? 'var(--green)' : 'var(--red)'}">${chgDisplay}</div>
+    </div>`;
+  };
+
+  const gEl = document.getElementById('wmGainers');
+  const lEl = document.getElementById('wmLosers');
+  const loadingHtml = '<div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div>';
+
+  if (gEl) gEl.innerHTML = gainers.length ? gainers.map(fmtRow).join('') : loadingHtml;
+  if (lEl) lEl.innerHTML = losers.length  ? losers.map(fmtRow).join('')  : loadingHtml;
+}
+
 function _mpInit() {
-  _initDOMCache(); // PERF: cache DOM refs
+  _initDOMCache();
   updateAvatars();
   renderPosts();
   loadStoriesBar();
@@ -10261,31 +10080,38 @@ function _mpInit() {
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
 
-  // ── Show static data IMMEDIATELY — no waiting for network ──
+  // Show static data immediately
   renderTrending(liveStocks.slice(0, 6));
   updateWhatsMoving();
   onLiveDataUpdate();
   updateTickerFromLive();
   if (typeof buildGlobalTicker === 'function') buildGlobalTicker();
-  setLiveStatus('fetching', '⏳ Loading live prices…');
+  setLiveStatus('fetching', '⏳ Loading live data…');
 
-  // ── Wake Railway instantly, fetch Vercel data fast ──
-  // Ping Railway to wake it from sleep (fire and forget)
-  fetch(RAILWAY_URL + '/status', { signal: AbortSignal.timeout(35000) }).catch(()=>{});
+  // ── IMMEDIATE fetches (staggered to avoid overwhelming proxies) ──
+  setTimeout(fetchCryptoLive, 100);       // CoinGecko direct — fastest
+  setTimeout(fetchPriorityStocks, 300);   // NSE stocks via Yahoo Finance
+  setTimeout(fetchIndicesLive, 600);      // Nifty / BankNifty / Sensex
+  setTimeout(fetchLiveData, 1000);        // Full data load + Railway backend
 
-  // Fetch crypto immediately (no backend needed, always fast)
-  setTimeout(fetchCryptoLive, 50);
+  // ── AUTO-POLLING INTERVALS ──
+  setInterval(() => { if (!_updatesPaused) fetchCryptoLive(); },       30000);  // crypto every 30s
+  setInterval(() => { if (!_updatesPaused) fetchPriorityStocks(); },   15000);  // stocks every 15s
+  setInterval(() => { if (!_updatesPaused) fetchIndicesLive(); },      20000);  // indices every 20s
+  setInterval(() => { if (!_updatesPaused) fetchLiveData(); },         60000);  // full refresh every 60s
+  setInterval(() => {
+    if (document.getElementById('page-fii')?.style.display !== 'none') _fiiLastFetch = 0;
+  }, 60000);
+  setInterval(() => {
+    if (document.getElementById('page-mf')?.style.display !== 'none') fetchLiveMFNavs();
+  }, 120000);
+  setInterval(checkPriceAlerts, 30000);
 
-  // Fetch priority stocks via Vercel /api/quote (fast, ~1s)
-  setTimeout(fetchPriorityStocks, 100);
+  // Keep Railway warm (ping every 8 min)
+  setInterval(() => {
+    fetch(RAILWAY_URL + '/status', { signal: AbortSignal.timeout(5000) }).catch(()=>{});
+  }, 480000);
 
-  // Fetch indices via Vercel /api/indices  
-  setTimeout(fetchIndicesLive, 150);
-
-  // Full Railway fetch — waits for Railway to wake up (may take 20-35s on cold start)
-  setTimeout(fetchLiveData, 500);
-
-  // Load symbols for search
   loadSymbols();
 }
 
