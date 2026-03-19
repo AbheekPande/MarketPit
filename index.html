@@ -1029,6 +1029,14 @@ iframe, img, canvas { display:block; }
 
 /* Market depth click rows */
 #paperBody [onclick*="ptPrice"] { user-select:none; }
+
+/* ── Spotlight Hero — idle ambient glow animation ── */
+@keyframes heroBorderGlow {
+  0%,100% { box-shadow: 0 0 0 1px rgba(0,112,243,0.18), 0 8px 32px rgba(0,0,0,0.4); }
+  50%      { box-shadow: 0 0 0 1px rgba(0,112,243,0.38), 0 8px 40px rgba(0,0,0,0.5), 0 0 24px rgba(0,112,243,0.12) inset; }
+}
+#spotlightHero { animation: heroBorderGlow 4s ease-in-out infinite; }
+#spotlightHero:hover { animation-play-state: paused; }
 </style>
 
 <!-- EYES BANNER -->
@@ -1435,8 +1443,8 @@ input[type="text"], input[type="number"], textarea, select {
    MOBILE RESPONSIVE CSS — Complete breakpoint system
    ══════════════════════════════════════════════════════ */
 
-/* ── TABLET (≤1024px): hide right sidebar ── */
-@media (max-width: 1024px) {
+/* ── TABLET (≤768px): hide right sidebar on small screens only ── */
+@media (max-width: 768px) {
   .right-sidebar { display: none !important; }
   .main-feed { flex: 1; }
 }
@@ -1796,64 +1804,88 @@ input[type="text"], input[type="number"], textarea, select {
   window.addEventListener('resize', throttle(buildPupils, 100));
 })();
 
-// ── SPOTLIGHT — smooth lerp RAF ──
+// ── SPOTLIGHT — multi-layer cursor-follow, pure RAF lerp ──
 (function() {
-  var tx = 0, ty = 0;   // target (raw mouse inside hero)
-  var sx = 0, sy = 0;   // smoothed position
+  // Each layer has its own lerp speed: slow = dreamy halo, fast = sharp dot
+  var targets = { x:0, y:0 };
+  var layers = [
+    { el:null, id:'sg1',      sx:0, sy:0, spd:0.06 },  // wide soft halo
+    { el:null, id:'sg2',      sx:0, sy:0, spd:0.10 },  // mid glow
+    { el:null, id:'sg3',      sx:0, sy:0, spd:0.22 },  // sharp dot
+    { el:null, id:'sgPulse',  sx:0, sy:0, spd:0.08 },  // ambient ring
+  ];
   var inside = false;
   var raf = null;
-  var g1, g2, hero;
+  var hero = null;
+  var borderGlowEl = null;
 
   function setup() {
     hero = document.getElementById('spotlightHero');
-    g1   = document.getElementById('sg1');
-    g2   = document.getElementById('sg2');
-    if (!hero || !g1 || !g2) { setTimeout(setup, 50); return; }
+    if (!hero) { setTimeout(setup, 60); return; }
 
-    // Initial centre
+    layers.forEach(function(l) { l.el = document.getElementById(l.id); });
+    borderGlowEl = hero;
+
+    // Seed all layers at center
     var r = hero.getBoundingClientRect();
-    sx = tx = r.width  / 2;
-    sy = ty = r.height / 2;
+    var cx = r.width / 2, cy = r.height / 2;
+    layers.forEach(function(l) { l.sx = cx; l.sy = cy; });
+    targets.x = cx; targets.y = cy;
 
-    window.addEventListener('mousemove', function(e) {
-      var r = hero.getBoundingClientRect();
-      var x = e.clientX - r.left;
-      var y = e.clientY - r.top;
-      var wasInside = inside;
-      inside = x >= 0 && x <= r.width && y >= 0 && y <= r.height;
+    window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('mouseleave', onLeave, { passive: true });
+  }
 
-      if (inside) {
-        tx = x; ty = y;
-        if (!wasInside) {
-          // Snap to cursor on first entry so it doesn't slide in from center
-          sx = x; sy = y;
-          g1.style.opacity = '1';
-          g2.style.opacity = '1';
-        }
-        if (!raf) raf = requestAnimationFrame(tick);
-      } else if (wasInside) {
-        g1.style.opacity = '0';
-        g2.style.opacity = '0';
+  function onMove(e) {
+    var r = hero.getBoundingClientRect();
+    var x = e.clientX - r.left;
+    var y = e.clientY - r.top;
+    var wasInside = inside;
+    inside = x >= -4 && x <= r.width + 4 && y >= -4 && y <= r.height + 4;
+
+    if (inside) {
+      targets.x = x;
+      targets.y = y;
+      if (!wasInside) {
+        // Snap layers to cursor on first entry to avoid sliding in from center
+        layers.forEach(function(l) { l.sx = x; l.sy = y; });
+        layers.forEach(function(l) {
+          if (l.el) { l.el.style.opacity = '1'; }
+        });
+        // Border glow on entry
+        if (borderGlowEl) borderGlowEl.style.boxShadow = '0 0 0 1.5px rgba(0,112,243,0.5), 0 0 40px rgba(0,112,243,0.15) inset';
       }
-    }, { passive: true });
+      if (!raf) raf = requestAnimationFrame(tick);
+    } else if (wasInside) {
+      inside = false;
+      layers.forEach(function(l) { if (l.el) l.el.style.opacity = '0'; });
+      if (borderGlowEl) borderGlowEl.style.boxShadow = '';
+    }
+  }
+
+  function onLeave() {
+    inside = false;
+    layers.forEach(function(l) { if (l.el) l.el.style.opacity = '0'; });
+    if (borderGlowEl) borderGlowEl.style.boxShadow = '';
   }
 
   function tick() {
     raf = null;
     if (!inside) return;
 
-    // Lerp — outer halo lags more (0.10), inner dot snappier (0.18)
-    sx += (tx - sx) * 0.14;
-    sy += (ty - sy) * 0.14;
+    var stillMoving = false;
+    layers.forEach(function(l) {
+      if (!l.el) return;
+      l.sx += (targets.x - l.sx) * l.spd;
+      l.sy += (targets.y - l.sy) * l.spd;
+      l.el.style.left = l.sx + 'px';
+      l.el.style.top  = l.sy + 'px';
+      if (Math.abs(targets.x - l.sx) > 0.15 || Math.abs(targets.y - l.sy) > 0.15) {
+        stillMoving = true;
+      }
+    });
 
-    g1.style.left = sx + 'px';
-    g1.style.top  = sy + 'px';
-    g2.style.left = sx + 'px';
-    g2.style.top  = sy + 'px';
-
-    if (Math.abs(tx - sx) > 0.2 || Math.abs(ty - sy) > 0.2) {
-      raf = requestAnimationFrame(tick);
-    }
+    if (stillMoving || inside) raf = requestAnimationFrame(tick);
   }
 
   if (document.readyState === 'loading') {
@@ -1862,7 +1894,7 @@ input[type="text"], input[type="number"], textarea, select {
     setup();
   }
 })();
-</script>
+/script>
 
 <script>
 // ── CUBE TILE HOVER ──
@@ -2164,34 +2196,46 @@ input[type="text"], input[type="number"], textarea, select {
     </div>
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero"
-  style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);"
+  style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:linear-gradient(160deg,#06091a 0%,#0a0a0f 60%,#060d1f 100%);height:175px;cursor:none;flex-shrink:0;border:1px solid rgba(0,112,243,0.18);box-shadow:0 0 0 1px rgba(0,112,243,0.06),0 8px 32px rgba(0,0,0,0.4);transition:box-shadow 0.3s ease;"
 >
 
   <!-- Grid lines -->
-  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,112,243,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,112,243,0.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;"></div>
+  <!-- Scanline overlay -->
+  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:0;opacity:0.6;"></div>
+  <!-- Ambient radial glow (always on) -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(0,112,243,0.12) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+  <!-- Top highlight strip -->
+  <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,180,255,0.4),transparent);pointer-events:none;z-index:0;"></div>
 
-  <!-- Spotlight glows — moved by inline onmousemove -->
-  <div id="sg1" style="position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.06) 50%,transparent 100%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:left 0.08s ease-out,top 0.08s ease-out,opacity 0.3s ease;"></div>
-  <div id="sg2" style="position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,255,255,0.4) 50%,transparent 100%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:left 0.04s ease-out,top 0.04s ease-out,opacity 0.3s ease;box-shadow:0 0 8px rgba(255,255,255,0.6),0 0 2px rgba(255,255,255,1);"></div>
+  <!-- Spotlight layers — driven by RAF, NO CSS transitions on position -->
+  <!-- Layer 1: wide soft halo (most lag = most dreamy) -->
+  <div id="sg1" style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,112,243,0.22) 0%,rgba(0,112,243,0.08) 40%,transparent 70%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:opacity 0.4s ease;will-change:left,top;"></div>
+  <!-- Layer 2: mid glow ring -->
+  <div id="sg2" style="position:absolute;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.12) 0%,rgba(0,150,255,0.1) 50%,transparent 100%);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:opacity 0.4s ease;will-change:left,top;"></div>
+  <!-- Layer 3: sharp cursor dot -->
+  <div id="sg3" style="position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;pointer-events:none;z-index:3;opacity:0;transform:translate(-50%,-50%);transition:opacity 0.3s ease;will-change:left,top;box-shadow:0 0 12px 4px rgba(0,150,255,0.9),0 0 3px rgba(255,255,255,1);"></div>
+  <!-- Ambient pulse ring (always visible, subtle) -->
+  <div id="sgPulse" style="position:absolute;width:200px;height:200px;border-radius:50%;border:1px solid rgba(0,112,243,0.15);pointer-events:none;z-index:1;opacity:0;transform:translate(-50%,-50%);transition:opacity 0.4s ease;"></div>
 
   <!-- Content -->
   <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 20px;">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 40px rgba(0,112,243,0.8);" id="heroTitle">MARKETPIT</div>
     <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;">INDIA'S TRADING COMMUNITY</div>
-    <div style="display:flex;gap:20px;margin-top:8px;pointer-events:none;" id="heroPricesRow">
-      <div style="text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
+    <div style="display:flex;gap:10px;margin-top:10px;pointer-events:none;align-items:stretch;" id="heroPricesRow">
+      <div style="text-align:center;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(0,112,243,0.15);backdrop-filter:blur(4px);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4da8ff;letter-spacing:1px;line-height:1.1;text-shadow:0 0 20px rgba(0,112,243,0.6);" id="heroNifty"><span style="opacity:0.35;font-size:13px;font-family:'Space Mono',monospace;">loading…</span></div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,0.35);letter-spacing:1.5px;margin-top:2px;font-family:'Space Mono',monospace;">NIFTY 50</div>
       </div>
-      <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
-      <div style="text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
+      <div style="width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,0.12),transparent);align-self:stretch;"></div>
+      <div style="text-align:center;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(0,112,243,0.15);backdrop-filter:blur(4px);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4da8ff;letter-spacing:1px;line-height:1.1;text-shadow:0 0 20px rgba(0,112,243,0.6);" id="heroBankNifty"><span style="opacity:0.35;font-size:13px;font-family:'Space Mono',monospace;">loading…</span></div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,0.35);letter-spacing:1.5px;margin-top:2px;font-family:'Space Mono',monospace;">BANK NIFTY</div>
       </div>
-      <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
-      <div style="text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
+      <div style="width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,0.12),transparent);align-self:stretch;"></div>
+      <div style="text-align:center;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(245,166,35,0.2);backdrop-filter:blur(4px);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#f5a623;letter-spacing:1px;line-height:1.1;text-shadow:0 0 20px rgba(245,166,35,0.5);" id="heroBtc"><span style="opacity:0.35;font-size:13px;font-family:'Space Mono',monospace;">loading…</span></div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,0.35);letter-spacing:1.5px;margin-top:2px;font-family:'Space Mono',monospace;">BITCOIN</div>
       </div>
     </div>
   </div>
@@ -2866,64 +2910,62 @@ input[type="text"], input[type="number"], textarea, select {
   <div class="right-sidebar">
 
     <!-- ── MARKET MOOD INDEX ── -->
-    <div id="mmiWidget" style="padding:14px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);">
+    <div id="mmiWidget" style="border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);overflow:hidden;">
 
-  <!-- Title row -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">MARKET MOOD INDEX</div>
-    <div id="mmiUpdated" style="font-size:8px;color:var(--text3);font-family:'Space Mono',monospace;"></div>
-  </div>
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 0;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div id="mmiPulseDot" style="width:7px;height:7px;border-radius:50%;background:#888;flex-shrink:0;transition:background 0.5s;"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">Market Mood</span>
+        </div>
+        <div id="mmiUpdated" style="font-size:8.5px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:0.2px;"></div>
+      </div>
 
-  <!-- Tab switcher — minimal pill style -->
-  <div style="display:flex;gap:4px;margin-bottom:10px;">
-    <button id="mmiTab_stocks" class="mmi-tab-btn" onclick="switchMMITab('stocks',this)"
-      style="flex:1;padding:5px 6px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:9px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">
-      STOCKS
-    </button>
-    <button id="mmiTab_crypto" class="mmi-tab-btn" onclick="switchMMITab('crypto',this)"
-      style="flex:1;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:9px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">
-      CRYPTO
-    </button>
-    <button id="mmiTab_commod" class="mmi-tab-btn" onclick="switchMMITab('commod',this)"
-      style="flex:1;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:9px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">
-      COMMOD
-    </button>
-  </div>
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:4px;padding:10px 14px 0;">
+        <button id="mmiTab_stocks" class="mmi-tab-btn" onclick="switchMMITab('stocks',this)"
+          style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:8.5px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">STOCKS</button>
+        <button id="mmiTab_crypto" class="mmi-tab-btn" onclick="switchMMITab('crypto',this)"
+          style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:8.5px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">CRYPTO</button>
+        <button id="mmiTab_commod" class="mmi-tab-btn" onclick="switchMMITab('commod',this)"
+          style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:8.5px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">COMMOD</button>
+      </div>
 
-  <!-- Score + Zone row -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px;">
-    <div id="mmiZoneLabel" style="font-size:11px;font-weight:700;">—</div>
-    <div id="mmiScore" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:800;letter-spacing:-2px;line-height:1;">—</div>
-  </div>
+      <!-- Canvas gauge -->
+      <div style="position:relative;padding:4px 14px 0;">
+        <canvas id="mmiCanvas" style="width:100%;height:120px;display:block;"></canvas>
+        <!-- Score overlay centered on canvas -->
+        <div style="position:absolute;left:50%;bottom:22px;transform:translateX(-50%);text-align:center;pointer-events:none;">
+          <div id="mmiScore" style="font-family:'Space Mono',monospace;font-size:30px;font-weight:800;letter-spacing:-2px;line-height:1;transition:color 0.4s;">—</div>
+          <div id="mmiZoneLabel" style="font-size:10px;font-weight:700;letter-spacing:0.5px;margin-top:3px;padding:2px 10px;border-radius:20px;transition:all 0.4s;display:inline-block;">—</div>
+        </div>
+      </div>
 
-  <!-- Gauge canvas — taller for better arc -->
-  <canvas id="mmiCanvas" style="width:100%;height:130px;display:block;"></canvas>
+      <!-- Gradient bar -->
+      <div style="margin:4px 14px 0;height:4px;border-radius:4px;overflow:hidden;background:linear-gradient(to right,#ef5350,#ff8f00,#ffd600,#66bb6a,#00e676);"></div>
 
-  <!-- Color bar -->
-  <div style="display:flex;gap:2px;margin-top:6px;height:3px;border-radius:3px;overflow:hidden;">
-    <div style="flex:1;background:#ef5350;border-radius:2px 0 0 2px;"></div>
-    <div style="flex:1;background:#ff8f00;"></div>
-    <div style="flex:1;background:#ffd600;"></div>
-    <div style="flex:1;background:#66bb6a;"></div>
-    <div style="flex:1;background:#00e676;border-radius:0 2px 2px 0;"></div>
-  </div>
+      <!-- Zone labels -->
+      <div style="display:flex;justify-content:space-between;padding:3px 14px 0;">
+        <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);">EX.FEAR</span>
+        <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);">FEAR</span>
+        <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);">NEUTRAL</span>
+        <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);">GREED</span>
+        <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);">EX.GREED</span>
+      </div>
 
-  <!-- Zone labels -->
-  <div style="display:flex;justify-content:space-between;margin-top:3px;padding:0 1px;">
-    <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.3px;">EX.FEAR</span>
-    <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.3px;">FEAR</span>
-    <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.3px;">NEUTRAL</span>
-    <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.3px;">GREED</span>
-    <span style="font-size:6.5px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.3px;">EX.GREED</span>
-  </div>
+      <!-- Signal breakdown bar -->
+      <div id="mmiSignals" style="margin:10px 14px 0;padding:10px 0 0;border-top:1px solid var(--border);">
+        <!-- populated by JS -->
+      </div>
 
-  <!-- Weekly history bars -->
-  <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-    <div style="font-family:'Space Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px;">5-DAY HISTORY</div>
-    <div id="mmiWeekDots" style="display:flex;gap:4px;"></div>
-  </div>
+      <!-- 5-day history -->
+      <div style="padding:8px 14px 12px;">
+        <div style="font-family:'Space Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;">5-Day History</div>
+        <div id="mmiWeekDots" style="display:flex;gap:4px;"></div>
+      </div>
 
-</div>
+    </div>
+
     <div id="whatsMoving" style="padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;">📊 Market Movers</span>
@@ -3424,348 +3466,557 @@ const YF_BASE2 = 'https://query2.finance.yahoo.com/v8/finance/chart/';
 // ═══════════════════════════════════════════════════════════════════
 
 // ── CORS PROXY CHAIN ── (rotates through all until one works)
+// ════════════════════════════════════════════════════════════════════════
+// REAL-TIME DATA ENGINE v6
+// ════════════════════════════════════════════════════════════════════════
+// CRYPTO  : Binance WebSocket  — true real-time, <100ms, free, no auth
+// STOCKS  : Yahoo Finance v7   — parallel proxy race, every 10s
+// COMMOD  : Yahoo Finance + CG — parallel race, every 15s
+// INDICES : Yahoo Finance v7   — parallel race, every 15s
+// ════════════════════════════════════════════════════════════════════════
+
+// ── CORS PROXY POOL — all run in parallel, fastest wins ──
 const YF_PROXIES = [
   url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
   url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
   url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
   url => `https://thingproxy.freeboard.io/fetch/${url}`,
 ];
-let _proxyIndex = 0; // rotate proxies to avoid rate limits
 
-function _nextProxy() {
-  const p = YF_PROXIES[_proxyIndex % YF_PROXIES.length];
-  _proxyIndex++;
-  return p;
+// ── PARALLEL RACE: fastest proxy wins, others cancelled ──
+async function proxyRace(targetUrl, timeoutMs = 6000) {
+  const controllers = YF_PROXIES.map(() => new AbortController());
+  const promises = YF_PROXIES.map((proxyFn, i) =>
+    fetch(proxyFn(targetUrl), { signal: controllers[i].signal })
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const raw = await r.text();
+        const parsed = JSON.parse(raw);
+        // allorigins wraps in .contents
+        const data = parsed.contents ? JSON.parse(parsed.contents) : parsed;
+        if (!data) throw new Error('empty');
+        // cancel remaining
+        controllers.forEach((c, j) => { if (j !== i) c.abort(); });
+        return data;
+      })
+      .catch(e => { if (e.name !== 'AbortError') throw e; })
+  );
+
+  const timer = new Promise((_, rej) =>
+    setTimeout(() => { controllers.forEach(c => c.abort()); rej(new Error('timeout')); }, timeoutMs)
+  );
+
+  return Promise.any([...promises, timer]);
 }
 
-// ── YAHOO FINANCE PARSER ──
-function _parseYFChart(parsed) {
-  const meta = parsed?.chart?.result?.[0]?.meta;
-  if (!meta || !meta.regularMarketPrice) return null;
+// ── YF QUOTE PARSER (v7 format) ──
+function parseYFQuote(data) {
+  const quotes = data?.quoteResponse?.result || [];
+  return quotes.filter(q => q.regularMarketPrice).map(q => ({
+    yfSym : q.symbol,
+    price : q.regularMarketPrice,
+    chg   : q.regularMarketChangePercent || 0,
+    up    : (q.regularMarketChangePercent || 0) >= 0,
+    name  : q.shortName || q.symbol,
+    prev  : q.regularMarketPreviousClose || 0,
+  }));
+}
+
+// ── YF CHART PARSER (v8 format, per-symbol fallback) ──
+function parseYFChart(data) {
+  const meta = data?.chart?.result?.[0]?.meta;
+  if (!meta?.regularMarketPrice) return null;
   const price = meta.regularMarketPrice;
-  const prev  = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen || price;
+  const prev  = meta.previousClose || meta.chartPreviousClose || price;
   const chg   = prev ? ((price - prev) / prev * 100) : 0;
   return { price, chg, up: chg >= 0 };
 }
 
-function _parseYFQuote(data) {
-  const quotes = data?.quoteResponse?.result || [];
-  return quotes.map(q => ({
-    yfSym: q.symbol,
-    price: q.regularMarketPrice,
-    chg:   q.regularMarketChangePercent || 0,
-    up:    (q.regularMarketChangePercent || 0) >= 0,
-    name:  q.shortName || q.symbol,
-  })).filter(q => q.price);
+// ── BATCH FETCH: multiple YF symbols in one request ──
+async function yfBatchFetch(symbols) {
+  const symsCSV = symbols.join(',');
+  const fields  = 'regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,shortName,currency';
+  const urls    = [
+    `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symsCSV)}&fields=${fields}`,
+    `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symsCSV)}&fields=${fields}`,
+  ];
+
+  // Try Vercel /api/quote first (fastest if deployed on Vercel)
+  try {
+    const r = await fetch(`/api/quote?symbols=${encodeURIComponent(symsCSV)}`,
+                         { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const d = await r.json();
+      const q = parseYFQuote(d);
+      if (q.length) return q;
+    }
+  } catch (_) {}
+
+  // Parallel race across both YF endpoints × all proxies
+  const allUrls = urls.flatMap(u => YF_PROXIES.map(p => p(u)));
+  const fetches = allUrls.map(url =>
+    fetch(url, { signal: AbortSignal.timeout(6000) })
+      .then(async r => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        const raw  = await r.text();
+        const wrap = JSON.parse(raw);
+        const data = wrap.contents ? JSON.parse(wrap.contents) : wrap;
+        const res  = parseYFQuote(data);
+        if (!res.length) throw new Error('empty');
+        return res;
+      })
+      .catch(() => null)
+  );
+
+  const results = await Promise.allSettled(fetches);
+  const winner  = results.find(r => r.status === 'fulfilled' && r.value);
+  if (winner) return winner.value;
+  return [];
 }
 
-// ── SINGLE SYMBOL via chart API ──
+// ── SINGLE SYMBOL FALLBACK via v8 chart ──
 async function yfFetch(yfSym) {
-  const u1 = `https://query1.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`;
-  const u2 = `https://query2.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`;
-  for (let attempt = 0; attempt < YF_PROXIES.length * 2; attempt++) {
-    const proxyFn = YF_PROXIES[attempt % YF_PROXIES.length];
-    const url = attempt % 2 === 0 ? u1 : u2;
-    try {
-      const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      const raw = await r.text();
-      let parsed;
-      try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
-      const result = _parseYFChart(parsed);
-      if (result) return result;
-    } catch(e) { continue; }
+  const urls = [
+    `https://query1.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`,
+    `https://query2.finance.yahoo.com/v8/finance/chart/${yfSym}?interval=1m&range=1d`,
+  ];
+  for (const url of urls) {
+    for (const proxyFn of YF_PROXIES) {
+      try {
+        const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(6000) });
+        if (!r.ok) continue;
+        const raw  = await r.text();
+        const wrap = JSON.parse(raw);
+        const data = wrap.contents ? JSON.parse(wrap.contents) : wrap;
+        const res  = parseYFChart(data);
+        if (res) return res;
+      } catch (_) { continue; }
+    }
   }
   throw new Error('yfFetch failed: ' + yfSym);
 }
 
-// ── BATCH SYMBOLS via v7 quote API (faster, fewer requests) ──
-async function yfBatchFetch(yfSymsCSV) {
-  const fields = 'regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,shortName';
-  const u1 = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yfSymsCSV)}&fields=${fields}`;
-  const u2 = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yfSymsCSV)}&fields=${fields}`;
-
-  // Try proxies in order
-  for (let attempt = 0; attempt < YF_PROXIES.length * 2; attempt++) {
-    const proxyFn = YF_PROXIES[attempt % YF_PROXIES.length];
-    const url = attempt % 2 === 0 ? u1 : u2;
-    try {
-      const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(12000) });
-      if (!r.ok) continue;
-      const raw = await r.text();
-      let data;
-      try { const w = JSON.parse(raw); data = w.contents ? JSON.parse(w.contents) : w; } catch(e) { continue; }
-      const results = _parseYFQuote(data);
-      if (results.length) return results;
-    } catch(e) { continue; }
-  }
-  return [];
+// ── Vercel /api/quote proxy (when deployed on Vercel) ──
+async function vercelQuote(symsCSV) {
+  const r = await fetch(`/api/quote?symbols=${encodeURIComponent(symsCSV)}`,
+                        { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`vercelQuote ${r.status}`);
+  const d = await r.json();
+  const q = parseYFQuote(d);
+  if (!q.length) throw new Error('empty');
+  return q;
 }
 
-// ── VERCEL /api/quote proxy (works when deployed on Vercel) ──
-async function vercelQuote(yfSymsCSV) {
-  const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSymsCSV), {
-    signal: AbortSignal.timeout(12000)
-  });
-  if (!r.ok) throw new Error('vercelQuote HTTP ' + r.status);
-  const data = await r.json();
-  const quotes = _parseYFQuote(data);
-  if (!quotes.length) throw new Error('no quotes returned');
-  return quotes;
-}
-
-// ── VERCEL /api/indices (Nifty, BankNifty, Sensex) ──
+// ── Vercel /api/indices ──
 async function vercelIndices() {
-  const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
-  if (!r.ok) throw new Error('indices ' + r.status);
+  const r = await fetch('/api/indices', { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`indices ${r.status}`);
   return r.json();
 }
 
-// ── DIRECT Yahoo Finance (for Vercel/deployed environments) ──
-async function yfDirectFetch(yfSymsCSV) {
-  try { return await vercelQuote(yfSymsCSV); } catch(e) {}
-  return yfBatchFetch(yfSymsCSV);
+async function yfDirectFetch(csv) {
+  try { return await vercelQuote(csv); } catch (_) {}
+  return yfBatchFetch(csv.split(','));
 }
 
-// ═══════════════════════════════════════
-// COINGECKO — direct API, no CORS issues
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// COINGECKO  (REST fallback for crypto, used when WS fails)
+// ════════════════════════════════════════════════════════
 const CG_IDS = {
-  'BTC':'bitcoin','ETH':'ethereum','BNB':'binancecoin','SOL':'solana',
-  'XRP':'ripple','DOGE':'dogecoin','ADA':'cardano','AVAX':'avalanche-2',
-  'DOT':'polkadot','MATIC':'matic-network','LINK':'chainlink',
-  'UNI':'uniswap','LTC':'litecoin','ATOM':'cosmos','XLM':'stellar',
+  BTC:'bitcoin', ETH:'ethereum', BNB:'binancecoin', SOL:'solana',
+  XRP:'ripple', DOGE:'dogecoin', ADA:'cardano', AVAX:'avalanche-2',
+  DOT:'polkadot', MATIC:'matic-network', LINK:'chainlink', LTC:'litecoin',
 };
-const CG_BATCH_SIZE = 15;
 
 async function cgFetchAll() {
   const ids = Object.values(CG_IDS).join(',');
-  const urls = [
-    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`,
-    `https://api.coincap.io/v2/assets?ids=${ids.replace(/,/g,'%2C')}&limit=20`,
-  ];
-  // Try CoinGecko first (most reliable)
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
   try {
-    const r = await fetch(urls[0], { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const d = await r.json();
-      if (d && Object.keys(d).length > 0) return d;
-    }
-  } catch(e) {}
-  // Fallback: try via proxy
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (r.ok) { const d = await r.json(); if (Object.keys(d).length) return d; }
+  } catch (_) {}
+  // proxy fallback
   try {
-    const proxyUrl = YF_PROXIES[0](urls[0]);
-    const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const raw = await r.text();
-      const w = JSON.parse(raw);
-      const d = w.contents ? JSON.parse(w.contents) : w;
-      if (d && Object.keys(d).length > 0) return d;
-    }
-  } catch(e) {}
+    const data = await proxyRace(url, 8000);
+    if (data && Object.keys(data).length) return data;
+  } catch (_) {}
   return {};
 }
 
-// ═══════════════════════════════════════
-// NSE INDICES via Yahoo Finance symbols
-// ═══════════════════════════════════════
-const INDEX_MAP = {
-  '%5ENSEI':   { key: 'nifty',     label: 'NIFTY 50' },
-  '%5ENSEBANK':{ key: 'banknifty', label: 'NIFTY BANK' },
-  '%5EBSESN':  { key: 'sensex',    label: 'SENSEX' },
+// ════════════════════════════════════════════════════════
+// BINANCE WEBSOCKET  — Real-time crypto, <100ms latency
+// No API key · No CORS · Free forever
+// ════════════════════════════════════════════════════════
+const BINANCE_SYMS = ['btcusdt','ethusdt','bnbusdt','solusdt','xrpusdt',
+                      'dogeusdt','adausdt','maticusdt','dotusdt','avaxusdt',
+                      'ltcusdt','linkusdt'];
+const BN_MAP = {
+  BTCUSDT:'BTC', ETHUSDT:'ETH', BNBUSDT:'BNB', SOLUSDT:'SOL', XRPUSDT:'XRP',
+  DOGEUSDT:'DOGE', ADAUSDT:'ADA', MATICUSDT:'MATIC', DOTUSDT:'DOT',
+  AVAXUSDT:'AVAX', LTCUSDT:'LTC', LINKUSDT:'LINK',
 };
 
-async function fetchIndicesLive() {
-  // Try Vercel proxy first
+let _bnWs = null, _bnReconnTimer = null, _bnConnected = false;
+let _bnTickCount = 0, _bnLastTick = 0;
+
+function connectBinanceWS() {
+  if (_bnWs && _bnWs.readyState < 2) return; // already open/connecting
+
+  const streams = BINANCE_SYMS.map(s => `${s}@miniTicker`).join('/');
+  const WS_URL  = `wss://stream.binance.com:9443/stream?streams=${streams}`;
+
   try {
-    const d = await vercelIndices();
-    if (!window._liveIndices) window._liveIndices = {};
-    if (d.nifty?.price)      { window._liveIndices['NIFTY 50']  = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
-    if (d.banknifty?.price)  { window._liveIndices['NIFTY BANK']= d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
-    if (d.sensex?.price)     { window._liveIndices['SENSEX']    = d.sensex; }
-    _updateIndicesUI();
+    _bnWs = new WebSocket(WS_URL);
+  } catch (e) {
+    scheduleReconnect(10000);
     return;
-  } catch(e) {}
+  }
 
-  // Fallback: fetch indices via Yahoo Finance batch
-  try {
-    const syms = '%5ENSEI,%5ENSEBANK,%5EBSESN';
-    const results = await yfBatchFetch(syms);
-    if (!window._liveIndices) window._liveIndices = {};
-    for (const q of results) {
-      const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
-      const mapped = q.yfSym === '^NSEI'    ? ['NIFTY 50','NIFTY']
-                   : q.yfSym === '^NSEBANK' ? ['NIFTY BANK','BANKNIFTY']
-                   : q.yfSym === '^BSESN'   ? ['SENSEX']
-                   : null;
-      if (mapped) mapped.forEach(k => {
-        window._liveIndices[k] = { price: q.price, chg: chgStr, up: q.up, sym: q.yfSym, name: q.name };
-      });
+  _bnWs.onopen = () => {
+    _bnConnected = true;
+    clearTimeout(_bnReconnTimer);
+    setLiveStatus('live', '🟢 Real-time · Binance WS');
+    console.log('[Binance WS] connected');
+  };
+
+  _bnWs.onclose = (e) => {
+    _bnConnected = false;
+    console.log('[Binance WS] closed:', e.code);
+    if (e.code !== 1000) scheduleReconnect(3000); // auto-reconnect on unexpected close
+  };
+
+  _bnWs.onerror = () => {
+    _bnConnected = false;
+    scheduleReconnect(5000);
+  };
+
+  _bnWs.onmessage = (event) => {
+    try {
+      const { data: d } = JSON.parse(event.data);
+      if (!d || !d.s) return;
+      const appSym = BN_MAP[d.s];
+      if (!appSym) return;
+
+      const price  = parseFloat(d.c);  // close (last traded price)
+      const open   = parseFloat(d.o);  // 24h open
+      const chg    = open ? ((price - open) / open * 100) : 0;
+      const up     = chg >= 0;
+      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
+
+      // Update liveStocks array
+      const s = liveStocks.find(x => x.sym === appSym);
+      if (s) {
+        s.price = price; s.chg = chgStr; s.up = up;
+        s._live = true; s._loading = false;
+      }
+
+      // Flash the DOM element immediately (no waiting for onLiveDataUpdate)
+      flashPriceElement(appSym, price, chgStr, up, '$');
+
+      // Batch UI updates — throttle to 1 per 500ms to avoid thrashing
+      _bnTickCount++;
+      const now = Date.now();
+      if (now - _bnLastTick > 500) {
+        _bnLastTick = now;
+        scheduleUIUpdate();
+      }
+    } catch (_) {}
+  };
+}
+
+function scheduleReconnect(delayMs) {
+  clearTimeout(_bnReconnTimer);
+  _bnReconnTimer = setTimeout(connectBinanceWS, delayMs);
+  setLiveStatus('fetching', '🔄 Reconnecting…');
+}
+
+// Heartbeat — reconnect if no ticks for 30s
+setInterval(() => {
+  if (_bnConnected && Date.now() - _bnLastTick > 30000) {
+    console.log('[Binance WS] no ticks for 30s, reconnecting');
+    _bnWs?.close();
+  }
+}, 15000);
+
+// ── Flash individual price element immediately on tick ──
+function flashPriceElement(sym, price, chgStr, up, currency) {
+  const cur = currency || (STATIC_CRYPTO?.find(c => c.sym === sym) ? '$' : '₹');
+  const fmtPrice = cur === '$'
+    ? '$' + Number(price).toLocaleString('en-US', {maximumFractionDigits: price < 1 ? 4 : price < 100 ? 2 : 0})
+    : '₹' + Number(price).toLocaleString('en-IN', {maximumFractionDigits: 2});
+
+  document.querySelectorAll(`[data-sym="${sym}"]`).forEach(el => {
+    const priceEl = el.querySelector('.stock-price');
+    const chgEl   = el.querySelector('.stock-chg');
+    if (priceEl) {
+      const old = priceEl.textContent;
+      priceEl.textContent = fmtPrice;
+      priceEl.className   = `stock-price ${up ? 'up' : 'dn'}`;
+      if (old && old !== fmtPrice) {
+        priceEl.style.background = up ? 'rgba(22,163,74,0.18)' : 'rgba(220,38,38,0.18)';
+        setTimeout(() => priceEl.style.background = '', 350);
+      }
     }
-    _updateIndicesUI();
-  } catch(e) {}
+    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = `stock-chg ${up ? 'up' : 'dn'}`; }
+  });
 }
 
-function _updateIndicesUI() {
-  if (!window._liveIndices) return;
-  const idx = window._liveIndices;
-  // Update hero banner
-  const heroN = document.getElementById('heroNifty');
-  const heroB = document.getElementById('heroBankNifty');
-  if (heroN && idx['NIFTY 50']) {
-    const v = idx['NIFTY 50'];
-    heroN.textContent = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
-    heroN.style.color = v.up ? '#22c55e' : '#ef4444';
-  }
-  if (heroB && idx['NIFTY BANK']) {
-    const v = idx['NIFTY BANK'];
-    heroB.textContent = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
-    heroB.style.color = v.up ? '#22c55e' : '#ef4444';
-  }
-  // Update ticker bar
-  updateTickerFromLive();
+// ── Throttled batch UI update ──
+let _uiUpdateTimer = null;
+function scheduleUIUpdate() {
+  if (_uiUpdateTimer) return;
+  _uiUpdateTimer = requestAnimationFrame(() => {
+    _uiUpdateTimer = null;
+    try { onLiveDataUpdate(); } catch (_) {}
+  });
 }
 
-// ═══════════════════════════════════════
-// STOCK BATCH FETCHER — NSE stocks
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// NSE STOCK LIVE FETCHER
+// Yahoo Finance .NS symbols via parallel proxy race, every 10s
+// ════════════════════════════════════════════════════════
 const YF_STOCK_MAP = {
-  'HDFCBANK':'HDFCBANK.NS','ICICIBANK':'ICICIBANK.NS','SBIN':'SBIN.NS',
-  'AXISBANK':'AXISBANK.NS','KOTAKBANK':'KOTAKBANK.NS','RELIANCE':'RELIANCE.NS',
-  'TCS':'TCS.NS','INFY':'INFY.NS','WIPRO':'WIPRO.NS','LT':'LT.NS',
-  'BAJFINANCE':'BAJFINANCE.NS','HCLTECH':'HCLTECH.NS','MARUTI':'MARUTI.NS',
-  'SUNPHARMA':'SUNPHARMA.NS','TATAMOTORS':'TATAMOTORS.NS','TATASTEEL':'TATASTEEL.NS',
-  'NTPC':'NTPC.NS','JSWSTEEL':'JSWSTEEL.NS','ASIANPAINT':'ASIANPAINT.NS',
-  'TECHM':'TECHM.NS','INDUSINDBK':'INDUSINDBK.NS','BAJAJFINSV':'BAJAJFINSV.NS',
-  'POWERGRID':'POWERGRID.NS','ONGC':'ONGC.NS','COALINDIA':'COALINDIA.NS',
-  'TITAN':'TITAN.NS','ADANIENT':'ADANIENT.NS','ADANIPORTS':'ADANIPORTS.NS',
-  'HINDUNILVR':'HINDUNILVR.NS','ULTRACEMCO':'ULTRACEMCO.NS',
-  'ZOMATO':'ZOMATO.NS','SOLARINDS':'SOLARINDS.NS','TRENT':'TRENT.NS',
-  'DIXON':'DIXON.NS','ADANIPOWER':'ADANIPOWER.NS','AIAENG':'AIAENG.NS',
-  'ZEEL':'ZEEL.NS',
+  HDFCBANK:'HDFCBANK.NS', ICICIBANK:'ICICIBANK.NS', SBIN:'SBIN.NS',
+  AXISBANK:'AXISBANK.NS', KOTAKBANK:'KOTAKBANK.NS', RELIANCE:'RELIANCE.NS',
+  TCS:'TCS.NS', INFY:'INFY.NS', WIPRO:'WIPRO.NS', LT:'LT.NS',
+  BAJFINANCE:'BAJFINANCE.NS', HCLTECH:'HCLTECH.NS', MARUTI:'MARUTI.NS',
+  SUNPHARMA:'SUNPHARMA.NS', TATAMOTORS:'TATAMOTORS.NS', TATASTEEL:'TATASTEEL.NS',
+  NTPC:'NTPC.NS', JSWSTEEL:'JSWSTEEL.NS', ASIANPAINT:'ASIANPAINT.NS',
+  TECHM:'TECHM.NS', INDUSINDBK:'INDUSINDBK.NS', BAJAJFINSV:'BAJAJFINSV.NS',
+  POWERGRID:'POWERGRID.NS', ONGC:'ONGC.NS', COALINDIA:'COALINDIA.NS',
+  TITAN:'TITAN.NS', ADANIENT:'ADANIENT.NS', ADANIPORTS:'ADANIPORTS.NS',
+  HINDUNILVR:'HINDUNILVR.NS', ULTRACEMCO:'ULTRACEMCO.NS',
+  ZOMATO:'ZOMATO.NS', SOLARINDS:'SOLARINDS.NS', TRENT:'TRENT.NS',
+  DIXON:'DIXON.NS', ADANIPOWER:'ADANIPOWER.NS', ZEEL:'ZEEL.NS',
+  NESTLEIND:'NESTLEIND.NS', BRITANNIA:'BRITANNIA.NS', DRREDDY:'DRREDDY.NS',
+  CIPLA:'CIPLA.NS', HEROMOTOCO:'HEROMOTOCO.NS', APOLLOHOSP:'APOLLOHOSP.NS',
 };
+
+// Reverse map: YF sym → app sym
+const YF_REVERSE = Object.fromEntries(Object.entries(YF_STOCK_MAP).map(([k,v]) => [v,k]));
 
 const PRIORITY_SYMS = [
   'HDFCBANK','ICICIBANK','SBIN','AXISBANK','RELIANCE','TCS','INFY',
   'WIPRO','LT','BAJFINANCE','TATAMOTORS','TATASTEEL','JSWSTEEL',
-  'ZOMATO','SOLARINDS','ADANIPOWER','TRENT','DIXON','INDUSINDBK','ASIANPAINT'
+  'ZOMATO','SOLARINDS','ADANIPOWER','TRENT','DIXON','INDUSINDBK','ASIANPAINT',
+  'HCLTECH','NTPC','KOTAKBANK','MARUTI','SUNPHARMA','TECHM','BAJAJFINSV',
 ];
 
-// Fetch all priority stocks in ONE batch request (much faster)
 let _stocksFetching = false;
+
 async function fetchPriorityStocks() {
   if (_stocksFetching) return;
   _stocksFetching = true;
   try {
-    const yfSyms = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean);
-    const symsBatches = [];
-    // Split into batches of 10 to avoid URL length limits
-    for (let i = 0; i < yfSyms.length; i += 10) {
-      symsBatches.push(yfSyms.slice(i, i + 10));
-    }
+    const yfSyms  = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean);
+    // Batch in groups of 20 (URL length limit)
+    const batches = [];
+    for (let i = 0; i < yfSyms.length; i += 20) batches.push(yfSyms.slice(i, i+20));
 
-    for (const batch of symsBatches) {
-      const results = await yfBatchFetch(batch.join(','));
-      for (const q of results) {
-        // Map back from YF symbol to app symbol
-        const appSym = Object.entries(YF_STOCK_MAP).find(([k,v]) => v === q.yfSym)?.[0];
+    const allResults = await Promise.allSettled(
+      batches.map(b => yfBatchFetch(b))
+    );
+
+    let updated = 0;
+    for (const r of allResults) {
+      if (r.status !== 'fulfilled' || !r.value?.length) continue;
+      for (const q of r.value) {
+        const appSym = YF_REVERSE[q.yfSym];
         if (!appSym) continue;
         const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
         const s = liveStocks.find(x => x.sym === appSym);
-        if (s) { s.price = q.price; s.chg = chgStr; s.up = q.up; s._live = true; }
+        if (s) { s.price = q.price; s.chg = chgStr; s.up = q.up; s._live = true; updated++; }
+        flashPriceElement(appSym, q.price, chgStr, q.up, '₹');
       }
     }
-    onLiveDataUpdate();
-  } catch(e) {
-    console.warn('fetchPriorityStocks error:', e);
+
+    if (updated > 0) {
+      const ts = new Date().toLocaleTimeString('en-IN',
+        {hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Kolkata'});
+      setLiveStatus('live', `🟢 ${_bnConnected?'Real-time WS':'Live REST'} · ${ts} IST`);
+      onLiveDataUpdate();
+    }
+  } catch (e) {
+    console.warn('[Stocks] fetch error:', e.message);
+    setLiveStatus('error', '⚠ Stock data unavailable — retrying…');
   } finally {
     _stocksFetching = false;
   }
 }
 
-// ═══════════════════════════════════════
-// CRYPTO LIVE UPDATER
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// COMMODITIES via Yahoo Finance
+// Gold, Silver, Crude Oil, Natural Gas, Copper
+// ════════════════════════════════════════════════════════
+const COMMODITY_YF_MAP = {
+  GOLD     : 'GC=F',   // Gold Futures
+  SILVER   : 'SI=F',   // Silver Futures
+  CRUDE    : 'CL=F',   // WTI Crude Oil Futures
+  BRENT    : 'BZ=F',   // Brent Crude Futures
+  NATURALGAS:'NG=F',  // Natural Gas Futures
+  COPPER   : 'HG=F',   // Copper Futures
+  PLATINUM : 'PL=F',   // Platinum Futures
+  WHEAT    : 'ZW=F',   // Wheat Futures
+  CORN     : 'ZC=F',   // Corn Futures
+};
+const COMM_YF_REVERSE = Object.fromEntries(Object.entries(COMMODITY_YF_MAP).map(([k,v]) => [v,k]));
+
+let _commFetching = false;
+
+async function fetchCommoditiesLive() {
+  if (_commFetching) return;
+  _commFetching = true;
+  try {
+    const yfSyms   = Object.values(COMMODITY_YF_MAP);
+    const results  = await yfBatchFetch(yfSyms);
+
+    for (const q of results) {
+      const appSym = COMM_YF_REVERSE[q.yfSym];
+      if (!appSym) continue;
+      const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
+      const s = liveStocks.find(x => x.sym === appSym);
+      if (s) { s.price = q.price; s.chg = chgStr; s.up = q.up; s._live = true; }
+      flashPriceElement(appSym, q.price, chgStr, q.up, '$');
+    }
+    if (results.length) onLiveDataUpdate();
+  } catch (e) {
+    console.warn('[Commodities] fetch error:', e.message);
+  } finally {
+    _commFetching = false;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INDICES  (Nifty 50, Bank Nifty, Sensex)
+// ════════════════════════════════════════════════════════
+const INDEX_YF_SYMS = ['^NSEI', '^NSEBANK', '^BSESN'];
+const INDEX_MAP     = {
+  '^NSEI'   : ['NIFTY 50','NIFTY'],
+  '^NSEBANK': ['NIFTY BANK','BANKNIFTY'],
+  '^BSESN'  : ['SENSEX'],
+};
+
+let _idxFetching = false;
+
+async function fetchIndicesLive() {
+  if (_idxFetching) return;
+  _idxFetching = true;
+  try {
+    // Vercel proxy first
+    try {
+      const d = await vercelIndices();
+      if (!window._liveIndices) window._liveIndices = {};
+      if (d.nifty?.price)     { window._liveIndices['NIFTY 50']  = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
+      if (d.banknifty?.price) { window._liveIndices['NIFTY BANK']= d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
+      if (d.sensex?.price)    { window._liveIndices['SENSEX']    = d.sensex; }
+      _updateIndicesUI(); return;
+    } catch (_) {}
+
+    // Direct YF batch
+    const results = await yfBatchFetch(INDEX_YF_SYMS);
+    if (!window._liveIndices) window._liveIndices = {};
+    for (const q of results) {
+      const keys   = INDEX_MAP[q.yfSym] || [];
+      const chgStr = (q.up ? '+' : '') + Math.abs(q.chg).toFixed(2) + '%';
+      const entry  = { price: q.price, chg: chgStr, up: q.up, sym: q.yfSym, name: q.name };
+      keys.forEach(k => { window._liveIndices[k] = entry; });
+    }
+    _updateIndicesUI();
+  } catch (e) {
+    console.warn('[Indices] fetch error:', e.message);
+  } finally {
+    _idxFetching = false;
+  }
+}
+
+function _updateIndicesUI() {
+  const idx = window._liveIndices || {};
+
+  const heroN = document.getElementById('heroNifty');
+  const heroB = document.getElementById('heroBankNifty');
+  const heroBtc = document.getElementById('heroBtc');
+
+  if (heroN && idx['NIFTY 50']) {
+    const v = idx['NIFTY 50'];
+    heroN.textContent  = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
+    heroN.style.color  = v.up ? 'var(--green)' : 'var(--red)';
+  }
+  if (heroB && idx['NIFTY BANK']) {
+    const v = idx['NIFTY BANK'];
+    heroB.textContent  = '₹' + Number(v.price).toLocaleString('en-IN',{maximumFractionDigits:2});
+    heroB.style.color  = v.up ? 'var(--green)' : 'var(--red)';
+  }
+
+  // Update BTC in hero from liveStocks
+  if (heroBtc) {
+    const btc = liveStocks.find(s => s.sym === 'BTC');
+    if (btc?.price) {
+      heroBtc.textContent = '$' + Number(btc.price).toLocaleString('en-US',{maximumFractionDigits:0});
+      heroBtc.style.color = btc.up ? 'var(--green)' : 'var(--red)';
+    }
+  }
+
+  updateTickerFromLive();
+}
+
+// ════════════════════════════════════════════════════════
+// CRYPTO REST FALLBACK (when Binance WS unavailable)
+// ════════════════════════════════════════════════════════
 let _cryptoFetching = false;
+
 async function fetchCryptoLive() {
+  if (_bnConnected) return; // WS handles it, no need for REST
   if (_cryptoFetching) return;
   _cryptoFetching = true;
   try {
     const cgData = await cgFetchAll();
-    let updated = 0;
-    for (const [sym, id] of Object.entries(CG_IDS)) {
-      const coin = cgData[id];
+    let updated  = 0;
+    for (const [appSym, cgId] of Object.entries(CG_IDS)) {
+      const coin = cgData[cgId];
       if (!coin?.usd) continue;
       const price  = coin.usd;
       const chg    = coin.usd_24h_change || 0;
       const up     = chg >= 0;
       const chgStr = (up ? '+' : '') + Math.abs(chg).toFixed(2) + '%';
-      const existing = liveStocks.find(s => s.sym === sym);
-      if (existing) {
-        existing.price = price; existing.chg = chgStr; existing.up = up;
-        existing._live = true; existing._loading = false;
-        updated++;
-      } else {
-        liveStocks.push({ sym, name: sym, price, chg: chgStr, up, _live: true, _loading: false });
-        updated++;
-      }
+      const s = liveStocks.find(x => x.sym === appSym);
+      if (s) { s.price = price; s.chg = chgStr; s.up = up; s._live = true; s._loading = false; updated++; }
+      flashPriceElement(appSym, price, chgStr, up, '$');
     }
     if (updated > 0) {
       onLiveDataUpdate();
-      setLiveStatus('live', '🟢 Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST');
+      setLiveStatus('live', `🟢 Live (REST) · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})} IST`);
     }
-  } catch(e) {
-    console.warn('fetchCryptoLive error:', e);
+  } catch (e) {
+    console.warn('[Crypto REST] error:', e.message);
   } finally {
     _cryptoFetching = false;
   }
 }
 
-// ═══════════════════════════════════════
-// MAIN DATA LOADER — orchestrates all fetches
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// MASTER ORCHESTRATOR
+// ════════════════════════════════════════════════════════
 let _fetchCount = 0;
+
 async function fetchLiveData() {
   _fetchCount++;
-  setLiveStatus('fetching', '⏳ Fetching live data…');
+  if (_fetchCount === 1) setLiveStatus('fetching', '⏳ Loading live data…');
 
-  // Always fetch crypto (CoinGecko direct, no CORS issues)
-  fetchCryptoLive();
+  // Parallel: stocks + commodities + indices simultaneously
+  await Promise.allSettled([
+    fetchPriorityStocks(),
+    fetchCommoditiesLive(),
+    fetchIndicesLive(),
+    _bnConnected ? Promise.resolve() : fetchCryptoLive(), // REST fallback only
+  ]);
 
-  // Fetch stocks in parallel
-  try {
-    await fetchPriorityStocks();
-    setLiveStatus('live', '🟢 Live · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST');
-    window._hasLiveData = true;
-  } catch(e) {
-    setLiveStatus('error', '⚠ Retrying…');
-  }
-
-  // Fetch indices
-  fetchIndicesLive();
-
-  // Try Railway backend for additional data (non-blocking)
-  try {
-    const res = await fetch('/api/all?path=all', { signal: AbortSignal.timeout(15000) });
-    if (res.ok) {
-      const d = await res.json();
-      if (d?.stocks?.length) {
-        d.stocks.forEach(s => {
-          const existing = liveStocks.find(x => x.sym === s.sym);
-          if (existing && s.price) {
-            existing.price = s.price; existing.chg = s.chg;
-            existing.up = (parseFloat(s.chg) >= 0); existing._live = true;
-          }
-        });
-        onLiveDataUpdate();
-      }
-    }
-  } catch(e) {}
+  window._hasLiveData = true;
 }
 
 // ── Compatibility stubs ──
 async function fetchYFDirect() { return fetchLiveData(); }
 async function _fetchYFDirectInner() { return fetchStocksLive(); }
+
 
 
 // Helper to update the live status text in header
@@ -4258,7 +4509,7 @@ async function openStockModal(sym, name) {
     }
 
     const cur = d.currency || '₹';
-    const up  = d.up;;
+    const up  = d.up;
     const fmt = v => v != null ? cur + v.toLocaleString() : '—';
     const fmtN = v => v != null ? v : '—';
     const clr = v => v == null ? '' : v >= 0 ? 'up' : 'dn';
@@ -4941,7 +5192,7 @@ function filterFeed(pit, el) {
 
 // ── LEADERBOARD ──
 function renderLeaderboard() {
-  const posts = getPosts();;
+  const posts = getPosts();
   posts.forEach(p => { scores[p.author] = (scores[p.author]||0) + (p.likes||0) + 1; });
   const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const ranks = ['gold','silver','bronze','',''];
@@ -5952,7 +6203,7 @@ function completeSignup() {
   allUsers.push({ username: _onboardData.username, email: _onboardData.email, pass: btoa(_onboardData.pass) });
   localStorage.setItem('mp_allUsers', JSON.stringify(allUsers));
 
-  saveUser(newUser);;
+  saveUser(newUser);
   _selectedTopics.clear();
   closeModal('profileModal');
   updateAvatars();
@@ -7208,7 +7459,7 @@ let _patternCountTs    = 0;
 function computePatternCounts() {
   // Recompute at most every 60s
   if (_patternCountTs && Date.now() - _patternCountTs < 60000) return _patternCountCache;
-  _patternCountTs = Date.now();;
+  _patternCountTs = Date.now();
 
   // Build lists
   const stocks = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price);
@@ -7868,7 +8119,7 @@ function addPaperHistory(e){ const h=getPaperHistory(); h.unshift({...e,ts:new D
 
 let _ptTab='trade', _ptOrderType='BUY', _ptSelectedAsset=null, _ptSearchQ='', _ptPrevPrices={};
 
-function getAllPtAssets(){; (liveStocks||[]).forEach(s=>{if(s.price)m[s.sym]=s;});
+function getAllPtAssets(){ const m={}; (liveStocks||[]).forEach(s=>{if(s.price)m[s.sym]=s;});
   return [
     ...STATIC_STOCKS.map(s=>({...s,...(m[s.sym]||{}),assetType:'stock',cur:'₹',group:'NSE'})),
     ...STATIC_CRYPTO.map(s=>({...s,...(m[s.sym]||{}),assetType:'crypto',cur:'$',group:'Crypto'})),
@@ -8318,11 +8569,88 @@ function _ptRenderHoldings(el,d){
 /* ════════════════════════════════════════════════════
    ORDERS TAB
    ════════════════════════════════════════════════════ */
-function _ptRenderOrders(el,d){
-  el.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;">
-    <div style="font-size:52px;margin-bottom:16px;opacity:0.35;">📋</div>
-    <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px;">No pending orders</div>
-    <div style="font-size:12px;color:var(--text3);">Limit &amp; stop-loss orders will appear here</div>
+function _ptRenderOrders(el, d) {
+  const hist = getPaperHistory();
+
+  if (!hist.length) {
+    el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;">
+      <div style="font-size:52px;margin-bottom:16px;opacity:0.35;">📋</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px;">No orders yet</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Place a buy or sell order to see it here</div>
+      <button onclick="switchPaperTab('trade',document.getElementById('pt_trade'))"
+        style="padding:10px 24px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-weight:700;cursor:pointer;font-size:12px;">
+        Place First Order →
+      </button>
+    </div>`;
+    return;
+  }
+
+  // Summary bar
+  const buys  = hist.filter(t => t.type === 'BUY').length;
+  const sells = hist.filter(t => t.type === 'SELL').length;
+  const totalVal = hist.reduce((s, t) => s + (t.totalInr || 0), 0);
+
+  el.innerHTML = `
+  <!-- Header stats -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;">
+    ${[
+      ['TOTAL ORDERS', hist.length,       'var(--accent)'],
+      ['BUY / SELL',   buys + ' / ' + sells, 'var(--text)'],
+      ['TURNOVER',    '₹' + Math.round(totalVal).toLocaleString('en-IN'), 'var(--text)'],
+    ].map(([l,v,c]) => `<div style="padding:12px 16px;border-right:1px solid var(--border);">
+      <div style="font-size:8px;font-family:'Space Mono',monospace;letter-spacing:1.5px;color:var(--text3);margin-bottom:5px;">${l}</div>
+      <div style="font-size:15px;font-weight:800;font-family:'Space Mono',monospace;color:${c};">${v}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- Column headers -->
+  <div style="display:grid;grid-template-columns:56px 2fr 72px 1fr 1fr 1fr 90px;background:var(--bg3);border-bottom:2px solid var(--border);flex-shrink:0;">
+    ${['TYPE','SYMBOL','QTY','ORDER PRICE','ORDER VALUE','P&L','TIME'].map(h =>
+      `<div style="padding:9px 10px;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.8px;">${h}</div>`
+    ).join('')}
+  </div>
+
+  <!-- Order rows -->
+  <div style="overflow-y:auto;flex:1;">
+    ${hist.map((t, i) => {
+      const isBuy  = t.type === 'BUY';
+      const color  = isBuy ? 'var(--green)' : 'var(--red)';
+      const bgType = isBuy ? 'rgba(0,168,84,0.1)' : 'rgba(229,57,53,0.1)';
+      const cur    = t.cur || '₹';
+      const price  = parseFloat(t.price);
+      const inrVal = t.totalInr || 0;
+      const hasPnl = t.pnl != null;
+      const pnlColor = hasPnl ? (t.pnl >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--text3)';
+      const pnlStr   = hasPnl
+        ? (t.pnl >= 0 ? '+' : '-') + '₹' + Math.round(Math.abs(t.pnl)).toLocaleString('en-IN')
+        : '—';
+      const rowBg = i % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)';
+      return `<div style="display:grid;grid-template-columns:56px 2fr 72px 1fr 1fr 1fr 90px;border-bottom:1px solid var(--border);background:${rowBg};cursor:pointer;transition:background 0.1s;"
+        onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background='${rowBg}'"
+        onclick="selectPtAsset('${t.sym}');switchPaperTab('trade',document.getElementById('pt_trade'))">
+        <!-- Type badge -->
+        <div style="padding:10px 8px;display:flex;align-items:center;">
+          <div style="width:40px;height:20px;border-radius:4px;background:${bgType};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:${color};font-family:'Space Mono',monospace;border:1px solid ${isBuy?'rgba(0,168,84,0.2)':'rgba(229,57,53,0.2)'};">
+            ${t.type}
+          </div>
+        </div>
+        <!-- Symbol -->
+        <div style="padding:10px 10px;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:800;color:var(--text);">${t.sym}</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:1px;">MARKET ORDER · EXECUTED</div>
+        </div>
+        <!-- Qty -->
+        <div style="padding:10px 10px;display:flex;align-items:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${t.qty}</div>
+        <!-- Price -->
+        <div style="padding:10px 10px;display:flex;align-items:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:600;color:var(--text);">${cur}${price.toLocaleString('en-IN',{maximumFractionDigits:price<10?4:2})}</div>
+        <!-- Value -->
+        <div style="padding:10px 10px;display:flex;align-items:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:600;color:${isBuy?'var(--red)':'var(--green)'};">${isBuy?'-':'+'}₹${Math.round(inrVal).toLocaleString('en-IN')}</div>
+        <!-- P&L -->
+        <div style="padding:10px 10px;display:flex;align-items:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${pnlColor};">${pnlStr}</div>
+        <!-- Time -->
+        <div style="padding:10px 10px;display:flex;align-items:center;font-size:10px;color:var(--text3);">${t.ts || '—'}</div>
+      </div>`;
+    }).join('')}
   </div>`;
 }
 
@@ -8392,7 +8720,8 @@ function _ptRenderAnalytics(el,d){
   const winRate    =sells.length>0?((wins/sells.length)*100).toFixed(0):0;
   const avgWin     =wins>0?(sells.filter(t=>(t.pnl||0)>=0).reduce((s,t)=>s+(t.pnl||0),0)/wins).toFixed(0):0;
   const avgLoss    =losses>0?(sells.filter(t=>(t.pnl||0)<0).reduce((s,t)=>s+Math.abs(t.pnl||0),0)/losses).toFixed(0):0;
-  const rr         =avgLoss>0?(avgWin/avgLoss).toFixed(2):0;;
+  const rr         =avgLoss>0?(avgWin/avgLoss).toFixed(2):0;
+  const symFreq={};
   hist.forEach(t=>{symFreq[t.sym]=(symFreq[t.sym]||0)+1;});
   const topSyms    =Object.entries(symFreq).sort((a,b)=>b[1]-a[1]).slice(0,4);
 
@@ -10172,43 +10501,45 @@ async function fetchStocksLive() { return fetchLiveData(); }
 
 // updateWhatsMoving — populates the Market Movers right-sidebar widget
 function updateWhatsMoving() {
-  const live = liveStocks.filter(s => s.price != null && s._live);
-  if (!live.length) return;
+  // Include ALL stocks with valid price (static seed + live updates)
+  const all = liveStocks.filter(s => s.price != null && s.price > 0 && s.chg && s.chg !== '—');
+  if (!all.length) return;
 
   const parseChg = s => {
-    const v = parseFloat((s.chg || '0').replace('%','').replace('+',''));
+    const v = parseFloat(String(s.chg || '0').replace('%','').replace('+',''));
     return isNaN(v) ? 0 : v;
   };
 
-  const sorted   = [...live].sort((a,b) => parseChg(b) - parseChg(a));
-  const gainers  = sorted.filter(s => parseChg(s) > 0).slice(0, 6);
-  const losers   = [...live].sort((a,b) => parseChg(a) - parseChg(b))
-                            .filter(s => parseChg(s) < 0).slice(0, 6);
+  const gainers = [...all].sort((a,b) => parseChg(b) - parseChg(a))
+                          .filter(s => parseChg(s) > 0).slice(0, 6);
+  const losers  = [...all].sort((a,b) => parseChg(a) - parseChg(b))
+                          .filter(s => parseChg(s) < 0).slice(0, 6);
+
+  const isCrypto = sym => CRYPTO_SYMS?.has(sym);
+  const isCommod = sym => COMM_SYMS?.has(sym);
 
   const fmtRow = s => {
-    const chgVal = parseChg(s);
-    const up = chgVal >= 0;
-    const chgDisplay = s.chg || (up ? '+' : '') + chgVal.toFixed(2) + '%';
-    const isCrypto = typeof STATIC_CRYPTO !== 'undefined' && STATIC_CRYPTO.find(c => c.sym === s.sym);
-    const cur = isCrypto ? '$' : '₹';
-    const fmtP = cur === '₹'
+    const chgVal     = parseChg(s);
+    const up         = chgVal >= 0;
+    const chgDisplay = s.chg || ((up?'+':'') + chgVal.toFixed(2) + '%');
+    const cur        = (isCrypto(s.sym) || isCommod(s.sym)) ? '$' : '₹';
+    const fmtP       = cur === '₹'
       ? '₹' + Number(s.price).toLocaleString('en-IN', {maximumFractionDigits:2})
       : '$' + Number(s.price).toLocaleString('en-US', {maximumFractionDigits: s.price < 1 ? 4 : 2});
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);">
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);">
       <div>
         <div style="font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:var(--text)">${s.sym}</div>
-        <div style="font-size:9px;color:var(--text3)">${fmtP}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:1px">${fmtP}</div>
       </div>
-      <div style="font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:${up ? 'var(--green)' : 'var(--red)'}">${chgDisplay}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:${up?'var(--green)':'var(--red)'}">${chgDisplay}</div>
     </div>`;
   };
 
+  const loading = '<div style="font-size:10px;color:var(--text3);padding:6px 0;">Loading…</div>';
   const gEl = document.getElementById('wmGainers');
   const lEl = document.getElementById('wmLosers');
-  const loadingHtml = '<div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div>';
-
-  if (gEl) gEl.innerHTML = gainers.length ? gainers.map(fmtRow).join('') : loadingHtml;
-  if (lEl) lEl.innerHTML = losers.length  ? losers.map(fmtRow).join('')  : loadingHtml;
+  if (gEl) gEl.innerHTML = gainers.length ? gainers.map(fmtRow).join('') : loading;
+  if (lEl) lEl.innerHTML = losers.length  ? losers.map(fmtRow).join('')  : loading;
 }
 
 function _mpInit() {
@@ -10218,29 +10549,43 @@ function _mpInit() {
   loadStoriesBar();
   renderTrendingTags();
 
-  // Seed crypto + commodities into liveStocks
+  // Seed crypto + commodities into liveStocks with static data immediately
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); });
 
-  // Show static data immediately
+  // Show static data right away (no waiting for network)
   renderTrending(liveStocks.slice(0, 6));
-  updateWhatsMoving();
+  updateWhatsMoving();   // Uses static prices immediately
   onLiveDataUpdate();
   updateTickerFromLive();
   if (typeof buildGlobalTicker === 'function') buildGlobalTicker();
-  setLiveStatus('fetching', '⏳ Loading live data…');
+  // MMI: draw immediately with static stock data
+  setTimeout(() => { try { updateMMI(); } catch(e) {} }, 100);
+  setTimeout(() => { try { updateMMI(); updateWhatsMoving(); } catch(e) {} }, 500);
+  setLiveStatus('fetching', '⏳ Connecting…');
 
-  // ── IMMEDIATE fetches (staggered to avoid overwhelming proxies) ──
-  setTimeout(fetchCryptoLive, 100);       // CoinGecko direct — fastest
-  setTimeout(fetchPriorityStocks, 300);   // NSE stocks via Yahoo Finance
-  setTimeout(fetchIndicesLive, 600);      // Nifty / BankNifty / Sensex
-  setTimeout(fetchLiveData, 1000);        // Full data load + Railway backend
+  // ── STEP 1: Binance WebSocket for crypto — connects immediately ──
+  setTimeout(connectBinanceWS, 200);
 
-  // ── AUTO-POLLING INTERVALS ──
-  setInterval(() => { if (!_updatesPaused) fetchCryptoLive(); },       30000);  // crypto every 30s
-  setInterval(() => { if (!_updatesPaused) fetchPriorityStocks(); },   15000);  // stocks every 15s
-  setInterval(() => { if (!_updatesPaused) fetchIndicesLive(); },      20000);  // indices every 20s
-  setInterval(() => { if (!_updatesPaused) fetchLiveData(); },         60000);  // full refresh every 60s
+  // ── STEP 2: REST data in parallel — all start at the same time ──
+  setTimeout(() => {
+    Promise.allSettled([
+      fetchPriorityStocks(),   // NSE stocks
+      fetchCommoditiesLive(),  // Gold, Oil, etc
+      fetchIndicesLive(),      // Nifty, Sensex
+    ]).then(() => {
+      setLiveStatus('live', '🟢 Live · ' + new Date().toLocaleTimeString('en-IN',
+        {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}) + ' IST');
+    });
+  }, 500);
+
+  // ── STEP 3: Auto-polling intervals ──
+  // Crypto WS handles real-time; REST polls as fallback
+  setInterval(() => { if (!_updatesPaused && !_bnConnected) fetchCryptoLive(); }, 30000);
+  setInterval(() => { if (!_updatesPaused) fetchPriorityStocks(); },   10000);  // stocks every 10s
+  setInterval(() => { if (!_updatesPaused) fetchCommoditiesLive(); },  15000);  // commodities every 15s
+  setInterval(() => { if (!_updatesPaused) fetchIndicesLive(); },      15000);  // indices every 15s
+  setInterval(() => { if (!_updatesPaused) fetchLiveData(); },         60000);  // full sync every 60s
   setInterval(() => {
     if (document.getElementById('page-fii')?.style.display !== 'none') _fiiLastFetch = 0;
   }, 60000);
@@ -10287,8 +10632,8 @@ const _FAST_SYMS = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','SBIN',
   'MARUTI','BHARTIARTL','ADANIENT','NTPC','TATASTEEL','KOTAKBANK','HCLTECH','ITC'];
 
 let _bootstrapDone = false;
-async function fetchPriorityStocks() {
-  if (_bootstrapDone) return;
+async function _fastBootstrapStocks() {
+  if (_bootstrapDone) return; // fast bootstrap — runs once only
   const validSyms = _FAST_SYMS.filter(s => YF_STOCK_MAP[s]);
   const yfCSV = validSyms.map(s => YF_STOCK_MAP[s]).join(',');
   try {
@@ -10835,69 +11180,138 @@ function renderNews(items) {
 // MARKET MOOD INDEX ENGINE — Redesigned Professional Version
 // ═══════════════════════════════════════════════════════════════
 
-let _mmiTab = 'stocks';
+// ══════════════════════════════════════════════════════════════════
+// MARKET MOOD INDEX — v3
+// Computes sentiment from live price data across 4 weighted signals
+// No external API needed — derived from liveStocks in real-time
+// ══════════════════════════════════════════════════════════════════
 
+let _mmiTab      = 'stocks';
+let _mmiScore    = null;        // current displayed score
+let _mmiPrevScore= null;        // previous score for transition
+let _mmiAnimId   = null;        // requestAnimationFrame id
+let _mmiHistory  = {};          // { stocks:[], crypto:[], commod:[] }
+const MMI_HISTORY_DAYS = 5;
+
+// ── Zone definitions ──────────────────────────────────────────────
+function _mmiZone(score) {
+  if (score === null || score === undefined)
+    return { label:'—', short:'—', color:'#94a3b8', glow:'rgba(148,163,184,0.2)', grad:['#64748b','#94a3b8'] };
+  if (score <= 20)  return { label:'Extreme Fear',  short:'EX. FEAR',  color:'#ef5350', glow:'rgba(239,83,80,0.25)',   grad:['#b71c1c','#ef5350'] };
+  if (score <= 40)  return { label:'Fear',           short:'FEAR',      color:'#ff8f00', glow:'rgba(255,143,0,0.25)',   grad:['#e65100','#ff8f00'] };
+  if (score <= 60)  return { label:'Neutral',        short:'NEUTRAL',   color:'#ffd600', glow:'rgba(255,214,0,0.25)',   grad:['#f57f17','#ffd600'] };
+  if (score <= 80)  return { label:'Greed',          short:'GREED',     color:'#66bb6a', glow:'rgba(102,187,106,0.25)', grad:['#1b5e20','#66bb6a'] };
+  return                   { label:'Extreme Greed',  short:'EX. GREED', color:'#00e676', glow:'rgba(0,230,118,0.25)',   grad:['#00600f','#00e676'] };
+}
+
+// ── Filter stocks by tab ──────────────────────────────────────────
+function _getMMIStocks(tab) {
+  const t = tab || _mmiTab;
+  if (t === 'crypto') return liveStocks.filter(s => CRYPTO_SYMS?.has(s.sym) && s.price > 0 && s.chg && s.chg !== '—');
+  if (t === 'commod') return liveStocks.filter(s => COMM_SYMS?.has(s.sym)   && s.price > 0 && s.chg && s.chg !== '—');
+  return liveStocks.filter(s => !CRYPTO_SYMS?.has(s.sym) && !COMM_SYMS?.has(s.sym) && s.price > 0 && s.chg && s.chg !== '—');
+}
+
+// ── Core calculation — 4 weighted signals ────────────────────────
 function _calcMMI(stocks) {
-  const valid = stocks.filter(s => s.price && s.chg && s.chg !== '—');
-  if (valid.length < 3) return null;
+  const valid = stocks.filter(s => s.price > 0 && s.chg && s.chg !== '—');
+  if (!valid.length) return null;
+
   const pcts = valid.map(s => parseFloat(String(s.chg).replace('%','').replace('+','')) || 0);
+  const n = pcts.length;
+
+  // Signal 1: Market Breadth (35%) — % of advancing stocks
   const advancing  = pcts.filter(p => p > 0).length;
-  const breadthPct = (advancing / pcts.length) * 100;
-  const avgChg     = pcts.reduce((a,b) => a+b, 0) / pcts.length;
-  const avgNorm    = Math.min(Math.max((avgChg + 3) / 6 * 100, 0), 100);
-  const strongUp   = pcts.filter(p => p > 0.5).length / pcts.length * 100;
-  const strongDn   = pcts.filter(p => p < -0.5).length / pcts.length * 100;
-  const momentum   = Math.min(Math.max(50 + (strongUp - strongDn), 0), 100);
-  const bigUp      = pcts.filter(p => p > 2).length;
+  const breadth    = (advancing / n) * 100;
+
+  // Signal 2: Average Momentum (30%) — normalised avg change
+  const avgChg     = pcts.reduce((a,b) => a+b, 0) / n;
+  const momentum   = Math.min(Math.max((avgChg + 3) / 6 * 100, 0), 100);
+
+  // Signal 3: Strength (25%) — % of strong movers (>0.5%)
+  const strongUp   = pcts.filter(p => p >  0.5).length / n * 100;
+  const strongDn   = pcts.filter(p => p < -0.5).length / n * 100;
+  const strength   = Math.min(Math.max(50 + (strongUp - strongDn), 0), 100);
+
+  // Signal 4: Extremes (10%) — big movers (>2%)
+  const bigUp      = pcts.filter(p => p >  2).length;
   const bigDn      = pcts.filter(p => p < -2).length;
   const extremes   = Math.min(Math.max(50 + (bigUp - bigDn) * 5, 0), 100);
-  return Math.round(Math.min(Math.max(
-    (breadthPct * 0.35) + (avgNorm * 0.30) + (momentum * 0.25) + (extremes * 0.10), 0), 100));
+
+  const raw = (breadth * 0.35) + (momentum * 0.30) + (strength * 0.25) + (extremes * 0.10);
+  return {
+    score:    Math.round(Math.min(Math.max(raw, 0), 100)),
+    breadth:  Math.round(breadth),
+    momentum: Math.round(Math.min(Math.max((avgChg + 3) / 6 * 100, 0), 100)),
+    strength: Math.round(strength),
+    extremes: Math.round(extremes),
+    count:    n,
+    advancing,
+    avgChg:   +avgChg.toFixed(2),
+  };
 }
 
-function _getMMIStocks(tab) {
-  if (tab === 'crypto')  return liveStocks.filter(s => CRYPTO_SYMS?.has(s.sym) && s.price && s.chg !== '—');
-  if (tab === 'commod')  return liveStocks.filter(s => COMM_SYMS?.has(s.sym)   && s.price && s.chg !== '—');
-  return liveStocks.filter(s => !CRYPTO_SYMS?.has(s.sym) && !COMM_SYMS?.has(s.sym) && s.price && s.chg && s.chg !== '—');
+function _calcMMIForTab(tab) {
+  const result = _calcMMI(_getMMIStocks(tab || _mmiTab));
+  return result;
 }
 
-function _calcMMIForTab(tab) { return _calcMMI(_getMMIStocks(tab || _mmiTab)); }
-
-function _mmiZone(score) {
-  if (score === null || score === undefined) return { label:'—', short:'—', color:'#888', glow:'rgba(136,136,136,0.3)', grad:['#555','#888'] };
-  if (score <= 20)  return { label:'Extreme Fear',  short:'EX. FEAR',  color:'#ef5350', glow:'rgba(239,83,80,0.35)',   grad:['#b71c1c','#ef5350'] };
-  if (score <= 40)  return { label:'Fear',           short:'FEAR',      color:'#ff8f00', glow:'rgba(255,143,0,0.35)',   grad:['#e65100','#ff8f00'] };
-  if (score <= 60)  return { label:'Neutral',        short:'NEUTRAL',   color:'#ffd600', glow:'rgba(255,214,0,0.3)',    grad:['#f57f17','#ffd600'] };
-  if (score <= 80)  return { label:'Greed',          short:'GREED',     color:'#66bb6a', glow:'rgba(102,187,106,0.35)', grad:['#1b5e20','#66bb6a'] };
-  return               { label:'Extreme Greed',  short:'EX. GREED', color:'#00e676', glow:'rgba(0,230,118,0.4)',   grad:['#00c853','#00e676'] };
+// ── Animated score counter ────────────────────────────────────────
+function _animateScore(from, to, duration, onTick, onDone) {
+  if (_mmiAnimId) cancelAnimationFrame(_mmiAnimId);
+  const start = performance.now();
+  from = from || 0;
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    // easeOutCubic
+    const ease = 1 - Math.pow(1 - t, 3);
+    const val  = Math.round(from + (to - from) * ease);
+    onTick(val);
+    if (t < 1) _mmiAnimId = requestAnimationFrame(step);
+    else        onDone(to);
+  }
+  _mmiAnimId = requestAnimationFrame(step);
 }
 
-function _drawMMIGauge(score) {
+// ── Canvas gauge renderer ─────────────────────────────────────────
+function _drawMMIGauge(score, zone) {
   const canvas = document.getElementById('mmiCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  // Resize canvas for retina
-  if (!canvas._sized) {
-    canvas.width  = canvas.offsetWidth  * dpr || 252 * dpr;
-    canvas.height = canvas.offsetHeight * dpr || 140 * dpr;
+
+  // Measure actual rendered size
+  const parentW = canvas.parentElement?.offsetWidth || 262;
+  const cw = canvas.offsetWidth  || parentW;
+  const ch = canvas.offsetHeight || 120;
+
+  if (canvas.width !== cw * dpr || canvas.height !== ch * dpr) {
+    canvas.width  = cw * dpr;
+    canvas.height = ch * dpr;
     ctx.scale(dpr, dpr);
-    canvas._sized = true;
   }
-  const W  = canvas.offsetWidth  || 252;
-  const H  = canvas.offsetHeight || 140;
+
+  const W  = cw;
+  const H  = ch;
   ctx.clearRect(0, 0, W, H);
 
   const cx = W / 2;
-  const cy = H - 20;
-  const R  = Math.min(W * 0.42, H * 0.85);
-  const zone = _mmiZone(score);
+  const cy = H - 18;
+  const R  = Math.min(W * 0.40, H * 0.82);
 
-  // ── Track background (full arc) ──
+  // ── Track shadow ──
+  ctx.beginPath();
+  ctx.arc(cx, cy, R + 2, Math.PI, 0, false);
+  ctx.lineWidth = 18;
+  ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // ── Track background ──
   ctx.beginPath();
   ctx.arc(cx, cy, R, Math.PI, 0, false);
-  ctx.lineWidth = 14;
-  ctx.strokeStyle = 'rgba(128,128,128,0.12)';
+  ctx.lineWidth = 13;
+  ctx.strokeStyle = 'rgba(148,163,184,0.13)';
   ctx.lineCap = 'round';
   ctx.stroke();
 
@@ -10905,170 +11319,248 @@ function _drawMMIGauge(score) {
     // ── Colored progress arc ──
     const endAngle = Math.PI + (score / 100) * Math.PI;
     const grad = ctx.createLinearGradient(cx - R, cy, cx + R, cy);
-    // Color gradient: red → orange → yellow → green
-    grad.addColorStop(0.0,  '#ef5350');
+    grad.addColorStop(0.00, '#ef5350');
     grad.addColorStop(0.25, '#ff8f00');
-    grad.addColorStop(0.5,  '#ffd600');
+    grad.addColorStop(0.50, '#ffd600');
     grad.addColorStop(0.75, '#66bb6a');
-    grad.addColorStop(1.0,  '#00e676');
-
+    grad.addColorStop(1.00, '#00e676');
     ctx.beginPath();
     ctx.arc(cx, cy, R, Math.PI, endAngle, false);
-    ctx.lineWidth = 14;
+    ctx.lineWidth = 13;
     ctx.strokeStyle = grad;
     ctx.lineCap = 'round';
     ctx.stroke();
 
-    // ── Glow dot at needle tip ──
+    // ── Needle tip glow ──
     const nx = cx + R * Math.cos(endAngle);
     const ny = cy + R * Math.sin(endAngle);
-    const glowGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, 10);
-    glowGrad.addColorStop(0,   zone.color);
-    glowGrad.addColorStop(0.4, zone.glow);
-    glowGrad.addColorStop(1,   'transparent');
+    const glowR = ctx.createRadialGradient(nx, ny, 0, nx, ny, 12);
+    glowR.addColorStop(0,   (zone || _mmiZone(score)).color + 'cc');
+    glowR.addColorStop(0.5, (zone || _mmiZone(score)).color + '44');
+    glowR.addColorStop(1,   'transparent');
     ctx.beginPath();
-    ctx.arc(nx, ny, 10, 0, Math.PI * 2);
-    ctx.fillStyle = glowGrad;
+    ctx.arc(nx, ny, 12, 0, Math.PI * 2);
+    ctx.fillStyle = glowR;
     ctx.fill();
 
     // ── Needle dot ──
     ctx.beginPath();
     ctx.arc(nx, ny, 5, 0, Math.PI * 2);
-    ctx.fillStyle = zone.color;
+    ctx.fillStyle = (zone || _mmiZone(score)).color;
+    ctx.shadowColor = (zone || _mmiZone(score)).color;
+    ctx.shadowBlur  = 8;
     ctx.fill();
+    ctx.shadowBlur  = 0;
 
-    // ── Thin needle line ──
+    // ── Thin needle line from center ──
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + (R - 20) * Math.cos(endAngle), cy + (R - 20) * Math.sin(endAngle));
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineCap = 'round';
+    ctx.lineTo(cx + (R - 16) * Math.cos(endAngle), cy + (R - 16) * Math.sin(endAngle));
+    ctx.lineWidth   = 1.5;
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineCap     = 'round';
     ctx.stroke();
 
     // ── Center hub ──
     ctx.beginPath();
-    ctx.arc(cx, cy, 7, 0, Math.PI * 2);
-    ctx.fillStyle = zone.color;
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = (zone || _mmiZone(score)).color;
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
   }
 
-  // ── Scale tick marks ──
+  // ── Tick marks at 0, 25, 50, 75, 100 ──
   [0, 25, 50, 75, 100].forEach(v => {
-    const angle = Math.PI + (v / 100) * Math.PI;
-    const x1 = cx + (R + 4)  * Math.cos(angle);
-    const y1 = cy + (R + 4)  * Math.sin(angle);
-    const x2 = cx + (R + 10) * Math.cos(angle);
-    const y2 = cy + (R + 10) * Math.sin(angle);
+    const a  = Math.PI + (v / 100) * Math.PI;
+    const x1 = cx + (R + 5)  * Math.cos(a);
+    const y1 = cy + (R + 5)  * Math.sin(a);
+    const x2 = cx + (R + 11) * Math.cos(a);
+    const y2 = cy + (R + 11) * Math.sin(a);
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(128,128,128,0.4)';
+    ctx.lineWidth   = 1;
+    ctx.strokeStyle = 'rgba(148,163,184,0.4)';
     ctx.stroke();
   });
 
-  // ── Min/Max labels ──
-  ctx.font = '500 9px "DM Sans", sans-serif';
-  ctx.fillStyle = 'rgba(128,128,128,0.6)';
-  ctx.textAlign = 'left';  ctx.fillText('0',   cx - R - 8, cy + 6);
-  ctx.textAlign = 'right'; ctx.fillText('100', cx + R + 8, cy + 6);
+  // ── 0 / 100 labels ──
+  ctx.font = '500 8px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle   = 'rgba(148,163,184,0.65)';
+  ctx.textAlign   = 'left';
+  ctx.fillText('0',   cx - R - 6, cy + 5);
+  ctx.textAlign   = 'right';
+  ctx.fillText('100', cx + R + 6, cy + 5);
 }
 
-function _updateMMIDisplay(score, source) {
-  const zone = _mmiZone(score);
+// ── Signal breakdown renderer ─────────────────────────────────────
+function _renderMMISignals(result) {
+  const el = document.getElementById('mmiSignals');
+  if (!el || !result) return;
 
-  // Score
-  const scoreEl = document.getElementById('mmiScore');
-  if (scoreEl) {
-    scoreEl.textContent = score !== null ? score : '—';
-    scoreEl.style.color = zone.color;
-    scoreEl.style.textShadow = score !== null ? `0 0 20px ${zone.glow}` : 'none';
-  }
+  const signals = [
+    { label: 'Breadth',  val: result.breadth,  desc: `${result.advancing}/${result.count} advancing` },
+    { label: 'Momentum', val: result.momentum, desc: `Avg ${result.avgChg > 0 ? '+' : ''}${result.avgChg}%` },
+    { label: 'Strength', val: result.strength, desc: 'Strong movers' },
+  ];
 
-  // Zone label pill
-  const zoneEl = document.getElementById('mmiZoneLabel');
-  if (zoneEl) {
-    zoneEl.textContent = zone.label;
-    zoneEl.style.cssText = `
-      font-size:11px; font-weight:700; letter-spacing:0.5px;
-      color:${zone.color};
-      background:${zone.glow};
-      border:1px solid ${zone.color}44;
-      padding:3px 10px; border-radius:20px;
-      font-family:'DM Sans',sans-serif;
-    `;
-  }
+  el.innerHTML = signals.map(s => {
+    const z   = _mmiZone(s.val);
+    const pct = Math.max(2, s.val);
+    return `<div style="margin-bottom:7px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <span style="font-size:8.5px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;">${s.label}</span>
+        <span style="font-size:8px;color:var(--text3);font-family:'Space Mono',monospace;">${s.desc}</span>
+      </div>
+      <div style="height:4px;background:rgba(148,163,184,0.12);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;border-radius:4px;background:${z.color};transition:width 0.5s ease;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  // Updated text
-  const updEl = document.getElementById('mmiUpdated');
-  if (updEl) {
-    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-    updEl.textContent = (source||'NSE Live') + ' · ' + ts + ' IST';
-    updEl.style.color = 'var(--text3)';
-    updEl.style.fontSize = '9px';
-    updEl.style.fontFamily = "'Space Mono', monospace";
-    updEl.style.letterSpacing = '0.3px';
-  }
-
-  // Draw gauge
-  _drawMMIGauge(score);
-
-  // Weekly dots — styled as mini pill indicators
+// ── 5-day history dots renderer ───────────────────────────────────
+function _renderMMIHistory(currentScore) {
   const dotsEl = document.getElementById('mmiWeekDots');
-  if (dotsEl && score !== null) {
-    const days  = ['MON','TUE','WED','THU','TODAY'];
-    const delta = [-6, -3, +4, -2, 0];
-    dotsEl.innerHTML = days.map((d, i) => {
-      const s = Math.min(Math.max(score + delta[i], 0), 100);
-      const z = _mmiZone(s);
-      const isToday = i === 4;
-      return `<div style="text-align:center;flex:1;">
-        <div style="
-          width:100%; height:3px; border-radius:2px;
-          background:${z.color};
-          opacity:${isToday ? 1 : 0.45};
-          margin-bottom:4px;
-          box-shadow:${isToday ? `0 0 6px ${z.glow}` : 'none'};
-        "></div>
-        <div style="
-          font-size:7px; color:${isToday ? z.color : 'var(--text3)'};
-          font-family:'Space Mono',monospace;
-          font-weight:${isToday ? 700 : 400};
-          letter-spacing:0.3px;
-        ">${d}</div>
-        <div style="font-size:8px;color:${z.color};font-weight:700;margin-top:1px;">${s}</div>
-      </div>`;
-    }).join('');
+  if (!dotsEl || currentScore === null) return;
+
+  const hist = _mmiHistory[_mmiTab] || [];
+  const days = ['MON','TUE','WED','THU','TODAY'];
+
+  // Build 5-point history: past 4 + today
+  const allScores = [...hist.slice(-4), currentScore];
+  while (allScores.length < 5) allScores.unshift(null);
+
+  dotsEl.innerHTML = days.map((d, i) => {
+    const s       = allScores[i];
+    const z       = _mmiZone(s);
+    const isToday = i === 4;
+    const barH    = s !== null ? Math.max(6, Math.round(s * 0.24)) : 6;
+    return `<div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:32px;">
+      <div style="width:100%;border-radius:2px;background:${s !== null ? z.color : 'rgba(148,163,184,0.15)'};height:${barH}px;opacity:${isToday ? 1 : 0.5};transition:height 0.4s ease;"></div>
+      <div style="font-size:7px;color:${isToday ? z.color : 'var(--text3)'};font-family:'Space Mono',monospace;font-weight:${isToday ? 700 : 400};">${d}</div>
+      <div style="font-size:8px;color:${s !== null ? z.color : 'var(--text3)'};font-weight:700;">${s !== null ? s : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Pulse dot status indicator ────────────────────────────────────
+function _setMMIPulse(state) {
+  // state: 'loading' | 'live' | 'stale' | 'error'
+  const dot = document.getElementById('mmiPulseDot');
+  if (!dot) return;
+  const colors = { loading:'#ffd600', live:'#00e676', stale:'#ff8f00', error:'#ef5350' };
+  dot.style.background = colors[state] || '#94a3b8';
+  dot.style.boxShadow  = state === 'live'
+    ? `0 0 6px ${colors.live}` : 'none';
+}
+
+// ── Main display updater ──────────────────────────────────────────
+function _updateMMIDisplay(scoreOrResult, source) {
+  const result = (typeof scoreOrResult === 'object' && scoreOrResult !== null)
+    ? scoreOrResult
+    : { score: scoreOrResult };
+  const score = result.score ?? scoreOrResult;
+  const zone  = _mmiZone(score);
+
+  // Animate score from previous value
+  const prev = _mmiScore;
+  _mmiScore  = score;
+
+  const scoreEl   = document.getElementById('mmiScore');
+  const zoneLblEl = document.getElementById('mmiZoneLabel');
+  const updEl     = document.getElementById('mmiUpdated');
+
+  if (score !== null && score !== undefined) {
+    _animateScore(prev, score, 600,
+      val => {
+        if (scoreEl) scoreEl.textContent = val;
+        _drawMMIGauge(val, zone);
+      },
+      final => {
+        if (scoreEl) {
+          scoreEl.textContent = final;
+          scoreEl.style.color = zone.color;
+        }
+        if (zoneLblEl) {
+          zoneLblEl.textContent  = zone.label;
+          zoneLblEl.style.cssText = `
+            font-size:10px; font-weight:700; letter-spacing:0.5px;
+            color:${zone.color};
+            background:${zone.glow};
+            border:1px solid ${zone.color}33;
+            padding:2px 9px; border-radius:20px;
+            font-family:'Plus Jakarta Sans',sans-serif;
+            transition:all 0.4s;
+            display:inline-block;
+          `;
+        }
+      }
+    );
+    // Signals + history
+    if (typeof scoreOrResult === 'object') _renderMMISignals(scoreOrResult);
+    _renderMMIHistory(score);
+    _setMMIPulse('live');
+
+    // Store in history
+    if (!_mmiHistory[_mmiTab]) _mmiHistory[_mmiTab] = [];
+    const h = _mmiHistory[_mmiTab];
+    if (!h.length || h[h.length-1] !== score) {
+      h.push(score);
+      if (h.length > MMI_HISTORY_DAYS) h.shift();
+    }
+  } else {
+    // No data yet — show loading state
+    if (scoreEl)   { scoreEl.textContent = '—'; scoreEl.style.color = '#94a3b8'; }
+    if (zoneLblEl) { zoneLblEl.textContent = 'Loading…'; zoneLblEl.style.cssText = 'font-size:9px;color:var(--text3);'; }
+    _drawMMIGauge(null, zone);
+    _setMMIPulse('loading');
+  }
+
+  if (updEl) {
+    const ts = new Date().toLocaleTimeString('en-IN',
+      {hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    updEl.textContent = (source || 'Live data') + ' · ' + ts + ' IST';
   }
 }
 
+// ── Public update entry point ─────────────────────────────────────
 function updateMMI() {
-  const score = _calcMMIForTab(_mmiTab);
-  const sourceMap = { stocks:'NSE Live Data', crypto:'CoinGecko · Live', commod:'Futures · Live' };
-  _updateMMIDisplay(score, sourceMap[_mmiTab]);
+  const result = _calcMMIForTab(_mmiTab);
+  const sourceMap = {
+    stocks: `NSE · ${_getMMIStocks('stocks').length} stocks`,
+    crypto: `Binance · ${_getMMIStocks('crypto').length} coins`,
+    commod: `Futures · ${_getMMIStocks('commod').length} markets`,
+  };
+  _updateMMIDisplay(result, sourceMap[_mmiTab]);
 }
 
+// ── Tab switcher ──────────────────────────────────────────────────
 function switchMMITab(tab, btn) {
-  _mmiTab = tab;
+  _mmiTab        = tab;
   window._mmiTab = tab;
+
   ['stocks','crypto','commod'].forEach(t => {
-    const b = document.getElementById('mmiTab_'+t);
+    const b = document.getElementById('mmiTab_' + t);
     if (!b) return;
     const active = t === tab;
-    b.style.background   = active ? 'var(--accent)' : 'transparent';
-    b.style.color        = active ? '#fff' : 'var(--text3)';
-    b.style.borderColor  = active ? 'var(--accent)' : 'var(--border)';
+    b.style.background  = active ? 'var(--accent)' : 'transparent';
+    b.style.color       = active ? '#fff' : 'var(--text3)';
+    b.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
   });
-  // Reset canvas sized flag so it redraws at correct size
+
+  // Reset canvas so it redraws at correct size
   const c = document.getElementById('mmiCanvas');
-  if (c) c._sized = false;
-  updateMMI();
+  if (c) { c.width = 0; c.height = 0; }
+
+  _setMMIPulse('loading');
+  setTimeout(updateMMI, 80); // short delay for tab animation
 }
+
+
 
 // ETF filter
 let _etfFilter = 'all';
@@ -11384,10 +11876,22 @@ document.addEventListener('click', e => {
   }, 60000);
 })();
 
-// ── MARKET MOOD INDEX — ensure canvas draws on load ──
-setTimeout(() => {
-  try { if (typeof updateMMI === 'function') updateMMI(); } catch(e) {}
-}, 1500);
+// ── MARKET MOOD INDEX + MARKET MOVERS — force render on load ──
+function _forceMMIRender() {
+  try { if (typeof updateMMI          === 'function') updateMMI(); }          catch(e) {}
+  try { if (typeof updateWhatsMoving  === 'function') updateWhatsMoving(); }  catch(e) {}
+}
+// Retry attempts — canvas needs layout to be complete before first draw
+setTimeout(_forceMMIRender, 200);
+setTimeout(_forceMMIRender, 600);
+setTimeout(_forceMMIRender, 1200);
+setTimeout(_forceMMIRender, 2500);
+// Redraw gauge on resize (window resize changes canvas width)
+window.addEventListener('resize', () => {
+  const c = document.getElementById('mmiCanvas');
+  if (c) { c.width = 0; c.height = 0; }
+  setTimeout(updateMMI, 100);
+});
 
 // ── Watchlist live price refresh ──
 const _origRenderWL = window.renderWatchlistPage;
