@@ -1981,20 +1981,20 @@ async function checkApiAndWake() {
 // Last-known prices — updates automatically when Railway comes online
 const STATIC_STOCKS = [
   // ═══ NIFTY 50 ═══
-  {sym:'HDFCBANK',   name:'HDFC Bank',               price:1745, chg:'+0.28%',up:true, sector:'Banking'},
-  {sym:'ICICIBANK',  name:'ICICI Bank',               price:1289, chg:'+0.54%',up:true, sector:'Banking'},
-  {sym:'SBIN',       name:'State Bank of India',      price:768,  chg:'-0.98%',up:false,sector:'Banking'},
+  {sym:'HDFCBANK',   name:'HDFC Bank',               price:1798, chg:'-0.45%',up:false,sector:'Banking'},
+  {sym:'ICICIBANK',  name:'ICICI Bank',               price:1312, chg:'+0.32%',up:true, sector:'Banking'},
+  {sym:'SBIN',       name:'State Bank of India',      price:812,  chg:'-0.67%',up:false,sector:'Banking'},
   {sym:'AXISBANK',   name:'Axis Bank',                price:1112, chg:'+0.54%',up:true, sector:'Banking'},
   {sym:'KOTAKBANK',  name:'Kotak Mahindra Bank',      price:1967, chg:'-0.48%',up:false,sector:'Banking'},
   {sym:'INDUSINDBK', name:'IndusInd Bank',            price:978,  chg:'-1.23%',up:false,sector:'Banking'},
-  {sym:'TCS',        name:'Tata Consultancy',         price:3389, chg:'-0.31%',up:false,sector:'IT'},
-  {sym:'INFY',       name:'Infosys',                  price:1798, chg:'-0.19%',up:false,sector:'IT'},
+  {sym:'TCS',        name:'Tata Consultancy',         price:3456, chg:'-0.89%',up:false,sector:'IT'},
+  {sym:'INFY',       name:'Infosys',                  price:1867, chg:'-0.54%',up:false,sector:'IT'},
   {sym:'WIPRO',      name:'Wipro Ltd',                price:308,  chg:'-0.89%',up:false,sector:'IT'},
   {sym:'HCLTECH',    name:'HCL Technologies',         price:1612, chg:'-0.67%',up:false,sector:'IT'},
   {sym:'TECHM',      name:'Tech Mahindra',            price:1589, chg:'+1.23%',up:true, sector:'IT'},
   {sym:'LTIM',       name:'LTIMindtree',              price:4978, chg:'+0.45%',up:true, sector:'IT'},
-  {sym:'TATAMOTORS', name:'Tata Motors',              price:634,  chg:'-1.45%',up:false,sector:'Auto'},
-  {sym:'MARUTI',     name:'Maruti Suzuki',            price:11456,chg:'+0.65%',up:true, sector:'Auto'},
+  {sym:'TATAMOTORS', name:'Tata Motors',              price:689,  chg:'-0.87%',up:false,sector:'Auto'},
+  {sym:'MARUTI',     name:'Maruti Suzuki',            price:12234,chg:'+0.43%',up:true, sector:'Auto'},
   {sym:'M&M',        name:'Mahindra & Mahindra',      price:2678, chg:'+1.45%',up:true, sector:'Auto'},
   {sym:'HEROMOTOCO', name:'Hero MotoCorp',            price:4234, chg:'-0.19%',up:false,sector:'Auto'},
   {sym:'EICHERMOT',  name:'Eicher Motors',            price:4567, chg:'+0.56%',up:true, sector:'Auto'},
@@ -2588,7 +2588,56 @@ async function fetchPriorityStocks() {
   onLiveDataUpdate(); // single call updates everything
 }
 
-// ── CRYPTO LIVE UPDATER — runs every 30s regardless of Railway status ──
+// ── BATCH FETCH ALL NSE STOCKS FOR MARKET MOVERS ──
+// Uses Vercel /api/quote — server-side Yahoo Finance, no CORS issues
+// Fetches all stocks in batches of 20, updates liveStocks, refreshes movers
+async function _fetchAllMovers() {
+  const allSyms = Object.entries(YF_STOCK_MAP); // [[NSE_SYM, YF_SYM], ...]
+  const BATCH = 20;
+
+  for (let i = 0; i < allSyms.length; i += BATCH) {
+    const batch = allSyms.slice(i, i + BATCH);
+    const yfSyms = batch.map(([,yf]) => yf).join(',');
+    try {
+      const r = await fetch(`/api/quote?symbols=${encodeURIComponent(yfSyms)}`,
+        { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const results = j?.quoteResponse?.result || [];
+      results.forEach(q => {
+        if (!q?.regularMarketPrice) return;
+        // Find the NSE sym that maps to this YF symbol
+        const nseEntry = batch.find(([,yf]) => yf === q.symbol);
+        if (!nseEntry) return;
+        const sym   = nseEntry[0];
+        const price = q.regularMarketPrice;
+        const prev  = q.regularMarketPreviousClose || price;
+        const chgNum = prev ? ((price - prev) / prev * 100) : 0;
+        const chgStr = (chgNum >= 0 ? '+' : '') + chgNum.toFixed(2) + '%';
+        const up     = chgNum >= 0;
+        const s = liveStocks.find(x => x.sym === sym);
+        if (s) {
+          s.price = price; s.chg = chgStr; s.up = up; s._live = true;
+        } else {
+          const st = STATIC_STOCKS.find(x => x.sym === sym);
+          liveStocks.push({ ...(st || {sym, name:sym}), price, chg:chgStr, up, _live:true });
+        }
+      });
+    } catch(e) {}
+    // Update movers after each batch so they fill in progressively
+    updateWhatsMoving();
+    onLiveDataUpdate();
+    await new Promise(r => setTimeout(r, 300));
+  }
+  // Final refresh
+  updateWhatsMoving();
+  onLiveDataUpdate();
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
+  setLiveStatus('live', '● LIVE · ' + ts);
+}
+
+// Refresh movers every 60 seconds
+setInterval(_fetchAllMovers, 60000);
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -9247,6 +9296,9 @@ function _mpInit() {
 
   // Yahoo Finance direct for top 25 NSE stocks — gets live prices in ~2-3s
   _fastBootstrapStocks();
+
+  // Batch fetch ALL NSE stocks via Vercel /api/quote for Market Movers
+  _fetchAllMovers();
 
   // Railway full fetch in parallel — will override YF prices when it returns (~5-12s)
   fetchLiveData();
