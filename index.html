@@ -6143,7 +6143,13 @@ function renderLivePatterns() {
   let items = liveStocks.filter(s => s.price);
   if (_lpAsset === 'stocks') items = items.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym));
   else if (_lpAsset === 'crypto') items = items.filter(s => CRYPTO_SYMS.has(s.sym));
-  else if (_lpAsset === 'commod') items = items.filter(s => COMM_SYMS.has(s.sym));
+  else if (_lpAsset === 'commod') {
+    // Use liveStocks if commodities have prices, else fall back to STATIC_COMMODITIES
+    items = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price && s.price !== '—');
+    if (!items.length) {
+      items = STATIC_COMMODITIES.map(s => ({...s, price: s.price || '—', chg: s.chg || '—', up: s.up !== false}));
+    }
+  }
 
   // Sort by absolute change descending so most active appear first
   items = items.slice().sort((a,b) => {
