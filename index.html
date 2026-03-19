@@ -8933,7 +8933,7 @@ function loadStrategyDetail(key) {
 // ═══════════════════════════════════════════════════════════════════
 // ECONOMIC CALENDAR
 // ═══════════════════════════════════════════════════════════════════
-let _econoData=[], _econoFilter='all';
+let _econoData=[], _econoFilter='all', _econoSource='Curated macro events · Mar–Jun 2026';
 
 // Curated Indian + Global macro events (refreshed weekly from hardcoded knowledge + live fetch)
 const ECONO_STATIC = [
@@ -8992,7 +8992,8 @@ const ECONO_STATIC = [
 
 function renderEcono() {
   const el=document.getElementById('econoBody'); if(!el) return;
-  _econoData = ECONO_STATIC.slice(); // always use static data
+  _econoData = ECONO_STATIC.slice(); // always use static — never blank
+  _econoSource = 'Curated macro events · Mar–Jun 2026';
   renderEconoPage();
 }
 
@@ -9656,54 +9657,69 @@ async function loadNews(cat, btn) {
     btn.style.background  = 'rgba(0,112,243,0.1)';
     btn.style.color       = 'var(--accent)';
   }
-
   const container = document.getElementById('newsContainer');
-
-  // Serve from cache if fresh (5 min)
   if (_newsLoaded[cat] && Date.now() - _newsLoaded[cat].ts < 300000) {
     renderNews(_newsLoaded[cat].items); return;
   }
-
   container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching latest news...</div></div>';
 
-  // ── Primary: Vercel /api/news serverless (server-side RSS fetch, no CORS) ──
+  // ── Source 1: Vercel /api/news (server-side RSS, no CORS) ──
   try {
-    const r = await fetch(`/api/news?cat=${encodeURIComponent(cat)}`, { signal: AbortSignal.timeout(12000) });
-    if (r.ok) {
-      const j = await r.json();
-      const items = (j.items || []).filter(i => i.title && i.title.length > 5);
-      if (items.length) {
-        _newsLoaded[cat] = { ts: Date.now(), items };
-        renderNews(items); return;
+    const r1 = await fetch('/api/news?cat=' + encodeURIComponent(cat), { signal: AbortSignal.timeout(10000) });
+    if (r1.ok) {
+      const j1 = await r1.json();
+      const items = (j1.items || []).filter(i => i.title && i.title.length > 5);
+      if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
+    }
+  } catch(e) {}
+
+  // ── Source 2: RSS2JSON API (free, reliable, no CORS) ──
+  try {
+    const rss2url = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(NEWS_URLS[cat]) + '&count=15';
+    const r2 = await fetch(rss2url, { signal: AbortSignal.timeout(10000) });
+    if (r2.ok) {
+      const j2 = await r2.json();
+      if (j2.status === 'ok' && j2.items && j2.items.length) {
+        const items = j2.items.map(i => ({
+          title:  i.title  || '',
+          link:   i.link   || i.guid || '#',
+          date:   i.pubDate || '',
+          source: j2.feed && j2.feed.title ? j2.feed.title : (i.author || 'News'),
+          ago:    timeAgo(i.pubDate),
+        })).filter(i => i.title.length > 5);
+        if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
       }
     }
   } catch(e) {}
 
-  // ── Fallback: browser-side proxy ──
-  const rssUrl = NEWS_URLS[cat];
+  // ── Source 3: allorigins proxy ──
   try {
-    const text = await fetchViaProxy(rssUrl);
-    if (!text) throw new Error('all proxies failed');
-    const parser = new DOMParser();
-    const xml    = parser.parseFromString(text, 'text/xml');
-    const items  = Array.from(xml.querySelectorAll('item')).slice(0,14).map(item => {
-      const title  = item.querySelector('title')?.textContent?.trim() || '';
-      const link   = item.querySelector('link')?.textContent?.trim() || '#';
-      const date   = item.querySelector('pubDate')?.textContent?.trim() || '';
-      const source = item.querySelector('source')?.textContent?.trim() || 'Google News';
-      return { title, link, date, source, ago: timeAgo(date) };
-    }).filter(i => i.title.length > 5);
-    if (!items.length) throw new Error('empty');
-    _newsLoaded[cat] = { ts: Date.now(), items };
-    renderNews(items);
-  } catch(e) {
-    container.innerHTML = '<div style="text-align:center;padding:48px;">'
-      + '<div style="font-size:32px;margin-bottom:12px;">📡</div>'
-      + '<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
-      + '<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection and try again.</div>'
-      + '<button onclick="delete _newsLoaded[\'' + cat + '\'];loadNews(\'' + cat + '\',document.getElementById(\'nc_' + cat + '\'))" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
-      + '</div>';
-  }
+    const r3 = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(NEWS_URLS[cat]), { signal: AbortSignal.timeout(10000) });
+    if (r3.ok) {
+      const j3 = await r3.json();
+      const text = j3.contents || '';
+      if (text.includes('<item>')) {
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item')).slice(0, 14).map(el => ({
+          title:  el.querySelector('title')?.textContent?.trim()   || '',
+          link:   el.querySelector('link')?.textContent?.trim()    || '#',
+          date:   el.querySelector('pubDate')?.textContent?.trim() || '',
+          source: el.querySelector('source')?.textContent?.trim()  || 'Google News',
+          ago:    timeAgo(el.querySelector('pubDate')?.textContent || ''),
+        })).filter(i => i.title.length > 5);
+        if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
+      }
+    }
+  } catch(e) {}
+
+  // Show error — use global retry function to avoid quoting issues
+  window._mpNewsRetry = function() { delete _newsLoaded[cat]; loadNews(cat, btn); };
+  container.innerHTML = '<div style="text-align:center;padding:48px;">'
+    + '<div style="font-size:32px;margin-bottom:12px;">📡</div>'
+    + '<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Tap Retry or check your connection.</div>'
+    + '<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
+    + '</div>';
 }
 
 function renderNews(items) {
