@@ -2641,6 +2641,8 @@ async function _fetchAllMovers() {
 
 // Refresh movers every 30 seconds
 setInterval(_fetchAllMovers, 30000);
+// Refresh ticker every 20 seconds
+setInterval(updateTickerFromLive, 20000);
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -2903,47 +2905,40 @@ function updateTickerFromLive() {
   const track = document.getElementById('tickerTrack');
   if (!track) return;
 
-  // ── Indices: from _fetchIndicesVercel result ──
+  // ── Indices ──
   const idxSrc = window._liveIndices || {};
   const nifty  = idxSrc['NIFTY 50']   || idxSrc['NIFTY'];
   const bank   = idxSrc['NIFTY BANK'] || idxSrc['BANKNIFTY'];
   const sensex = idxSrc['SENSEX'];
-
   const indexItems = [
     nifty  ? {sym:'NIFTY 50',  price:nifty.price,  chg:nifty.chg,  up:nifty.up}  : null,
     bank   ? {sym:'BANKNIFTY', price:bank.price,   chg:bank.chg,   up:bank.up}   : null,
     sensex ? {sym:'SENSEX',    price:sensex.price,  chg:sensex.chg, up:sensex.up} : null,
   ].filter(Boolean);
 
-  // ── NSE Stocks: only show live prices (skip static-only entries) ──
+  // ── NSE Stocks: show ALL with price (live preferred, static as fallback) ──
   const liveNse = liveStocks.filter(s =>
     !STATIC_CRYPTO.find(c=>c.sym===s.sym) &&
     !STATIC_COMMODITIES.find(c=>c.sym===s.sym) &&
-    s.price && s.price !== '—' && s._live
-  ).slice(0, 30);
+    s.price && s.price !== '—'
+  ).slice(0, 40);
 
-  // ── Crypto: from liveStocks (updated by CoinGecko) ──
+  // ── Crypto ──
   const liveCrypto = liveStocks.filter(s =>
     STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
   ).slice(0, 5);
 
-  // ── Commodities: from liveStocks ──
+  // ── Commodities ──
   const liveComm = liveStocks.filter(s =>
     STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
   ).slice(0, 4);
 
   const allItems = [...indexItems, ...liveNse, ...liveCrypto, ...liveComm];
-
-  // If nothing live yet, use static as placeholder
-  if (!allItems.length) {
-    const fallback = liveStocks.slice(0, 20);
-    allItems.push(...fallback);
-  }
+  if (!allItems.length) allItems.push(...liveStocks.slice(0, 20));
 
   const items = allItems.map(s => {
     const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
     const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
-    const isIndex  = ['NIFTY 50','BANKNIFTY','SENSEX'].includes(s.sym);
     const cur  = (isCrypto || isComm) ? '$' : '₹';
     const pRaw = typeof s.price === 'string' ? parseFloat(s.price.toString().replace(/,/g,'')) : (s.price || 0);
     if (!pRaw) return '';
@@ -2951,6 +2946,8 @@ function updateTickerFromLive() {
       ? '₹' + pRaw.toLocaleString('en-IN', {maximumFractionDigits:0})
       : '$' + pRaw.toLocaleString('en-US', {maximumFractionDigits: pRaw < 1 ? 4 : pRaw < 100 ? 2 : 0});
     const up = s.up !== false && s.up !== 'false';
+    // Mark live prices with dot indicator
+    const liveDot = s._live ? '' : '';
     return '<span class="ticker-item" onclick="fetchAndShowStock(\'' + s.sym + '\')">'
       + '<span class="ticker-sym">' + s.sym + '</span>'
       + '<span class="ticker-price ' + (up?'up':'dn') + '">' + fmtP + '</span>'
