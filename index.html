@@ -2573,71 +2573,74 @@ const PRIORITY_SYMS = [
   'ASIANPAINT','MARUTI','SUNPHARMA','KOTAKBANK','HCLTECH','LT'
 ];
 
-// Fetch priority stocks from Yahoo Finance immediately on load
+// Fetch priority stocks immediately on load via single batch call
 async function fetchPriorityStocks() {
-  await Promise.allSettled(PRIORITY_SYMS.map(async sym => {
-    const yfSym = YF_STOCK_MAP[sym];
-    if (!yfSym) return;
-    try {
-      const { price, chg, up } = await yfFetch(yfSym);
-      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
-      const s = liveStocks.find(x => x.sym === sym);
-      if (s) { s.price = price; s.chg = chgStr; s.up = up; }
-    } catch(e) {}
-  }));
-  onLiveDataUpdate(); // single call updates everything
+  const yfSyms = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean).join(',');
+  try {
+    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(12000) });
+    if (r.ok) {
+      const j = await r.json();
+      (j?.quoteResponse?.result || []).forEach(q => {
+        if (!q?.regularMarketPrice) return;
+        const sym = Object.keys(YF_STOCK_MAP).find(k => YF_STOCK_MAP[k] === q.symbol);
+        if (!sym) return;
+        const price  = q.regularMarketPrice;
+        const prev   = q.regularMarketPreviousClose || price;
+        const chgNum = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
+        const chgStr = (chgNum>=0?'+':'') + chgNum.toFixed(2) + '%';
+        const s = liveStocks.find(x => x.sym === sym);
+        if (s) { s.price = price; s.chg = chgStr; s.up = chgNum>=0; s._live = true; }
+      });
+    }
+  } catch(e) {}
+  updateWhatsMoving();
+  onLiveDataUpdate();
 }
 
 // ── BATCH FETCH ALL NSE STOCKS FOR MARKET MOVERS ──
 // Uses Vercel /api/quote — server-side Yahoo Finance, no CORS issues
-// Fetches all stocks in batches of 20, updates liveStocks, refreshes movers
 async function _fetchAllMovers() {
-  const allSyms = Object.entries(YF_STOCK_MAP); // [[NSE_SYM, YF_SYM], ...]
-  const BATCH = 20;
+  // Only NSE stocks — filter out indices (%5E...) and commodities (GC=F etc)
+  const allSyms = Object.entries(YF_STOCK_MAP).filter(([k,v]) => v.endsWith('.NS'));
+  const BATCH = 50;
 
   for (let i = 0; i < allSyms.length; i += BATCH) {
-    const batch = allSyms.slice(i, i + BATCH);
+    const batch  = allSyms.slice(i, i + BATCH);
     const yfSyms = batch.map(([,yf]) => yf).join(',');
     try {
-      const r = await fetch(`/api/quote?symbols=${encodeURIComponent(yfSyms)}`,
-        { signal: AbortSignal.timeout(12000) });
+      const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms),
+        { signal: AbortSignal.timeout(15000) });
       if (!r.ok) continue;
       const j = await r.json();
-      const results = j?.quoteResponse?.result || [];
-      results.forEach(q => {
+      (j?.quoteResponse?.result || []).forEach(q => {
         if (!q?.regularMarketPrice) return;
-        // Find the NSE sym that maps to this YF symbol
         const nseEntry = batch.find(([,yf]) => yf === q.symbol);
         if (!nseEntry) return;
-        const sym   = nseEntry[0];
-        const price = q.regularMarketPrice;
-        const prev  = q.regularMarketPreviousClose || price;
-        const chgNum = prev ? ((price - prev) / prev * 100) : 0;
+        const sym    = nseEntry[0];
+        const price  = q.regularMarketPrice;
+        const prev   = q.regularMarketPreviousClose || price;
+        const chgNum = q.regularMarketChangePercent != null
+          ? q.regularMarketChangePercent
+          : (prev ? ((price - prev) / prev * 100) : 0);
         const chgStr = (chgNum >= 0 ? '+' : '') + chgNum.toFixed(2) + '%';
         const up     = chgNum >= 0;
         const s = liveStocks.find(x => x.sym === sym);
-        if (s) {
-          s.price = price; s.chg = chgStr; s.up = up; s._live = true;
-        } else {
-          const st = STATIC_STOCKS.find(x => x.sym === sym);
-          liveStocks.push({ ...(st || {sym, name:sym}), price, chg:chgStr, up, _live:true });
-        }
+        if (s) { s.price = price; s.chg = chgStr; s.up = up; s._live = true; }
+        else { const st = STATIC_STOCKS.find(x => x.sym === sym); liveStocks.push({...(st||{sym,name:sym}),price,chg:chgStr,up,_live:true}); }
       });
     } catch(e) {}
-    // Update movers after each batch so they fill in progressively
     updateWhatsMoving();
     onLiveDataUpdate();
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
   }
-  // Final refresh
   updateWhatsMoving();
   onLiveDataUpdate();
   const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
   setLiveStatus('live', '● LIVE · ' + ts);
 }
 
-// Refresh movers every 60 seconds
-setInterval(_fetchAllMovers, 60000);
+// Refresh movers every 30 seconds
+setInterval(_fetchAllMovers, 30000);
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -2899,34 +2902,63 @@ function updateSidebarItem(sym, price, chgStr, up, currency) {
 function updateTickerFromLive() {
   const track = document.getElementById('tickerTrack');
   if (!track) return;
-  // Always use liveStocks (pre-populated from STATIC_STOCKS so never empty)
-  const source = (liveStocks && liveStocks.length) ? liveStocks : STATIC_STOCKS;
-  const allItems = [
-    // Indices with live fallback prices
-    {sym:'NIFTY',  price: (window._liveIndices?.['NIFTY 50']?.price)  || 22470, chg:'+0.82%', up:true},
-    {sym:'SENSEX', price: (window._liveIndices?.['SENSEX']?.price)     || 74119, chg:'+0.67%', up:true},
-    {sym:'BNIFTY', price: (window._liveIndices?.['NIFTY BANK']?.price) || 48960, chg:'+0.54%', up:true},
-    ...source.slice(0, 25),
-    ...STATIC_CRYPTO.slice(0, 5),
-    ...STATIC_COMMODITIES.slice(0, 4),
-  ];
+
+  // ── Indices: from _fetchIndicesVercel result ──
+  const idxSrc = window._liveIndices || {};
+  const nifty  = idxSrc['NIFTY 50']   || idxSrc['NIFTY'];
+  const bank   = idxSrc['NIFTY BANK'] || idxSrc['BANKNIFTY'];
+  const sensex = idxSrc['SENSEX'];
+
+  const indexItems = [
+    nifty  ? {sym:'NIFTY 50',  price:nifty.price,  chg:nifty.chg,  up:nifty.up}  : null,
+    bank   ? {sym:'BANKNIFTY', price:bank.price,   chg:bank.chg,   up:bank.up}   : null,
+    sensex ? {sym:'SENSEX',    price:sensex.price,  chg:sensex.chg, up:sensex.up} : null,
+  ].filter(Boolean);
+
+  // ── NSE Stocks: only show live prices (skip static-only entries) ──
+  const liveNse = liveStocks.filter(s =>
+    !STATIC_CRYPTO.find(c=>c.sym===s.sym) &&
+    !STATIC_COMMODITIES.find(c=>c.sym===s.sym) &&
+    s.price && s.price !== '—' && s._live
+  ).slice(0, 30);
+
+  // ── Crypto: from liveStocks (updated by CoinGecko) ──
+  const liveCrypto = liveStocks.filter(s =>
+    STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
+  ).slice(0, 5);
+
+  // ── Commodities: from liveStocks ──
+  const liveComm = liveStocks.filter(s =>
+    STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
+  ).slice(0, 4);
+
+  const allItems = [...indexItems, ...liveNse, ...liveCrypto, ...liveComm];
+
+  // If nothing live yet, use static as placeholder
+  if (!allItems.length) {
+    const fallback = liveStocks.slice(0, 20);
+    allItems.push(...fallback);
+  }
+
   const items = allItems.map(s => {
     const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
     const isComm   = !!STATIC_COMMODITIES.find(c=>c.sym===s.sym);
+    const isIndex  = ['NIFTY 50','BANKNIFTY','SENSEX'].includes(s.sym);
     const cur  = (isCrypto || isComm) ? '$' : '₹';
-    const pRaw = typeof s.price === 'string' ? parseFloat(s.price.replace(/,/g,'')) : (s.price || 0);
+    const pRaw = typeof s.price === 'string' ? parseFloat(s.price.toString().replace(/,/g,'')) : (s.price || 0);
     if (!pRaw) return '';
     const fmtP = cur === '₹'
       ? '₹' + pRaw.toLocaleString('en-IN', {maximumFractionDigits:0})
       : '$' + pRaw.toLocaleString('en-US', {maximumFractionDigits: pRaw < 1 ? 4 : pRaw < 100 ? 2 : 0});
-    const chgStr = String(s.chg||'').replace('+','');
-    return `<span class="ticker-item" onclick="fetchAndShowStock('${s.sym}')">
-      <span class="ticker-sym">${s.sym}</span>
-      <span class="ticker-price ${s.up?'up':'dn'}">${fmtP}</span>
-      <span class="ticker-chg ${s.up?'up':'dn'}">${s.chg||''}</span>
-    </span>`;
+    const up = s.up !== false && s.up !== 'false';
+    return '<span class="ticker-item" onclick="fetchAndShowStock(\'' + s.sym + '\')">'
+      + '<span class="ticker-sym">' + s.sym + '</span>'
+      + '<span class="ticker-price ' + (up?'up':'dn') + '">' + fmtP + '</span>'
+      + '<span class="ticker-chg '  + (up?'up':'dn') + '">' + (s.chg||'') + '</span>'
+      + '</span>';
   }).filter(Boolean).join('');
-  if (items) track.innerHTML = items + items;
+
+  if (items) track.innerHTML = items + items; // duplicate for seamless scroll
 }
 
 
@@ -2934,28 +2966,31 @@ function buildGlobalTicker() {
   const track = document.getElementById('globalTickerTrack');
   if (!track) return;
 
-  // All assets to show in order: indices first, then NSE stocks, then crypto, then commodities
+  // All assets: indices first, then LIVE stocks only, then crypto + commodities
+  const _liveNseGlobal = liveStocks.filter(s =>
+    !STATIC_CRYPTO.find(c=>c.sym===s.sym) &&
+    !STATIC_COMMODITIES.find(c=>c.sym===s.sym) &&
+    s.price && s.price !== '—' && s._live
+  ).slice(0, 25);
+  const _liveCryptoGlobal = liveStocks.filter(s => STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 8);
+  const _liveCommGlobal   = liveStocks.filter(s => STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 5);
   const allAssets = [
-    // Indices (from Railway /indices or static fallback)
-    {sym:'NIFTY',     name:'Nifty 50',       price:null, chg:null, up:true,  isIndex:true},
-    {sym:'BANKNIFTY', name:'Bank Nifty',      price:null, chg:null, up:true,  isIndex:true},
-    {sym:'SENSEX',    name:'Sensex',           price:null, chg:null, up:true,  isIndex:true},
-    // NSE stocks from liveStocks
-    ...liveStocks.slice(0, 20),
-    // Crypto from STATIC_CRYPTO (updated by CoinGecko)
-    ...STATIC_CRYPTO.slice(0, 8),
-    // Commodities
-    ...STATIC_COMMODITIES.slice(0, 5),
+    {sym:'NIFTY',     name:'Nifty 50',   price:null, chg:null, up:true, isIndex:true},
+    {sym:'BANKNIFTY', name:'Bank Nifty', price:null, chg:null, up:true, isIndex:true},
+    {sym:'SENSEX',    name:'Sensex',     price:null, chg:null, up:true, isIndex:true},
+    ..._liveNseGlobal,
+    ..._liveCryptoGlobal,
+    ..._liveCommGlobal,
   ];
 
-  // Merge index data from Railway /indices response OR use static fallback prices
+  // Merge index data from _liveIndices — no hardcoded fallbacks
   const idxSrc = window._liveIndices || {};
-  const niftyL = idxSrc['NIFTY 50']   || idxSrc['NIFTY']   || {price:22470, chg:'+0.82%', up:true};
-  const bankL  = idxSrc['NIFTY BANK'] || idxSrc['BANKNIFTY']|| {price:48960, chg:'+0.54%', up:true};
-  const sensL  = idxSrc['SENSEX']     || {price:74119, chg:'+0.67%', up:true};
-  allAssets[0].price = niftyL.price; allAssets[0].chg = niftyL.chg; allAssets[0].up = niftyL.up !== false;
-  allAssets[1].price = bankL.price;  allAssets[1].chg = bankL.chg;  allAssets[1].up = bankL.up  !== false;
-  allAssets[2].price = sensL.price;  allAssets[2].chg = sensL.chg;  allAssets[2].up = sensL.up  !== false;
+  const niftyL = idxSrc['NIFTY 50']   || idxSrc['NIFTY']    || null;
+  const bankL  = idxSrc['NIFTY BANK'] || idxSrc['BANKNIFTY'] || null;
+  const sensL  = idxSrc['SENSEX']     || null;
+  if (niftyL) { allAssets[0].price = niftyL.price; allAssets[0].chg = niftyL.chg; allAssets[0].up = niftyL.up !== false; }
+  if (bankL)  { allAssets[1].price = bankL.price;  allAssets[1].chg = bankL.chg;  allAssets[1].up = bankL.up  !== false; }
+  if (sensL)  { allAssets[2].price = sensL.price;  allAssets[2].chg = sensL.chg;  allAssets[2].up = sensL.up  !== false; }
 
   const makeItem = (s) => {
     const isCrypto = !!STATIC_CRYPTO.find(c=>c.sym===s.sym);
@@ -9324,6 +9359,9 @@ function _mpInit() {
 
   // Fetch indices via Vercel /api/indices (server-side, fast)
   _fetchIndicesVercel();
+
+  // Priority stocks (RELIANCE, TCS, HDFCBANK etc) — single batch, updates movers fast
+  fetchPriorityStocks();
 
   // Yahoo Finance direct for top 25 NSE stocks — gets live prices in ~2-3s
   _fastBootstrapStocks();
