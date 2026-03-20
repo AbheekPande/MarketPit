@@ -134,7 +134,7 @@
 <div class="flex-grow border-t-[0.5px] border-outline-variant/20"></div>
 </div>
 <!-- Credentials Form -->
-<form class="space-y-6" onsubmit="window.location.href='dashboard.html'; return false;">
+<form class="space-y-6" onsubmit="var e=document.getElementById('email').value; window.location.href='verify.html'+(e?'?email='+encodeURIComponent(e):''); return false;">
 <div class="space-y-1.5">
 <label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-1" for="email">Institutional Email</label>
 <div class="relative group">
@@ -223,8 +223,8 @@
 </div>
 <div class="flex justify-between items-center">
 <button @click="step = 'select'" class="text-xs text-primary font-bold uppercase tracking-widest hover:underline">Back</button>
-<!-- Next in Google modal → goes to dashboard -->
-<button onclick="window.location.href='dashboard.html'" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">Next</button>
+<!-- Next in Google modal → goes to verify page -->
+<button onclick="window.location.href='verify.html'" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">Next</button>
 </div>
 </div>
 </div>
