@@ -88,7 +88,7 @@
         }
     </style>
 <script defer="" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script></head>
-<body class="bg-background font-body text-on-background selection:bg-primary/30 min-h-screen flex flex-col overflow-x-hidden" x-data="{ showGoogleAuth: false }">
+<body class="bg-background font-body text-on-background selection:bg-primary/30 min-h-screen flex flex-col overflow-x-hidden" x-data="{ showGoogleAuth: false, step: 'select' }">
 <!-- Subtle Ambient Background -->
 <div class="fixed inset-0 z-0 pointer-events-none">
 <div class="absolute inset-0 bg-grid opacity-30"></div>
@@ -118,15 +118,12 @@
 </div>
 <!-- Social Authentication -->
 <div class="grid grid-cols-3 gap-3 mb-8">
-<!-- Google → goes to dashboard -->
 <button @click="showGoogleAuth = true" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="Google Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
 </button>
-<!-- X → goes to dashboard -->
 <button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="X Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKyR8MIEDLATlPPBbRyq2iF2S6fBI4qDFvzDqAqZZ0BbJfivR2fR3JmXpTIUrOLAyL7OCsraS16oXBA4TwOA1xiRG0MwX6e9BRizQyIz1OoFDIa52LajgI0n4W6agcwM_h97xJDf5m912QnLjNv9w1rhZjaAMb79TTGpM4_Y0Th0a5B-pmnKDnXAPZdaY38XEGU7IaEvm07FF6_lsCX_U76_On4L4-4aJl_qx8svcisyig7QispXHspkGzVXAIklqR5Lfq1ruAQbk"/>
 </button>
-<!-- Apple → goes to dashboard -->
 <button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="Apple Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDd83Yvnf70tVTaJZULL0ELKflwng8Zg5gR51H6b3GcknjtJK2vmcD4qsxrdJBFepauf__faQze_B1IGkXQoSzETwwYr6aDD1CPDqLzBiUCSISHg5pxxR60-rlvhM105RVvCET73CBAmSDd4g-Oac4vfeldmY7Ub2ouHw6CG316498B2_nncV8T_PTGrBhd4Wr_Que5TM4s0Q671Z9IBuRp8iO9PcBRFKD0-zjPtr0sKG8qcoU_Ny1J2mEKae06yLA9s96OITLjBe8"/>
 </button>
@@ -136,7 +133,7 @@
 <span class="flex-shrink mx-4 text-[10px] font-label uppercase tracking-widest text-on-surface-variant/40">OR EMAIL ACCESS</span>
 <div class="flex-grow border-t-[0.5px] border-outline-variant/20"></div>
 </div>
-<!-- Credentials Form → submits to dashboard -->
+<!-- Credentials Form -->
 <form class="space-y-6" onsubmit="window.location.href='dashboard.html'; return false;">
 <div class="space-y-1.5">
 <label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-1" for="email">Institutional Email</label>
@@ -192,7 +189,7 @@
 <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Security</a>
 </div>
 </footer>
-<!-- Google Account Picker Modal -->
+<!-- Google Auth Modal -->
 <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md" style="display: none;" x-show="showGoogleAuth" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100" x-transition:enter-start="opacity-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0" x-transition:leave-start="opacity-100">
 <div @click.away="showGoogleAuth = false" class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-white/10">
 <div class="p-8">
@@ -200,39 +197,36 @@
 <img alt="Google Logo" class="w-8 h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
 </div>
 <div class="text-center mb-8">
-<h2 class="text-xl font-bold text-on-surface mb-1">Choose an account</h2>
-<p class="text-on-surface-variant text-sm">to continue to <span class="text-primary font-semibold">Market Pit</span></p>
+<h2 class="text-xl font-bold text-on-surface mb-1" x-text="step === 'select' ? 'Choose an account' : 'Sign In'">Choose an account</h2>
+<p class="text-on-surface-variant text-sm" x-show="step === 'select'">to continue to <span class="text-primary font-semibold">Market Pit</span></p>
+<p class="text-on-surface-variant text-sm" x-cloak="" x-show="step === 'input'">Use your Google Account</p>
 </div>
 <div class="space-y-2">
-<!-- Account 1 → goes to dashboard -->
-<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
-<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                        AM
-                    </div>
-<div class="flex-grow">
-<div class="text-sm font-semibold text-on-surface">Alex Miller</div>
-<div class="text-xs text-on-surface-variant">alex.m@gmail.com</div>
+<!-- Account Selection View -->
+<div class="space-y-4" x-show="step === 'select'">
+<div class="p-6 rounded-xl bg-surface-container-lowest/50 border border-white/5 text-center mb-4">
+<p class="text-sm text-on-surface-variant">No active sessions found.</p>
 </div>
-<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
-</button>
-<!-- Account 2 → goes to dashboard -->
-<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
-<div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold">
-                        MP
-                    </div>
-<div class="flex-grow">
-<div class="text-sm font-semibold text-on-surface">M. Pit Institutional</div>
-<div class="text-xs text-on-surface-variant">m.pit.institutional@gmail.com</div>
-</div>
-<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
-</button>
-<!-- Use another account → goes to dashboard -->
-<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
-<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
-<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+<button @click="step = 'input'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-outline-variant/20 hover:border-primary/40 text-left">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">account_circle</span>
 </div>
 <div class="flex-grow text-sm font-medium text-on-surface">Use another account</div>
+<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
 </button>
+</div>
+<!-- Email Input View -->
+<div class="space-y-6" x-cloak="" x-show="step === 'input'">
+<div class="space-y-1.5">
+<label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-1">Email or phone</label>
+<input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/30 rounded-xl px-5 py-4 text-sm text-on-surface focus:ring-0 focus:border-primary focus:bg-surface-container-low transition-all placeholder:text-on-surface-variant/30" placeholder="Enter your email" type="email"/>
+</div>
+<div class="flex justify-between items-center">
+<button @click="step = 'select'" class="text-xs text-primary font-bold uppercase tracking-widest hover:underline">Back</button>
+<!-- Next in Google modal → goes to dashboard -->
+<button onclick="window.location.href='dashboard.html'" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">Next</button>
+</div>
+</div>
 </div>
 <div class="mt-8 text-center">
 <button @click="showGoogleAuth = false" class="text-xs text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest font-bold">
@@ -241,9 +235,7 @@
 </div>
 </div>
 <div class="bg-white/5 p-4 border-t border-white/5">
-<p class="text-[10px] text-center text-on-surface-variant/60 leading-relaxed">
-                To continue, Google will share your name, email address, language preference, and profile picture with Market Pit. See Market Pit's <span class="underline cursor-pointer">Privacy Policy</span> and <span class="underline cursor-pointer">Terms of Service</span>.
-            </p>
+<p class="text-[10px] text-center text-on-surface-variant/60 leading-relaxed">To continue, Google will share your name, email address, language preference, and profile picture with Market Pit. See Market Pit's <span class="underline cursor-pointer">Privacy Policy</span> and <span class="underline cursor-pointer">Terms of Service</span>.</p>
 </div>
 </div>
 </div>
