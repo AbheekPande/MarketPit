@@ -249,6 +249,21 @@ header {
 .notif-btn { width:32px; height:32px; border-radius:8px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text3); flex-shrink:0; transition:all 0.15s; position:relative; }
 .notif-btn:hover { border-color:var(--accent); color:var(--accent); }
 
+/* STORIES */
+#storiesBar::-webkit-scrollbar{display:none;}
+.story-bubble{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;width:64px;}
+.story-ring{width:54px;height:54px;border-radius:50%;padding:2px;background:conic-gradient(var(--accent),#a855f7,#ec4899,var(--accent));position:relative;flex-shrink:0;transition:transform 0.15s;}
+.story-ring.seen{background:conic-gradient(var(--border),var(--border));}
+.story-ring:hover{transform:scale(1.08);}
+.story-ring-inner{width:100%;height:100%;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--bg1);}
+.story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
+/* Story Modal */
+#storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
+#storyModal.open{display:flex;}
+.story-card{width:340px;max-width:95vw;background:var(--bg2);border-radius:20px;overflow:hidden;position:relative;border:1px solid var(--border);box-shadow:0 24px 80px rgba(0,0,0,0.5);}
+.story-progress-bar{height:3px;background:var(--bg3);position:relative;overflow:hidden;}
+.story-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a855f7);width:0%;transition:width linear;}
+.story-nav-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:10;}
 /* LAYOUT */
 .layout { display:flex; flex:1; overflow:hidden; }
 
@@ -346,20 +361,13 @@ header {
 
 /* RIGHT SIDEBAR - CHAT */
 .right-sidebar { width:280px; background:var(--bg2); border-left:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
-.chat-header { padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.chat-title { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:1.5px; color:var(--text); }
-.online-dot { width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; margin-right:4px; animation:pulse 2s infinite; }
-.chat-msgs { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
-.chat-msgs::-webkit-scrollbar { width:3px; }
-.chat-msgs::-webkit-scrollbar-thumb { background:var(--border); }
+/* chat removed */
 .chat-msg { display:flex; gap:8px; align-items:flex-start; }
 .chat-av { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:8px; font-weight:700; flex-shrink:0; }
 .chat-user { font-size:11px; font-weight:700; color:var(--text); }
 .chat-text { font-size:12px; color:var(--text2); line-height:1.4; margin-top:1px; }
 .chat-time { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); margin-left:4px; }
-.chat-input-row { padding:10px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
-.chat-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif; outline:none; }
-.chat-input:focus { border-color:var(--accent); }
+
 .chat-send { width:32px; height:32px; background:var(--accent); border:none; border-radius:8px; cursor:pointer; color:#fff; font-size:14px; display:flex; align-items:center; justify-content:center; transition:opacity 0.15s; }
 .chat-send:hover { opacity:0.8; }
 .leaderboard-section { padding:10px; border-top:1px solid var(--border); }
@@ -767,7 +775,7 @@ header {
   .ticker-track { will-change: transform; }
   #eyesBanner { will-change: transform; }
   /* Layout containment for large lists */
-  #feedBody, #chatMsgs, #earningsBody, #mfBody, #alertsBody { contain: content; }
+  #feedBody, #earningsBody, #mfBody, #alertsBody { contain: content; }
   /* Smooth scrollbar */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1115,6 +1123,11 @@ header {
       Unlisted Shares
     </button>
 
+    <button class="nav-tab" onclick="switchTab(this,'predict')">
+      <svg class="ti" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M6 1a1 1 0 0 0-1 1v1H2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-3V2a1 1 0 0 0-2 0v1H6V2a1 1 0 0 0-1-1zm0 5a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2h2zm4 0h2a1 1 0 0 1 0 2h-2a1 1 0 0 1 0-2z"/></svg>
+      Predictions
+    </button>
+
   </div>
   <button id="navScrollRight" onclick="document.querySelector('.nav-tabs').scrollBy({left:200,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(to left,var(--bg2),transparent);border:none;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;padding:0;">›</button>
   </div>
@@ -1189,6 +1202,11 @@ header {
       </div>
     </div>
 
+
+    <!-- ── STORIES BAR ── -->
+    <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
+      <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
+    </div>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
@@ -1723,6 +1741,37 @@ header {
     </div>
     <div class="feed-scroll" id="unlistedBody" style="padding:0;"></div>
   </div>
+
+  <!-- MMI PAGE -->
+  <div class="main-feed" id="page-mmi" style="display:none;flex-direction:column;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">😊 MARKET MOOD INDEX</div>
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">India VIX · Nifty Breadth · Put-Call Ratio · FII Activity</div>
+    </div>
+    <div class="feed-scroll" id="mmiBody" style="padding:16px;"></div>
+  </div>
+
+  <!-- PREDICTIONS PAGE -->
+  <div class="main-feed" id="page-predict" style="display:none;flex-direction:column;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;">🎯 PREDICTIONS</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">Polymarket-style · Paper money · Market outcomes</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;">YOUR BALANCE</div>
+        <div id="predictBalance" style="font-size:18px;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace;">₹—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="switchPredictTab('open',this)" id="ptab_open" style="padding:9px 18px;border:none;background:transparent;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid var(--accent);color:var(--accent);">🟢 Open Markets</button>
+      <button onclick="switchPredictTab('mybets',this)" id="ptab_mybets" style="padding:9px 18px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);">📋 My Bets</button>
+      <button onclick="switchPredictTab('resolved',this)" id="ptab_resolved" style="padding:9px 18px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);">✅ Resolved</button>
+    </div>
+    <div class="feed-scroll" id="predictBody" style="padding:14px;"></div>
+  </div>
+
+  <!-- ECONOMIC CALENDAR -->
   <div class="main-feed" id="page-econocal" style="display:none;flex-direction:column;">
     <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
       <div>
@@ -1815,7 +1864,18 @@ header {
   <!-- RIGHT SIDEBAR -->
   <div class="right-sidebar">
 
-    <!-- TOP MOVERS & LOSERS -->
+    <!-- MARKET MOOD INDEX (mini) — TOP -->
+    <div id="sidebarMmi" style="padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;">😊 MARKET MOOD</span>
+        <span id="sidebarMmiTs" style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;"></span>
+      </div>
+      <div id="sidebarMmiContent">
+        <div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- TOP MOVERS & LOSERS — BELOW MMI -->
     <div id="whatsMoving" style="padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;">📊 Market Movers</span>
@@ -1832,16 +1892,7 @@ header {
       </div>
     </div>
 
-    <div class="chat-header">
-      <div class="chat-title"><span class="online-dot"></span>LIVE FLOOR CHAT</div>
-    </div>
-    <div class="chat-msgs" id="chatMsgs">
-      <div style="color:var(--text3);font-size:12px;padding:8px;">No messages yet. Say hello! 👋</div>
-    </div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="chatInput" placeholder="Message the floor…" onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="chat-send" onclick="sendChat()">▶</button>
-    </div>
+    <!-- LEADERBOARD -->
     <div class="leaderboard-section">
       <div class="lb-title">TOP CALLERS THIS WEEK</div>
       <div id="leaderboard"><div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div></div>
@@ -2580,6 +2631,7 @@ async function fetchPriorityStocks() {
     const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(12000) });
     if (r.ok) {
       const j = await r.json();
+      let updated = 0;
       (j?.quoteResponse?.result || []).forEach(q => {
         if (!q?.regularMarketPrice) return;
         const sym = Object.keys(YF_STOCK_MAP).find(k => YF_STOCK_MAP[k] === q.symbol);
@@ -2589,12 +2641,19 @@ async function fetchPriorityStocks() {
         const chgNum = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
         const chgStr = (chgNum>=0?'+':'') + chgNum.toFixed(2) + '%';
         const s = liveStocks.find(x => x.sym === sym);
-        if (s) { s.price = price; s.chg = chgStr; s.up = chgNum>=0; s._live = true; }
+        if (s) { s.price = price; s.chg = chgStr; s.up = chgNum>=0; s._live = true; updated++; }
       });
+      if (updated > 0) {
+        const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+        setLiveStatus('live', '● LIVE · ' + ts + ' IST');
+        window._hasLiveData = true;
+        renderTrending(liveStocks);
+        updateWhatsMoving();
+        updateTickerFromLive();
+        onLiveDataUpdate();
+      }
     }
   } catch(e) {}
-  updateWhatsMoving();
-  onLiveDataUpdate();
 }
 
 // ── BATCH FETCH ALL NSE STOCKS FOR MARKET MOVERS ──
@@ -2643,6 +2702,18 @@ async function _fetchAllMovers() {
 setInterval(_fetchAllMovers, 30000);
 // Refresh ticker every 20 seconds
 setInterval(updateTickerFromLive, 20000);
+// Refresh sidebar every 15 seconds
+setInterval(() => renderTrending(liveStocks), 15000);
+// Auto-refresh news every 5 minutes if news page is open
+setInterval(() => {
+  if (window._activePage === 'news') {
+    const activeBtn = document.querySelector('#newsCatBtns button[style*="accent"]');
+    const cat = activeBtn?.id?.replace('nc_','') || 'markets';
+    delete _newsLoaded[cat];
+    loadNews(cat, activeBtn);
+  }
+}, 5 * 60 * 1000);
+setInterval(() => { try { renderTrending(liveStocks); } catch(e) {} }, 15000);
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -2667,7 +2738,7 @@ async function fetchCryptoLive() {
       updated++;
     }
     if (updated > 0) {
-      renderTrending(liveStocks.slice(0, 6));
+      renderTrending(liveStocks);
       buildGlobalTicker();
       updateWhatsMoving();
       if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
@@ -2681,7 +2752,7 @@ async function fetchCryptoLive() {
 
 async function fetchLiveData() {
   // Only show fetching status — static data already rendered by _mpInit
-  if (!window._hasLiveData) setLiveStatus('fetching', '⏳ Updating…');
+  // Status managed by individual fetch functions
 
   // ── ALWAYS: Fetch crypto from CoinGecko in parallel (free, fast, no Railway needed) ──
   fetchCryptoLive(); // non-blocking — runs every time regardless of Railway status
@@ -2730,7 +2801,7 @@ async function fetchLiveData() {
         }
       });
     }
-    renderTrending(liveStocks.slice(0,6));
+    renderTrending(liveStocks);
     updateTickerFromLive();
     onLiveDataUpdate(); // update all visible tabs with fresh Railway data
     const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}) + ' IST';
@@ -2751,8 +2822,6 @@ async function fetchYFDirect() {
   try { await _fetchYFDirectInner(); } finally { _yfFetching = false; }
 }
 async function _fetchYFDirectInner() {
-
-  setLiveStatus('fetching', '⚡ Fetching live data…');
 
   let stocksUpdated = 0;
   let cryptoUpdated = 0;
@@ -2864,7 +2933,7 @@ async function _fetchYFDirectInner() {
 
   const total = stocksUpdated + cryptoUpdated;
   if (total > 0) {
-    renderTrending(liveStocks.slice(0,6));
+    renderTrending(liveStocks);
     updateTickerFromLive();
     onLiveDataUpdate(); // update all visible tabs with live YF/CoinGecko data
     const ts = new Date().toLocaleTimeString('en-IN', {
@@ -3091,77 +3160,59 @@ async function loadSymbols() {
 function renderTrending(data) {
   const el = document.getElementById('trendList');
   if (!el) return;
-  if (!data || !data.length) return;
-
-  // Tab state
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  // CRYPTO_SYMS and COMM_SYMS are now global
-
-  // All three lists pull directly from liveStocks — crypto + commodities seeded at startup
-  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,12);
-  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,8);
-  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,6);
+  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
+  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
+  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,8);
 
   function stockRow(s, cur) {
-    // Show loading state if price not yet fetched
-    if (!s.price) {
-      return `<div class="stock-item" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);">
-        <div style="min-width:0;">
-          <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${s.sym}</div>
-          <div style="font-size:10px;color:var(--text3);">${s.name||''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-size:10px;color:var(--text3);animation:livePulse 1.2s infinite;">fetching…</div>
-        </div>
-      </div>`;
-    }
-    const price = Number(s.price).toLocaleString('en-IN', {maximumFractionDigits: s.price < 100 ? 2 : 0});
-    const chg   = s.chg || '';
-    const up    = s.up !== undefined ? s.up : (chg && !chg.startsWith('-'));
-    const color = up ? 'var(--green)' : 'var(--red)';
+    const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
+    const chg = s.chg || '';
+    const up  = s.up !== undefined ? s.up : (chg && !chg.startsWith('-'));
+    const col = up ? 'var(--green)' : 'var(--red)';
     const arrow = up ? '▲' : '▼';
-    return `<div class="stock-item" onclick="openStockModal('${s.sym}','${(s.name||s.sym).replace(/'/g,'')}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;">
-      <div style="min-width:0;">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.sym}</div>
-        <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">${s.name||''}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${cur}${price}</div>
-        <div style="font-size:10px;font-weight:700;color:${color};">${chg ? arrow+' '+chg : '—'}</div>
-      </div>
-    </div>`;
+    const dot = s._live ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-left:4px;vertical-align:middle;"></span>' : '';
+    return '<div class="stock-item" data-sym="' + s.sym + '" data-name="' + (s.name||s.sym).replace(/"/g,'') + '" onclick="openStockModal(this.dataset.sym,this.dataset.name)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;">'
+      + '<div style="min-width:0;">'
+        + '<div style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s.sym + dot + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">' + (s.name||'') + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0;">'
+        + '<div style="font-family:Space Mono,monospace;font-size:12px;font-weight:700;color:var(--text);">' + cur + price + '</div>'
+        + '<div style="font-size:10px;font-weight:700;color:' + col + ';">' + (chg ? arrow+' '+chg : '—') + '</div>'
+      + '</div>'
+    + '</div>';
   }
 
   function renderTab(tab) {
     renderTrending._tab = tab;
     let rows = '';
-    if (tab === 'nse')    rows = nseStocks.map(s => stockRow(s,'₹')).join('');
-    if (tab === 'crypto') rows = cryptoList.map(s => stockRow(s,'$')).join('');
-    if (tab === 'comm')   rows = commList.map(s => stockRow(s,'$')).join('');
-    if (!rows) rows = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading data…</div>`;
-    document.getElementById('trendListRows').innerHTML = rows;
+    if (tab === 'nse')    rows = nseStocks.map(s=>stockRow(s,'₹')).join('');
+    if (tab === 'crypto') rows = cryptoList.map(s=>stockRow(s,'$')).join('');
+    if (tab === 'comm')   rows = commList.map(s=>stockRow(s,'$')).join('');
+    if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading live data…</div>';
+    const rowsEl = document.getElementById('trendListRows');
+    if (rowsEl) { rowsEl.innerHTML = rows; return; }
+    // First build
+    el.innerHTML = '<div style="display:flex;border-bottom:1px solid var(--border);">'
+      + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="nse"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:Space Mono,monospace;">NSE</button>'
+      + '<button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="crypto" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">CRYPTO</button>'
+      + '<button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="comm"   style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">COMMOD</button>'
+      + '</div>'
+      + '<div id="trendListRows" style="overflow-y:auto;max-height:360px;">' + rows + '</div>';
     document.querySelectorAll('.tl-tab').forEach(b => {
-      b.style.color = b.dataset.tab === tab ? 'var(--accent)' : 'var(--text3)';
-      b.style.borderBottom = b.dataset.tab === tab ? '2px solid var(--accent)' : '2px solid transparent';
+      b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
+      b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
     });
   }
-
-  el.innerHTML = `
-    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:0;">
-      <button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab('nse')"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">NSE</button>
-      <button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab('crypto')" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">CRYPTO</button>
-      <button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab('comm')"   style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;">COMMOD</button>
-    </div>
-    <div id="trendListRows" style="overflow-y:auto;max-height:360px;"></div>`;
 
   renderTrending._renderTab = renderTab;
   renderTab(renderTrending._tab);
 
-  // Update liveTs label
   const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
   const liveEl = document.getElementById('liveTs');
-  if (liveEl) { liveEl.textContent = '● ' + ts; liveEl.style.color='var(--green)'; }
+  if (liveEl) { liveEl.textContent = '● '+ts; liveEl.style.color='var(--green)'; }
 }
 
 // ── SEARCH ──
@@ -4094,40 +4145,7 @@ function renderLeaderboard() {
 }
 
 // ── CHAT ──
-function renderChat() {
-  const msgs = getMsgs();
-  const el = document.getElementById('chatMsgs');
-  const currentUser = getUser();
-  if (!msgs.length) { el.innerHTML=`<div style="color:var(--text3);font-size:12px;padding:8px;">No messages yet. Say hello! 👋</div>`; return; }
-  el.innerHTML = msgs.slice(-40).map(m => {
-    const isMe = currentUser && m.user === currentUser.name;
-    const avDisp = isMe ? getAvatarDisplay(currentUser) : {type:'initials', val:m.user.slice(0,2).toUpperCase(), bg:getColor(m.user)};
-    const avFs = avDisp.type === 'emoji' ? '14px' : '9px';
-    return `
-    <div class="chat-msg">
-      <div class="chat-av" style="background:${avDisp.bg};font-size:${avFs};">${avDisp.val}</div>
-      <div>
-        <div><span class="chat-user">${isMe ? (currentUser.displayName || m.user) : m.user}</span><span class="chat-time">${m.time}</span></div>
-        <div class="chat-text">${m.text}</div>
-      </div>
-    </div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
-}
 
-function sendChat() {
-  const user = getUser();
-  if (!user) { alert('Set your username first — click your avatar!'); return; }
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
-  const msgs = getMsgs();
-  msgs.push({user:user.name, text, time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})});
-  if (msgs.length > 100) msgs.splice(0, msgs.length-100);
-  saveMsgs(msgs);
-  renderChat();
-  input.value='';
-}
 
 // ── GROUPS / PITS ──
 const DEFAULT_GROUPS = [
@@ -4415,70 +4433,123 @@ function renderAvatarEl(user, size=36, fontSize=11) {
   return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${fs}px;background:${av.bg};flex-shrink:0;">${av.val}</div>`;
 }
 
+function _openProfileSettings() {
+  closeModal('profileModal');
+  openSettings();
+}
+
 function renderProfileModal() {
   const user = getUser();
   const el   = document.getElementById('profileBody');
   document.getElementById('profileModalTitle').textContent = user ? 'YOUR PROFILE' : 'JOIN MARKETPIT';
+  if (!user) { showSignupStep(1); return; }
 
-  if (!user) {
-    showSignupStep(1);
-    return;
-  }
+  const posts   = getPosts().filter(p => p.author === user.name);
+  const likes   = posts.reduce((a,p) => a + (p.likes||0), 0);
+  const av      = getAvatarDisplay(user);
+  const bannerColor = user.bannerColor || 'linear-gradient(135deg,#0070f3 0%,#7c3aed 50%,#ec4899 100%)';
+  const bannerBg    = user.bannerImage
+    ? 'url(' + user.bannerImage + ') center/cover no-repeat'
+    : bannerColor;
 
-  const posts = getPosts().filter(p => p.author === user.name);
-  const likes = posts.reduce((a,p) => a + (p.likes||0), 0);
-  const joined = getJoined().length;
-  const av = getAvatarDisplay(user);
-  const bannerColor = user.bannerColor || 'linear-gradient(135deg,#0070f3,#00c6ff)';
+  const avatarHtml = av.type === 'image'
+    ? '<img src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
-  el.innerHTML = `
-    <!-- BANNER -->
-    <div style="height:90px;background:${user.bannerImage ? `url(${user.bannerImage}) center/cover no-repeat` : bannerColor};border-radius:10px;margin-bottom:-36px;position:relative;cursor:pointer;" onclick="editBanner()" title="Change banner">
-      <div style="position:absolute;bottom:6px;right:10px;font-size:10px;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">✏️ Edit</div>
-    </div>
+  // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
+  el.innerHTML =
+    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:340px;">'
 
-    <!-- AVATAR + EDIT BUTTON ROW -->
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-bottom:12px;">
-      <div style="position:relative;cursor:pointer;" onclick="editAvatar()">
-        <div style="width:72px;height:72px;border-radius:50%;background:${av.type==='image'?'transparent':av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'36px':av.type==='image'?'0':'22px'};border:4px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.15);overflow:hidden;">${av.type==='image'?`<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;">`:av.val}</div>
-        <div style="position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;border:2px solid var(--bg2);">✏️</div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="showEditProfile()" style="padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-weight:700;font-size:13px;cursor:pointer;color:var(--text);">Edit Profile</button>
-        <button onclick="closeModal('profileModal');openSettings()" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--text3);" title="Settings">⚙️</button>
-      </div>
-    </div>
+    // Full-bleed background (banner image or gradient)
+    + '<div onclick="editBanner()" title="Change banner" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;transition:opacity 0.2s;"></div>'
 
-    <!-- NAME & HANDLE -->
-    <div style="padding:0 4px;margin-bottom:12px;">
-      <div style="font-size:20px;font-weight:800;color:var(--text);">${user.displayName || user.name}</div>
-      <div style="font-size:13px;color:var(--text3);margin-top:1px;">@${user.name.toLowerCase().replace(/\s/g,'')}</div>
-      ${user.bio ? `<div style="font-size:13px;color:var(--text2);margin-top:8px;line-height:1.5;">${user.bio}</div>` : ''}
-      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
-        ${user.location ? `<span style="font-size:12px;color:var(--text3);">📍 ${user.location}</span>` : ''}
-        ${user.website ? `<a href="${user.website}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 ${user.website.replace(/https?:\/\//,'')}</a>` : ''}
-        <span style="font-size:12px;color:var(--text3);">📅 Joined ${user.joinedDate || 'MarketPit'}</span>
-      </div>
-    </div>
+    // Heavy gradient overlay from bottom — the key visual effect
+    + '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.15) 35%,rgba(0,0,0,0.82) 65%,rgba(0,0,0,0.97) 100%);pointer-events:none;"></div>'
 
-    <!-- STATS -->
-    <div style="display:flex;gap:20px;padding:12px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;">
-      <div style="cursor:pointer;" onclick="showFollowList('following')"><span style="font-weight:700;color:var(--text);">${getFollowingCount()}</span> <span style="color:var(--text3);font-size:13px;">Following</span></div>
-      <div style="cursor:pointer;" onclick="showFollowList('followers')"><span style="font-weight:700;color:var(--text);">${getFollowerCount(user.name)}</span> <span style="color:var(--text3);font-size:13px;">Followers</span></div>
-      <div><span style="font-weight:700;color:var(--text);">${posts.length}</span> <span style="color:var(--text3);font-size:13px;">Posts</span></div>
-      <div><span style="font-weight:700;color:var(--text);">${likes}</span> <span style="color:var(--text3);font-size:13px;">Likes</span></div>
-    </div>
+    // Edit banner badge top-right
+    + '<div onclick="editBanner()" style="position:absolute;top:12px;right:12px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
 
-    <!-- RECENT POSTS -->
-    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;">RECENT POSTS</div>
-    ${posts.length ? posts.slice(-3).reverse().map(p=>`
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;color:var(--text2);line-height:1.5;">
-        ${p.text.slice(0,100)}${p.text.length>100?'…':''}
-        <div style="font-size:10px;color:var(--text3);margin-top:4px;">↑ ${p.likes||0} likes</div>
-      </div>`).join('') : `<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">No posts yet</div>`}
+    // Avatar — overlapping the gradient, positioned mid-bottom
+    + '<div style="position:absolute;bottom:96px;left:20px;z-index:3;">'
+      + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,255,255,0.25);box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;position:relative;">'
+        + avatarHtml
+        + '<div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,0.12);"></div>'
+      + '</div>'
+      + '<div style="position:absolute;bottom:1px;right:1px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid #000;">✏️</div>'
+    + '</div>'
 
-    <button class="btn-ghost" style="margin-top:12px;" onclick="logOut()">Log out</button>`;
+    // Bottom text content — sits on top of gradient
+    + '<div style="position:relative;z-index:3;padding:0 20px 20px;margin-top:200px;">'
+
+      // Name + handle row with action buttons
+      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;">'
+        + '<div>'
+          + '<div style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.3px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">'
+            + (user.displayName||user.name)
+            + ' <span style="color:var(--accent);font-size:15px;">✓</span>'
+          + '</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,0.55);font-family:Space Mono,monospace;margin-top:1px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;">'
+          + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:#fff;font-size:13px;cursor:pointer;">⚙️</button>'
+          + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);font-weight:700;font-size:12px;cursor:pointer;color:#fff;letter-spacing:0.3px;">Edit</button>'
+        + '</div>'
+      + '</div>'
+
+      // Bio
+      + (user.bio
+        ? '<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:10px;">' + user.bio + '</div>'
+        : '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:10px;font-style:italic;">No bio yet — tap Edit to add one</div>')
+
+      // Location / website
+      + (user.location || user.website ? '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">'
+        + (user.location ? '<span style="font-size:11px;color:rgba(255,255,255,0.5);">📍 ' + user.location + '</span>' : '')
+        + (user.website  ? '<a href="' + user.website + '" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">🔗 ' + user.website.replace(/https?:\/\//,'') + '</a>' : '')
+        + '</div>' : '')
+
+    + '</div>'  // bottom text
+
+    // ── Stats bar — glassmorphism strip at very bottom ──
+    + '<div style="position:relative;z-index:3;display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);">'
+      + [
+          [getFollowingCount(), 'Following', "showFollowList('following')"],
+          [getFollowerCount(user.name), 'Followers', "showFollowList('followers')"],
+          [posts.length, 'Posts', ''],
+          [likes, 'Likes', ''],
+        ].map(([val, label, oc]) =>
+          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid rgba(255,255,255,0.07);">'
+          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + val + '</div>'
+          + '<div style="font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
+          + '</div>'
+        ).join('')
+    + '</div>'
+
+    + '</div>'  // outer card
+
+    // ── Recent posts ──
+    + '<div style="padding:16px 4px 0;">'
+      + '<div style="font-family:Space Mono,monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:10px;">RECENT POSTS</div>'
+      + (posts.length
+        ? posts.slice(-3).reverse().map(p =>
+            '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+            + '<div style="font-size:12px;color:var(--text2);line-height:1.5;">' + p.text.slice(0,120) + (p.text.length>120?'…':'') + '</div>'
+            + '<div style="font-size:10px;color:var(--text3);margin-top:6px;">❤️ ' + (p.likes||0) + ' likes</div>'
+            + '</div>'
+          ).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">No posts yet — start sharing!</div>'
+      )
+      + '<button onclick="logOut()" style="width:100%;margin-top:8px;padding:11px;border-radius:12px;border:1px solid rgba(255,59,59,0.3);background:transparent;color:#ff3b3b;font-weight:700;font-size:13px;cursor:pointer;">Log out</button>'
+    + '</div>';
 }
+
+function _statPill(val, label, onclick) {
+  const style = 'padding:6px 14px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);cursor:' + (onclick?'pointer':'default') + ';transition:background 0.15s;';
+  const inner = '<span style="font-weight:800;font-size:13px;color:var(--text);">' + val + '</span> <span style="font-size:11px;color:var(--text3);">' + label + '</span>';
+  return onclick
+    ? '<div style="' + style + '" onclick="' + onclick + '" >' + inner + '</div>'
+    : '<div style="' + style + '">' + inner + '</div>';
+}
+
 
 // ── OPEN ANOTHER USER'S PROFILE ──
 function openUserProfile(username) {
@@ -4497,63 +4568,79 @@ function openUserProfile(username) {
 }
 
 function renderOtherProfile(username) {
-  navPush({ type: 'modal', modal: 'profileModal', extra: 'other', username });
-  const me       = getUser();
-  const el       = document.getElementById('profileBody');
-  const posts    = getPosts().filter(p => p.author === username);
-  const likes    = posts.reduce((a,p) => a + (p.likes||0), 0);
-  const following = isFollowing(username);
-  const followerCount  = getFollowerCount(username);
-  // Try to get their colour deterministically
-  const col = getColor(username);
-  const initials = username.slice(0,2).toUpperCase();
-
+  navPush({ type:'modal', modal:'profileModal', extra:'other', username });
+  const me            = getUser();
+  const el            = document.getElementById('profileBody');
+  const posts         = getPosts().filter(p => p.author === username);
+  const likes         = posts.reduce((a,p) => a + (p.likes||0), 0);
+  const following     = isFollowing(username);
+  const followerCount = getFollowerCount(username);
+  const col           = getColor(username);
+  const initials      = username.slice(0,2).toUpperCase();
   document.getElementById('profileModalTitle').textContent = username;
 
-  el.innerHTML = `
-    <!-- BANNER -->
-    <div style="height:80px;background:linear-gradient(135deg,${col},#00c6ff88);border-radius:10px;margin-bottom:-32px;position:relative;"></div>
+  const isMe = me && me.name === username;
 
-    <!-- AVATAR + FOLLOW ROW -->
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-bottom:12px;">
-      <div style="width:64px;height:64px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;border:4px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.15);">${initials}</div>
-      ${me && me.name !== username ? `
-        <button id="followBtn_${username}" onclick="handleFollow('${username}')"
-          style="padding:8px 22px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;
-          background:${following?'transparent':'var(--accent)'};
-          color:${following?'var(--text)':'#fff'};
-          border:1.5px solid ${following?'var(--border)':'var(--accent)'};">
-          ${following ? 'Following ✓' : 'Follow'}
-        </button>` : ''}
-    </div>
+  el.innerHTML =
+    // ── Bleed card ──
+    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:280px;">'
 
-    <!-- NAME -->
-    <div style="padding:0 4px;margin-bottom:14px;">
-      <div style="font-size:18px;font-weight:800;color:var(--text);">${username}</div>
-      <div style="font-size:13px;color:var(--text3);margin-top:1px;">@${username.toLowerCase().replace(/\s/g,'')}</div>
-    </div>
+    // Background — gradient based on user colour
+    + '<div style="position:absolute;inset:0;background:linear-gradient(135deg,' + col + ' 0%,' + col + '55 60%,#0a0a18 100%);"></div>'
 
-    <!-- STATS -->
-    <div style="display:flex;gap:24px;padding:12px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;">
-      <div><span style="font-weight:700;color:var(--text);">${posts.length}</span> <span style="color:var(--text3);font-size:13px;">Posts</span></div>
-      <div><span style="font-weight:700;color:var(--text);">${followerCount}</span> <span style="color:var(--text3);font-size:13px;">Followers</span></div>
-      <div><span style="font-weight:700;color:var(--text);">${likes}</span> <span style="color:var(--text3);font-size:13px;">Likes</span></div>
-    </div>
+    // Heavy bottom gradient
+    + '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.75) 60%,rgba(0,0,0,0.97) 100%);pointer-events:none;"></div>'
 
-    <!-- THEIR POSTS -->
-    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px;">POSTS</div>
-    ${posts.length ? posts.slice().reverse().slice(0,5).map(p => `
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
-        <div style="font-size:13px;color:var(--text2);line-height:1.5;">${highlightHashtags(p.text)}</div>
-        <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
-          <span style="font-size:11px;color:var(--text3);">↑ ${p.likes||0} likes</span>
-          ${p.pit ? `<span style="font-size:11px;color:var(--accent);">${p.pit}</span>` : ''}
-          <span style="font-size:11px;color:var(--text3);">${new Date(p.time).toLocaleDateString('en-IN')}</span>
-        </div>
-      </div>`).join('') : `<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">No posts yet</div>`}
+    // Avatar
+    + '<div style="position:absolute;bottom:82px;left:20px;z-index:3;">'
+      + '<div style="width:64px;height:64px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#fff;border:3px solid rgba(255,255,255,0.2);box-shadow:0 4px 20px rgba(0,0,0,0.5);">' + initials + '</div>'
+    + '</div>'
 
-    <button class="btn-ghost" style="margin-top:8px;" onclick="renderProfileModal()">← Back to My Profile</button>
-  `;
+    // Content over gradient
+    + '<div style="position:relative;z-index:3;padding:0 20px 18px;margin-top:170px;">'
+
+      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:6px;">'
+        + '<div>'
+          + '<div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:-0.3px;">' + username + '</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,0.45);font-family:Space Mono,monospace;">@' + username.toLowerCase().replace(/\s/g,'') + '</div>'
+        + '</div>'
+        + (!isMe && me
+          ? '<button id="followBtn_' + username + '" onclick="handleFollow(this.dataset.user)" data-user="' + username + '" style="padding:8px 20px;border-radius:20px;font-weight:800;font-size:12px;cursor:pointer;background:' + (following?'rgba(255,255,255,0.12)':'var(--accent)') + ';color:#fff;border:1.5px solid ' + (following?'rgba(255,255,255,0.2)':'var(--accent)') + ';backdrop-filter:blur(8px);">' + (following?'Following ✓':'Follow +') + '</button>'
+          : '')
+      + '</div>'
+
+    + '</div>'
+
+    // Stats glassmorphism bar
+    + '<div style="position:relative;z-index:3;display:flex;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);backdrop-filter:blur(12px);">'
+      + [[posts.length,'Posts',''],[followerCount,'Followers',''],[likes,'Likes','']].map(([v,l]) =>
+          '<div style="flex:1;padding:11px 4px;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">'
+          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + v + '</div>'
+          + '<div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-top:1px;">' + l.toUpperCase() + '</div>'
+          + '</div>'
+        ).join('')
+    + '</div>'
+
+    + '</div>' // card
+
+    // Posts
+    + '<div style="padding:14px 4px 0;">'
+      + '<div style="font-family:Space Mono,monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:10px;">POSTS</div>'
+      + (posts.length
+        ? posts.slice().reverse().slice(0,5).map(p =>
+            '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+            + '<div style="font-size:13px;color:var(--text2);line-height:1.5;">' + highlightHashtags(p.text) + '</div>'
+            + '<div style="display:flex;gap:14px;margin-top:6px;">'
+              + '<span style="font-size:10px;color:var(--text3);">❤️ ' + (p.likes||0) + '</span>'
+              + (p.pit?'<span style="font-size:10px;color:var(--accent);">' + p.pit + '</span>':'')
+              + '<span style="font-size:10px;color:var(--text3);">' + new Date(p.time).toLocaleDateString('en-IN') + '</span>'
+            + '</div>'
+            + '</div>'
+          ).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">No posts yet</div>'
+      )
+      + '<button onclick="renderProfileModal()" style="width:100%;margin-top:8px;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text3);font-weight:600;font-size:13px;cursor:pointer;">← Back to My Profile</button>'
+    + '</div>';
 }
 
 function handleFollow(username) {
@@ -5141,7 +5228,6 @@ function completeSignup() {
   closeModal('profileModal');
   updateAvatars();
   renderPosts();
-  renderChat();
   renderTrendingTags();
   showToast('🎉 Welcome to MarketPit!', 'var(--green)');
 }
@@ -5688,7 +5774,7 @@ function _switchTabSilent(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted','predict',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5712,6 +5798,7 @@ function _switchTabSilent(btn, page) {
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
+  if (page==='predict')   renderPredict();
 }
 
 function _switchScreenerTabSilent(tab) {
@@ -5744,7 +5831,7 @@ function switchTabMobile(btn, page) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted','predict',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5769,6 +5856,7 @@ function switchTabMobile(btn, page) {
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
+  if (page==='predict')   renderPredict();
   } catch(e) { console.warn('Tab render error:', e); }
 }
 
@@ -5778,7 +5866,7 @@ function switchTab(btn, page) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const ALL_PAGES = ['feed','pits','messages','screener','news','trending','watchlist',
-    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted',
+    'paper','ipo','heatmap','earnings','alerts','fii','rooms','unlisted','predict',
     'compare','econocal','mf','optpnl','tv'];
   ALL_PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -5811,6 +5899,7 @@ function switchTab(btn, page) {
   if (page==='optpnl')    renderOptPnl();
   if (page==='tv')        renderTVPage();
   if (page==='unlisted')  renderUnlisted();
+  if (page==='predict')   renderPredict();
   } catch(e) { console.warn('Tab render error:', e); }
 }
 
@@ -8272,16 +8361,146 @@ setInterval(() => {
 // Cache for technicals so we don't re-fetch on every dropdown change
 const _techCache = {};
 
+// Fetch 6-month daily OHLC and calculate all technical indicators
 async function fetchTechnicals(sym) {
-  if (_techCache[sym]) return _techCache[sym];
+  if (_techCache[sym] && Date.now() - _techCache[sym]._ts < 300000) return _techCache[sym];
+
+  const yfSym = YF_STOCK_MAP[sym];
+  if (!yfSym) return {};
+
+  // Try to get chart data from multiple sources
+  let closes = [], highs = [], lows = [];
+
+  // ── Source 1: Railway /api/technicals (server-side yfinance — most accurate) ──
   try {
-    const r = await fetch(`${API_BASE}/technicals/${sym}`, {signal: AbortSignal.timeout(18000)});
-    if (!r.ok) return {};
-    const d = await r.json();
-    if (!d.error) { _techCache[sym] = d; return d; }
+    const r = await fetch(API_BASE + '/technicals/' + sym, { signal: AbortSignal.timeout(15000) });
+    if (r.ok) {
+      const d = await r.json();
+      if (!d.error && d.rsi != null) {
+        const tech = { ...d, _ts: Date.now() };
+        _techCache[sym] = tech;
+        return tech;
+      }
+    }
+  } catch(e) {}
+
+  // ── Source 2: Vercel /api/quote with v8 chart (6 months daily) ──
+  const chartUrls = [
+    'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yfSym) + '?interval=1d&range=1y',
+    'https://query2.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yfSym) + '?interval=1d&range=1y',
+  ];
+  const proxies = [
+    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  ];
+
+  for (const chartUrl of chartUrls) {
+    for (const proxy of proxies) {
+      try {
+        const r = await fetch(proxy(chartUrl), { signal: AbortSignal.timeout(12000) });
+        if (!r.ok) continue;
+        const raw  = await r.text();
+        let parsed;
+        try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; }
+        catch(e) { continue; }
+        const result = parsed?.chart?.result?.[0];
+        if (!result) continue;
+        closes = result.indicators?.quote?.[0]?.close || [];
+        highs  = result.indicators?.quote?.[0]?.high  || [];
+        lows   = result.indicators?.quote?.[0]?.low   || [];
+        if (closes.filter(v => v != null).length >= 20) break;
+      } catch(e) { continue; }
+    }
+    if (closes.filter(v => v != null).length >= 20) break;
+  }
+
+  // Not enough data
+  const validCloses = closes.filter(v => v != null);
+  if (validCloses.length < 20) return {};
+
+  try {
+    // ── RSI(14) ──
+    const rsi = calcRSI(validCloses, 14);
+
+    // ── MACD(12,26,9) ──
+    const ema12 = calcEMA(validCloses, 12);
+    const ema26 = calcEMA(validCloses, 26);
+    const macdLine = ema12[ema12.length-1] - ema26[ema26.length-1];
+    const macdArr  = validCloses.map((_,i) => {
+      const e12 = calcEMA(validCloses.slice(0, i+1), 12);
+      const e26 = calcEMA(validCloses.slice(0, i+1), 26);
+      return (e12[e12.length-1]||0) - (e26[e26.length-1]||0);
+    }).slice(-30);
+    const signalArr  = calcEMA(macdArr, 9);
+    const macdBullish = macdLine > (signalArr[signalArr.length-1] || 0);
+
+    // ── Moving Averages ──
+    const cur   = validCloses[validCloses.length - 1];
+    const ma9   = validCloses.length >= 9   ? avg(validCloses.slice(-9))   : null;
+    const ma20  = validCloses.length >= 20  ? avg(validCloses.slice(-20))  : null;
+    const ma50  = validCloses.length >= 50  ? avg(validCloses.slice(-50))  : null;
+    const ma200 = validCloses.length >= 200 ? avg(validCloses.slice(-200)) : null;
+
+    // ── 52W High/Low ──
+    const validHigh = highs.filter(v => v != null);
+    const validLow  = lows.filter(v => v != null);
+    const high52w = validHigh.length ? Math.max(...validHigh) : null;
+    const low52w  = validLow.length  ? Math.min(...validLow)  : null;
+
+    // ── Distance from 52W High ──
+    const pctFrom52wHigh = high52w ? ((cur - high52w) / high52w * 100) : null;
+
+    // ── Overall Signal ──
+    const bulls = [rsi>50, macdBullish, ma20&&cur>ma20, ma50&&cur>ma50, ma200&&cur>ma200].filter(Boolean).length;
+    const overall = bulls >= 4 ? 'STRONG BUY' : bulls === 3 ? 'BUY' : bulls === 2 ? 'NEUTRAL' : bulls === 1 ? 'SELL' : 'STRONG SELL';
+
+    const tech = {
+      rsi:             rsi  ? parseFloat(rsi.toFixed(1))  : null,
+      macd_bullish:    macdBullish,
+      ma9:             ma9  ? parseFloat(ma9.toFixed(2))  : null,
+      ma20:            ma20 ? parseFloat(ma20.toFixed(2)) : null,
+      ma50:            ma50 ? parseFloat(ma50.toFixed(2)) : null,
+      ma200:           ma200? parseFloat(ma200.toFixed(2)): null,
+      above_ma9:       ma9  ? cur > ma9   : null,
+      above_ma20:      ma20 ? cur > ma20  : null,
+      above_ma50:      ma50 ? cur > ma50  : null,
+      above_ma200:     ma200? cur > ma200 : null,
+      high_52w:        high52w  ? parseFloat(high52w.toFixed(2))  : null,
+      low_52w:         low52w   ? parseFloat(low52w.toFixed(2))   : null,
+      pct_from_high:   pctFrom52wHigh ? parseFloat(pctFrom52wHigh.toFixed(2)) : null,
+      data_points:     validCloses.length,
+      overall,
+      _ts: Date.now(),
+    };
+    _techCache[sym] = tech;
+    return tech;
   } catch(e) {}
   return {};
 }
+
+function calcRSI(closes, period) {
+  const clean = closes.filter(v => v != null);
+  if (clean.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i = clean.length - period; i < clean.length; i++) {
+    const diff = clean[i] - clean[i-1];
+    if (diff > 0) gains += diff; else losses -= diff;
+  }
+  const avgGain = gains / period, avgLoss = losses / period;
+  if (avgLoss === 0) return 100;
+  return 100 - (100 / (1 + avgGain / avgLoss));
+}
+
+function calcEMA(closes, period) {
+  const clean = closes.filter(v => v != null);
+  const k = 2 / (period + 1);
+  const result = [clean[0]];
+  for (let i = 1; i < clean.length; i++) result.push(clean[i] * k + result[i-1] * (1-k));
+  return result;
+}
+
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
 
 async function renderCompare(){
   const el=document.getElementById('compareBody'); if(!el) return;
@@ -8312,17 +8531,23 @@ async function renderCompare(){
   const fmt = (v,d) => v!=null&&v!==''?parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:d||2}):'—';
 
   var rows=[
-    ['Price',      function(s){ return s.price?'₹'+fmt(s.price):'—'; },                        null],
-    ['Change',     function(s){ return s.chg||'—'; },                                           function(s){ return parseFloat(s.chg)>=0; }],
-    ['RSI',        function(s){ return s.rsi?s.rsi.toFixed(1):'—'; },                          function(s){ return s.rsi&&s.rsi>50; }],
-    ['Signal',     function(s){ return s.overall||'—'; },                                       function(s){ return (s.overall||'').includes('BUY'); }],
-    ['MACD',       function(s){ return s.macd_bullish!=null?(s.macd_bullish?'Bullish':'Bearish'):'—'; }, function(s){ return s.macd_bullish; }],
-    ['Above MA50', function(s){ return s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):'—'; }, function(s){ return s.above_ma50; }],
-    ['Above MA200',function(s){ return s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):'—'; },function(s){ return s.above_ma200; }],
-    ['52W High',   function(s){ return s.high_52w?'₹'+fmt(s.high_52w):'—'; },                  null],
-    ['52W Low',    function(s){ return s.low_52w?'₹'+fmt(s.low_52w):'—'; },                    null],
-    ['Sector',     function(s){ return s.sector||'—'; },                                         null],
-    ['Name',       function(s){ return s.name||'—'; },                                           null],
+    ['Price',           function(s){ return s.price?'₹'+fmt(s.price):'—'; },                                                null],
+    ['Change Today',    function(s){ return s.chg||'—'; },                                                                   function(s){ return parseFloat(s.chg)>=0; }],
+    ['RSI (14)',        function(s){ return s.rsi!=null?s.rsi.toFixed(1)+' / 100':'—'; },                                   function(s){ return s.rsi&&s.rsi>50; }],
+    ['Signal',          function(s){ return s.overall||'—'; },                                                               function(s){ return (s.overall||'').includes('BUY'); }],
+    ['MACD',            function(s){ return s.macd_bullish!=null?(s.macd_bullish?'📈 Bullish':'📉 Bearish'):'—'; },         function(s){ return s.macd_bullish; }],
+    ['9 DMA',           function(s){ return s.ma9?'₹'+fmt(s.ma9):'—'; },                                                    null],
+    ['Above 9 DMA',     function(s){ return s.above_ma9!=null?(s.above_ma9?'✓ Yes':'✗ No'):'—'; },                         function(s){ return s.above_ma9; }],
+    ['20 DMA',          function(s){ return s.ma20?'₹'+fmt(s.ma20):'—'; },                                                  null],
+    ['Above 20 DMA',    function(s){ return s.above_ma20!=null?(s.above_ma20?'✓ Yes':'✗ No'):'—'; },                       function(s){ return s.above_ma20; }],
+    ['50 DMA',          function(s){ return s.ma50?'₹'+fmt(s.ma50):'—'; },                                                  null],
+    ['Above 50 DMA',    function(s){ return s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):'—'; },                       function(s){ return s.above_ma50; }],
+    ['200 DMA',         function(s){ return s.ma200?'₹'+fmt(s.ma200):'—'; },                                                null],
+    ['Above 200 DMA',   function(s){ return s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):'—'; },                     function(s){ return s.above_ma200; }],
+    ['52W High',        function(s){ return s.high_52w?'₹'+fmt(s.high_52w):'—'; },                                          null],
+    ['52W Low',         function(s){ return s.low_52w?'₹'+fmt(s.low_52w):'—'; },                                            null],
+    ['From 52W High',   function(s){ return s.pct_from_high!=null?(s.pct_from_high>=0?'+':'')+s.pct_from_high.toFixed(2)+'%':'—'; }, function(s){ return s.pct_from_high!=null&&s.pct_from_high>=0; }],
+    ['Sector',          function(s){ return s.sector||'—'; },                                                                null],
   ];
 
   var thead = '<thead><tr style="border-bottom:2px solid var(--border);">'
@@ -8339,7 +8564,11 @@ async function renderCompare(){
       + '</tr>';
   }).join('') + '</tbody>';
 
-  el.innerHTML='<div style="overflow-x:auto;padding:16px;"><table style="width:100%;border-collapse:collapse;font-size:13px;">'+thead+tbody+'</table></div>';
+  el.innerHTML='<div style="overflow-x:auto;padding:16px;">'
+    + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:12px;padding:6px 10px;background:var(--bg3);border-radius:6px;display:inline-block;">'
+    + '📊 Technicals from 1-year daily data · ' + picks.map((s,i)=>{const t=techResults[i];return s+(t&&t.data_points?(' ('+t.data_points+'d)'):' (—)');}).join(' · ')
+    + '</div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'+thead+tbody+'</table></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -9319,10 +9548,11 @@ function updateTVChart() {
 
 function renderRooms(){}
 
-// missing onLiveDataUpdate — central dispatcher called after any data refresh
 function onLiveDataUpdate(){
   try { updateWhatsMoving(); } catch(e) {}
   try { updateTickerFromLive(); } catch(e) {}
+  try { renderTrending(liveStocks); } catch(e) {}
+  try { renderSidebarMmi(); } catch(e) {}
   try { if(typeof updateHeroPrices==='function') updateHeroPrices(); } catch(e) {}
   const active = window._activePage;
   try {
@@ -9339,37 +9569,27 @@ function _mpInit() {
   updateAvatars();
   renderPosts();
   renderTrendingTags();
-  renderChat();
   renderLeaderboard();
 
   // ── STEP 1: Render static prices INSTANTLY at frame 0 — UI is never blank ──
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
-  renderTrending(liveStocks.slice(0,6));
+  renderTrending(liveStocks);
   updateWhatsMoving();   // shows static gainers/losers immediately
   onLiveDataUpdate();
-  setLiveStatus('fetching', '⏳ Updating…');
-
   // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
-  // CoinGecko for crypto (fastest, ~1s)
   fetchCryptoLive();
-
-  // Fetch indices via Vercel /api/indices (server-side, fast)
   _fetchIndicesVercel();
-
-  // Priority stocks (RELIANCE, TCS, HDFCBANK etc) — single batch, updates movers fast
   fetchPriorityStocks();
-
-  // Yahoo Finance direct for top 25 NSE stocks — gets live prices in ~2-3s
   _fastBootstrapStocks();
-
-  // Batch fetch ALL NSE stocks via Vercel /api/quote for Market Movers
   _fetchAllMovers();
-
-  // Railway full fetch in parallel — will override YF prices when it returns (~5-12s)
   fetchLiveData();
-
   loadSymbols();
+
+  // ── STEP 3: Safety re-renders — update sidebar as data arrives ──
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); }, 2000);
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 5000);
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 10000);
 }
 
 // Fetch Nifty/BankNifty/Sensex via Vercel /api/indices (server-side, no CORS)
@@ -9434,7 +9654,7 @@ async function _fastBootstrapStocks() {
         if (updated > 0) {
           _bootstrapDone = true;
           updateWhatsMoving();
-          renderTrending(liveStocks.slice(0, 6));
+          renderTrending(liveStocks);
           updateTickerFromLive();
           onLiveDataUpdate();
           const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'});
@@ -9465,7 +9685,7 @@ async function _fastBootstrapStocks() {
   if (updated > 0) {
     _bootstrapDone = true;
     updateWhatsMoving();
-    renderTrending(liveStocks.slice(0, 6));
+    renderTrending(liveStocks);
     updateTickerFromLive();
     onLiveDataUpdate();
     const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'});
@@ -9530,6 +9750,331 @@ function switchUnlistedTab(tab, btn) {
   if (btn) { btn.style.borderBottomColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; btn.style.fontWeight = '700'; }
   renderUnlisted();
 }
+
+// ══════════════════════════════════════════════════════════════
+// MARKET MOOD INDEX
+// ══════════════════════════════════════════════════════════════
+// ── Sidebar MMI mini widget ─────────────────────────────────────────
+function renderSidebarMmi() {
+  const el   = document.getElementById('sidebarMmiContent');
+  const tsEl = document.getElementById('sidebarMmiTs');
+  if (!el) return;
+
+  const idx   = window._liveIndices || {};
+  const nifty = idx['NIFTY 50'] || idx['NIFTY'];
+  const bank  = idx['NIFTY BANK'] || idx['BANKNIFTY'];
+  const fii   = _fiiData && _fiiData.length ? _fiiData[0] : null;
+
+  let score = 50, signals = [];
+
+  if (nifty?.chg != null) {
+    const c = parseFloat(nifty.chg);
+    if      (c >  1.5) { score += 18; signals.push({ label:'Nifty 50',   val:(c>=0?'+':'')+c.toFixed(2)+'%', col:'#00c853' }); }
+    else if (c >  0.3) { score += 9;  signals.push({ label:'Nifty 50',   val:'+'+c.toFixed(2)+'%',           col:'#69f0ae' }); }
+    else if (c > -0.3) {              signals.push({ label:'Nifty 50',   val:c.toFixed(2)+'%',                col:'#ffd740' }); }
+    else if (c > -1.5) { score -= 9;  signals.push({ label:'Nifty 50',   val:c.toFixed(2)+'%',               col:'#ff6d00' }); }
+    else               { score -= 18; signals.push({ label:'Nifty 50',   val:c.toFixed(2)+'%',               col:'#ff3b3b' }); }
+  }
+  if (bank?.chg != null && nifty?.chg != null) {
+    const bc = parseFloat(bank.chg), nc = parseFloat(nifty.chg);
+    const spread = bc - nc;
+    if      (spread >  0.5) { score += 7;  signals.push({ label:'Bank Nifty', val:(bc>=0?'+':'')+bc.toFixed(2)+'%', col:'#69f0ae' }); }
+    else if (spread < -0.5) { score -= 7;  signals.push({ label:'Bank Nifty', val:bc.toFixed(2)+'%',                col:'#ff6d00' }); }
+    else                    {              signals.push({ label:'Bank Nifty', val:(bc>=0?'+':'')+bc.toFixed(2)+'%', col:'#ffd740' }); }
+  }
+  if (fii?.fii_net != null) {
+    const f = fii.fii_net;
+    if      (f >  2000) { score += 12; signals.push({ label:'FII Flow', val:'₹'+Math.abs(f).toFixed(0)+' Cr', col:'#00c853' }); }
+    else if (f >  0)    { score += 6;  signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#69f0ae' }); }
+    else if (f > -2000) { score -= 6;  signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#ff6d00' }); }
+    else                { score -= 12; signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#ff3b3b' }); }
+  }
+
+  score = Math.max(0, Math.min(100, score));
+  let zone, zoneCol, emoji;
+  if      (score >= 75) { zone='Extreme Greed'; zoneCol='#00c853'; emoji='🤑'; }
+  else if (score >= 55) { zone='Greed';         zoneCol='#69f0ae'; emoji='😄'; }
+  else if (score >= 45) { zone='Neutral';       zoneCol='#ffd740'; emoji='😐'; }
+  else if (score >= 25) { zone='Fear';          zoneCol='#ff6d00'; emoji='😨'; }
+  else                  { zone='Extreme Fear';  zoneCol='#ff3b3b'; emoji='😱'; }
+
+  const angle = -90 + (score / 100) * 180;
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+  if (tsEl) tsEl.textContent = ts + ' IST';
+
+  // ── Full-width centered layout ──
+  let html = '<div style="text-align:center;padding:4px 0 10px;">'
+
+    // Large semicircle gauge — centered, full width
+    + '<div style="display:flex;justify-content:center;margin-bottom:6px;">'
+      + '<svg viewBox="0 0 160 90" width="220" height="124" style="overflow:visible;">'
+        // Coloured arc segments
+        + '<path d="M14 80 A66 66 0 0 1 47 20" stroke="#ff3b3b" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>'
+        + '<path d="M47 20 A66 66 0 0 1 80 12"  stroke="#ff6d00" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>'
+        + '<path d="M80 12 A66 66 0 0 1 113 20" stroke="#ffd740" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>'
+        + '<path d="M113 20 A66 66 0 0 1 146 80" stroke="#00c853" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>'
+        // Zone labels
+        + '<text x="8"   y="90" font-size="7" fill="#ff3b3b" font-family="monospace" opacity="0.8">Fear</text>'
+        + '<text x="126" y="90" font-size="7" fill="#00c853" font-family="monospace" opacity="0.8">Greed</text>'
+        // Needle
+        + '<line x1="80" y1="80" x2="80" y2="18" stroke="' + zoneCol + '" stroke-width="3" stroke-linecap="round" transform="rotate(' + angle + ' 80 80)" style="transition:transform 0.8s ease;"/>'
+        // Center dot
+        + '<circle cx="80" cy="80" r="6" fill="' + zoneCol + '"/>'
+        + '<circle cx="80" cy="80" r="3" fill="var(--bg2)"/>'
+        // Score in center
+        + '<text x="80" y="72" text-anchor="middle" font-size="18" font-weight="900" fill="' + zoneCol + '" font-family="monospace">' + score + '</text>'
+      + '</svg>'
+    + '</div>'
+
+    // Zone label
+    + '<div style="font-size:18px;font-weight:900;color:' + zoneCol + ';letter-spacing:-0.3px;margin-bottom:2px;">' + emoji + ' ' + zone + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:10px;">Market Sentiment Score: ' + score + '/100</div>'
+
+  + '</div>'
+
+  // Signal cards — 3 in a row
+  + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;">';
+
+  signals.forEach(s => {
+    html += '<div style="background:' + s.col + '12;border:1px solid ' + s.col + '33;border-radius:8px;padding:6px 4px;text-align:center;">'
+      + '<div style="font-size:9px;color:var(--text3);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s.label + '</div>'
+      + '<div style="font-size:11px;font-weight:800;color:' + s.col + ';font-family:Space Mono,monospace;">' + s.val + '</div>'
+    + '</div>';
+  });
+
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+let _mmiData = null;
+let _mmiLastFetch = 0;
+
+async function renderMmi() {
+  const el = document.getElementById('mmiBody');
+  if (!el) return;
+
+  // Show cached data instantly if available
+  if (_mmiData) { _renderMmiHtml(el, _mmiData); }
+  else { el.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching market mood data…</div></div>'; }
+
+  // Refresh if cache stale (5 min)
+  if (_mmiData && Date.now() - _mmiLastFetch < 300000) return;
+  await _fetchMmiData();
+  if (_mmiData) _renderMmiHtml(el, _mmiData);
+}
+
+async function _fetchMmiData() {
+  // Fetch India VIX, Nifty, BankNifty, PCR from Yahoo Finance via /api/quote
+  try {
+    const syms = ['^INDIAVIX', '^NSEI', '^ENSEBANK', '^BSESN'].join(',');
+    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(syms), { signal: AbortSignal.timeout(10000) });
+    if (r.ok) {
+      const j = await r.json();
+      const results = j?.quoteResponse?.result || [];
+      const get = sym => results.find(q => q.symbol === sym);
+      const vix    = get('^INDIAVIX');
+      const nifty  = get('^NSEI');
+      const bank   = get('^ENSEBANK');
+      const sensex = get('^BSESN');
+
+      // Also get FII data for mood
+      const fii = _fiiData && _fiiData.length ? _fiiData[0] : null;
+
+      _mmiData = {
+        vix:    vix    ? { price: vix.regularMarketPrice,    chg: vix.regularMarketChangePercent }    : null,
+        nifty:  nifty  ? { price: nifty.regularMarketPrice,  chg: nifty.regularMarketChangePercent }  : null,
+        bank:   bank   ? { price: bank.regularMarketPrice,   chg: bank.regularMarketChangePercent }   : null,
+        sensex: sensex ? { price: sensex.regularMarketPrice, chg: sensex.regularMarketChangePercent } : null,
+        fii,
+        ts: Date.now(),
+      };
+      _mmiLastFetch = Date.now();
+    }
+  } catch(e) {}
+
+  // Fallback: use _liveIndices if already fetched
+  if (!_mmiData) {
+    const idx = window._liveIndices || {};
+    _mmiData = {
+      nifty:  idx['NIFTY 50']   || idx['NIFTY']   || null,
+      bank:   idx['NIFTY BANK'] || idx['BANKNIFTY']|| null,
+      sensex: idx['SENSEX']     || null,
+      vix:    null,
+      fii:    _fiiData && _fiiData.length ? _fiiData[0] : null,
+      ts: Date.now(),
+    };
+    _mmiLastFetch = Date.now();
+  }
+}
+
+function _calcMoodScore(data) {
+  let score = 50; // neutral base
+  let signals = [];
+
+  // VIX contribution (lower VIX = greed, higher = fear)
+  if (data.vix?.price) {
+    const v = data.vix.price;
+    if (v < 12)      { score += 20; signals.push({label:'India VIX', val: v.toFixed(1), mood:'Extreme Greed', col:'#00c853'}); }
+    else if (v < 15) { score += 10; signals.push({label:'India VIX', val: v.toFixed(1), mood:'Greed', col:'#69f0ae'}); }
+    else if (v < 20) { score += 0;  signals.push({label:'India VIX', val: v.toFixed(1), mood:'Neutral', col:'#ffd740'}); }
+    else if (v < 25) { score -= 10; signals.push({label:'India VIX', val: v.toFixed(1), mood:'Fear', col:'#ff6d00'}); }
+    else             { score -= 20; signals.push({label:'India VIX', val: v.toFixed(1), mood:'Extreme Fear', col:'#d50000'}); }
+  }
+
+  // Nifty trend
+  if (data.nifty?.chg != null) {
+    const c = data.nifty.chg;
+    if (c > 1)       { score += 15; signals.push({label:'Nifty 50',   val:(c>=0?'+':'')+c.toFixed(2)+'%', mood:'Bullish',  col:'#00c853'}); }
+    else if (c > 0)  { score += 7;  signals.push({label:'Nifty 50',   val:'+'+c.toFixed(2)+'%',           mood:'Mildly Bullish', col:'#69f0ae'}); }
+    else if (c > -1) { score -= 7;  signals.push({label:'Nifty 50',   val:c.toFixed(2)+'%',               mood:'Mildly Bearish', col:'#ff6d00'}); }
+    else             { score -= 15; signals.push({label:'Nifty 50',   val:c.toFixed(2)+'%',               mood:'Bearish', col:'#d50000'}); }
+  }
+
+  // FII flow
+  if (data.fii?.fii_net != null) {
+    const f = data.fii.fii_net;
+    if (f > 2000)        { score += 15; signals.push({label:'FII Flow',  val:'₹'+Math.abs(f).toFixed(0)+' Cr', mood:'Strong Buying',  col:'#00c853'}); }
+    else if (f > 0)      { score += 7;  signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Net Buying',     col:'#69f0ae'}); }
+    else if (f > -2000)  { score -= 7;  signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Net Selling',    col:'#ff6d00'}); }
+    else                 { score -= 15; signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Heavy Selling',  col:'#d50000'}); }
+  }
+
+  // Bank Nifty vs Nifty (banking sector strength)
+  if (data.bank?.chg != null && data.nifty?.chg != null) {
+    const spread = data.bank.chg - data.nifty.chg;
+    if (spread > 0.5)       { score += 5; signals.push({label:'Bank Nifty', val:(data.bank.chg>=0?'+':'')+data.bank.chg.toFixed(2)+'%', mood:'Banks Leading', col:'#69f0ae'}); }
+    else if (spread < -0.5) { score -= 5; signals.push({label:'Bank Nifty', val:(data.bank.chg>=0?'+':'')+data.bank.chg.toFixed(2)+'%', mood:'Banks Lagging', col:'#ff6d00'}); }
+    else                    {             signals.push({label:'Bank Nifty', val:(data.bank.chg>=0?'+':'')+data.bank.chg.toFixed(2)+'%', mood:'In-line',      col:'#ffd740'}); }
+  }
+
+  score = Math.max(0, Math.min(100, score));
+  let zone, zoneCol, emoji;
+  if      (score >= 75) { zone='Extreme Greed'; zoneCol='#00c853'; emoji='🤑'; }
+  else if (score >= 55) { zone='Greed';         zoneCol='#69f0ae'; emoji='😄'; }
+  else if (score >= 45) { zone='Neutral';       zoneCol='#ffd740'; emoji='😐'; }
+  else if (score >= 25) { zone='Fear';          zoneCol='#ff6d00'; emoji='😨'; }
+  else                  { zone='Extreme Fear';  zoneCol='#d50000'; emoji='😱'; }
+
+  return { score, zone, zoneCol, emoji, signals };
+}
+
+function _renderMmiHtml(el, data) {
+  const { score, zone, zoneCol, emoji, signals } = _calcMoodScore(data);
+
+  // Gauge needle angle: score 0→100 maps to -90°→90°
+  const angle = -90 + (score / 100) * 180;
+
+  const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'});
+
+  let html = '<div style="max-width:760px;margin:0 auto;">';
+
+  // ── Gauge ──────────────────────────────────────────────────────────
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px 20px;margin-bottom:16px;text-align:center;">'
+    + '<div style="font-size:11px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;margin-bottom:16px;">MARKET MOOD INDEX · Updated ' + ts + ' IST</div>'
+    // SVG Gauge
+    + '<div style="position:relative;display:inline-block;width:260px;">'
+    + '<svg viewBox="0 0 260 150" width="260" height="150">'
+    // Background arc segments
+    + '<path d="M 20 130 A 110 110 0 0 1 62 37" stroke="#d50000" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.85"/>'
+    + '<path d="M 62 37 A 110 110 0 0 1 107 13" stroke="#ff6d00" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.85"/>'
+    + '<path d="M 107 13 A 110 110 0 0 1 153 13" stroke="#ffd740" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.85"/>'
+    + '<path d="M 153 13 A 110 110 0 0 1 198 37" stroke="#69f0ae" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.85"/>'
+    + '<path d="M 198 37 A 110 110 0 0 1 240 130" stroke="#00c853" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.85"/>'
+    // Needle
+    + '<line x1="130" y1="130" x2="130" y2="30" stroke="' + zoneCol + '" stroke-width="3" stroke-linecap="round" transform="rotate(' + angle + ' 130 130)" style="transition:transform 1s ease;"/>'
+    // Center dot
+    + '<circle cx="130" cy="130" r="7" fill="' + zoneCol + '"/>'
+    + '<circle cx="130" cy="130" r="3" fill="var(--bg2)"/>'
+    // Labels
+    + '<text x="14"  y="145" font-size="8" fill="#d50000" font-family="monospace">Extreme</text>'
+    + '<text x="14"  y="153" font-size="8" fill="#d50000" font-family="monospace">Fear</text>'
+    + '<text x="210" y="145" font-size="8" fill="#00c853" font-family="monospace">Extreme</text>'
+    + '<text x="210" y="153" font-size="8" fill="#00c853" font-family="monospace">Greed</text>'
+    + '</svg>'
+    // Score display
+    + '<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);text-align:center;">'
+      + '<div style="font-size:42px;font-weight:900;color:' + zoneCol + ';font-family:\'Space Mono\',monospace;line-height:1;">' + score + '</div>'
+      + '<div style="font-size:16px;font-weight:800;color:' + zoneCol + ';margin-top:2px;">' + emoji + ' ' + zone + '</div>'
+    + '</div>'
+    + '</div>'
+  + '</div>';
+
+  // ── Signal Cards ────────────────────────────────────────────────────
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;">';
+  signals.forEach(s => {
+    html += '<div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid ' + s.col + ';border-radius:12px;padding:12px 14px;">'
+      + '<div style="font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;margin-bottom:4px;">' + s.label.toUpperCase() + '</div>'
+      + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px;">' + s.val + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:' + s.col + ';">' + s.mood + '</div>'
+    + '</div>';
+  });
+  html += '</div>';
+
+  // ── Key Levels Table ────────────────────────────────────────────────
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;">'
+    + '<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:9px;color:var(--text3);font-family:\'Space Mono\',monospace;letter-spacing:1px;">LIVE MARKET DATA</div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+
+  const rows = [
+    ['Nifty 50',    data.nifty?.price,  data.nifty?.chg],
+    ['Bank Nifty',  data.bank?.price,   data.bank?.chg],
+    ['Sensex',      data.sensex?.price, data.sensex?.chg],
+    ['India VIX',   data.vix?.price,    data.vix?.chg],
+  ];
+  rows.forEach(([label, price, chg], i) => {
+    const up  = chg >= 0;
+    const col = chg != null ? (up ? 'var(--green)' : 'var(--red)') : 'var(--text3)';
+    const bg  = i % 2 === 0 ? '' : 'background:var(--bg3);';
+    html += '<tr style="' + bg + 'border-bottom:1px solid var(--border);">'
+      + '<td style="padding:10px 16px;font-weight:600;">' + label + '</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-family:\'Space Mono\',monospace;font-weight:700;">' + (price ? price.toLocaleString('en-IN', {maximumFractionDigits:2}) : '—') + '</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-weight:700;color:' + col + ';">' + (chg != null ? (up?'+':'') + chg.toFixed(2) + '%' : '—') + '</td>'
+    + '</tr>';
+  });
+
+  // FII row
+  if (data.fii) {
+    const fn  = data.fii.fii_net;
+    const dn  = data.fii.dii_net;
+    const fup = fn >= 0;
+    const dup = dn >= 0;
+    html += '<tr style="border-bottom:1px solid var(--border);">'
+      + '<td style="padding:10px 16px;font-weight:600;">FII Net</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-family:\'Space Mono\',monospace;font-weight:700;">₹' + Math.abs(fn).toFixed(0) + ' Cr</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-weight:700;color:' + (fup?'var(--green)':'var(--red)') + ';">' + (fup?'BUY':'SELL') + '</td>'
+    + '</tr>';
+    html += '<tr>'
+      + '<td style="padding:10px 16px;font-weight:600;">DII Net</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-family:\'Space Mono\',monospace;font-weight:700;">₹' + Math.abs(dn).toFixed(0) + ' Cr</td>'
+      + '<td style="padding:10px 16px;text-align:right;font-weight:700;color:' + (dup?'var(--green)':'var(--red)') + ';">' + (dup?'BUY':'SELL') + '</td>'
+    + '</tr>';
+  }
+
+  html += '</table></div>';
+
+  // ── What This Means ─────────────────────────────────────────────────
+  const desc = {
+    'Extreme Greed': 'Markets are driven by extreme optimism. Investors are chasing momentum. Historically a caution signal — consider booking partial profits.',
+    'Greed':         'Positive sentiment dominates. Breadth is strong and FII flows are healthy. Momentum favours bulls but watch for overextension.',
+    'Neutral':       'Mixed signals across indicators. Market is in a consolidation phase. Wait for a clear directional trigger before taking large positions.',
+    'Fear':          'Selling pressure is elevated. FIIs are net sellers and VIX is rising. Selective accumulation of quality stocks may be rewarding.',
+    'Extreme Fear':  'Markets are in panic mode. VIX is very high and breadth is deeply negative. Historically a contrarian buying opportunity for long-term investors.',
+  };
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-left:4px solid ' + zoneCol + ';border-radius:12px;padding:14px 16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:' + zoneCol + ';margin-bottom:6px;">' + emoji + ' ' + zone.toUpperCase() + ' — WHAT THIS MEANS</div>'
+    + '<div style="font-size:13px;color:var(--text2);line-height:1.6;">' + (desc[zone] || '') + '</div>'
+  + '</div>';
+
+  html += '</div>'; // max-width wrapper
+
+  el.innerHTML = html;
+}
+
+// Auto-refresh MMI every 5 minutes when page is open
+setInterval(() => {
+  if (window._activePage === 'mmi') { _mmiData = null; renderMmi(); }
+}, 5 * 60 * 1000);
 
 function renderUnlisted() {
   const el = document.getElementById('unlistedBody');
@@ -9683,79 +10228,78 @@ function timeAgo(dateStr) {
 
 async function loadNews(cat, btn) {
   document.querySelectorAll('#newsCatBtns button').forEach(b => {
-    b.style.borderColor = 'var(--border)';
-    b.style.background  = 'transparent';
-    b.style.color       = 'var(--text3)';
+    b.style.borderColor='var(--border)'; b.style.background='transparent'; b.style.color='var(--text3)';
   });
-  if (btn) {
-    btn.style.borderColor = 'var(--accent)';
-    btn.style.background  = 'rgba(0,112,243,0.1)';
-    btn.style.color       = 'var(--accent)';
-  }
+  if(btn){ btn.style.borderColor='var(--accent)'; btn.style.background='rgba(0,112,243,0.1)'; btn.style.color='var(--accent)'; }
   const container = document.getElementById('newsContainer');
-  if (_newsLoaded[cat] && Date.now() - _newsLoaded[cat].ts < 300000) {
-    renderNews(_newsLoaded[cat].items); return;
-  }
+  if(!container) return;
+
+  // Cache: 5 min
+  if(_newsLoaded[cat] && Date.now()-_newsLoaded[cat].ts < 300000){ renderNews(_newsLoaded[cat].items); return; }
   container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching latest news...</div></div>';
 
-  // ── Source 1: Vercel /api/news (server-side RSS, no CORS) ──
-  try {
-    const r1 = await fetch('/api/news?cat=' + encodeURIComponent(cat), { signal: AbortSignal.timeout(10000) });
-    if (r1.ok) {
-      const j1 = await r1.json();
-      const items = (j1.items || []).filter(i => i.title && i.title.length > 5);
-      if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
-    }
-  } catch(e) {}
+  const parseRSS = (text) => {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    return Array.from(xml.querySelectorAll('item')).slice(0,16).map(el => ({
+      title:  el.querySelector('title')?.textContent?.trim() || '',
+      link:   el.querySelector('link')?.textContent?.trim()  || '#',
+      date:   el.querySelector('pubDate')?.textContent?.trim() || '',
+      source: el.querySelector('source')?.textContent?.trim() || 'Google News',
+      ago:    timeAgo(el.querySelector('pubDate')?.textContent || ''),
+    })).filter(i => i.title.length > 8);
+  };
 
-  // ── Source 2: RSS2JSON API (free, reliable, no CORS) ──
+  const rssUrl = NEWS_URLS[cat] || NEWS_URLS.markets;
+
+  // ── Source 1: Vercel /api/news ──
   try {
-    const rss2url = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(NEWS_URLS[cat]) + '&count=15';
-    const r2 = await fetch(rss2url, { signal: AbortSignal.timeout(10000) });
-    if (r2.ok) {
-      const j2 = await r2.json();
-      if (j2.status === 'ok' && j2.items && j2.items.length) {
-        const items = j2.items.map(i => ({
-          title:  i.title  || '',
-          link:   i.link   || i.guid || '#',
-          date:   i.pubDate || '',
-          source: j2.feed && j2.feed.title ? j2.feed.title : (i.author || 'News'),
-          ago:    timeAgo(i.pubDate),
-        })).filter(i => i.title.length > 5);
-        if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
+    const r = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal:AbortSignal.timeout(8000)});
+    if(r.ok){ const j=await r.json(); const items=(j.items||[]).filter(i=>i.title&&i.title.length>8);
+      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+  } catch(e){}
+
+  // ── Source 2: RSS2JSON (free public API, no CORS) ──
+  try {
+    const url2 = 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)+'&count=16';
+    const r2 = await fetch(url2, {signal:AbortSignal.timeout(8000)});
+    if(r2.ok){ const j2=await r2.json();
+      if(j2.status==='ok' && j2.items?.length){
+        const items = j2.items.map(i=>({title:i.title||'',link:i.link||'#',date:i.pubDate||'',
+          source:(j2.feed?.title||i.author||'Google News'), ago:timeAgo(i.pubDate||'')})).filter(i=>i.title.length>8);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }
       }
     }
-  } catch(e) {}
+  } catch(e){}
 
-  // ── Source 3: allorigins proxy ──
+  // ── Source 3: allorigins.win ──
   try {
-    const r3 = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(NEWS_URLS[cat]), { signal: AbortSignal.timeout(10000) });
-    if (r3.ok) {
-      const j3 = await r3.json();
-      const text = j3.contents || '';
-      if (text.includes('<item>')) {
-        const xml = new DOMParser().parseFromString(text, 'text/xml');
-        const items = Array.from(xml.querySelectorAll('item')).slice(0, 14).map(el => ({
-          title:  el.querySelector('title')?.textContent?.trim()   || '',
-          link:   el.querySelector('link')?.textContent?.trim()    || '#',
-          date:   el.querySelector('pubDate')?.textContent?.trim() || '',
-          source: el.querySelector('source')?.textContent?.trim()  || 'Google News',
-          ago:    timeAgo(el.querySelector('pubDate')?.textContent || ''),
-        })).filter(i => i.title.length > 5);
-        if (items.length) { _newsLoaded[cat] = { ts: Date.now(), items }; renderNews(items); return; }
-      }
+    const r3 = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r3.ok){ const j3=await r3.json(); const text=j3.contents||'';
+      if(text.includes('<item>')){ const items=parseRSS(text);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
     }
-  } catch(e) {}
+  } catch(e){}
 
-  // Show error — use global retry function to avoid quoting issues
-  window._mpNewsRetry = function() { delete _newsLoaded[cat]; loadNews(cat, btn); };
+  // ── Source 4: corsproxy.io ──
+  try {
+    const r4 = await fetch('https://corsproxy.io/?'+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r4.ok){ const text4=await r4.text();
+      if(text4.includes('<item>')){ const items=parseRSS(text4);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    }
+  } catch(e){}
+
+  // All failed
+  window._mpNewsRetry = ()=>{ delete _newsLoaded[cat]; loadNews(cat,btn); };
   container.innerHTML = '<div style="text-align:center;padding:48px;">'
-    + '<div style="font-size:32px;margin-bottom:12px;">📡</div>'
-    + '<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
-    + '<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Tap Retry or check your connection.</div>'
-    + '<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
-    + '</div>';
+    +'<div style="font-size:32px;margin-bottom:12px;">📡</div>'
+    +'<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection.</div>'
+    +'<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
+    +'</div>';
 }
+
 
 function renderNews(items) {
   const container = document.getElementById('newsContainer');
@@ -11693,6 +12237,835 @@ function renderHeatmap() {
 
 </script>
 
+
+<!-- STORY MODAL -->
+<div id="storyModal" onclick="if(event.target===this)closeStory()">
+  <div class="story-card" id="storyCard">
+    <div class="story-progress-bar"><div class="story-progress-fill" id="storyProgress"></div></div>
+    <div id="storyContent" style="padding:20px;min-height:320px;"></div>
+    <button class="story-nav-btn" style="left:10px;" onclick="navigateStory(-1)">‹</button>
+    <button class="story-nav-btn" style="right:10px;" onclick="navigateStory(1)">›</button>
+    <button onclick="closeStory()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;z-index:11;">✕</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STORIES SYSTEM — Live price + news, updates every hour
+// ══════════════════════════════════════════════════════
+
+const STORY_SUBJECTS = [
+  // NSE Stocks
+  {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',       emoji:'💻',  type:'stock', yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'🏦',  type:'stock', yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',   emoji:'🖥️',  type:'stock', yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',       emoji:'🏛️',  type:'stock', yf:'SBIN.NS'},
+  {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗', type:'stock', yf:'TATAMOTORS.NS'},
+  {id:'ADANIENT',  label:'Adani',     emoji:'⚡',  type:'stock', yf:'ADANIENT.NS'},
+  {id:'ZOMATO',    label:'Zomato',    emoji:'🍱',  type:'stock', yf:'ZOMATO.NS'},
+  // Crypto
+  {id:'BTC',       label:'Bitcoin',   emoji:'₿',   type:'crypto', cg:'bitcoin'},
+  {id:'ETH',       label:'Ethereum',  emoji:'💎',  type:'crypto', cg:'ethereum'},
+  {id:'SOL',       label:'Solana',    emoji:'☀️',  type:'crypto', cg:'solana'},
+  // Commodities
+  {id:'GOLD',      label:'Gold',      emoji:'🥇',  type:'commodity', yf:'GC=F'},
+  {id:'CRUDE',     label:'Crude Oil', emoji:'🛢️',  type:'commodity', yf:'CL=F'},
+  {id:'SILVER',    label:'Silver',    emoji:'🪙',  type:'commodity', yf:'SI=F'},
+];
+
+let _stories = {};          // {id: {price, chg, up, news, ts}}
+let _seenStories = new Set(JSON.parse(localStorage.getItem('mp_seen_stories')||'[]'));
+let _storyIdx = 0;
+let _storyTimer = null;
+const STORY_DURATION = 8000; // 8s per slide
+
+// ── Build stories from live data ──
+async function buildStories() {
+  const track = document.getElementById('storiesTrack');
+  if (!track) return;
+
+  // Fetch prices for all stock/commodity subjects in one batch
+  try {
+    const yfSyms = STORY_SUBJECTS.filter(s => s.yf).map(s => s.yf).join(',');
+    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), {signal: AbortSignal.timeout(12000)});
+    if (r.ok) {
+      const j = await r.json();
+      (j?.quoteResponse?.result || []).forEach(q => {
+        const subj = STORY_SUBJECTS.find(s => s.yf === q.symbol);
+        if (!subj || !q.regularMarketPrice) return;
+        const price  = q.regularMarketPrice;
+        const prev   = q.regularMarketPreviousClose || price;
+        const chgPct = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
+        _stories[subj.id] = { price, chgPct, up: chgPct >= 0, ts: Date.now() };
+      });
+    }
+  } catch(e) {}
+
+  // Fetch crypto prices from liveStocks (already fetched by CoinGecko)
+  STORY_SUBJECTS.filter(s => s.type === 'crypto').forEach(s => {
+    const live = liveStocks.find(x => x.sym === s.id);
+    if (live && live.price) {
+      const chg = parseFloat((live.chg||'0').replace('%','').replace('+',''));
+      _stories[s.id] = { price: live.price, chgPct: chg, up: live.up, ts: Date.now() };
+    }
+  });
+
+  // Fetch news headlines for each subject via rss2json
+  await Promise.allSettled(STORY_SUBJECTS.map(async subj => {
+    try {
+      const q   = encodeURIComponent(subj.label + ' stock market India');
+      const rss = encodeURIComponent('https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en');
+      const r   = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rss + '&count=3', {signal: AbortSignal.timeout(6000)});
+      if (r.ok) {
+        const j = await r.json();
+        if (j.status === 'ok' && j.items?.length) {
+          if (!_stories[subj.id]) _stories[subj.id] = {};
+          _stories[subj.id].news = j.items.slice(0, 3).map(i => ({
+            title: i.title || '',
+            link:  i.link  || '#',
+            ago:   timeAgo(i.pubDate || ''),
+            src:   j.feed?.title || 'Google News',
+          })).filter(n => n.title.length > 10);
+        }
+      }
+    } catch(e) {}
+  }));
+
+  renderStoryBubbles();
+}
+
+function renderStoryBubbles() {
+  const track = document.getElementById('storiesTrack');
+  if (!track) return;
+  track.innerHTML = STORY_SUBJECTS.map((subj, i) => {
+    const data   = _stories[subj.id] || {};
+    const seen   = _seenStories.has(subj.id);
+    const chgPct = data.chgPct;
+    const chgStr = chgPct != null ? (chgPct >= 0 ? '+' : '') + chgPct.toFixed(2) + '%' : null;
+    const col    = chgPct != null ? (chgPct >= 0 ? '#00c853' : '#ff3b3b') : 'var(--text3)';
+    return '<div class="story-bubble" onclick="openStory(' + i + ')">'
+      + '<div class="story-ring' + (seen ? ' seen' : '') + '">'
+        + '<div class="story-ring-inner">' + subj.emoji + '</div>'
+      + '</div>'
+      + '<div class="story-label" style="color:var(--text3);">' + subj.label + '</div>'
+      + (chgStr ? '<div style="font-size:9px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>' : '')
+    + '</div>';
+  }).join('');
+}
+
+function openStory(idx) {
+  _storyIdx = idx;
+  const modal = document.getElementById('storyModal');
+  modal.classList.add('open');
+  renderStorySlide();
+  startStoryTimer();
+  document.addEventListener('keydown', _storyKeyHandler);
+}
+
+function closeStory() {
+  document.getElementById('storyModal').classList.remove('open');
+  clearInterval(_storyTimer);
+  document.removeEventListener('keydown', _storyKeyHandler);
+}
+
+function _storyKeyHandler(e) {
+  if (e.key === 'ArrowRight') navigateStory(1);
+  if (e.key === 'ArrowLeft')  navigateStory(-1);
+  if (e.key === 'Escape')     closeStory();
+}
+
+function navigateStory(dir) {
+  clearInterval(_storyTimer);
+  _storyIdx = Math.max(0, Math.min(STORY_SUBJECTS.length - 1, _storyIdx + dir));
+  renderStorySlide();
+  startStoryTimer();
+}
+
+function startStoryTimer() {
+  const fill = document.getElementById('storyProgress');
+  if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
+  clearInterval(_storyTimer);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (fill) { fill.style.transition = 'width ' + STORY_DURATION + 'ms linear'; fill.style.width = '100%'; }
+    });
+  });
+  _storyTimer = setInterval(() => {
+    if (_storyIdx < STORY_SUBJECTS.length - 1) {
+      navigateStory(1);
+    } else {
+      closeStory();
+    }
+  }, STORY_DURATION);
+}
+
+function renderStorySlide() {
+  const subj   = STORY_SUBJECTS[_storyIdx];
+  const data   = _stories[subj.id] || {};
+  const content = document.getElementById('storyContent');
+  if (!content) return;
+
+  // Mark as seen
+  _seenStories.add(subj.id);
+  localStorage.setItem('mp_seen_stories', JSON.stringify([..._seenStories]));
+  renderStoryBubbles();
+
+  const chgPct = data.chgPct;
+  const up     = data.up;
+  const col    = chgPct != null ? (up ? '#00c853' : '#ff3b3b') : '#aaa';
+  const bg     = chgPct != null ? (up ? 'rgba(0,200,83,0.08)' : 'rgba(255,59,59,0.08)') : 'var(--bg3)';
+  const arrow  = up ? '▲' : '▼';
+
+  const fmtPrice = (p, type) => {
+    if (!p) return '—';
+    if (type === 'crypto' || type === 'commodity') return '$' + Number(p).toLocaleString('en-US', {maximumFractionDigits: p < 10 ? 4 : 2});
+    return '₹' + Number(p).toLocaleString('en-IN', {maximumFractionDigits: 0});
+  };
+
+  // Counter indicator
+  const counter = (_storyIdx + 1) + ' / ' + STORY_SUBJECTS.length;
+
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+    + '<div style="display:flex;align-items:center;gap:10px;">'
+      + '<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;">' + subj.emoji + '</div>'
+      + '<div>'
+        + '<div style="font-weight:800;font-size:14px;">' + subj.label + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;">' + subj.type.toUpperCase() + ' · ' + counter + '</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="font-size:9px;color:var(--text3);">Updated ' + (data.ts ? timeAgo(new Date(data.ts).toISOString()) : 'now') + '</div>'
+  + '</div>';
+
+  // Price card
+  if (data.price) {
+    html += '<div style="background:' + bg + ';border:1px solid ' + col + '33;border-radius:14px;padding:16px;margin-bottom:14px;text-align:center;">'
+      + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:Space Mono,monospace;">CURRENT PRICE</div>'
+      + '<div style="font-size:32px;font-weight:900;color:var(--text);font-family:Space Mono,monospace;">' + fmtPrice(data.price, subj.type) + '</div>'
+      + (chgPct != null ? '<div style="font-size:16px;font-weight:700;color:' + col + ';margin-top:4px;">' + arrow + ' ' + Math.abs(chgPct).toFixed(2) + '% today</div>' : '')
+    + '</div>';
+  }
+
+  // News headlines
+  const news = data.news || [];
+  if (news.length) {
+    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+    news.forEach(n => {
+      html += '<a href="' + n.link + '" target="_blank" style="display:block;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-decoration:none;cursor:pointer;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+        + '<div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px;">' + n.title.slice(0, 90) + (n.title.length > 90 ? '…' : '') + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);">' + n.src + ' · ' + n.ago + '</div>'
+      + '</a>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading news…</div>';
+  }
+
+  content.innerHTML = html;
+}
+
+// ── Auto-refresh every hour ──
+buildStories();
+setInterval(buildStories, 60 * 60 * 1000);
+
+// Also refresh stories when live data arrives
+const _origOnLiveDataUpdate = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : null;
+</script>
+
+<!-- PREDICTIONS ENGINE -->
+<script>
+// ══════════════════════════════════════════════════════════════════
+// PREDICTIONS — Polymarket-style paper money prediction market
+// ══════════════════════════════════════════════════════════════════
+const PRED_KEY      = 'mp_predictions';
+const PRED_BETS_KEY = 'mp_pred_bets';
+const PRED_BALANCE  = 100000; // ₹1 lakh starting balance separate from paper trading
+
+function getPredBalance() {
+  const d = JSON.parse(localStorage.getItem(PRED_KEY) || '{}');
+  return d.balance != null ? d.balance : PRED_BALANCE;
+}
+function savePredBalance(b) {
+  const d = JSON.parse(localStorage.getItem(PRED_KEY) || '{}');
+  d.balance = b;
+  localStorage.setItem(PRED_KEY, JSON.stringify(d));
+}
+function getPredBets() {
+  try { return JSON.parse(localStorage.getItem(PRED_BETS_KEY) || '[]'); } catch(e) { return []; }
+}
+function savePredBets(bets) { localStorage.setItem(PRED_BETS_KEY, JSON.stringify(bets)); }
+
+// ── Market definitions ──────────────────────────────────────────────
+// HOW TO ADD: push a new object to PRED_MARKETS
+// resolution: 'auto' checks live price on deadline, 'manual' you resolve it
+const PRED_MARKETS = [
+  // ── Nifty 50 ──
+  { id:'nifty_25000', cat:'Nifty 50', emoji:'📈',
+    question:'Will Nifty 50 close above 25,000 by end of March 2026?',
+    deadline:'2026-03-31', resolution:'auto', asset:'NIFTY', target:25000, direction:'above',
+    yesOdds:0.42, status:'open',
+    desc:'Nifty 50 needs to close above 25,000 on or before 31 March 2026.' },
+  { id:'nifty_23000', cat:'Nifty 50', emoji:'📉',
+    question:'Will Nifty 50 fall below 23,000 in March 2026?',
+    deadline:'2026-03-31', resolution:'auto', asset:'NIFTY', target:23000, direction:'below',
+    yesOdds:0.28, status:'open',
+    desc:'Nifty 50 needs to touch or close below 23,000 at any point in March 2026.' },
+  // ── Bank Nifty ──
+  { id:'banknifty_52000', cat:'Bank Nifty', emoji:'🏦',
+    question:'Will Bank Nifty cross 52,000 before April 2026?',
+    deadline:'2026-03-31', resolution:'auto', asset:'BANKNIFTY', target:52000, direction:'above',
+    yesOdds:0.35, status:'open',
+    desc:'Bank Nifty needs to trade above 52,000 intraday at any point.' },
+  // ── Bitcoin ──
+  { id:'btc_90k', cat:'Crypto', emoji:'₿',
+    question:'Will Bitcoin hit $90,000 before May 2026?',
+    deadline:'2026-04-30', resolution:'auto', asset:'BTC', target:90000, direction:'above',
+    yesOdds:0.55, status:'open',
+    desc:'Bitcoin (BTC/USD) needs to reach $90,000 at any point before 30 April 2026.' },
+  { id:'btc_60k', cat:'Crypto', emoji:'📉',
+    question:'Will Bitcoin drop below $60,000 in Q2 2026?',
+    deadline:'2026-06-30', resolution:'auto', asset:'BTC', target:60000, direction:'below',
+    yesOdds:0.22, status:'open',
+    desc:'Bitcoin needs to trade at or below $60,000 at any point in Q2 2026.' },
+  // ── Gold ──
+  { id:'gold_3200', cat:'Commodities', emoji:'🥇',
+    question:'Will Gold (XAU/USD) cross $3,200 by June 2026?',
+    deadline:'2026-06-30', resolution:'auto', asset:'GOLD', target:3200, direction:'above',
+    yesOdds:0.61, status:'open',
+    desc:'Gold spot price needs to trade above $3,200 per troy ounce before 30 June 2026.' },
+  // ── RBI ──
+  { id:'rbi_cut_apr', cat:'Macro', emoji:'🏛️',
+    question:'Will RBI cut interest rates in April 2026 MPC?',
+    deadline:'2026-04-09', resolution:'manual', asset:null, target:null, direction:null,
+    yesOdds:0.72, status:'open',
+    desc:'RBI MPC decision on 9 April 2026. Resolves YES if repo rate is cut by any amount.' },
+  // ── RELIANCE ──
+  { id:'reliance_1600', cat:'Stocks', emoji:'🛢️',
+    question:'Will Reliance Industries close above ₹1,600 in April 2026?',
+    deadline:'2026-04-30', resolution:'auto', asset:'RELIANCE', target:1600, direction:'above',
+    yesOdds:0.48, status:'open',
+    desc:'Reliance Industries (NSE) needs to close above ₹1,600 on any trading day in April 2026.' },
+  // ── Sensex ──
+  { id:'sensex_80000', cat:'Nifty 50', emoji:'📊',
+    question:'Will Sensex cross 80,000 again before June 2026?',
+    deadline:'2026-05-31', resolution:'auto', asset:'SENSEX', target:80000, direction:'above',
+    yesOdds:0.58, status:'open',
+    desc:'BSE Sensex needs to trade above 80,000 at any point before 31 May 2026.' },
+  // ── RESOLVED examples ──
+  { id:'nifty_feb_high', cat:'Nifty 50', emoji:'✅',
+    question:'Did Nifty 50 close above 22,500 in February 2026?',
+    deadline:'2026-02-28', resolution:'auto', asset:'NIFTY', target:22500, direction:'above',
+    yesOdds:0.65, status:'resolved', outcome:'YES',
+    desc:'Resolved: Nifty closed above 22,500 multiple times in February 2026.' },
+];
+
+let _predTab = 'open';
+
+function switchPredictTab(tab, btn) {
+  _predTab = tab;
+  document.querySelectorAll('[id^="ptab_"]').forEach(b => {
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--text3)';
+    b.style.fontWeight = '600';
+  });
+  if (btn) { btn.style.borderBottomColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; btn.style.fontWeight = '700'; }
+  renderPredict();
+}
+
+function renderPredict() {
+  const el = document.getElementById('predictBody');
+  if (!el) return;
+
+  // Update balance display
+  const bal = getPredBalance();
+  const balEl = document.getElementById('predictBalance');
+  if (balEl) balEl.textContent = '₹' + bal.toLocaleString('en-IN');
+
+  if (_predTab === 'open') {
+    const markets = PRED_MARKETS.filter(m => m.status === 'open');
+    _renderPredMarkets(el, markets);
+  } else if (_predTab === 'mybets') {
+    _renderMyBets(el);
+  } else if (_predTab === 'resolved') {
+    const markets = PRED_MARKETS.filter(m => m.status === 'resolved');
+    _renderPredMarkets(el, markets);
+  }
+}
+
+function _renderPredMarkets(el, markets) {
+  if (!markets.length) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3);">No markets available.</div>';
+    return;
+  }
+
+  // Group by category
+  const cats = {};
+  markets.forEach(m => { if (!cats[m.cat]) cats[m.cat] = []; cats[m.cat].push(m); });
+
+  let html = '';
+  Object.entries(cats).forEach(([cat, ms]) => {
+    html += '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;letter-spacing:1px;padding:6px 2px;margin-top:8px;">' + cat.toUpperCase() + '</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;">';
+    ms.forEach(m => { html += _marketCard(m); });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function _marketCard(m) {
+  const bets    = getPredBets().filter(b => b.marketId === m.id);
+  const myBet   = bets.length ? bets[bets.length - 1] : null;
+  const yesOdds = m.yesOdds;
+  const noOdds  = 1 - yesOdds;
+  const yesPct  = Math.round(yesOdds * 100);
+  const noPct   = 100 - yesPct;
+  const deadline = new Date(m.deadline).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  const daysLeft = Math.max(0, Math.ceil((new Date(m.deadline) - Date.now()) / 86400000));
+
+  const isResolved = m.status === 'resolved';
+
+  let statusBadge = '';
+  if (isResolved) {
+    const col = m.outcome === 'YES' ? '#00c853' : '#ff3b3b';
+    statusBadge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:' + col + '22;color:' + col + ';">' + (m.outcome === 'YES' ? '✅ YES' : '❌ NO') + '</span>';
+  } else {
+    statusBadge = '<span style="font-size:10px;color:var(--text3);">⏳ ' + daysLeft + 'd left</span>';
+  }
+
+  const myBetBadge = myBet
+    ? '<div style="font-size:10px;font-weight:700;color:' + (myBet.side==='YES'?'#00c853':'#ff3b3b') + ';margin-top:6px;">You bet: ' + myBet.side + ' · ₹' + myBet.amount.toLocaleString('en-IN') + '</div>'
+    : '';
+
+  const buttons = isResolved ? '' :
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;">'
+    + '<button onclick="placePredBet(\'' + m.id + '\',\'YES\')" style="padding:8px;border-radius:8px;border:none;background:#00c85322;color:#00c853;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'#00c85344\'" onmouseout="this.style.background=\'#00c85322\'">YES ' + yesPct + '¢</button>'
+    + '<button onclick="placePredBet(\'' + m.id + '\',\'NO\')"  style="padding:8px;border-radius:8px;border:none;background:#ff3b3b22;color:#ff3b3b;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'#ff3b3b44\'" onmouseout="this.style.background=\'#ff3b3b22\'">NO  ' + noPct + '¢</button>'
+    + '</div>';
+
+  return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">'
+      + '<span style="font-size:20px;">' + m.emoji + '</span>'
+      + statusBadge
+    + '</div>'
+    + '<div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.4;flex:1;margin-bottom:10px;">' + m.question + '</div>'
+    // Probability bar
+    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'
+      + '<div style="flex:1;height:6px;border-radius:4px;background:var(--bg3);overflow:hidden;">'
+        + '<div style="height:100%;width:' + yesPct + '%;background:linear-gradient(90deg,#00c853,#69f0ae);border-radius:4px;transition:width 0.5s;"></div>'
+      + '</div>'
+      + '<span style="font-size:11px;font-weight:800;color:#00c853;font-family:Space Mono,monospace;">' + yesPct + '%</span>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);">Deadline: ' + deadline + ' · ' + m.cat + '</div>'
+    + myBetBadge
+    + buttons
+  + '</div>';
+}
+
+function placePredBet(marketId, side) {
+  const m = PRED_MARKETS.find(x => x.id === marketId);
+  if (!m) return;
+
+  const bal = getPredBalance();
+  const odds = side === 'YES' ? m.yesOdds : (1 - m.yesOdds);
+  const payout = Math.round(100 / (odds * 100) * 100) / 100; // payout multiplier
+
+  // Show bet modal
+  const existing = document.getElementById('predBetModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'predBetModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:24px;width:360px;max-width:95vw;">'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">'
+      + '<span style="font-size:28px;">' + m.emoji + '</span>'
+      + '<div>'
+        + '<div style="font-weight:800;font-size:14px;color:var(--text);">' + (side === 'YES' ? '🟢 Betting YES' : '🔴 Betting NO') + '</div>'
+        + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + m.question.slice(0,50) + '…</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:14px;">'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">'
+        + '<div><div style="color:var(--text3);">Probability</div><div style="font-weight:700;color:' + (side==='YES'?'#00c853':'#ff3b3b') + ';">' + Math.round(odds*100) + '%</div></div>'
+        + '<div><div style="color:var(--text3);">Payout (if correct)</div><div style="font-weight:700;color:#00c853;">' + payout.toFixed(2) + 'x</div></div>'
+        + '<div><div style="color:var(--text3);">Your balance</div><div style="font-weight:700;">₹' + bal.toLocaleString('en-IN') + '</div></div>'
+        + '<div><div style="color:var(--text3);">Deadline</div><div style="font-weight:700;">' + new Date(m.deadline).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + '</div></div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="margin-bottom:14px;">'
+      + '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Bet amount (₹)</div>'
+      + '<input id="predBetAmt" type="number" min="100" max="' + bal + '" value="1000" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:15px;font-weight:700;font-family:Space Mono,monospace;box-sizing:border-box;" oninput="_updatePredPayout()" />'
+      + '<div style="display:flex;gap:6px;margin-top:6px;">'
+        + ['500','1000','5000','10000','25000'].map(v => '<button onclick="document.getElementById(\'predBetAmt\').value='+v+';_updatePredPayout()" style="flex:1;padding:5px 2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;cursor:pointer;">₹'+v.replace(/\B(?=(\d{3})+(?!\d))/g,',')+'</button>').join('')
+      + '</div>'
+    + '</div>'
+    + '<div id="predPayoutInfo" style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+      + '<button onclick="document.getElementById(\'predBetModal\').remove()" style="padding:11px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:700;cursor:pointer;">Cancel</button>'
+      + '<button onclick="_confirmPredBet(\'' + marketId + '\',\'' + side + '\')" style="padding:11px;border-radius:10px;border:none;background:' + (side==='YES'?'#00c853':'#ff3b3b') + ';color:#fff;font-weight:800;cursor:pointer;">Confirm ' + side + '</button>'
+    + '</div>'
+  + '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  _updatePredPayout();
+}
+
+function _updatePredPayout() {
+  const amtEl = document.getElementById('predBetAmt');
+  const infoEl = document.getElementById('predPayoutInfo');
+  if (!amtEl || !infoEl) return;
+  const amt = parseFloat(amtEl.value) || 0;
+  // We'll calculate based on the current modal's market
+  const modal = document.getElementById('predBetModal');
+  if (!modal) return;
+  const confirmBtn = modal.querySelector('button:last-child');
+  const side = confirmBtn?.textContent?.includes('YES') ? 'YES' : 'NO';
+  const marketId = confirmBtn?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+  const m = PRED_MARKETS.find(x => x.id === marketId);
+  if (!m) return;
+  const odds = side === 'YES' ? m.yesOdds : (1 - m.yesOdds);
+  const winAmount = Math.round(amt / odds);
+  const profit = winAmount - amt;
+  infoEl.innerHTML = '<div style="display:flex;justify-content:space-between;">'
+    + '<span style="color:var(--text3);">Stake:</span><span style="font-weight:700;">₹' + amt.toLocaleString('en-IN') + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;">'
+    + '<span style="color:var(--text3);">If correct:</span><span style="font-weight:800;color:#00c853;">₹' + winAmount.toLocaleString('en-IN') + ' (+₹' + profit.toLocaleString('en-IN') + ')</span></div>'
+    + '<div style="display:flex;justify-content:space-between;">'
+    + '<span style="color:var(--text3);">If wrong:</span><span style="font-weight:700;color:#ff3b3b;">-₹' + amt.toLocaleString('en-IN') + '</span></div>';
+}
+
+function _confirmPredBet(marketId, side) {
+  const amtEl = document.getElementById('predBetAmt');
+  const amount = Math.round(parseFloat(amtEl?.value) || 0);
+  const bal = getPredBalance();
+  const m = PRED_MARKETS.find(x => x.id === marketId);
+  if (!m) return;
+  if (amount < 100) { alert('Minimum bet is ₹100'); return; }
+  if (amount > bal) { alert('Insufficient balance! You have ₹' + bal.toLocaleString('en-IN')); return; }
+
+  const odds = side === 'YES' ? m.yesOdds : (1 - m.yesOdds);
+  const potentialPayout = Math.round(amount / odds);
+
+  // Deduct balance
+  savePredBalance(bal - amount);
+
+  // Save bet
+  const bets = getPredBets();
+  bets.push({
+    id: Date.now(),
+    marketId,
+    side,
+    amount,
+    odds,
+    potentialPayout,
+    placedAt: new Date().toISOString(),
+    question: m.question,
+    deadline: m.deadline,
+    emoji: m.emoji,
+    status: 'open',
+  });
+  savePredBets(bets);
+
+  document.getElementById('predBetModal')?.remove();
+
+  // Toast notification
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;background:var(--bg2);border:1px solid var(--border);border-left:4px solid #00c853;border-radius:12px;padding:14px 18px;font-size:13px;font-weight:700;box-shadow:0 8px 32px rgba(0,0,0,0.3);';
+  toast.innerHTML = '✅ Bet placed! ' + side + ' · ₹' + amount.toLocaleString('en-IN') + '<br><span style="font-size:11px;font-weight:400;color:var(--text3);">Potential win: ₹' + potentialPayout.toLocaleString('en-IN') + '</span>';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+
+  renderPredict();
+}
+
+function _renderMyBets(el) {
+  const bets = getPredBets();
+  if (!bets.length) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3);">'
+      + '<div style="font-size:40px;margin-bottom:12px;">🎯</div>'
+      + '<div style="font-size:14px;font-weight:700;color:var(--text2);">No bets yet</div>'
+      + '<div style="font-size:12px;margin-top:6px;">Go to Open Markets and place your first prediction!</div>'
+      + '</div>';
+    return;
+  }
+
+  const totalStaked   = bets.reduce((s,b) => s + b.amount, 0);
+  const totalPotential = bets.reduce((s,b) => s + b.potentialPayout, 0);
+  const openBets = bets.filter(b => b.status === 'open');
+  const wonBets  = bets.filter(b => b.status === 'won');
+  const lostBets = bets.filter(b => b.status === 'lost');
+  const totalWon  = wonBets.reduce((s,b) => s + b.potentialPayout, 0);
+  const totalLost = lostBets.reduce((s,b) => s + b.amount, 0);
+
+  let html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">'
+    + _statCard('Open Bets', openBets.length, 'var(--accent)')
+    + _statCard('Won', wonBets.length, '#00c853')
+    + _statCard('Lost', lostBets.length, '#ff3b3b')
+    + _statCard('P&L', (totalWon - totalLost >= 0 ? '+' : '') + '₹' + (totalWon - totalLost).toLocaleString('en-IN'), totalWon-totalLost >= 0 ? '#00c853' : '#ff3b3b')
+    + '</div>';
+
+  html += '<div style="display:flex;flex-direction:column;gap:10px;">';
+  [...bets].reverse().forEach(bet => {
+    const m    = PRED_MARKETS.find(x => x.id === bet.marketId);
+    const col  = bet.side === 'YES' ? '#00c853' : '#ff3b3b';
+    const statusCol = bet.status==='won'?'#00c853':bet.status==='lost'?'#ff3b3b':'var(--accent)';
+    const statusLabel = bet.status==='won'?'✅ WON':bet.status==='lost'?'❌ LOST':'⏳ Open';
+    const deadline = new Date(bet.deadline).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    html += '<div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid ' + col + ';border-radius:12px;padding:14px;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+        + '<div style="display:flex;align-items:center;gap:8px;">'
+          + '<span style="font-size:18px;">' + (bet.emoji||'🎯') + '</span>'
+          + '<span style="font-size:12px;font-weight:800;padding:3px 10px;border-radius:6px;background:' + col + '22;color:' + col + ';">' + bet.side + '</span>'
+        + '</div>'
+        + '<span style="font-size:11px;font-weight:700;color:' + statusCol + ';">' + statusLabel + '</span>'
+      + '</div>'
+      + '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4;">' + bet.question + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'
+        + '<div style="background:var(--bg3);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--text3);">STAKED</div><div style="font-size:13px;font-weight:700;">₹' + bet.amount.toLocaleString('en-IN') + '</div></div>'
+        + '<div style="background:var(--bg3);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--text3);">POTENTIAL WIN</div><div style="font-size:13px;font-weight:700;color:#00c853;">₹' + bet.potentialPayout.toLocaleString('en-IN') + '</div></div>'
+        + '<div style="background:var(--bg3);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--text3);">DEADLINE</div><div style="font-size:12px;font-weight:700;">' + deadline + '</div></div>'
+      + '</div>'
+    + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function _statCard(label, val, col) {
+  return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">'
+    + '<div style="font-size:9px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:4px;">' + label + '</div>'
+    + '<div style="font-size:18px;font-weight:900;color:' + col + ';">' + val + '</div>'
+    + '</div>';
+}
+
+// Auto-resolve bets based on live prices
+function autoResolveBets() {
+  const bets = getPredBets();
+  let changed = false;
+  let balDelta = 0;
+
+  bets.forEach(bet => {
+    if (bet.status !== 'open') return;
+    const m = PRED_MARKETS.find(x => x.id === bet.marketId);
+    if (!m || m.resolution !== 'auto' || !m.asset || !m.target) return;
+
+    const now = Date.now();
+    const deadline = new Date(m.deadline).getTime();
+    if (now < deadline) return; // not due yet
+
+    // Get current price
+    const live = liveStocks.find(s => s.sym === m.asset);
+    const idx  = window._liveIndices || {};
+    let price  = null;
+    if (live?.price) price = parseFloat(live.price);
+    else if (m.asset === 'NIFTY')    price = idx['NIFTY 50']?.price    || idx['NIFTY']?.price;
+    else if (m.asset === 'BANKNIFTY') price = idx['NIFTY BANK']?.price || idx['BANKNIFTY']?.price;
+    else if (m.asset === 'SENSEX')   price = idx['SENSEX']?.price;
+
+    if (!price) return;
+
+    const condMet = m.direction === 'above' ? price >= m.target : price <= m.target;
+    const won     = (bet.side === 'YES' && condMet) || (bet.side === 'NO' && !condMet);
+
+    bet.status     = won ? 'won' : 'lost';
+    bet.resolvedAt = new Date().toISOString();
+    bet.resolvedPrice = price;
+    if (won) balDelta += bet.potentialPayout;
+    changed = true;
+  });
+
+  if (changed) {
+    savePredBets(bets);
+    if (balDelta > 0) savePredBalance(getPredBalance() + balDelta);
+    if (window._activePage === 'predict') renderPredict();
+  }
+}
+
+// Check for auto-resolution every 5 minutes
+setInterval(autoResolveBets, 5 * 60 * 1000);
+</script>
+
+<!-- OFFLINE OVERLAY -->
+<div id="offlineOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(170deg,#0a1628 0%,#0d2444 35%,#0f3060 60%,#0a1628 100%);flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;">
+
+  <!-- Stars background -->
+  <div id="offlineStars" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+  <!-- Pixel chart character (like dino but market-themed) -->
+  <div style="position:relative;z-index:2;text-align:center;padding:0 24px;">
+
+    <!-- Pixel candlestick art via SVG -->
+    <svg viewBox="0 0 120 80" width="120" height="80" style="margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(0,112,243,0.6));">
+      <!-- Bearish candle (red) -->
+      <rect x="18" y="12" width="2" height="8" fill="#ff3b3b"/>
+      <rect x="15" y="20" width="8" height="16" fill="#ff3b3b"/>
+      <rect x="18" y="36" width="2" height="6" fill="#ff3b3b"/>
+      <!-- Bullish candle (green) -->
+      <rect x="38" y="28" width="2" height="6" fill="#00c853"/>
+      <rect x="35" y="18" width="8" height="10" fill="#00c853"/><!-- body inverted = bullish -->
+      <rect x="38" y="34" width="2" height="10" fill="#00c853"/>
+      <!-- Big red crash candle -->
+      <rect x="58" y="8" width="2" height="10" fill="#ff3b3b"/>
+      <rect x="55" y="18" width="8" height="24" fill="#ff3b3b"/>
+      <rect x="58" y="42" width="2" height="8" fill="#ff3b3b"/>
+      <!-- Tiny doji -->
+      <rect x="75" y="30" width="2" height="14" fill="#aaa"/>
+      <rect x="72" y="38" width="8" height="2" fill="#aaa"/>
+      <!-- Ground line -->
+      <rect x="10" y="56" width="100" height="2" fill="rgba(255,255,255,0.2)" rx="1"/>
+      <!-- WiFi off icon below -->
+      <text x="60" y="74" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.5)">📡</text>
+    </svg>
+
+    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:6px;">No Connection</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.55);margin-bottom:32px;line-height:1.6;">
+      Markets are open even when your internet isn't.<br>
+      <span style="color:rgba(255,255,255,0.3);font-size:12px;">Check your connection and try again.</span>
+    </div>
+
+    <!-- Suggestions — market themed like the image -->
+    <div style="background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 24px;margin-bottom:28px;text-align:left;max-width:300px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);font-family:monospace;letter-spacing:1px;margin-bottom:10px;">MEANWHILE YOU COULD</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:2;">
+        📖 Read your paper trading journal<br>
+        🧮 Plan your next trade strategy<br>
+        📊 Review your watchlist offline<br>
+        😌 Touch grass. The market will wait.
+      </div>
+    </div>
+
+    <button onclick="window.location.reload()" style="padding:13px 36px;border-radius:30px;border:none;background:linear-gradient(135deg,#0070f3,#7c3aed);color:#fff;font-weight:800;font-size:14px;cursor:pointer;letter-spacing:0.3px;box-shadow:0 4px 24px rgba(0,112,243,0.4);transition:transform 0.15s,box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(0,112,243,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 24px rgba(0,112,243,0.4)'">
+      🔄 Retry Connection
+    </button>
+
+    <div id="offlineRetryStatus" style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:14px;font-family:monospace;"></div>
+  </div>
+
+  <!-- Market scene at bottom — SVG illustration -->
+  <svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice" style="position:absolute;bottom:0;left:0;right:0;width:100%;pointer-events:none;opacity:0.7;">
+    <!-- City skyline silhouette -->
+    <rect x="0" y="200" width="800" height="40" fill="#060e1e"/>
+    <!-- Buildings -->
+    <rect x="20"  y="120" width="40" height="80" fill="#0a1628" rx="2"/>
+    <rect x="30"  y="108" width="20" height="14" fill="#0a1628"/>
+    <rect x="70"  y="90"  width="55" height="110" fill="#0d2040" rx="2"/>
+    <rect x="80"  y="78"  width="35" height="14" fill="#0d2040"/>
+    <rect x="85"  y="66"  width="25" height="14" fill="#0d2040"/>
+    <rect x="135" y="110" width="35" height="90" fill="#0a1628" rx="2"/>
+    <rect x="180" y="80"  width="60" height="120" fill="#0d2040" rx="2"/>
+    <rect x="190" y="68"  width="40" height="14" fill="#0d2040"/>
+    <rect x="250" y="100" width="45" height="100" fill="#0a1628" rx="2"/>
+    <rect x="305" y="70"  width="70" height="130" fill="#0f2850" rx="2"/>
+    <rect x="315" y="58"  width="50" height="14" fill="#0f2850"/>
+    <rect x="320" y="46"  width="40" height="14" fill="#0f2850"/>
+    <rect x="385" y="95"  width="50" height="105" fill="#0a1628" rx="2"/>
+    <rect x="445" y="75"  width="65" height="125" fill="#0d2040" rx="2"/>
+    <rect x="455" y="63"  width="45" height="14" fill="#0d2040"/>
+    <rect x="520" y="105" width="40" height="95" fill="#0a1628" rx="2"/>
+    <rect x="570" y="85"  width="55" height="115" fill="#0f2850" rx="2"/>
+    <rect x="580" y="73"  width="35" height="14" fill="#0f2850"/>
+    <rect x="635" y="115" width="35" height="85" fill="#0a1628" rx="2"/>
+    <rect x="680" y="90"  width="50" height="110" fill="#0d2040" rx="2"/>
+    <rect x="690" y="78"  width="30" height="14" fill="#0d2040"/>
+    <rect x="740" y="100" width="60" height="100" fill="#0a1628" rx="2"/>
+    <!-- Lit windows -->
+    <rect x="35" y="128" width="6" height="5" fill="#ffd740" opacity="0.6"/>
+    <rect x="45" y="128" width="6" height="5" fill="#ffd740" opacity="0.4"/>
+    <rect x="82" y="98"  width="6" height="5" fill="#0070f3" opacity="0.7"/>
+    <rect x="94" y="98"  width="6" height="5" fill="#ffd740" opacity="0.5"/>
+    <rect x="82" y="110" width="6" height="5" fill="#ffd740" opacity="0.4"/>
+    <rect x="194" y="90" width="6" height="5" fill="#0070f3" opacity="0.8"/>
+    <rect x="206" y="90" width="6" height="5" fill="#0070f3" opacity="0.6"/>
+    <rect x="194" y="102" width="6" height="5" fill="#ffd740" opacity="0.5"/>
+    <rect x="315" y="80"  width="6" height="5" fill="#0070f3" opacity="0.9"/>
+    <rect x="327" y="80"  width="6" height="5" fill="#ff3b3b" opacity="0.7"/>
+    <rect x="315" y="92"  width="6" height="5" fill="#ffd740" opacity="0.6"/>
+    <rect x="455" y="75"  width="6" height="5" fill="#0070f3" opacity="0.8"/>
+    <rect x="467" y="75"  width="6" height="5" fill="#00c853" opacity="0.7"/>
+    <rect x="583" y="95"  width="6" height="5" fill="#ffd740" opacity="0.5"/>
+    <rect x="583" y="107" width="6" height="5" fill="#0070f3" opacity="0.7"/>
+    <!-- NSE/BSE signs on buildings -->
+    <text x="305" y="68" font-size="8" fill="rgba(0,112,243,0.6)" font-family="monospace" font-weight="bold">NSE</text>
+    <text x="445" y="73" font-size="8" fill="rgba(0,200,83,0.6)" font-family="monospace" font-weight="bold">BSE</text>
+    <!-- Stock chart line over city -->
+    <polyline points="0,160 60,155 120,148 160,152 200,140 240,145 280,130 320,122 360,135 400,118 440,128 480,110 520,125 560,108 600,118 640,102 680,112 720,98 760,105 800,95" fill="none" stroke="rgba(0,112,243,0.3)" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<script>
+// ── OFFLINE DETECTION ──────────────────────────────────────────────
+(function() {
+  var overlay = document.getElementById('offlineOverlay');
+  var retryStatus = document.getElementById('offlineRetryStatus');
+  var autoRetryTimer = null;
+  var retryCount = 0;
+
+  function generateStars() {
+    var el = document.getElementById('offlineStars');
+    if (!el) return;
+    var html = '';
+    for (var i = 0; i < 120; i++) {
+      var x = Math.random() * 100;
+      var y = Math.random() * 70;
+      var s = Math.random() * 2 + 0.5;
+      var op = Math.random() * 0.6 + 0.2;
+      var dur = (Math.random() * 3 + 2).toFixed(1);
+      html += '<div style="position:absolute;left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;border-radius:50%;background:#fff;opacity:' + op + ';animation:twinkle ' + dur + 's ease-in-out infinite alternate;"></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function showOffline() {
+    overlay.style.display = 'flex';
+    generateStars();
+    retryCount = 0;
+    autoRetry();
+  }
+
+  function hideOffline() {
+    overlay.style.display = 'none';
+    clearTimeout(autoRetryTimer);
+    if (retryStatus) retryStatus.textContent = '';
+  }
+
+  function autoRetry() {
+    clearTimeout(autoRetryTimer);
+    var wait = Math.min(5 + retryCount * 5, 30);
+    var countdown = wait;
+    if (retryStatus) retryStatus.textContent = 'Auto-retry in ' + countdown + 's…';
+    var tick = setInterval(function() {
+      countdown--;
+      if (retryStatus) retryStatus.textContent = 'Auto-retry in ' + countdown + 's…';
+      if (countdown <= 0) {
+        clearInterval(tick);
+        retryCount++;
+        if (retryStatus) retryStatus.textContent = 'Checking connection…';
+        // Check connectivity
+        fetch('https://api.allorigins.win/get?url=https://www.google.com', {signal: AbortSignal.timeout(4000)})
+          .then(function(r) { if (r.ok) { hideOffline(); window.location.reload(); } else { autoRetry(); } })
+          .catch(function() { autoRetry(); });
+      }
+    }, 1000);
+  }
+
+  window.addEventListener('offline', showOffline);
+  window.addEventListener('online', function() {
+    // Double check — browser 'online' event can be unreliable
+    setTimeout(function() {
+      if (navigator.onLine) hideOffline();
+    }, 500);
+  });
+
+  // Check on load
+  if (!navigator.onLine) {
+    document.addEventListener('DOMContentLoaded', showOffline);
+  }
+})();
+</script>
+
+<style>
+@keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.8; } }
+</style>
 
 <!-- Brightness overlay -->
 
