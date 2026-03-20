@@ -1,8 +1,19 @@
 [[redirects]]
-  from = "/api/*"
-  to = "https://web-production-78fc1.up.railway.app/api/:splat"
+  from = "/api/quote"
+  to = "/api/quote.js"
   status = 200
-  force = true
 
-  [redirects.headers]
-    Access-Control-Allow-Origin = "*"
+[[redirects]]
+  from = "/api/indices"
+  to = "/api/indices.js"
+  status = 200
+
+[[redirects]]
+  from = "/api/all"
+  to = "/api/all.js"
+  status = 200
+
+[[redirects]]
+  from = "/api/news"
+  to = "/api/news.js"
+  status = 200
