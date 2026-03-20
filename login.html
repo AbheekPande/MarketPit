@@ -87,8 +87,8 @@
             background: radial-gradient(circle at center, rgba(78, 222, 163, 0.15) 0%, transparent 70%);
         }
     </style>
-</head>
-<body class="bg-background font-body text-on-background selection:bg-primary/30 min-h-screen flex flex-col overflow-x-hidden">
+<script defer="" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script></head>
+<body class="bg-background font-body text-on-background selection:bg-primary/30 min-h-screen flex flex-col overflow-x-hidden" x-data="{ showGoogleAuth: false }">
 <!-- Subtle Ambient Background -->
 <div class="fixed inset-0 z-0 pointer-events-none">
 <div class="absolute inset-0 bg-grid opacity-30"></div>
@@ -98,11 +98,9 @@
 <!-- Top Navigation -->
 <header class="fixed top-0 w-full z-50 bg-[#040712]/60 backdrop-blur-[20px] border-b-[0.5px] border-[#3c4a42]/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
 <div class="flex justify-between items-center px-10 h-20 w-full">
-<!-- Logo links back to landing page -->
 <a href="index.html" class="text-xl font-black tracking-[0.3em] text-[#4edea3] hover:opacity-80 transition-opacity">MARKET PIT</a>
 <div class="flex items-center gap-8">
 <a class="font-['Manrope'] uppercase tracking-[0.08em] text-[0.6875rem] text-[#bbcabf] font-medium hover:text-[#4edea3] transition-all duration-300" href="#">Support</a>
-<!-- Open Account → goes straight to dashboard -->
 <a href="dashboard.html" class="font-['Manrope'] uppercase tracking-[0.08em] text-[0.6875rem] text-[#4edea3] font-bold px-4 py-2 border-b-[0.5px] border-[#4edea3] scale-95 active:opacity-80 transition-transform">Open Account</a>
 </div>
 </div>
@@ -118,14 +116,17 @@
 <h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Sign In</h1>
 <p class="text-on-surface-variant font-light text-sm">Access the Market Pit intelligence platform.</p>
 </div>
-<!-- Social Authentication → all go to dashboard -->
+<!-- Social Authentication -->
 <div class="grid grid-cols-3 gap-3 mb-8">
-<button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
+<!-- Google → goes to dashboard -->
+<button @click="showGoogleAuth = true" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="Google Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
 </button>
+<!-- X → goes to dashboard -->
 <button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="X Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKyR8MIEDLATlPPBbRyq2iF2S6fBI4qDFvzDqAqZZ0BbJfivR2fR3JmXpTIUrOLAyL7OCsraS16oXBA4TwOA1xiRG0MwX6e9BRizQyIz1OoFDIa52LajgI0n4W6agcwM_h97xJDf5m912QnLjNv9w1rhZjaAMb79TTGpM4_Y0Th0a5B-pmnKDnXAPZdaY38XEGU7IaEvm07FF6_lsCX_U76_On4L4-4aJl_qx8svcisyig7QispXHspkGzVXAIklqR5Lfq1ruAQbk"/>
 </button>
+<!-- Apple → goes to dashboard -->
 <button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
 <img alt="Apple Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDd83Yvnf70tVTaJZULL0ELKflwng8Zg5gR51H6b3GcknjtJK2vmcD4qsxrdJBFepauf__faQze_B1IGkXQoSzETwwYr6aDD1CPDqLzBiUCSISHg5pxxR60-rlvhM105RVvCET73CBAmSDd4g-Oac4vfeldmY7Ub2ouHw6CG316498B2_nncV8T_PTGrBhd4Wr_Que5TM4s0Q671Z9IBuRp8iO9PcBRFKD0-zjPtr0sKG8qcoU_Ny1J2mEKae06yLA9s96OITLjBe8"/>
 </button>
@@ -154,15 +155,13 @@
 <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/30 group-focus-within:text-primary transition-colors text-xl">lock</span>
 </div>
 </div>
-<!-- Initialize Session → goes to dashboard -->
 <button class="w-full py-4 bg-gradient-to-br from-primary to-primary-container rounded-xl font-bold uppercase tracking-[0.15em] text-[11px] text-on-primary shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:brightness-110 active:scale-[0.98] transition-all" type="submit">
                         Initialize Session
                     </button>
 </form>
 <div class="mt-10 text-center">
 <p class="text-sm font-light text-on-surface-variant">
-                        New to Market Pit? 
-                        <!-- Establish Account → also goes to dashboard -->
+                        New to Market Pit?
                         <a class="text-primary font-bold hover:underline underline-offset-4 ml-1" href="dashboard.html">Establish Account</a>
 </p>
 </div>
@@ -193,4 +192,59 @@
 <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Security</a>
 </div>
 </footer>
+<!-- Google Account Picker Modal -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md" style="display: none;" x-show="showGoogleAuth" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100" x-transition:enter-start="opacity-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0" x-transition:leave-start="opacity-100">
+<div @click.away="showGoogleAuth = false" class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+<div class="p-8">
+<div class="flex justify-center mb-6">
+<img alt="Google Logo" class="w-8 h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
+</div>
+<div class="text-center mb-8">
+<h2 class="text-xl font-bold text-on-surface mb-1">Choose an account</h2>
+<p class="text-on-surface-variant text-sm">to continue to <span class="text-primary font-semibold">Market Pit</span></p>
+</div>
+<div class="space-y-2">
+<!-- Account 1 → goes to dashboard -->
+<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                        AM
+                    </div>
+<div class="flex-grow">
+<div class="text-sm font-semibold text-on-surface">Alex Miller</div>
+<div class="text-xs text-on-surface-variant">alex.m@gmail.com</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
+</button>
+<!-- Account 2 → goes to dashboard -->
+<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
+<div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold">
+                        MP
+                    </div>
+<div class="flex-grow">
+<div class="text-sm font-semibold text-on-surface">M. Pit Institutional</div>
+<div class="text-xs text-on-surface-variant">m.pit.institutional@gmail.com</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
+</button>
+<!-- Use another account → goes to dashboard -->
+<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 text-left">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+</div>
+<div class="flex-grow text-sm font-medium text-on-surface">Use another account</div>
+</button>
+</div>
+<div class="mt-8 text-center">
+<button @click="showGoogleAuth = false" class="text-xs text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest font-bold">
+                    Cancel Sign In
+                </button>
+</div>
+</div>
+<div class="bg-white/5 p-4 border-t border-white/5">
+<p class="text-[10px] text-center text-on-surface-variant/60 leading-relaxed">
+                To continue, Google will share your name, email address, language preference, and profile picture with Market Pit. See Market Pit's <span class="underline cursor-pointer">Privacy Policy</span> and <span class="underline cursor-pointer">Terms of Service</span>.
+            </p>
+</div>
+</div>
+</div>
 </body></html>
