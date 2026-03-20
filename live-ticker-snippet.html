@@ -1,0 +1,132 @@
+<script>
+// ── LIVE TICKER — fetches from your /api/all Railway backend ──────────────────
+(function() {
+
+  const SYMBOLS = [
+    "HDFCBANK", "ICICIBANK", "SBIN", "AXISBANK", "KOTAKBANK",
+    "INDUSINDBK", "TCS", "INFY", "WIPRO", "HCLTECH",
+    "RELIANCE", "ONGC", "BAJFINANCE", "LT", "MARUTI",
+    "TATAMOTORS", "SUNPHARMA", "TITAN", "ADANIENT", "BHARTIARTL"
+  ];
+
+  const REFRESH_MS = 30000; // refresh every 30 seconds
+
+  // Find the ticker container — works for most common ticker layouts
+  function getTickerContainer() {
+    // Try common selectors used in MarketPit dashboard
+    return (
+      document.getElementById('live-ticker') ||
+      document.getElementById('ticker') ||
+      document.querySelector('.ticker-track') ||
+      document.querySelector('.animate-marquee') ||
+      document.querySelector('[class*="marquee"]') ||
+      document.querySelector('[class*="ticker"]')
+    );
+  }
+
+  function fmt(price) {
+    if (!price || price === '—') return '—';
+    const n = parseFloat(price);
+    if (isNaN(n)) return price;
+    if (n >= 1000) return '₹' + n.toLocaleString('en-IN', {maximumFractionDigits: 0});
+    return '₹' + n.toFixed(2);
+  }
+
+  function buildTickerHTML(stocks) {
+    if (!stocks || !stocks.length) return null;
+
+    // Build one set of items, doubled for seamless loop
+    const items = stocks.map(s => {
+      const up = s.up !== false && !String(s.chg).startsWith('-');
+      const chgColor = up ? '#4edea3' : '#ffb4ab';
+      const chg = s.chg || '—';
+      return `
+        <div style="display:inline-flex;align-items:center;gap:10px;white-space:nowrap">
+          <div style="display:flex;flex-direction:column">
+            <span style="font-size:10px;color:#bbcabf;letter-spacing:.1em;text-transform:uppercase;font-family:'Inter',monospace">${s.sym}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px;font-weight:700;color:#dfe2f3">${fmt(s.price)}</span>
+              <span style="font-size:11px;font-weight:600;color:${chgColor}">${chg}</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:1px;height:28px;background:rgba(60,74,66,.3);display:inline-block;vertical-align:middle;margin:0 4px"></div>
+      `;
+    }).join('');
+
+    // Double for seamless loop
+    return items + items;
+  }
+
+  async function fetchAndUpdate() {
+    try {
+      // Try /api/all first (Railway proxy)
+      const res = await fetch('/api/all', { cache: 'no-store' });
+      if (!res.ok) throw new Error('api/all failed');
+      const data = await res.json();
+
+      const allStocks = data.stocks || [];
+      if (!allStocks.length) throw new Error('no stocks');
+
+      // Filter to our symbol list, preserve order
+      const filtered = SYMBOLS
+        .map(sym => allStocks.find(s => s.sym === sym))
+        .filter(Boolean);
+
+      const html = buildTickerHTML(filtered.length ? filtered : allStocks.slice(0, 20));
+      if (!html) return;
+
+      const container = getTickerContainer();
+      if (container) {
+        container.innerHTML = html;
+        // Re-apply animation
+        container.style.animation = 'none';
+        container.offsetHeight; // reflow
+        container.style.animation = '';
+      }
+
+      // Also update a timestamp if one exists
+      const ts = document.getElementById('ticker-updated');
+      if (ts) ts.textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+
+    } catch (err) {
+      console.warn('[LiveTicker] /api/all failed, trying /api/quote...', err);
+      try {
+        // Fallback: fetch individual quotes
+        const syms = SYMBOLS.map(s => s + '.NS').join(',');
+        const res2 = await fetch('/api/quote?symbols=' + encodeURIComponent(syms), { cache: 'no-store' });
+        const data2 = await res2.json();
+        const results = data2?.quoteResponse?.result || [];
+        if (!results.length) return;
+
+        const stocks = results.map(q => ({
+          sym: q.symbol.replace('.NS', ''),
+          price: q.regularMarketPrice,
+          chg: (q.regularMarketChangePercent >= 0 ? '+' : '') +
+               q.regularMarketChangePercent.toFixed(2) + '%',
+          up: q.regularMarketChangePercent >= 0,
+        }));
+
+        const html = buildTickerHTML(stocks);
+        const container = getTickerContainer();
+        if (container && html) container.innerHTML = html;
+      } catch (err2) {
+        console.warn('[LiveTicker] fallback also failed:', err2);
+      }
+    }
+  }
+
+  // Run immediately then every 30s
+  document.addEventListener('DOMContentLoaded', function() {
+    fetchAndUpdate();
+    setInterval(fetchAndUpdate, REFRESH_MS);
+  });
+
+  // If DOM already loaded
+  if (document.readyState !== 'loading') {
+    fetchAndUpdate();
+    setInterval(fetchAndUpdate, REFRESH_MS);
+  }
+
+})();
+</script>
