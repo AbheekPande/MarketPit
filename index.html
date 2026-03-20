@@ -101,22 +101,16 @@
 <body class="bg-background text-on-background font-body selection:bg-primary/30">
 <!-- TopNavBar -->
 <nav class="fixed top-0 w-full z-50 bg-[#171b27]/60 backdrop-blur-xl border-b-[0.5px] border-[#3c4a42]/20 shadow-[0_4px_20px_rgba(4,7,18,0.5)]">
-<div class="flex justify-between items-center h-20 px-8 w-full max-w-[1920px] mx-auto font-['Manrope'] tracking-tight headline-lg:text-2xl title-md:text-lg label-sm:text-[11px]">
+<div class="flex justify-between items-center h-20 px-8 w-full max-w-[1920px] mx-auto font-['Manrope'] tracking-tight">
 <div class="flex items-center gap-12">
-<a class="text-2xl font-black tracking-tighter text-[#dfe2f3] drop-shadow-[0_0_8px_rgba(78,222,163,0.3)]" href="#">
-                    Market Pit
-                </a>
+<a class="text-2xl font-black tracking-tighter text-[#dfe2f3] drop-shadow-[0_0_8px_rgba(78,222,163,0.3)]" href="#">Market Pit</a>
 <div class="hidden md:flex items-center gap-8">
 <a class="text-[#4edea3] border-b-2 border-[#4edea3] pb-1 transition-colors" href="#">Markets</a>
 </div>
 </div>
 <div class="flex items-center gap-6">
-<!-- Login → goes to login page -->
 <a href="login.html" class="text-[#bbcabf] hover:text-[#dfe2f3] transition-colors active:scale-95 text-sm font-medium">Login</a>
-<!-- Join → goes to login page -->
-<a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-bold shadow-[0_4px_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all text-sm uppercase tracking-wider">
-                    Join
-                </a>
+<a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-bold shadow-[0_4px_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all text-sm uppercase tracking-wider">Join</a>
 </div>
 </div>
 </nav>
@@ -127,7 +121,6 @@
 <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
 <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-tertiary/10 rounded-full blur-[120px]"></div>
 </div>
-<!-- Hero Data Background -->
 <div class="absolute inset-0 mask-fade-b opacity-40">
 <img alt="abstract financial data lines" class="w-full h-full object-cover mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnrCD3izJgmIZoK20OsSjkoZK6hCXrvGf0Z2m7FAlF6ryPtW-0mlV1yrB19nV2cW1zNP-of3idsDiUYuVKlyPJPhI6YeXO1Uvg9RDGvCJ1I_qA_VcEyQmthi3zZ6z-m6hHT3gLTSVenBCMwvilAKYAfG7wdsPFJb93wbSsbtCb6q1V5K2am1UObIQmg2Dbhmjf391KLCik92eGBkf-vBazogDhy_l3SuKFwi7GKHglij7Gnc2gYxt-OkYaiTxIHEgYG-BSU2s0y8"/>
 </div>
@@ -143,7 +136,6 @@
                     Decipher market noise with institutional-grade sentiment analysis, real-time alpha signals, and a high-conviction community pulse.
                 </p>
 <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-<!-- View Market Map → goes to login page -->
 <a href="login.html" class="w-full sm:w-auto px-10 py-5 glass-panel border-[0.5px] border-outline-variant/40 text-on-surface rounded-full font-bold text-lg hover:bg-surface-container/50 active:scale-95 transition-all">
                         View Market Map
                     </a>
@@ -153,7 +145,6 @@
 <!-- Market Stats Ticker -->
 <section class="w-full bg-surface-container-lowest border-y-[0.5px] border-outline-variant/20 overflow-hidden">
 <div class="flex items-center gap-12 py-6 px-8 animate-marquee whitespace-nowrap">
-<!-- S&P 500 -->
 <div class="flex items-center gap-4 group cursor-default">
 <div class="flex flex-col">
 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">S&amp;P 500</span>
@@ -167,7 +158,6 @@
 </div>
 </div>
 <div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<!-- NASDAQ -->
 <div class="flex items-center gap-4 group">
 <div class="flex flex-col">
 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">NASDAQ</span>
@@ -181,7 +171,6 @@
 </div>
 </div>
 <div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<!-- BTC -->
 <div class="flex items-center gap-4 group">
 <div class="flex flex-col">
 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">BTC / USD</span>
@@ -195,7 +184,6 @@
 </div>
 </div>
 <div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<!-- ETH -->
 <div class="flex items-center gap-4 group">
 <div class="flex flex-col">
 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">ETH / USD</span>
@@ -209,7 +197,6 @@
 </div>
 </div>
 <div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<!-- XAU -->
 <div class="flex items-center gap-4 group">
 <div class="flex flex-col">
 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">XAU / USD</span>
@@ -220,57 +207,6 @@
 </div>
 <div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
 <img alt="sparkline flat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpjQZ2r-tJHgPLa4HlXSyUuzbCsln21H7OlIGZgYGqWkHUy_cq3m8z7jMh8IcJ3WHtlCh__W_-xV_HObY3q6CcSRMHY7tDwpN8DXmLnWycPtocCEhzJgPkIixBMCLFRA2c4rE1MlXOV-r_NNFxn-y-9TEb4wz36pDU7-uO20yMYqVPI7QOVRnjGX5n4PuRYEK5yLXEnShvJZrYoppDovVa320Agi6s0BMc5Xln0UgIuaOAGupHyfHPA7zvKk31EtFIEzyRfcXqE50"/>
-</div>
-</div>
-<!-- Duplicate set for seamless loop -->
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group cursor-default">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">S&amp;P 500</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">5,241.53</span>
-<span class="text-xs text-primary font-semibold">+1.24%</span>
-</div>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">NASDAQ</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">16,428.82</span>
-<span class="text-xs text-primary font-semibold">+0.89%</span>
-</div>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">BTC / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">67,492.10</span>
-<span class="text-xs text-error font-semibold">-0.42%</span>
-</div>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">ETH / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">3,541.22</span>
-<span class="text-xs text-primary font-semibold">+2.15%</span>
-</div>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">XAU / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">2,184.40</span>
-<span class="text-xs text-on-surface-variant font-semibold">0.00%</span>
-</div>
 </div>
 </div>
 </div>
@@ -288,7 +224,6 @@
 <input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/40 rounded-full px-8 py-5 text-on-surface focus:outline-none focus:border-primary transition-all placeholder:text-outline/40 shadow-inner" placeholder="Institutional Email" type="email"/>
 <div class="absolute inset-0 rounded-full bg-primary/5 pointer-events-none"></div>
 </div>
-<!-- Join Elite → goes to dashboard -->
 <button type="submit" class="px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded-full font-bold text-lg shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-[1.05] transition-all whitespace-nowrap">
                         Join Elite
                     </button>
@@ -306,8 +241,8 @@
 <div class="flex gap-12">
 <div class="flex flex-col gap-2">
 <span class="text-[#10b981] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest font-bold">Platform</span>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="dashboard.html">Terminals</a>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="dashboard.html">API</a>
+<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="login.html">Terminals</a>
+<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="login.html">API</a>
 </div>
 <div class="flex flex-col gap-2">
 <span class="text-[#10b981] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest font-bold">Legal</span>
