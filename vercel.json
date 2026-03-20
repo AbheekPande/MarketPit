@@ -3,6 +3,7 @@
   "builds": [
     { "src": "index.html",     "use": "@vercel/static" },
     { "src": "login.html",     "use": "@vercel/static" },
+    { "src": "verify.html",    "use": "@vercel/static" },
     { "src": "dashboard.html", "use": "@vercel/static" },
     { "src": "api/quote.js",   "use": "@vercel/node"   },
     { "src": "api/indices.js", "use": "@vercel/node"   },
@@ -15,6 +16,7 @@
     { "src": "/api/all",        "dest": "/api/all.js"     },
     { "src": "/api/news",       "dest": "/api/news.js"    },
     { "src": "/login.html",     "dest": "/login.html"     },
+    { "src": "/verify.html",    "dest": "/verify.html"    },
     { "src": "/dashboard.html", "dest": "/dashboard.html" },
     { "src": "/(.*)",           "dest": "/index.html"     }
   ]
