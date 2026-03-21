@@ -2295,6 +2295,13 @@ let allStockSymbols = [];
 const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
 const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
 
+// ── Pre-seed liveStocks with static commodity prices so COMMOD tab works immediately ──
+STATIC_COMMODITIES.forEach(s => {
+  if (!liveStocks.find(x => x.sym === s.sym)) {
+    liveStocks.push({ ...s, _live: false });
+  }
+});
+
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s, _live: false})),
   // Crypto: seed with name/sym but NO price — show live only, never stale static
@@ -2898,6 +2905,16 @@ async function _fetchYFDirectInner() {
     {sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},
     {sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'},
   ];
+
+  const updateComm = (sym, price, chgPct, up) => {
+    const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+    const existing = liveStocks.find(s => s.sym === sym);
+    const se = STATIC_COMMODITIES.find(s => s.sym === sym);
+    if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true; }
+    else { liveStocks.push({...(se||{sym,name:sym,currency:'$'}), price, chg:chgStr, up, _live:true}); }
+  };
+
+  let commFetched = false;
   try {
     const commSyms = commodities.map(c => c.yf).join(',');
     const rc = await fetch('/api/quote?symbols=' + encodeURIComponent(commSyms), { signal: AbortSignal.timeout(12000) });
@@ -2910,25 +2927,32 @@ async function _fetchYFDirectInner() {
         const price  = q.regularMarketPrice;
         const prev   = q.regularMarketPreviousClose || price;
         const chgPct = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
-        const up     = chgPct >= 0;
-        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
-        const existing = liveStocks.find(s => s.sym === item.sym);
-        if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; }
-        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up}); }
+        updateComm(item.sym, price, chgPct, chgPct >= 0);
+        commFetched = true;
       });
     }
-  } catch(e) {
-    // Fallback: one-by-one via yfFetch
+  } catch(e) {}
+
+  // ── 3b. Direct Yahoo Finance fallback via corsproxy (no Railway needed) ──
+  if (!commFetched) {
     await Promise.allSettled(commodities.map(async item => {
       try {
-        const r = await yfFetch(item.yf);
-        if (!r.price) return;
-        const chgStr = (r.up?'+':'') + r.chg.toFixed(2) + '%';
-        const existing = liveStocks.find(s => s.sym === item.sym);
-        if (existing) { existing.price = r.price; existing.chg = chgStr; existing.up = r.up; }
-        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price:r.price,chg:chgStr,up:r.up}); }
+        const url = 'https://corsproxy.io/?' + encodeURIComponent(
+          'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d'
+        );
+        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return;
+        const j = await r.json();
+        const meta = j?.chart?.result?.[0]?.meta;
+        if (!meta?.regularMarketPrice) return;
+        const price  = meta.regularMarketPrice;
+        const prev   = meta.previousClose || meta.chartPreviousClose || price;
+        const chgPct = ((price - prev) / (prev || 1)) * 100;
+        updateComm(item.sym, price, chgPct, chgPct >= 0);
       } catch(e2) {}
     }));
+    renderTrending(liveStocks);
+    buildGlobalTicker();
   }
 
   const total = stocksUpdated + cryptoUpdated;
