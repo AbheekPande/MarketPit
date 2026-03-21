@@ -200,7 +200,7 @@
     btn.disabled    = true;
 
     try {
-      const res  = await fetch('/api/verify-otp', {
+      const res  = await fetch('https://web-production-78fc1.up.railway.app/api/verify-otp', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: userEmail, otp }),
@@ -248,7 +248,7 @@
     if (!userEmail) { showError('No email found. Please go back and log in again.'); return; }
     btn.textContent = 'Sending…';
     try {
-      const res  = await fetch('/api/send-otp', {
+      const res  = await fetch('https://web-production-78fc1.up.railway.app/api/send-otp', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: userEmail }),
