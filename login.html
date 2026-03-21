@@ -127,6 +127,7 @@
 </div>
 <!-- Right Side: Sign In Form -->
 <div class="w-full">
+<div id="login-panel">
 <div class="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-[0px_20px_40px_rgba(25,28,27,0.06)]">
 <div class="mb-10">
 <h2 class="serif-heading text-3xl font-bold text-on-surface mb-2">Welcome Back</h2>
@@ -167,7 +168,7 @@
 </form>
 <div class="mt-10 pt-8 border-t border-outline-variant/20 text-center">
 <p class="text-sm text-on-surface-variant font-body">
-                            New curator? <a class="text-primary font-bold hover:underline decoration-2" href="dashboard.html">Create an account</a>
+                            New curator? <a class="text-primary font-bold hover:underline decoration-2 cursor-pointer" onclick="showSignup()">Create an account</a>
 </p>
 </div>
 </div>
@@ -178,6 +179,50 @@
                         This terminal is encrypted with AES-256. Unauthorized access attempts are monitored and logged for institutional security audits.
                     </p>
 </div>
+</div>
+
+<!-- ── SIGNUP FORM (hidden by default) ────────────────────────── -->
+<div id="signup-panel" class="w-full" style="display:none">
+<div class="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-[0px_20px_40px_rgba(25,28,27,0.06)]">
+<div class="mb-10">
+<h2 class="serif-heading text-3xl font-bold text-on-surface mb-2">Create Account</h2>
+<p class="text-on-surface-variant text-sm font-body">Join Market Pit and access institutional intelligence.</p>
+</div>
+<form class="space-y-5" onsubmit="handleSignup(event)">
+<div class="space-y-2">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">Full Name</label>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="signup-name" placeholder="Your full name" type="text" required/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">Email Address</label>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="signup-email" placeholder="name@company.com" type="email" required/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">Password</label>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="signup-password" placeholder="Min 8 characters" type="password" required minlength="8"/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">Confirm Password</label>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="signup-confirm" placeholder="Repeat password" type="password" required/>
+</div>
+<div id="signup-error" class="text-error text-xs font-label" style="display:none"></div>
+<div class="pt-2">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold py-4 rounded-lg shadow-lg hover:opacity-90 active:scale-95 transition-all duration-150" type="submit" id="signup-btn">
+                                Create Account & Verify Email
+                            </button>
+</div>
+</form>
+<div class="mt-10 pt-8 border-t border-outline-variant/20 text-center">
+<p class="text-sm text-on-surface-variant font-body">
+                            Already have an account? <a class="text-primary font-bold hover:underline decoration-2 cursor-pointer" onclick="showLogin()">Sign in</a>
+</p>
+</div>
+</div>
+<div class="mt-6 flex items-start gap-3 px-2">
+<span class="material-symbols-outlined text-outline text-lg">lock</span>
+<p class="text-[10px] text-outline font-label leading-relaxed uppercase tracking-tighter">
+                        Your data is encrypted with AES-256. We never share your information with third parties.
+                    </p>
 </div>
 </div>
 </main>
@@ -225,6 +270,61 @@ async function handleLogin(e) {
     alert('Network error. Please try again.');
     btn.textContent = 'Sign In to Market Pit';
     btn.disabled    = false;
+  }
+}
+
+// ── Toggle between login and signup panels ──────────────────────────────────
+function showSignup() {
+  document.getElementById('login-panel').style.display  = 'none';
+  document.getElementById('signup-panel').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('signup-panel').style.display = 'none';
+  document.getElementById('login-panel').style.display  = 'block';
+}
+
+// ── Handle signup form ───────────────────────────────────────────────────────
+async function handleSignup(e) {
+  e.preventDefault();
+  const name     = document.getElementById('signup-name').value.trim();
+  const email    = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm  = document.getElementById('signup-confirm').value;
+  const errEl    = document.getElementById('signup-error');
+  const btn      = document.getElementById('signup-btn');
+
+  // Client-side validation
+  errEl.style.display = 'none';
+  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+  if (password.length < 8)  { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
+
+  btn.textContent = 'Sending verification code…';
+  btn.disabled    = true;
+
+  try {
+    // Send OTP to email for verification
+    const res  = await fetch('/api/send-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, name, signup: true }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // Go to verify page — same OTP flow as login
+      window.location.href = 'verify.html?email=' + encodeURIComponent(email) + '&signup=1';
+    } else {
+      errEl.textContent   = data.message || 'Failed to send verification code.';
+      errEl.style.display = 'block';
+      btn.textContent     = 'Create Account & Verify Email';
+      btn.disabled        = false;
+    }
+  } catch (err) {
+    errEl.textContent   = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+    btn.textContent     = 'Create Account & Verify Email';
+    btn.disabled        = false;
   }
 }
 </script>
