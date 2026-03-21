@@ -1477,11 +1477,11 @@ header {
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📰 MARKET NEWS</div>
       <div style="display:flex;gap:6px;" id="newsCatBtns">
-        <button onclick="window._currentNewsCat='markets';loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
-        <button onclick="window._currentNewsCat='stocks';loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
-        <button onclick="window._currentNewsCat='economy';loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
-        <button onclick="window._currentNewsCat='crypto';loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
-        <button onclick="window._currentNewsCat='commodities';loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
+        <button onclick="window._mpNewsCat='markets';loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
+        <button onclick="window._mpNewsCat='stocks';loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
+        <button onclick="window._mpNewsCat='economy';loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
+        <button onclick="window._mpNewsCat='crypto';loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
+        <button onclick="window._mpNewsCat='commodities';loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
       </div>
     </div>
     <div class="feed-scroll" id="newsContainer">
@@ -2295,12 +2295,13 @@ let allStockSymbols = [];
 const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
 const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
 
-// ── Pre-seed liveStocks with static commodity prices so COMMOD tab works immediately ──
-STATIC_COMMODITIES.forEach(s => {
-  if (!liveStocks.find(x => x.sym === s.sym)) {
-    liveStocks.push({ ...s, _live: false });
-  }
-});
+// Pre-seed liveStocks with static commodity prices so COMMOD tab shows immediately
+setTimeout(() => {
+  STATIC_COMMODITIES.forEach(s => {
+    if (!liveStocks.find(x => x.sym === s.sym)) liveStocks.push({...s, _live:false});
+  });
+  renderTrending(liveStocks);
+}, 100);
 
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s, _live: false})),
@@ -2905,16 +2906,6 @@ async function _fetchYFDirectInner() {
     {sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},
     {sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'},
   ];
-
-  const updateComm = (sym, price, chgPct, up) => {
-    const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
-    const existing = liveStocks.find(s => s.sym === sym);
-    const se = STATIC_COMMODITIES.find(s => s.sym === sym);
-    if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true; }
-    else { liveStocks.push({...(se||{sym,name:sym,currency:'$'}), price, chg:chgStr, up, _live:true}); }
-  };
-
-  let commFetched = false;
   try {
     const commSyms = commodities.map(c => c.yf).join(',');
     const rc = await fetch('/api/quote?symbols=' + encodeURIComponent(commSyms), { signal: AbortSignal.timeout(12000) });
@@ -2927,20 +2918,21 @@ async function _fetchYFDirectInner() {
         const price  = q.regularMarketPrice;
         const prev   = q.regularMarketPreviousClose || price;
         const chgPct = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
-        updateComm(item.sym, price, chgPct, chgPct >= 0);
-        commFetched = true;
+        const up     = chgPct >= 0;
+        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+        const existing = liveStocks.find(s => s.sym === item.sym);
+        if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; }
+        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up}); }
       });
     }
-  } catch(e) {}
-
-  // ── 3b. Direct Yahoo Finance fallback via corsproxy (no Railway needed) ──
-  if (!commFetched) {
+  } catch(e) {
+    // Fallback: direct Yahoo Finance via corsproxy (no Railway needed)
     await Promise.allSettled(commodities.map(async item => {
       try {
         const url = 'https://corsproxy.io/?' + encodeURIComponent(
           'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d'
         );
-        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        const r = await fetch(url, {signal: AbortSignal.timeout(8000)});
         if (!r.ok) return;
         const j = await r.json();
         const meta = j?.chart?.result?.[0]?.meta;
@@ -2948,11 +2940,14 @@ async function _fetchYFDirectInner() {
         const price  = meta.regularMarketPrice;
         const prev   = meta.previousClose || meta.chartPreviousClose || price;
         const chgPct = ((price - prev) / (prev || 1)) * 100;
-        updateComm(item.sym, price, chgPct, chgPct >= 0);
+        const up     = chgPct >= 0;
+        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+        const existing = liveStocks.find(s => s.sym === item.sym);
+        if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true; }
+        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
       } catch(e2) {}
     }));
     renderTrending(liveStocks);
-    buildGlobalTicker();
   }
 
   const total = stocksUpdated + cryptoUpdated;
@@ -4480,10 +4475,9 @@ function renderProfileModal() {
     ? '<img src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
     : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
-  // ── Clean profile card layout: banner top, content below ──
+  // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
   el.innerHTML =
-    // Banner
-    '<div style="position:relative;border-radius:14px 14px 0 0;overflow:hidden;margin:-16px -16px 0;background:#000;height:155px;">'
+    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:340px;">'
 
     // Full-bleed background (banner image or gradient)
     + '<div onclick="editBanner()" title="Change banner" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;transition:opacity 0.2s;"></div>'
@@ -4495,34 +4489,31 @@ function renderProfileModal() {
     + '<div onclick="editBanner()" style="position:absolute;top:12px;right:12px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
 
     // Avatar — overlapping the gradient, positioned mid-bottom
-    
+    + '<div style="position:absolute;bottom:96px;left:20px;z-index:3;">'
+      + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,255,255,0.25);box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;position:relative;">'
+        + avatarHtml
+        + '<div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,0.12);"></div>'
+      + '</div>'
+      + '<div style="position:absolute;bottom:1px;right:1px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid #000;">✏️</div>'
+    + '</div>'
 
     // Bottom text content — sits on top of gradient
-    + '</div>'  // end banner
+    + '<div style="position:relative;z-index:3;padding:0 20px 20px;margin-top:200px;">'
 
-    // Content section
-    + '<div style="background:var(--bg2);margin:0 -16px;padding:0;">'
-
-    // Avatar row overlapping banner
-    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 16px;margin-top:-36px;margin-bottom:10px;">'
-    + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--bg2);box-shadow:0 2px 16px rgba(0,0,0,0.4);cursor:pointer;position:relative;flex-shrink:0;">'
-    + avatarHtml
-    + '<div style="position:absolute;bottom:0;right:0;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid var(--bg2);">✏️</div>'
-    + '</div>'
-    + '<div style="display:flex;gap:8px;padding-bottom:4px;">'
-    + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;">⚙️</button>'
-    + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);font-weight:700;font-size:12px;cursor:pointer;color:var(--text);">Edit</button>'
-    + '</div>'
-    + '</div>'
-
-    + '<div style="padding:0 16px 12px;">'
-
-      // Name + handle
-      + '<div style="font-size:20px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">'
-          + (user.displayName||user.name)
-          + ' <span style="color:var(--accent);font-size:14px;">✓</span>'
+      // Name + handle row with action buttons
+      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;">'
+        + '<div>'
+          + '<div style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.3px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">'
+            + (user.displayName||user.name)
+            + ' <span style="color:var(--accent);font-size:15px;">✓</span>'
+          + '</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,0.55);font-family:Space Mono,monospace;margin-top:1px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
         + '</div>'
-      + '<div style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;margin-top:2px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
+        + '<div style="display:flex;gap:6px;">'
+          + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:#fff;font-size:13px;cursor:pointer;">⚙️</button>'
+          + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);font-weight:700;font-size:12px;cursor:pointer;color:#fff;letter-spacing:0.3px;">Edit</button>'
+        + '</div>'
+      + '</div>'
 
       // Bio
       + (user.bio
@@ -4537,23 +4528,22 @@ function renderProfileModal() {
 
     + '</div>'  // bottom text
 
-    // Stats bar
-    + '<div style="display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg3);margin:10px 0 0;">'
+    // ── Stats bar — glassmorphism strip at very bottom ──
+    + '<div style="position:relative;z-index:3;display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);">'
       + [
           [getFollowingCount(), 'Following', "showFollowList('following')"],
           [getFollowerCount(user.name), 'Followers', "showFollowList('followers')"],
           [posts.length, 'Posts', ''],
           [likes, 'Likes', ''],
         ].map(([val, label, oc]) =>
-          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid var(--border);">'
-          + '<div style="font-size:16px;font-weight:900;color:var(--text);font-family:Space Mono,monospace;">' + val + '</div>'
-          + '<div style="font-size:9px;color:var(--text3);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
+          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid rgba(255,255,255,0.07);">'
+          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + val + '</div>'
+          + '<div style="font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
           + '</div>'
         ).join('')
     + '</div>'
 
-    + '</div>'  // end stats
-    + '</div>'  // end content section
+    + '</div>'  // outer card
 
     // ── Recent posts ──
     + '<div style="padding:16px 4px 0;">'
@@ -10281,43 +10271,37 @@ async function loadNews(cat, btn) {
 
   const rssUrl = NEWS_URLS[cat] || NEWS_URLS.markets;
 
-  // Source 1: corsproxy.io — most reliable, no rate limits
+  // ── Source 1: corsproxy.io (no rate limits) ──
   try {
-    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(rssUrl), {signal: AbortSignal.timeout(10000)});
-    if(r.ok){ const text = await r.text();
-      if(text.includes('<item>')){ const items = parseRSS(text);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
+    const r = await fetch('https://corsproxy.io/?'+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r.ok){ const text=await r.text();
+      if(text.includes('<item>')){ const items=parseRSS(text);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    }
   } catch(e){}
 
-  // Source 2: allorigins.win
+  // ── Source 2: allorigins.win ──
   try {
-    const r2 = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(rssUrl), {signal: AbortSignal.timeout(10000)});
-    if(r2.ok){ const j2 = await r2.json(); const text2 = j2.contents || '';
-      if(text2.includes('<item>')){ const items = parseRSS(text2);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
+    const r2 = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r2.ok){ const j2=await r2.json(); const text2=j2.contents||'';
+      if(text2.includes('<item>')){ const items=parseRSS(text2);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    }
   } catch(e){}
 
-  // Source 3: Vercel /api/news proxy
+  // ── Source 3: Vercel /api/news ──
   try {
-    const r3 = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal: AbortSignal.timeout(8000)});
-    if(r3.ok){ const j3 = await r3.json(); const items = (j3.items||[]).filter(i=>i.title&&i.title.length>8);
-      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}
+    const r3 = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal:AbortSignal.timeout(8000)});
+    if(r3.ok){ const j3=await r3.json(); const items=(j3.items||[]).filter(i=>i.title&&i.title.length>8);
+      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
   } catch(e){}
 
-  // Source 4: thingproxy
-  try {
-    const r4 = await fetch('https://thingproxy.freeboard.io/fetch/' + rssUrl, {signal: AbortSignal.timeout(10000)});
-    if(r4.ok){ const text4 = await r4.text();
-      if(text4.includes('<item>')){ const items = parseRSS(text4);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
-  } catch(e){}
-
-  // All failed — show retry
+  // All failed
   window._mpNewsRetry = ()=>{ delete _newsLoaded[cat]; loadNews(cat,btn); };
   container.innerHTML = '<div style="text-align:center;padding:48px;">'
     +'<div style="font-size:32px;margin-bottom:12px;">📡</div>'
     +'<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
-    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection or try again.</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection.</div>'
     +'<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
     +'</div>';
 }
@@ -12333,15 +12317,13 @@ async function buildStories() {
     }
   });
 
-  // Fetch news headlines for each subject — using corsproxy + Google News RSS
+  // Fetch news via corsproxy + Google News RSS (no rate limits)
   await Promise.allSettled(STORY_SUBJECTS.map(async subj => {
-    // Check cache — only refresh if older than 50 mins
     if (_stories[subj.id]?.news && _stories[subj.id]?.newsTs && (Date.now() - _stories[subj.id].newsTs) < 50*60*1000) return;
     try {
       const q   = encodeURIComponent('"' + subj.label + '" stock');
       const rss = 'https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en';
-      const url = 'https://corsproxy.io/?' + encodeURIComponent(rss);
-      const r   = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      const r   = await fetch('https://corsproxy.io/?' + encodeURIComponent(rss), {signal: AbortSignal.timeout(8000)});
       if (!r.ok) return;
       const text = await r.text();
       const parser = new DOMParser();
@@ -12350,7 +12332,7 @@ async function buildStories() {
       if (!items.length) return;
       if (!_stories[subj.id]) _stories[subj.id] = {};
       _stories[subj.id].news = items.map(item => ({
-        title: (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),
+        title: (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').trim(),
         link:  item.querySelector('link')?.textContent || '#',
         ago:   timeAgo(item.querySelector('pubDate')?.textContent || ''),
         src:   (item.querySelector('source')?.textContent || 'Google News').trim(),
@@ -12495,15 +12477,12 @@ function renderStorySlide() {
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
 
-// ── Auto-load Market News on page start & refresh every 10 min ──
-setTimeout(() => {
-  loadNews('markets', document.getElementById('nc_markets'));
-}, 1500);
+// Auto-load Market News on page start + refresh every 10 min
+setTimeout(() => { loadNews('markets', document.getElementById('nc_markets')); }, 2000);
 setInterval(() => {
-  const cat = window._currentNewsCat || 'markets';
-  const btn = document.getElementById('nc_' + cat);
-  delete _newsLoaded[cat]; // force refresh
-  loadNews(cat, btn);
+  const cat = window._mpNewsCat || 'markets';
+  delete _newsLoaded[cat];
+  loadNews(cat, document.getElementById('nc_' + cat));
 }, 10 * 60 * 1000);
 
 // Also refresh stories when live data arrives
@@ -13105,61 +13084,7 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
 @keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.8; } }
 </style>
 
-<!-- ── LIVE DATA OVERRIDE — fetches directly from Yahoo via Vercel (no Railway needed) ── -->
-<script>
-(function() {
-  // ── Push Yahoo data into liveStocks and trigger all existing render functions ──
-  async function refreshAllLive() {
-    try {
-      // 1. Fetch all stocks from /api/all (Yahoo Finance direct, always on)
-      const r1 = await fetch('/api/all', { cache: 'no-store', signal: AbortSignal.timeout(18000) });
-      if (r1.ok) {
-        const d = await r1.json();
-        const stocks = d.stocks || [];
-        if (stocks.length > 0 && typeof liveStocks !== 'undefined') {
-          stocks.forEach(s => {
-            const existing = liveStocks.find(x => x.sym === s.sym);
-            if (existing) {
-              existing.price = s.price;
-              existing.chg   = s.chg;
-              existing.up    = s.up;
-              existing._live = true;
-            } else {
-              liveStocks.push(s);
-            }
-          });
-          // Trigger all existing render functions
-          if (typeof updateWhatsMoving  === 'function') updateWhatsMoving();
-          if (typeof updateTickerFromLive === 'function') updateTickerFromLive();
-          if (typeof renderTrending     === 'function') renderTrending(liveStocks);
-          if (typeof onLiveDataUpdate   === 'function') onLiveDataUpdate();
-          if (typeof buildGlobalTicker  === 'function') buildGlobalTicker();
-        }
-      }
-    } catch(e) {}
-
-    try {
-      // 2. Fetch indices from /api/indices (Yahoo Finance direct)
-      const r2 = await fetch('/api/indices', { cache: 'no-store', signal: AbortSignal.timeout(12000) });
-      if (r2.ok) {
-        const d = await r2.json();
-        if (!window._liveIndices) window._liveIndices = {};
-        if (d.nifty)     { window._liveIndices['NIFTY 50']   = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
-        if (d.banknifty) { window._liveIndices['NIFTY BANK'] = d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
-        if (d.sensex)    { window._liveIndices['SENSEX']     = d.sensex; }
-        if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
-        if (typeof updateTickerFromLive     === 'function') updateTickerFromLive();
-        if (typeof buildGlobalTicker        === 'function') buildGlobalTicker();
-      }
-    } catch(e) {}
-  }
-
-  // Run on load after 1s (let existing scripts init first)
-  setTimeout(refreshAllLive, 1000);
-  // Then every 25 seconds
-  setInterval(refreshAllLive, 25000);
-})();
-</script>
+<!-- Brightness overlay -->
 
 </body>
 </html>
