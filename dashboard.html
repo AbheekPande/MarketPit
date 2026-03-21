@@ -12311,24 +12311,29 @@ async function buildStories() {
     }
   });
 
-  // Fetch news headlines for each subject via rss2json
+  // Fetch news headlines for each subject — using corsproxy + Google News RSS
   await Promise.allSettled(STORY_SUBJECTS.map(async subj => {
+    // Check cache — only refresh if older than 50 mins
+    if (_stories[subj.id]?.news && _stories[subj.id]?.newsTs && (Date.now() - _stories[subj.id].newsTs) < 50*60*1000) return;
     try {
-      const q   = encodeURIComponent(subj.label + ' stock market India');
-      const rss = encodeURIComponent('https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en');
-      const r   = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rss + '&count=3', {signal: AbortSignal.timeout(6000)});
-      if (r.ok) {
-        const j = await r.json();
-        if (j.status === 'ok' && j.items?.length) {
-          if (!_stories[subj.id]) _stories[subj.id] = {};
-          _stories[subj.id].news = j.items.slice(0, 3).map(i => ({
-            title: i.title || '',
-            link:  i.link  || '#',
-            ago:   timeAgo(i.pubDate || ''),
-            src:   j.feed?.title || 'Google News',
-          })).filter(n => n.title.length > 10);
-        }
-      }
+      const q   = encodeURIComponent('"' + subj.label + '" stock');
+      const rss = 'https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en';
+      const url = 'https://corsproxy.io/?' + encodeURIComponent(rss);
+      const r   = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) return;
+      const text = await r.text();
+      const parser = new DOMParser();
+      const xml  = parser.parseFromString(text, 'text/xml');
+      const items = [...xml.querySelectorAll('item')].slice(0, 4);
+      if (!items.length) return;
+      if (!_stories[subj.id]) _stories[subj.id] = {};
+      _stories[subj.id].news = items.map(item => ({
+        title: (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),
+        link:  item.querySelector('link')?.textContent || '#',
+        ago:   timeAgo(item.querySelector('pubDate')?.textContent || ''),
+        src:   (item.querySelector('source')?.textContent || 'Google News').trim(),
+      })).filter(n => n.title.length > 10);
+      _stories[subj.id].newsTs = Date.now();
     } catch(e) {}
   }));
 
@@ -13067,7 +13072,61 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
 @keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.8; } }
 </style>
 
-<!-- Brightness overlay -->
+<!-- ── LIVE DATA OVERRIDE — fetches directly from Yahoo via Vercel (no Railway needed) ── -->
+<script>
+(function() {
+  // ── Push Yahoo data into liveStocks and trigger all existing render functions ──
+  async function refreshAllLive() {
+    try {
+      // 1. Fetch all stocks from /api/all (Yahoo Finance direct, always on)
+      const r1 = await fetch('/api/all', { cache: 'no-store', signal: AbortSignal.timeout(18000) });
+      if (r1.ok) {
+        const d = await r1.json();
+        const stocks = d.stocks || [];
+        if (stocks.length > 0 && typeof liveStocks !== 'undefined') {
+          stocks.forEach(s => {
+            const existing = liveStocks.find(x => x.sym === s.sym);
+            if (existing) {
+              existing.price = s.price;
+              existing.chg   = s.chg;
+              existing.up    = s.up;
+              existing._live = true;
+            } else {
+              liveStocks.push(s);
+            }
+          });
+          // Trigger all existing render functions
+          if (typeof updateWhatsMoving  === 'function') updateWhatsMoving();
+          if (typeof updateTickerFromLive === 'function') updateTickerFromLive();
+          if (typeof renderTrending     === 'function') renderTrending(liveStocks);
+          if (typeof onLiveDataUpdate   === 'function') onLiveDataUpdate();
+          if (typeof buildGlobalTicker  === 'function') buildGlobalTicker();
+        }
+      }
+    } catch(e) {}
+
+    try {
+      // 2. Fetch indices from /api/indices (Yahoo Finance direct)
+      const r2 = await fetch('/api/indices', { cache: 'no-store', signal: AbortSignal.timeout(12000) });
+      if (r2.ok) {
+        const d = await r2.json();
+        if (!window._liveIndices) window._liveIndices = {};
+        if (d.nifty)     { window._liveIndices['NIFTY 50']   = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
+        if (d.banknifty) { window._liveIndices['NIFTY BANK'] = d.banknifty; window._liveIndices['BANKNIFTY'] = d.banknifty; }
+        if (d.sensex)    { window._liveIndices['SENSEX']     = d.sensex; }
+        if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
+        if (typeof updateTickerFromLive     === 'function') updateTickerFromLive();
+        if (typeof buildGlobalTicker        === 'function') buildGlobalTicker();
+      }
+    } catch(e) {}
+  }
+
+  // Run on load after 1s (let existing scripts init first)
+  setTimeout(refreshAllLive, 1000);
+  // Then every 25 seconds
+  setInterval(refreshAllLive, 25000);
+})();
+</script>
 
 </body>
 </html>
