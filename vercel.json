@@ -1,23 +1,27 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.html",     "use": "@vercel/static" },
-    { "src": "login.html",     "use": "@vercel/static" },
-    { "src": "verify.html",    "use": "@vercel/static" },
-    { "src": "dashboard.html", "use": "@vercel/static" },
-    { "src": "api/quote.js",   "use": "@vercel/node"   },
-    { "src": "api/indices.js", "use": "@vercel/node"   },
-    { "src": "api/all.js",     "use": "@vercel/node"   },
-    { "src": "api/news.js",    "use": "@vercel/node"   }
+    { "src": "index.html",          "use": "@vercel/static" },
+    { "src": "login.html",          "use": "@vercel/static" },
+    { "src": "verify.html",         "use": "@vercel/static" },
+    { "src": "dashboard.html",      "use": "@vercel/static" },
+    { "src": "api/quote.js",        "use": "@vercel/node"   },
+    { "src": "api/indices.js",      "use": "@vercel/node"   },
+    { "src": "api/all.js",          "use": "@vercel/node"   },
+    { "src": "api/news.js",         "use": "@vercel/node"   },
+    { "src": "api/send-otp.js",     "use": "@vercel/node"   },
+    { "src": "api/verify-otp.js",   "use": "@vercel/node"   }
   ],
   "routes": [
-    { "src": "/api/quote",      "dest": "/api/quote.js"   },
-    { "src": "/api/indices",    "dest": "/api/indices.js" },
-    { "src": "/api/all",        "dest": "/api/all.js"     },
-    { "src": "/api/news",       "dest": "/api/news.js"    },
-    { "src": "/login.html",     "dest": "/login.html"     },
-    { "src": "/verify.html",    "dest": "/verify.html"    },
-    { "src": "/dashboard.html", "dest": "/dashboard.html" },
-    { "src": "/(.*)",           "dest": "/index.html"     }
+    { "src": "/api/quote",      "dest": "/api/quote.js"      },
+    { "src": "/api/indices",    "dest": "/api/indices.js"    },
+    { "src": "/api/all",        "dest": "/api/all.js"        },
+    { "src": "/api/news",       "dest": "/api/news.js"       },
+    { "src": "/api/send-otp",   "dest": "/api/send-otp.js"   },
+    { "src": "/api/verify-otp", "dest": "/api/verify-otp.js" },
+    { "src": "/login.html",     "dest": "/login.html"        },
+    { "src": "/verify.html",    "dest": "/verify.html"       },
+    { "src": "/dashboard.html", "dest": "/dashboard.html"    },
+    { "src": "/(.*)",           "dest": "/index.html"        }
   ]
 }
