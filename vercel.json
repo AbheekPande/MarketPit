@@ -3,6 +3,7 @@
   "builds": [
     { "src": "index.html",          "use": "@vercel/static" },
     { "src": "login.html",          "use": "@vercel/static" },
+    { "src": "education.html",      "use": "@vercel/static" },
     { "src": "verify.html",         "use": "@vercel/static" },
     { "src": "dashboard.html",      "use": "@vercel/static" },
     { "src": "api/quote.js",        "use": "@vercel/node"   },
@@ -20,6 +21,7 @@
     { "src": "/api/send-otp",   "dest": "/api/send-otp.js"   },
     { "src": "/api/verify-otp", "dest": "/api/verify-otp.js" },
     { "src": "/login.html",     "dest": "/login.html"        },
+    { "src": "/education.html",   "dest": "/education.html"    },
     { "src": "/verify.html",    "dest": "/verify.html"       },
     { "src": "/dashboard.html", "dest": "/dashboard.html"    },
     { "src": "/(.*)",           "dest": "/index.html"        }

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Intelligence Academy | Market Pit</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-container": "#e59c8d",
+                        "error-container": "#ffdad6",
+                        "primary": "#003227",
+                        "on-background": "#191c1b",
+                        "inverse-primary": "#95d3bf",
+                        "secondary": "#4c635b",
+                        "surface-container-low": "#f2f4f1",
+                        "on-primary-fixed": "#002019",
+                        "inverse-surface": "#2e312f",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#004b3c",
+                        "primary-fixed": "#b0efda",
+                        "on-tertiary-fixed-variant": "#6d382c",
+                        "tertiary-container": "#673328",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#0a5041",
+                        "on-primary-container": "#7cbaa6",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1ee",
+                        "surface-variant": "#e1e3e0",
+                        "background": "#f8faf7",
+                        "outline-variant": "#bfc9c4",
+                        "surface-bright": "#f8faf7",
+                        "surface-tint": "#2b6958",
+                        "tertiary": "#4c1e14",
+                        "surface-dim": "#d8dbd8",
+                        "on-secondary-container": "#51675f",
+                        "on-surface-variant": "#404945",
+                        "secondary-fixed-dim": "#b3ccc2",
+                        "outline": "#707975",
+                        "surface-container-high": "#e7e9e6",
+                        "primary-fixed-dim": "#95d3bf",
+                        "surface-container": "#eceeeb",
+                        "secondary-container": "#cce5db",
+                        "on-secondary-fixed-variant": "#354b44",
+                        "surface": "#f8faf7",
+                        "secondary-fixed": "#cfe8de",
+                        "tertiary-fixed-dim": "#ffb4a4",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#091f19",
+                        "surface-container-highest": "#e1e3e0",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1b",
+                        "tertiary-fixed": "#ffdad3",
+                        "on-tertiary-fixed": "#370e06"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .bg-primary-gradient {
+            background: linear-gradient(135deg, #003227 0%, #004b3c 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-[#f8faf7]/80 backdrop-blur-md shadow-[0px_20px_40px_rgba(25,28,27,0.06)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-12">
+<a class="text-2xl font-bold font-['Noto_Serif'] text-[#003227]" href="index.html">Market Pit</a>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors font-['Noto_Serif'] font-semibold tracking-tight" href="index.html">Markets</a>
+<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors font-['Noto_Serif'] font-semibold tracking-tight" href="index.html">Platforms</a>
+<a class="text-[#003227] border-b-2 border-[#003227] pb-1 font-['Noto_Serif'] font-semibold tracking-tight" href="#">Education</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a href="login.html" class="px-5 py-2 text-[#191c1b]/70 hover:text-[#003227] transition-all font-semibold">Login</a>
+<a href="login.html" class="bg-primary-gradient text-on-primary px-6 py-2 rounded-lg font-semibold shadow-sm hover:scale-[1.02] transition-all duration-300">Sign Up</a>
+</div>
+</div>
+</nav>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative px-8 py-24 md:py-32 max-w-screen-2xl mx-auto overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+<div class="md:col-span-7 z-10">
+<div class="inline-block bg-primary-fixed/40 backdrop-blur-sm px-3 py-1 rounded-full text-on-primary-fixed-variant font-label text-xs uppercase tracking-[0.1em] mb-6">
+                        Institutional Education
+                    </div>
+<h1 class="font-headline text-5xl md:text-7xl text-primary leading-tight mb-6">
+                        Financial Intelligence <br/><span class="italic font-normal">Academy</span>
+</h1>
+<p class="text-on-surface-variant text-xl md:text-2xl max-w-xl leading-relaxed font-light">
+                        Structured pathways for institutional-grade mastery. Transition from speculative retail trading to professional market execution.
+                    </p>
+</div>
+<div class="md:col-span-5 relative">
+<div class="aspect-square bg-surface-container-high rounded-full absolute -top-12 -right-12 w-96 h-96 -z-10 blur-3xl opacity-50"></div>
+<div class="relative rounded-xl overflow-hidden shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-700">
+<img class="w-full h-[500px] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQeVgBxLfMxyUnPAcqYYX-3UQpsiOWRN3tNOWb8eqctFSsWoT0J-SdYU8_MIKlGn1kLLDLkQxDKaNEBnMl-mEEj-DxgDDKsHGFlsN1-nvWl7i3D4B0KgTrOhRUy3OYEmNvZaw7WOHiGC-3qVGIxulJGBgOyn6OldZn7qsFiZFePqjacBx64LiCMCvZCXR9nhAFN9_F1DNqwWZ4x69fLYwhA0gXSJ2qahTxoQL9ldrb3OxG4_cE-VCUvoMD4WyERxJ7ezkDq929h0k" alt="Trading setup"/>
+<div class="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Course Tracks Bento Grid -->
+<section class="px-8 py-16 max-w-screen-2xl mx-auto">
+<div class="flex justify-between items-end mb-12">
+<div>
+<h2 class="font-headline text-3xl text-primary mb-2">Academic Pathways</h2>
+<p class="text-on-surface-variant">Select your specialization track</p>
+</div>
+<div class="hidden md:block h-px flex-1 bg-outline-variant/30 mx-12 mb-4"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<!-- Track 1 -->
+<div class="md:col-span-2 group relative bg-surface-container-low rounded-xl p-10 hover:bg-surface-container-lowest transition-all duration-500 shadow-sm">
+<div class="flex flex-col h-full justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">account_balance</span>
+<h3 class="font-headline text-2xl text-primary mb-4">Market Fundamentals</h3>
+<p class="text-on-surface-variant leading-relaxed mb-8">Deep dive into Order Flow dynamics, institutional liquidity pools, and the mechanics of global asset classes. Understand why markets move before they do.</p>
+<div class="flex flex-wrap gap-2 mb-12">
+<span class="px-3 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface-variant uppercase">Order Flow</span>
+<span class="px-3 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface-variant uppercase">Liquidity</span>
+<span class="px-3 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface-variant uppercase">Asset Classes</span>
+</div>
+</div>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all">
+                            Start Learning <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Track 2 -->
+<div class="group relative bg-surface-container-low rounded-xl p-10 hover:bg-surface-container-lowest transition-all duration-500 shadow-sm">
+<div class="flex flex-col h-full justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">legend_toggle</span>
+<h3 class="font-headline text-2xl text-primary mb-4">Technical Analysis</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">Advanced charting techniques and price action strategies that bypass traditional lagging indicators.</p>
+</div>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">
+                            Start Learning <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Track 3 -->
+<div class="group relative bg-surface-container-low rounded-xl p-10 hover:bg-surface-container-lowest transition-all duration-500 shadow-sm">
+<div class="flex flex-col h-full justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">security</span>
+<h3 class="font-headline text-2xl text-primary mb-4">Risk Management</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">Capital preservation frameworks used by prop desks to maintain consistent equity growth under pressure.</p>
+</div>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">
+                            Start Learning <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Track 4 -->
+<div class="md:col-span-4 group relative bg-primary text-on-primary rounded-xl p-10 overflow-hidden shadow-xl">
+<div class="absolute right-0 top-0 h-full w-1/2 opacity-20 pointer-events-none">
+<img class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_3PuHgDuIgvy3Pgr5kuWJqeCMEJDCbTUaLEkck8U6L97DQc7BPztC0z0_-rOgbdU0HhjXxBey1yeE5W7brVzI6Q0CSqSYMMr7t_FWA_ZmYxcfQzL_TI-Fhjvan3pF-lz8uhJJ5WNohHY8YFaR19Z9xICi8_XcNMJ0l-Nd66sj-0w4NukzcS-jL4XM0R_l_Hq5xRYgXcYm4xGQ9w6hp4Tz2SL3s_ja0blFQNjALOyHGaScllK9y01oKkV2TzVqE-GFIWTXeDjQWZ8" alt="Global macro"/>
+</div>
+<div class="relative z-10 md:w-1/2">
+<span class="material-symbols-outlined text-primary-fixed text-4xl mb-6">public</span>
+<h3 class="font-headline text-3xl mb-4 text-primary-fixed">Macro Intelligence</h3>
+<p class="text-on-primary-container leading-relaxed text-lg mb-8">Master the invisible forces driving global capital. From Central Bank policy shifts to geopolitical flow dynamics, learn to read the global chess board.</p>
+<div class="flex gap-6 items-center">
+<a href="login.html" class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-lg font-bold hover:bg-white transition-colors">Enroll in Track</a>
+<span class="text-sm italic opacity-80">68 Modules | Advanced Level</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Research Papers + Progress -->
+<section class="px-8 py-24 max-w-screen-2xl mx-auto bg-surface-container-low/50 rounded-3xl mb-16">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+<!-- Research Papers -->
+<div class="lg:col-span-2">
+<h2 class="font-headline text-3xl text-primary mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">description</span>Recent Research Papers
+</h2>
+<div class="space-y-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+<div class="flex items-center gap-6">
+<div class="bg-primary-fixed/30 p-3 rounded-lg text-primary"><span class="material-symbols-outlined">article</span></div>
+<div>
+<h4 class="font-bold text-lg text-primary">The Impact of Quantitative Tightening on FX Volatility</h4>
+<p class="text-sm text-on-surface-variant">Published: Oct 24, 2024 • Institutional Grade Analysis</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+<div class="flex items-center gap-6">
+<div class="bg-primary-fixed/30 p-3 rounded-lg text-primary"><span class="material-symbols-outlined">article</span></div>
+<div>
+<h4 class="font-bold text-lg text-primary">Sentiment Asymmetry in Emerging Markets</h4>
+<p class="text-sm text-on-surface-variant">Published: Oct 18, 2024 • Technical Whitepaper</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+<div class="flex items-center gap-6">
+<div class="bg-primary-fixed/30 p-3 rounded-lg text-primary"><span class="material-symbols-outlined">article</span></div>
+<div>
+<h4 class="font-bold text-lg text-primary">Cross-Asset Correlation in the AI Supercycle</h4>
+<p class="text-sm text-on-surface-variant">Published: Oct 12, 2024 • Market Intelligence</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</div>
+</div>
+</div>
+<!-- Progress Panel -->
+<div class="bg-primary p-8 rounded-2xl text-on-primary">
+<h3 class="font-headline text-2xl mb-6">Your Progress</h3>
+<div class="mb-8">
+<div class="flex justify-between text-sm mb-2 opacity-80">
+<span>Academy Level 4</span>
+<span>72% Complete</span>
+</div>
+<div class="w-full bg-primary-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-fixed h-full" style="width: 72%"></div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-fixed">play_circle</span>
+<div>
+<p class="text-sm font-bold">Resume: Institutional Hedging</p>
+<p class="text-xs opacity-60">Technical Analysis Track</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-fixed">military_tech</span>
+<div>
+<p class="text-sm font-bold">New Badge: Risk Architect</p>
+<p class="text-xs opacity-60">Risk Management Track</p>
+</div>
+</div>
+</div>
+<a href="login.html" class="block w-full mt-10 border border-primary-fixed/30 py-3 rounded-lg text-sm font-bold hover:bg-primary-container transition-colors text-center">
+                        View Full Dashboard
+                    </a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f2f4f1] w-full mt-16">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 px-12 py-16 max-w-screen-2xl mx-auto border-t border-[#191c1b]/10">
+<div class="md:col-span-1">
+<span class="font-['Noto_Serif'] italic text-lg text-[#003227] mb-6 block">Market Pit Academy</span>
+<p class="text-[#191c1b]/60 font-['Manrope'] text-sm leading-relaxed">Elevating market intelligence through precise education and structured professional development.</p>
+</div>
+<div>
+<h4 class="text-[#003227] font-bold mb-6 font-['Manrope'] text-sm tracking-wide">Legal</h4>
+<div class="flex flex-col gap-3">
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Privacy Policy</a>
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Terms of Service</a>
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Risk Disclosure</a>
+</div>
+</div>
+<div>
+<h4 class="text-[#003227] font-bold mb-6 font-['Manrope'] text-sm tracking-wide">Support</h4>
+<div class="flex flex-col gap-3">
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Help Center</a>
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Regulatory Info</a>
+<a class="text-[#191c1b]/60 hover:text-[#003227] underline decoration-1 underline-offset-4 transition-all text-sm" href="#">Cookie Policy</a>
+</div>
+</div>
+<div class="md:col-span-1">
+<h4 class="text-[#003227] font-bold mb-6 font-['Manrope'] text-sm tracking-wide">Subscribe</h4>
+<div class="flex gap-2">
+<input class="bg-white border-none rounded p-2 text-sm w-full focus:ring-1 focus:ring-primary" placeholder="Institutional email" type="email"/>
+<button class="bg-primary p-2 text-white rounded"><span class="material-symbols-outlined">send</span></button>
+</div>
+</div>
+</div>
+<div class="px-12 py-8 max-w-screen-2xl mx-auto border-t border-[#191c1b]/5 text-center">
+<p class="text-[#191c1b]/60 font-['Manrope'] text-xs tracking-wide">© 2024 Market Pit Academy. All rights reserved. Precise Trading. Intelligent Growth.</p>
+</div>
+</footer>
+</body></html>
