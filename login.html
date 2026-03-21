@@ -240,6 +240,27 @@
 </div>
 </footer>
 <script>
+const RAILWAY = 'https://web-production-78fc1.up.railway.app';
+
+async function sendOTP(email, extra = {}) {
+  const controller = new AbortController();
+  const timeout    = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res = await fetch(`${RAILWAY}/api/send-otp`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, ...extra }),
+      signal:  controller.signal,
+    });
+    clearTimeout(timeout);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Request timed out. Railway server may be starting up — please try again in 15 seconds.');
+    throw new Error('Cannot reach server. Check your internet connection or try again shortly.');
+  }
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
@@ -251,15 +272,8 @@ async function handleLogin(e) {
   btn.disabled    = true;
 
   try {
-    const res  = await fetch('https://web-production-78fc1.up.railway.app/api/send-otp', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
-    });
-    const data = await res.json();
-
+    const data = await sendOTP(email);
     if (data.ok) {
-      // Success — go to verify page with email
       window.location.href = 'verify.html?email=' + encodeURIComponent(email);
     } else {
       alert(data.message || 'Failed to send OTP. Please try again.');
@@ -267,7 +281,7 @@ async function handleLogin(e) {
       btn.disabled    = false;
     }
   } catch (err) {
-    alert('Network error. Please try again.');
+    alert(err.message);
     btn.textContent = 'Sign In to Market Pit';
     btn.disabled    = false;
   }
@@ -303,16 +317,8 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   try {
-    // Send OTP to email for verification
-    const res  = await fetch('https://web-production-78fc1.up.railway.app/api/send-otp', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email, name, signup: true }),
-    });
-    const data = await res.json();
-
+    const data = await sendOTP(email, { name, signup: true });
     if (data.ok) {
-      // Go to verify page — same OTP flow as login
       window.location.href = 'verify.html?email=' + encodeURIComponent(email) + '&signup=1';
     } else {
       errEl.textContent   = data.message || 'Failed to send verification code.';
@@ -321,7 +327,7 @@ async function handleSignup(e) {
       btn.disabled        = false;
     }
   } catch (err) {
-    errEl.textContent   = 'Network error. Please try again.';
+    errEl.textContent   = err.message;
     errEl.style.display = 'block';
     btn.textContent     = 'Create Account & Verify Email';
     btn.disabled        = false;
