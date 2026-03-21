@@ -1,261 +1,296 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en"><head>
+<html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Market Pit — The Intelligence Layer For Global Markets</title>
+<title>Digital Curator Finance | Market Pit</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "on-tertiary": "#003825",
-              "surface-container-highest": "#303441",
-              "on-background": "#dfe2f3",
-              "on-tertiary-fixed": "#002114",
-              "tertiary-fixed": "#68fcbf",
-              "secondary-fixed": "#d8e3fb",
-              "outline": "#86948a",
-              "primary-container": "#10b981",
-              "surface-container-low": "#171b27",
-              "secondary": "#bcc7de",
-              "on-secondary": "#263143",
-              "surface-dim": "#0f131f",
-              "tertiary-fixed-dim": "#45dfa4",
-              "error": "#ffb4ab",
-              "on-surface-variant": "#bbcabf",
-              "primary": "#4edea3",
-              "on-secondary-fixed": "#111c2d",
-              "outline-variant": "#3c4a42",
-              "on-primary-fixed-variant": "#005236",
-              "primary-fixed-dim": "#4edea3",
-              "error-container": "#93000a",
-              "secondary-container": "#3e495d",
-              "surface-variant": "#303441",
-              "on-primary-container": "#00422b",
-              "on-secondary-container": "#aeb9d0",
-              "on-error-container": "#ffdad6",
-              "on-primary-fixed": "#002113",
-              "surface-tint": "#4edea3",
-              "on-tertiary-container": "#00422c",
-              "inverse-surface": "#dfe2f3",
-              "secondary-fixed-dim": "#bcc7de",
-              "on-secondary-fixed-variant": "#3c475a",
-              "tertiary": "#45dfa4",
-              "surface": "#0f131f",
-              "on-tertiary-fixed-variant": "#005137",
-              "background": "#0f131f",
-              "inverse-primary": "#006c49",
-              "on-primary": "#003824",
-              "on-error": "#690005",
-              "surface-container-lowest": "#0a0e19",
-              "inverse-on-surface": "#2c303d",
-              "surface-container": "#1b1f2b",
-              "surface-bright": "#353946",
-              "tertiary-container": "#00b982",
-              "on-surface": "#dfe2f3",
-              "surface-container-high": "#262a36",
-              "primary-fixed": "#6ffbbe"
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#95d3bf",
+                        "on-surface": "#191c1b",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#7cbaa6",
+                        "on-surface-variant": "#404945",
+                        "outline": "#707975",
+                        "on-error": "#ffffff",
+                        "surface": "#f8faf7",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f8faf7",
+                        "on-background": "#191c1b",
+                        "inverse-on-surface": "#eff1ee",
+                        "surface-container-high": "#e7e9e6",
+                        "secondary-fixed": "#cfe8de",
+                        "tertiary-fixed": "#ffdad3",
+                        "primary-container": "#004b3c",
+                        "background": "#f8faf7",
+                        "on-tertiary-container": "#e59c8d",
+                        "primary-fixed": "#b0efda",
+                        "inverse-primary": "#95d3bf",
+                        "tertiary": "#4c1e14",
+                        "on-tertiary-fixed-variant": "#6d382c",
+                        "secondary": "#4c635b",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#003227",
+                        "on-tertiary-fixed": "#370e06",
+                        "tertiary-fixed-dim": "#ffb4a4",
+                        "tertiary-container": "#673328",
+                        "surface-tint": "#2b6958",
+                        "surface-container-low": "#f2f4f1",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e1e3e0",
+                        "surface-container": "#eceeeb",
+                        "on-secondary-fixed-variant": "#354b44",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#0a5041",
+                        "outline-variant": "#bfc9c4",
+                        "on-secondary-container": "#51675f",
+                        "surface-container-highest": "#e1e3e0",
+                        "on-secondary-fixed": "#091f19",
+                        "secondary-fixed-dim": "#b3ccc2",
+                        "on-primary-fixed": "#002019",
+                        "inverse-surface": "#2e312f",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#cce5db",
+                        "surface-dim": "#d8dbd8"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
             },
-            fontFamily: {
-              "headline": ["Manrope"],
-              "body": ["Manrope"],
-              "label": ["Inter"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-          },
-        },
-      }
+        }
     </script>
 <style>
-        .glass-panel {
-            background: rgba(23, 27, 39, 0.6);
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
-        .text-glow {
-            text-shadow: 0 0 15px rgba(78, 222, 163, 0.4);
-        }
-        .obsidian-gradient {
-            background: radial-gradient(circle at top right, #1b1f2b, #0f131f, #040712);
-        }
-        .mask-fade-b {
-            mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-        }
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-            animation: marquee 30s linear infinite;
-        }
     </style>
 </head>
-<body class="bg-background text-on-background font-body selection:bg-primary/30">
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed-variant">
 <!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-[#171b27]/60 backdrop-blur-xl border-b-[0.5px] border-[#3c4a42]/20 shadow-[0_4px_20px_rgba(4,7,18,0.5)]">
-<div class="flex justify-between items-center h-20 px-8 w-full max-w-[1920px] mx-auto font-['Manrope'] tracking-tight">
-<div class="flex items-center gap-12">
-<a class="text-2xl font-black tracking-tighter text-[#dfe2f3] drop-shadow-[0_0_8px_rgba(78,222,163,0.3)]" href="#">Market Pit</a>
-<div class="hidden md:flex items-center gap-8">
-<a class="text-[#4edea3] border-b-2 border-[#4edea3] pb-1 transition-colors" href="#">Markets</a>
+<nav class="fixed top-0 w-full z-50 bg-surface/80 glass-nav shadow-[0px_20px_40px_rgba(25,28,27,0.06)] h-20">
+<div class="flex justify-between items-center max-w-7xl mx-auto px-8 h-full">
+<div class="text-2xl font-headline italic font-bold text-[#003227]">
+                Digital Curator Finance
+            </div>
+<div class="hidden md:flex items-center space-x-8 font-headline font-semibold tracking-tight">
+<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#">Markets</a>
+<a class="text-[#003227] border-b-2 border-[#003227] pb-1" href="#">Platforms</a>
+<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#">Education</a>
+<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#">Company</a>
 </div>
-</div>
-<div class="flex items-center gap-6">
-<a href="login.html" class="text-[#bbcabf] hover:text-[#dfe2f3] transition-colors active:scale-95 text-sm font-medium">Login</a>
-<a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-bold shadow-[0_4px_20px_rgba(16,185,129,0.3)] active:scale-95 transition-all text-sm uppercase tracking-wider">Join</a>
+<div class="flex items-center space-x-6">
+<!-- Log In → login.html -->
+<a href="login.html" class="text-[#003227] font-semibold hover:opacity-80 transition-all">Log In</a>
+<!-- Get Started → login.html -->
+<a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-md hover:scale-[0.99] active:opacity-80 duration-200">
+                    Get Started
+                </a>
 </div>
 </div>
 </nav>
-<main class="pt-20">
+<main class="pt-32 pb-16">
 <!-- Hero Section -->
-<section class="relative min-h-[921px] flex flex-col items-center justify-center text-center px-6 overflow-hidden obsidian-gradient">
-<div class="absolute inset-0 opacity-20 pointer-events-none">
-<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
-<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-tertiary/10 rounded-full blur-[120px]"></div>
+<section class="max-w-7xl mx-auto px-8 mb-32">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7">
+<div class="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed/40 blur-[0.5px] mb-6">
+<span class="text-xs font-label uppercase tracking-widest font-bold text-on-primary-fixed-variant">Financial Intelligence Hub</span>
 </div>
-<div class="absolute inset-0 mask-fade-b opacity-40">
-<img alt="abstract financial data lines" class="w-full h-full object-cover mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnrCD3izJgmIZoK20OsSjkoZK6hCXrvGf0Z2m7FAlF6ryPtW-0mlV1yrB19nV2cW1zNP-of3idsDiUYuVKlyPJPhI6YeXO1Uvg9RDGvCJ1I_qA_VcEyQmthi3zZ6z-m6hHT3gLTSVenBCMwvilAKYAfG7wdsPFJb93wbSsbtCb6q1V5K2am1UObIQmg2Dbhmjf391KLCik92eGBkf-vBazogDhy_l3SuKFwi7GKHglij7Gnc2gYxt-OkYaiTxIHEgYG-BSU2s0y8"/>
+<h1 class="font-headline text-6xl md:text-7xl font-bold text-primary leading-[1.1] mb-8">
+                        The Market <span class="italic font-normal">Pit</span>.
+                    </h1>
+<p class="text-xl text-on-surface-variant max-w-xl leading-relaxed mb-10">
+                        A high-end social network architected for financial discourse. Engage with institutional-grade data and a community of elite traders across all asset classes.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<!-- Enter the Pit → login.html -->
+<a href="login.html" class="bg-primary text-on-primary px-8 py-4 rounded-lg font-bold flex items-center gap-2 group">
+                            Enter the Pit
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </a>
+<!-- Explore Ecosystem → login.html -->
+<a href="login.html" class="border border-outline/20 px-8 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-low transition-colors">
+                            Explore Ecosystem
+                        </a>
 </div>
-<div class="relative z-10 max-w-5xl mx-auto">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border-[0.5px] border-primary/30 bg-primary/5 mb-8">
-<span class="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-<span class="text-[10px] font-label uppercase tracking-[0.2em] text-primary-fixed">Live Institutional Feed Active</span>
 </div>
-<h1 class="font-headline text-5xl md:text-8xl font-extrabold tracking-tighter text-on-background leading-[0.9] mb-8 text-glow">
-                    The Intelligence Layer <br/> For Global Markets.
-                </h1>
-<p class="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light leading-relaxed">
-                    Decipher market noise with institutional-grade sentiment analysis, real-time alpha signals, and a high-conviction community pulse.
-                </p>
-<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-<a href="login.html" class="w-full sm:w-auto px-10 py-5 glass-panel border-[0.5px] border-outline-variant/40 text-on-surface rounded-full font-bold text-lg hover:bg-surface-container/50 active:scale-95 transition-all">
-                        View Market Map
+<div class="lg:col-span-5 relative">
+<div class="aspect-square rounded-2xl overflow-hidden bg-surface-container shadow-2xl relative z-10">
+<img class="w-full h-full object-cover grayscale-[30%] hover:grayscale-0 transition-all duration-700" data-alt="Abstract financial data visualization on dark screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDR5eWkYZEzzOWyWsZnZ-TXlhfq4QyMYP97OnqTRh9-4GMx-2tf8ZE2fDjm84LP8pk5YrvjVFDxmVqSfPKooLPyR68GMdn2XGTbiv00cEKbbpMu851FQAYV-sxx1DZRWpoPqsvMfV4WYbeKEagcawns4x_QSuGD-rUI9OhZvyos0Oj0fbCFtSQ-VD_Mvd_XXhgn4awCdiz8N9h380uaJUOhzMiTlzbX1r7ZW7DT3Oi-KgQ4e9rUyNTqqr4VhRXQCxMkHAzIaOf0lfY"/>
+</div>
+<div class="absolute -bottom-6 -left-6 w-48 h-48 bg-primary-fixed/30 rounded-full blur-3xl -z-10"></div>
+<div class="absolute -top-10 right-0 p-6 bg-surface-container-lowest shadow-xl rounded-xl border border-outline-variant/10 max-w-[200px]">
+<p class="text-xs font-label uppercase text-on-surface-variant mb-2">Live Sentiment</p>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-headline font-bold text-primary">Bullish</span>
+<span class="text-primary-fixed-dim material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Platform Ecosystem (Comprehensive) -->
+<section class="bg-surface-container-low py-32">
+<div class="max-w-7xl mx-auto px-8">
+<div class="mb-20">
+<h2 class="font-headline text-4xl font-bold text-primary mb-4 italic">Platform Ecosystem</h2>
+<p class="text-on-surface-variant font-medium tracking-tight">The comprehensive infrastructure of modern finance.</p>
+</div>
+<!-- Feature Grid: Bento Style -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[800px]">
+<!-- Community Discussions -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-xl p-10 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+<div>
+<span class="material-symbols-outlined text-4xl text-primary mb-6">forum</span>
+<h3 class="font-headline text-3xl font-bold text-primary mb-4">Social Media for Markets</h3>
+<p class="text-on-surface-variant text-lg max-w-md">Engage in high-signal discussions across Stocks, Crypto, and Forex. Verified insights from top-tier analysts and real-time community sentiment.</p>
+</div>
+<div class="mt-8 overflow-hidden rounded-lg border border-outline-variant/10">
+<img class="w-full h-64 object-cover opacity-80" data-alt="Modern social dashboard showing financial charts" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1EVq2b3AhP4m_JocAxeU7By0U3IL5htxkdCjy0hYnMnR7Jg9hEICCKRDIM3_heb3zbUxsc7IQTEBnlH49TE7qj2GVmErRijI2i5nm3TCKDKT4vL5WUft2KdXQHV-jxbMYEuX-8_tmQ_KOQSooTxa48p-5AFd9zapusv9vuNlR7g2DTV5-fMbd_G_0drWq8CJpn0HFRSW4E0lwqXcd_68AWlf7ZG-0jY9bPsiUyKmbnl7BgJDSMHe4PlNZN_4qYODJtHCV4QA5gNs"/>
+</div>
+</div>
+<!-- Market Data -->
+<div class="md:col-span-4 bg-primary text-on-primary rounded-xl p-10 flex flex-col justify-center relative overflow-hidden">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl mb-6 text-primary-fixed">bolt</span>
+<h3 class="font-headline text-2xl font-bold mb-4">Real-time Data</h3>
+<p class="opacity-80 leading-relaxed">Milliseconds matter. Access institutional latency market feeds with zero-delay precision across global exchanges.</p>
+</div>
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[200px]">monitoring</span>
+</div>
+</div>
+<!-- Economic Calendar -->
+<div class="md:col-span-4 bg-surface-container rounded-xl p-10 flex flex-col items-start shadow-sm border border-outline-variant/5">
+<span class="material-symbols-outlined text-3xl text-secondary mb-6">calendar_month</span>
+<h3 class="font-headline text-xl font-bold text-primary mb-3">Economic Calendar</h3>
+<p class="text-on-surface-variant text-sm mb-6">Track every global central bank meeting, GDP release, and employment report in one intelligent timeline.</p>
+<div class="mt-auto flex items-center gap-2 text-primary font-bold text-sm">
+                            View Calendar <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</div>
+</div>
+<!-- IPO & Unlisted -->
+<div class="md:col-span-4 bg-surface-container-highest rounded-xl p-10 flex flex-col items-start shadow-sm relative">
+<div class="flex justify-between w-full">
+<span class="material-symbols-outlined text-3xl text-primary mb-6">stars</span>
+<div class="bg-primary-fixed/40 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest text-on-primary-fixed-variant h-fit">PRE-MARKET</div>
+</div>
+<h3 class="font-headline text-xl font-bold text-primary mb-3">IPO Intelligence</h3>
+<p class="text-on-surface-variant text-sm">Exclusive insights into unlisted shares and upcoming IPOs before they hit the retail desk.</p>
+</div>
+<!-- Advanced Screeners -->
+<div class="md:col-span-4 bg-surface-container-lowest rounded-xl p-10 flex flex-col items-start shadow-sm border border-outline-variant/5">
+<span class="material-symbols-outlined text-3xl text-primary mb-6">filter_list</span>
+<h3 class="font-headline text-xl font-bold text-primary mb-3">Market Screeners</h3>
+<p class="text-on-surface-variant text-sm">Sophisticated multi-factor screening across 50,000+ instruments. Find the needle in the global haystack.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Asymmetric Detail Section -->
+<section class="py-32 max-w-7xl mx-auto px-8">
+<div class="flex flex-col md:flex-row gap-20 items-center">
+<div class="w-full md:w-1/2">
+<img class="rounded-2xl shadow-xl grayscale-[50%]" data-alt="People collaborating in a modern architectural office space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYcxxy_iACkJqS9-hQ4TmKgk9x3-Bz0oQsWxm5apSMNUBZTJR1YUfnmQj3kSMuEPPDQtqa7h-0-q23iFFgJ3_OrZX-e5qTyCxPFyPBd87U-2Sz1gujr-EX_vECTzlZrdh55NFvK9cklHJ8zIAZbc8nhWeHRppFYaNUE_NuuCSOIkK7wjryMdYnZQIy2NxLgw7ZHbzA3_x7Qp5NqXIW2B0wp2XVdt3AXF8omaOYYfWXG7Gurem4q1mR_zjnTQQk_2BlqDQe-GMYkug"/>
+</div>
+<div class="w-full md:w-1/2">
+<h2 class="font-headline text-4xl font-bold text-primary leading-tight mb-8">Where Intellectual Rigor Meets Market Opportunity.</h2>
+<div class="space-y-8">
+<div class="flex gap-4">
+<div class="h-10 w-10 shrink-0 bg-primary/5 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+</div>
+<div>
+<h4 class="font-bold text-primary mb-1">Curated Community</h4>
+<p class="text-on-surface-variant text-sm">Membership is a privilege. We prioritize quality of thought over quantity of users.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="h-10 w-10 shrink-0 bg-primary/5 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">security</span>
+</div>
+<div>
+<h4 class="font-bold text-primary mb-1">Privacy First Architecture</h4>
+<p class="text-on-surface-variant text-sm">Your data and your trade strategies remain yours. We sell no user data to hedge funds.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="max-w-7xl mx-auto px-8 mb-32">
+<div class="bg-gradient-to-br from-[#003227] to-[#004b3c] rounded-[2rem] p-16 text-center text-on-primary shadow-2xl overflow-hidden relative">
+<div class="relative z-10">
+<h2 class="font-headline text-5xl font-bold mb-6">Ready to join the discourse?</h2>
+<p class="text-xl opacity-80 mb-10 max-w-2xl mx-auto">Create your bespoke financial environment today and experience the new standard of market intelligence.</p>
+<!-- Apply for Access → login.html -->
+<a href="login.html" class="bg-surface text-primary px-10 py-5 rounded-lg font-bold hover:bg-primary-fixed transition-all shadow-lg inline-block">
+                        Apply for Access
                     </a>
 </div>
+<!-- Abstract decorative element -->
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary-fixed/5 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-container/20 rounded-full blur-[100px]"></div>
 </div>
 </section>
-<!-- Market Stats Ticker -->
-<section class="w-full bg-surface-container-lowest border-y-[0.5px] border-outline-variant/20 overflow-hidden">
-<div class="flex items-center gap-12 py-6 px-8 animate-marquee whitespace-nowrap">
-<div class="flex items-center gap-4 group cursor-default">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">S&amp;P 500</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">5,241.53</span>
-<span class="text-xs text-primary font-semibold">+1.24%</span>
-</div>
-</div>
-<div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-<img alt="sparkline up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnrCD3izJgmIZoK20OsSjkoZK6hCXrvGf0Z2m7FAlF6ryPtW-0mlV1yrB19nV2cW1zNP-of3idsDiUYuVKlyPJPhI6YeXO1Uvg9RDGvCJ1I_qA_VcEyQmthi3zZ6z-m6hHT3gLTSVenBCMwvilAKYAfG7wdsPFJb93wbSsbtCb6q1V5K2am1UObIQmg2Dbhmjf391KLCik92eGBkf-vBazogDhy_l3SuKFwi7GKHglij7Gnc2gYxt-OkYaiTxIHEgYG-BSU2s0y8"/>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">NASDAQ</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">16,428.82</span>
-<span class="text-xs text-primary font-semibold">+0.89%</span>
-</div>
-</div>
-<div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-<img alt="sparkline up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUNHzIV6X9JqwOKSon4hn2mquEEF0Q654YYohu1ogWvRIsCXAtX7JQSZfNM8OxTImVJ7HyQszmajs_9xptRqEwad1sfe5f52DEWTXZ5SygPIuBko1xTnNWG0ATSpW4hCj44aW47OJdHcQVWJk8EkVfkx7WQwbixtgd36yjWT5lJDbsyEiajhSMIc3YWrc-PoyLjeorHx9OVDGwVtr65xg2uMa275K3BUF7GXfYA_SuFRgJAxCCB21QeyVo8F79Lk40yWJMI_YegDo"/>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">BTC / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">67,492.10</span>
-<span class="text-xs text-error font-semibold">-0.42%</span>
-</div>
-</div>
-<div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-<img alt="sparkline down" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnrCD3izJgmIZoK20OsSjkoZK6hCXrvGf0Z2m7FAlF6ryPtW-0mlV1yrB19nV2cW1zNP-of3idsDiUYuVKlyPJPhI6YeXO1Uvg9RDGvCJ1I_qA_VcEyQmthi3zZ6z-m6hHT3gLTSVenBCMwvilAKYAfG7wdsPFJb93wbSsbtCb6q1V5K2am1UObIQmg2Dbhmjf391KLCik92eGBkf-vBazogDhy_l3SuKFwi7GKHglij7Gnc2gYxt-OkYaiTxIHEgYG-BSU2s0y8"/>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">ETH / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">3,541.22</span>
-<span class="text-xs text-primary font-semibold">+2.15%</span>
-</div>
-</div>
-<div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-<img alt="sparkline up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAnrCD3izJgmIZoK20OsSjkoZK6hCXrvGf0Z2m7FAlF6ryPtW-0mlV1yrB19nV2cW1zNP-of3idsDiUYuVKlyPJPhI6YeXO1Uvg9RDGvCJ1I_qA_VcEyQmthi3zZ6z-m6hHT3gLTSVenBCMwvilAKYAfG7wdsPFJb93wbSsbtCb6q1V5K2am1UObIQmg2Dbhmjf391KLCik92eGBkf-vBazogDhy_l3SuKFwi7GKHglij7Gnc2gYxt-OkYaiTxIHEgYG-BSU2s0y8"/>
-</div>
-</div>
-<div class="h-8 w-[0.5px] bg-outline-variant/30"></div>
-<div class="flex items-center gap-4 group">
-<div class="flex flex-col">
-<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">XAU / USD</span>
-<div class="flex items-center gap-2">
-<span class="text-lg font-bold">2,184.40</span>
-<span class="text-xs text-on-surface-variant font-semibold">0.00%</span>
-</div>
-</div>
-<div class="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-<img alt="sparkline flat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpjQZ2r-tJHgPLa4HlXSyUuzbCsln21H7OlIGZgYGqWkHUy_cq3m8z7jMh8IcJ3WHtlCh__W_-xV_HObY3q6CcSRMHY7tDwpN8DXmLnWycPtocCEhzJgPkIixBMCLFRA2c4rE1MlXOV-r_NNFxn-y-9TEb4wz36pDU7-uO20yMYqVPI7QOVRnjGX5n4PuRYEK5yLXEnShvJZrYoppDovVa320Agi6s0BMc5Xln0UgIuaOAGupHyfHPA7zvKk31EtFIEzyRfcXqE50"/>
-</div>
-</div>
-</div>
-</section>
-<!-- Join Section -->
-<section class="py-48 obsidian-gradient relative">
-<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&amp;w=2000&amp;auto=format&amp;fit=crop')] opacity-5 mix-blend-luminosity pointer-events-none"></div>
-<div class="max-w-4xl mx-auto px-8 text-center relative z-10">
-<h2 class="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter mb-8 italic">Enter The Pit.</h2>
-<p class="text-on-surface-variant text-xl mb-12 font-light max-w-2xl mx-auto">
-                    Stop trading blind. Join the institutional circle and gain access to high-fidelity market data and elite strategies.
-                </p>
-<form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" onsubmit="window.location.href='login.html'; return false;">
-<div class="relative flex-grow">
-<input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/40 rounded-full px-8 py-5 text-on-surface focus:outline-none focus:border-primary transition-all placeholder:text-outline/40 shadow-inner" placeholder="Institutional Email" type="email"/>
-<div class="absolute inset-0 rounded-full bg-primary/5 pointer-events-none"></div>
-</div>
-<button type="submit" class="px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded-full font-bold text-lg shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-[1.05] transition-all whitespace-nowrap">
-                        Join Elite
-                    </button>
-</form>
-<p class="mt-8 text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60">No payment required for basic sentiment tier. Institutional KYC available on request.</p>
-</div>
-</section>
+</main>
 <!-- Footer -->
-<footer class="bg-[#0f131f] w-full py-20 px-8 border-t-[0.5px] border-[#3c4a42]/20">
-<div class="flex flex-col md:flex-row justify-between items-center gap-12 max-w-7xl mx-auto">
-<div class="flex flex-col items-center md:items-start gap-4">
-<span class="text-lg font-bold text-[#dfe2f3]">Market Pit</span>
-<p class="text-[#bbcabf] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest">© 2024 Market Pit Institutional. All rights reserved.</p>
+<footer class="bg-[#f2f4f1] w-full pt-16 pb-8 border-t border-outline-variant/5">
+<div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<div class="font-noto-serif text-lg font-bold text-[#003227] mb-6">Digital Curator Financial</div>
+<p class="text-[#191c1b]/60 text-sm leading-relaxed">Architecting the future of elite financial interaction through technology and design.</p>
 </div>
-<div class="flex gap-12">
-<div class="flex flex-col gap-2">
-<span class="text-[#10b981] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest font-bold">Platform</span>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="login.html">Terminals</a>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="login.html">API</a>
+<div>
+<h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Platform</h5>
+<ul class="space-y-4">
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">The Pit</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Market Data</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Global API</a></li>
+</ul>
 </div>
-<div class="flex flex-col gap-2">
-<span class="text-[#10b981] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest font-bold">Legal</span>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="#">Privacy</a>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="#">Terms</a>
+<div>
+<h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Resources</h5>
+<ul class="space-y-4">
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Market News</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Education</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Risk Disclosure</a></li>
+</ul>
 </div>
-<div class="flex flex-col gap-2">
-<span class="text-[#10b981] font-['Manrope'] body-md:text-sm label-sm:text-[10px] uppercase tracking-widest font-bold">Resources</span>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="#">Alpha Blog</a>
-<a class="text-[#bbcabf] hover:text-[#4edea3] transition-colors text-xs" href="#">Documentation</a>
+<div>
+<h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Legal</h5>
+<ul class="space-y-4">
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Privacy Policy</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Terms of Service</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Accessibility</a></li>
+</ul>
 </div>
+</div>
+<div class="max-w-7xl mx-auto px-8 pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-[#191c1b]/60 text-sm font-manrope tracking-wide">© 2024 Digital Curator Financial. All rights reserved. Member SIPC &amp; FINRA.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-outline text-xl cursor-pointer hover:text-primary transition-colors">public</span>
+<span class="material-symbols-outlined text-outline text-xl cursor-pointer hover:text-primary transition-colors">share</span>
+<span class="material-symbols-outlined text-outline text-xl cursor-pointer hover:text-primary transition-colors">account_balance</span>
 </div>
 </div>
 </footer>
-</main>
 </body></html>
