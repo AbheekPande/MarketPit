@@ -1,242 +1,197 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en"><head>
+<html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>MARKET PIT | Institutional Grade Sign In</title>
+<title>Sign In | Market Pit</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              colors: {
-                "surface-variant": "#303441",
-                "primary-fixed": "#6ffbbe",
-                "surface-dim": "#0f131f",
-                "tertiary-container": "#00b982",
-                "surface-container-low": "#171b27",
-                "secondary-fixed": "#d8e3fb",
-                "on-tertiary": "#003825",
-                "background": "#0f131f",
-                "on-tertiary-container": "#00422c",
-                "on-primary-fixed": "#002113",
-                "on-secondary": "#263143",
-                "on-primary": "#003824",
-                "tertiary-fixed": "#68fcbf",
-                "surface-bright": "#353946",
-                "secondary": "#bcc7de",
-                "tertiary-fixed-dim": "#45dfa4",
-                "on-secondary-container": "#aeb9d0",
-                "inverse-surface": "#dfe2f3",
-                "secondary-container": "#3e495d",
-                "on-primary-container": "#00422b",
-                "on-surface-variant": "#bbcabf",
-                "surface-container-lowest": "#0a0e19",
-                "on-tertiary-fixed-variant": "#005137",
-                "error": "#ffb4ab",
-                "primary": "#4edea3",
-                "on-error-container": "#ffdad6",
-                "on-background": "#dfe2f3",
-                "primary-container": "#10b981",
-                "on-surface": "#dfe2f3",
-                "on-secondary-fixed": "#111c2d",
-                "secondary-fixed-dim": "#bcc7de",
-                "error-container": "#93000a",
-                "surface-tint": "#4edea3",
-                "surface": "#0f131f",
-                "on-secondary-fixed-variant": "#3c475a",
-                "surface-container-highest": "#303441",
-                "tertiary": "#45dfa4",
-                "on-primary-fixed-variant": "#005236",
-                "surface-container": "#1b1f2b",
-                "outline": "#86948a",
-                "outline-variant": "#3c4a42",
-                "on-error": "#690005",
-                "inverse-on-surface": "#2c303d",
-                "inverse-primary": "#006c49",
-                "surface-container-high": "#262a36",
-                "primary-fixed-dim": "#4edea3"
-              },
-              fontFamily: {
-                "headline": ["Manrope"],
-                "body": ["Manrope"],
-                "label": ["Inter"]
-              },
-              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#f8faf7",
+                        "surface-container-highest": "#e1e3e0",
+                        "surface-tint": "#2b6958",
+                        "surface": "#f8faf7",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e1e3e0",
+                        "inverse-on-surface": "#eff1ee",
+                        "secondary-fixed": "#cfe8de",
+                        "on-secondary-container": "#51675f",
+                        "inverse-primary": "#95d3bf",
+                        "outline": "#707975",
+                        "secondary-fixed-dim": "#b3ccc2",
+                        "secondary": "#4c635b",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#354b44",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#0a5041",
+                        "tertiary-fixed": "#ffdad3",
+                        "tertiary-container": "#673328",
+                        "surface-container-low": "#f2f4f1",
+                        "on-background": "#191c1b",
+                        "on-surface-variant": "#404945",
+                        "secondary-container": "#cce5db",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#6d382c",
+                        "tertiary-fixed-dim": "#ffb4a4",
+                        "primary-fixed": "#b0efda",
+                        "on-secondary-fixed": "#091f19",
+                        "primary-fixed-dim": "#95d3bf",
+                        "on-error-container": "#93000a",
+                        "primary": "#003227",
+                        "primary-container": "#004b3c",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#370e06",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d8dbd8",
+                        "inverse-surface": "#2e312f",
+                        "on-tertiary-container": "#e59c8d",
+                        "surface-container": "#eceeeb",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1b",
+                        "on-primary-fixed": "#002019",
+                        "tertiary": "#4c1e14",
+                        "outline-variant": "#bfc9c4",
+                        "surface-container-high": "#e7e9e6",
+                        "background": "#f8faf7",
+                        "on-primary-container": "#7cbaa6"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Manrope", "sans-serif"],
+                        "label": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
             },
-          },
         }
     </script>
 <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .glass-card {
-            background: rgba(23, 27, 39, 0.6);
-            backdrop-filter: blur(30px);
-            border: 0.5px solid rgba(60, 74, 66, 0.2);
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #f8faf7;
         }
-        .bg-grid {
-            background-image: radial-gradient(circle at 2px 2px, rgba(78, 222, 163, 0.05) 1px, transparent 0);
-            background-size: 40px 40px;
-        }
-        .glow-accent {
-            background: radial-gradient(circle at center, rgba(78, 222, 163, 0.15) 0%, transparent 70%);
+        .serif-heading {
+            font-family: 'Noto Serif', serif;
         }
     </style>
-<script defer="" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script></head>
-<body class="bg-background font-body text-on-background selection:bg-primary/30 min-h-screen flex flex-col overflow-x-hidden" x-data="{ showGoogleAuth: false, step: 'select' }">
-<!-- Subtle Ambient Background -->
-<div class="fixed inset-0 z-0 pointer-events-none">
-<div class="absolute inset-0 bg-grid opacity-30"></div>
-<div class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] glow-accent blur-[100px]"></div>
-<div class="absolute bottom-[-10%] left-[-5%] w-[40rem] h-[40rem] glow-accent blur-[100px] opacity-40"></div>
-</div>
-<!-- Top Navigation -->
-<header class="fixed top-0 w-full z-50 bg-[#040712]/60 backdrop-blur-[20px] border-b-[0.5px] border-[#3c4a42]/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-<div class="flex justify-between items-center px-10 h-20 w-full">
-<a href="index.html" class="text-xl font-black tracking-[0.3em] text-[#4edea3] hover:opacity-80 transition-opacity">MARKET PIT</a>
-<div class="flex items-center gap-8">
-<a class="font-['Manrope'] uppercase tracking-[0.08em] text-[0.6875rem] text-[#bbcabf] font-medium hover:text-[#4edea3] transition-all duration-300" href="#">Support</a>
-<a href="dashboard.html" class="font-['Manrope'] uppercase tracking-[0.08em] text-[0.6875rem] text-[#4edea3] font-bold px-4 py-2 border-b-[0.5px] border-[#4edea3] scale-95 active:opacity-80 transition-transform">Open Account</a>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-[#f8faf7] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<!-- Logo → back to landing page -->
+<a href="index.html" class="text-2xl font-serif font-bold text-[#003227] hover:opacity-80 transition-opacity">
+                Market Pit
+            </a>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:bg-[#e7e9e6] transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
 </div>
 </div>
+<div class="bg-[#f2f4f1] h-px w-full"></div>
 </header>
-<!-- Main Content Canvas -->
-<main class="relative z-10 flex-grow flex items-center justify-center pt-24 pb-12 px-6">
-<div class="w-full max-w-[480px]">
-<!-- Sign In Card -->
-<div class="glass-card rounded-xl p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[0.5px] border-outline-variant/20">
-<!-- Branding Header -->
-<div class="text-center mb-10">
-<span class="font-label text-primary text-[10px] uppercase tracking-[0.3em] font-semibold mb-2 block">Institutional Portal</span>
-<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Sign In</h1>
-<p class="text-on-surface-variant font-light text-sm">Access the Market Pit intelligence platform.</p>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center px-6 py-12 md:py-24">
+<div class="w-full max-w-5xl grid md:grid-cols-2 gap-16 items-center">
+<!-- Left Side: Editorial Branding -->
+<div class="hidden md:block space-y-8">
+<h1 class="serif-heading text-primary text-6xl font-bold leading-tight tracking-tight">
+                    Refined <br/>
+<span class="italic font-normal">Market</span> Intelligence.
+                </h1>
+<p class="text-on-surface-variant text-lg max-w-md font-body leading-relaxed">
+                    Access institutional-grade security and curated financial insights. Your journey into the digital ecosystem begins here.
+                </p>
+<div class="pt-8">
+<div class="inline-flex items-center gap-3 bg-primary-fixed/40 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-fixed/20">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-on-primary-fixed-variant text-xs font-label uppercase tracking-widest font-bold">System Status: Operational</span>
 </div>
-<!-- Social Authentication -->
-<div class="grid grid-cols-3 gap-3 mb-8">
-<button @click="showGoogleAuth = true" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
-<img alt="Google Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
-</button>
-<button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
-<img alt="X Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKyR8MIEDLATlPPBbRyq2iF2S6fBI4qDFvzDqAqZZ0BbJfivR2fR3JmXpTIUrOLAyL7OCsraS16oXBA4TwOA1xiRG0MwX6e9BRizQyIz1OoFDIa52LajgI0n4W6agcwM_h97xJDf5m912QnLjNv9w1rhZjaAMb79TTGpM4_Y0Th0a5B-pmnKDnXAPZdaY38XEGU7IaEvm07FF6_lsCX_U76_On4L4-4aJl_qx8svcisyig7QispXHspkGzVXAIklqR5Lfq1ruAQbk"/>
-</button>
-<button onclick="window.location.href='dashboard.html'" class="flex items-center justify-center p-3 rounded-xl bg-surface-container-lowest border-[0.5px] border-outline-variant/20 hover:border-primary/40 hover:bg-surface-container-low transition-all duration-300 group">
-<img alt="Apple Logo" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDd83Yvnf70tVTaJZULL0ELKflwng8Zg5gR51H6b3GcknjtJK2vmcD4qsxrdJBFepauf__faQze_B1IGkXQoSzETwwYr6aDD1CPDqLzBiUCSISHg5pxxR60-rlvhM105RVvCET73CBAmSDd4g-Oac4vfeldmY7Ub2ouHw6CG316498B2_nncV8T_PTGrBhd4Wr_Que5TM4s0Q671Z9IBuRp8iO9PcBRFKD0-zjPtr0sKG8qcoU_Ny1J2mEKae06yLA9s96OITLjBe8"/>
-</button>
 </div>
-<div class="relative flex items-center mb-8">
-<div class="flex-grow border-t-[0.5px] border-outline-variant/20"></div>
-<span class="flex-shrink mx-4 text-[10px] font-label uppercase tracking-widest text-on-surface-variant/40">OR EMAIL ACCESS</span>
-<div class="flex-grow border-t-[0.5px] border-outline-variant/20"></div>
 </div>
-<!-- Credentials Form -->
+<!-- Right Side: Sign In Form -->
+<div class="w-full">
+<div class="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-[0px_20px_40px_rgba(25,28,27,0.06)]">
+<div class="mb-10">
+<h2 class="serif-heading text-3xl font-bold text-on-surface mb-2">Welcome Back</h2>
+<p class="text-on-surface-variant text-sm font-body">Enter your credentials to access your terminal.</p>
+</div>
+<!-- Google → goes to dashboard -->
+<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center justify-center gap-3 bg-surface-container-high hover:bg-surface-container-highest transition-colors duration-150 py-3.5 px-4 rounded-lg group">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7Y_9JwR4kU_j34n71vghYL_wjFYQzXCT7sS05Bn9OCAjx4VErGa2ZmGIMJdJDutLn1B-LbtUyAAUUWWPJ55ES-E9hqOAjyI4-ZEkPW41b1zL1t8fMfmR_AzV9tlC6sOD8B2iTr__e6Y7rHX-p6GBwyMx84nR2IFOntxfZZjuZa8tViga4CfRZtIaOyWwaV8cK3B6Ref2L2eb0mA1wcl9MJF5vXv2MzF1np5U8trhynvLOhikfipaxoIx0WqnCGaTNgwLOt0WT9KY"/>
+<span class="text-on-surface font-body font-semibold text-sm">Continue with Google</span>
+</button>
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant/30"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase tracking-widest">
+<span class="bg-surface-container-lowest px-4 text-outline font-label">or institutional mail</span>
+</div>
+</div>
+<!-- Form → submits to verify.html with email -->
 <form class="space-y-6" onsubmit="var e=document.getElementById('email').value; window.location.href='verify.html'+(e?'?email='+encodeURIComponent(e):''); return false;">
-<div class="space-y-1.5">
-<label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-1" for="email">Institutional Email</label>
-<div class="relative group">
-<input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/30 rounded-xl px-5 py-4 text-sm text-on-surface focus:ring-0 focus:border-primary focus:bg-surface-container-low transition-all placeholder:text-on-surface-variant/30" id="email" placeholder="name@firm.com" type="email"/>
-<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/30 group-focus-within:text-primary transition-colors text-xl">alternate_email</span>
+<div class="space-y-2">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant" for="email">Email Address</label>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="email" placeholder="name@company.com" type="email"/>
 </div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant" for="password">Password</label>
+<a class="text-xs font-label text-primary font-bold hover:underline" href="#">Forgot?</a>
 </div>
-<div class="space-y-1.5">
-<div class="flex justify-between items-end px-1">
-<label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant" for="password">Password</label>
-<a class="font-label text-[10px] text-primary/60 hover:text-primary transition-colors uppercase tracking-widest" href="#">Recovery</a>
+<input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="password" placeholder="••••••••" type="password"/>
 </div>
-<div class="relative group">
-<input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/30 rounded-xl px-5 py-4 text-sm text-on-surface focus:ring-0 focus:border-primary focus:bg-surface-container-low transition-all placeholder:text-on-surface-variant/30" id="password" placeholder="••••••••••••" type="password"/>
-<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/30 group-focus-within:text-primary transition-colors text-xl">lock</span>
+<div class="pt-2">
+<!-- Sign In → goes to verify page -->
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold py-4 rounded-lg shadow-lg hover:opacity-90 active:scale-95 transition-all duration-150" type="submit">
+                                Sign In to Market Pit
+                            </button>
 </div>
-</div>
-<button class="w-full py-4 bg-gradient-to-br from-primary to-primary-container rounded-xl font-bold uppercase tracking-[0.15em] text-[11px] text-on-primary shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:brightness-110 active:scale-[0.98] transition-all" type="submit">
-                        Initialize Session
-                    </button>
 </form>
-<div class="mt-10 text-center">
-<p class="text-sm font-light text-on-surface-variant">
-                        New to Market Pit?
-                        <a class="text-primary font-bold hover:underline underline-offset-4 ml-1" href="dashboard.html">Establish Account</a>
+<div class="mt-10 pt-8 border-t border-outline-variant/20 text-center">
+<p class="text-sm text-on-surface-variant font-body">
+                            New curator? <a class="text-primary font-bold hover:underline decoration-2" href="dashboard.html">Create an account</a>
 </p>
 </div>
 </div>
-<!-- Security Badge -->
-<div class="mt-8 flex items-center justify-center gap-4 opacity-40">
-<div class="flex items-center gap-1.5 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
-<span class="material-symbols-outlined text-sm">verified_user</span>
-                    AES-256 Encrypted
-                </div>
-<div class="w-1 h-1 rounded-full bg-outline-variant"></div>
-<div class="flex items-center gap-1.5 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
-<span class="material-symbols-outlined text-sm">gpp_good</span>
-                    Biometric Ready
-                </div>
+<!-- Security Disclaimer -->
+<div class="mt-6 flex items-start gap-3 px-2">
+<span class="material-symbols-outlined text-outline text-lg">lock</span>
+<p class="text-[10px] text-outline font-label leading-relaxed uppercase tracking-tighter">
+                        This terminal is encrypted with AES-256. Unauthorized access attempts are monitored and logged for institutional security audits.
+                    </p>
+</div>
 </div>
 </div>
 </main>
 <!-- Footer -->
-<footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-10 gap-4 opacity-60">
-<div class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#10b981]">
-            © 2024 MARKET PIT INTELLIGENCE. INSTITUTIONAL GRADE TRADING SYSTEMS.
-        </div>
+<footer class="bg-[#f8faf7] border-t border-[#e7e9e6]">
+<div class="w-full py-8 px-6 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
+<div class="font-sans text-xs tracking-wider uppercase text-slate-500">
+                © 2024 Market Pit. Institutional Grade Security.
+            </div>
 <div class="flex gap-8">
-<a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Privacy</a>
-<a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Terms</a>
-<a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Regulatory</a>
-<a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-[#bbcabf]/60 hover:text-[#4edea3] transition-colors cursor-pointer" href="#">Security</a>
+<a class="font-sans text-xs tracking-wider uppercase text-slate-500 hover:text-[#004b3c] underline decoration-2 transition-opacity opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-sans text-xs tracking-wider uppercase text-slate-500 hover:text-[#004b3c] underline decoration-2 transition-opacity opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-sans text-xs tracking-wider uppercase text-slate-500 hover:text-[#004b3c] underline decoration-2 transition-opacity opacity-80 hover:opacity-100" href="#">Support</a>
+</div>
 </div>
 </footer>
-<!-- Google Auth Modal -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md" style="display: none;" x-show="showGoogleAuth" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100" x-transition:enter-start="opacity-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0" x-transition:leave-start="opacity-100">
-<div @click.away="showGoogleAuth = false" class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-<div class="p-8">
-<div class="flex justify-center mb-6">
-<img alt="Google Logo" class="w-8 h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9PSyX-RIK9c-x4eR3YNShaAjspuxnI_Omv8Oa7zDNhQeRUNsWmCCl5Pqqp1kzrSiL4VT8vLzsHREC-BZP2eOtL3BGiHVQlhibzmQ8Qmn84DIXnP16RgF4p2m6HVs6nxFzWUoQmnGu0_jjiDQl56sAlYhrqsMOMZqhsg-mRmIcUWL-5v6LrBC-QIreNEmyGXVtjCGiHqRAcXw2aRwt0qyQFWTskQ7r7WeNj5D8xMhhDkR2PwjdzeXP9uW-dcTJL4LTk7vlnnEQM"/>
-</div>
-<div class="text-center mb-8">
-<h2 class="text-xl font-bold text-on-surface mb-1" x-text="step === 'select' ? 'Choose an account' : 'Sign In'">Choose an account</h2>
-<p class="text-on-surface-variant text-sm" x-show="step === 'select'">to continue to <span class="text-primary font-semibold">Market Pit</span></p>
-<p class="text-on-surface-variant text-sm" x-cloak="" x-show="step === 'input'">Use your Google Account</p>
-</div>
-<div class="space-y-2">
-<!-- Account Selection View -->
-<div class="space-y-4" x-show="step === 'select'">
-<div class="p-6 rounded-xl bg-surface-container-lowest/50 border border-white/5 text-center mb-4">
-<p class="text-sm text-on-surface-variant">No active sessions found.</p>
-</div>
-<button @click="step = 'input'" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-outline-variant/20 hover:border-primary/40 text-left">
-<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">account_circle</span>
-</div>
-<div class="flex-grow text-sm font-medium text-on-surface">Use another account</div>
-<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
-</button>
-</div>
-<!-- Email Input View -->
-<div class="space-y-6" x-cloak="" x-show="step === 'input'">
-<div class="space-y-1.5">
-<label class="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant px-1">Email or phone</label>
-<input class="w-full bg-surface-container-lowest border-[0.5px] border-outline-variant/30 rounded-xl px-5 py-4 text-sm text-on-surface focus:ring-0 focus:border-primary focus:bg-surface-container-low transition-all placeholder:text-on-surface-variant/30" placeholder="Enter your email" type="email"/>
-</div>
-<div class="flex justify-between items-center">
-<button @click="step = 'select'" class="text-xs text-primary font-bold uppercase tracking-widest hover:underline">Back</button>
-<!-- Next in Google modal → goes to verify page -->
-<button onclick="window.location.href='verify.html'" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">Next</button>
-</div>
-</div>
-</div>
-<div class="mt-8 text-center">
-<button @click="showGoogleAuth = false" class="text-xs text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest font-bold">
-                    Cancel Sign In
-                </button>
-</div>
-</div>
-<div class="bg-white/5 p-4 border-t border-white/5">
-<p class="text-[10px] text-center text-on-surface-variant/60 leading-relaxed">To continue, Google will share your name, email address, language preference, and profile picture with Market Pit. See Market Pit's <span class="underline cursor-pointer">Privacy Policy</span> and <span class="underline cursor-pointer">Terms of Service</span>.</p>
-</div>
-</div>
-</div>
 </body></html>
