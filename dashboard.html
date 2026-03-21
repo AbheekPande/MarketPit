@@ -4480,9 +4480,10 @@ function renderProfileModal() {
     ? '<img src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
     : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
-  // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
+  // ── Clean profile card layout: banner top, content below ──
   el.innerHTML =
-    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:340px;">'
+    // Banner
+    '<div style="position:relative;border-radius:14px 14px 0 0;overflow:hidden;margin:-16px -16px 0;background:#000;height:155px;">'
 
     // Full-bleed background (banner image or gradient)
     + '<div onclick="editBanner()" title="Change banner" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;transition:opacity 0.2s;"></div>'
@@ -4494,31 +4495,34 @@ function renderProfileModal() {
     + '<div onclick="editBanner()" style="position:absolute;top:12px;right:12px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
 
     // Avatar — overlapping the gradient, positioned mid-bottom
-    + '<div style="position:absolute;bottom:96px;left:20px;z-index:3;">'
-      + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,255,255,0.25);box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;position:relative;">'
-        + avatarHtml
-        + '<div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,0.12);"></div>'
-      + '</div>'
-      + '<div style="position:absolute;bottom:1px;right:1px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid #000;">✏️</div>'
-    + '</div>'
+    
 
     // Bottom text content — sits on top of gradient
-    + '<div style="position:relative;z-index:3;padding:0 20px 20px;margin-top:200px;">'
+    + '</div>'  // end banner
 
-      // Name + handle row with action buttons
-      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;">'
-        + '<div>'
-          + '<div style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.3px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">'
-            + (user.displayName||user.name)
-            + ' <span style="color:var(--accent);font-size:15px;">✓</span>'
-          + '</div>'
-          + '<div style="font-size:11px;color:rgba(255,255,255,0.55);font-family:Space Mono,monospace;margin-top:1px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
+    // Content section
+    + '<div style="background:var(--bg2);margin:0 -16px;padding:0;">'
+
+    // Avatar row overlapping banner
+    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 16px;margin-top:-36px;margin-bottom:10px;">'
+    + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--bg2);box-shadow:0 2px 16px rgba(0,0,0,0.4);cursor:pointer;position:relative;flex-shrink:0;">'
+    + avatarHtml
+    + '<div style="position:absolute;bottom:0;right:0;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid var(--bg2);">✏️</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;padding-bottom:4px;">'
+    + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;">⚙️</button>'
+    + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);font-weight:700;font-size:12px;cursor:pointer;color:var(--text);">Edit</button>'
+    + '</div>'
+    + '</div>'
+
+    + '<div style="padding:0 16px 12px;">'
+
+      // Name + handle
+      + '<div style="font-size:20px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">'
+          + (user.displayName||user.name)
+          + ' <span style="color:var(--accent);font-size:14px;">✓</span>'
         + '</div>'
-        + '<div style="display:flex;gap:6px;">'
-          + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:#fff;font-size:13px;cursor:pointer;">⚙️</button>'
-          + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);font-weight:700;font-size:12px;cursor:pointer;color:#fff;letter-spacing:0.3px;">Edit</button>'
-        + '</div>'
-      + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;margin-top:2px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
 
       // Bio
       + (user.bio
@@ -4533,22 +4537,23 @@ function renderProfileModal() {
 
     + '</div>'  // bottom text
 
-    // ── Stats bar — glassmorphism strip at very bottom ──
-    + '<div style="position:relative;z-index:3;display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);">'
+    // Stats bar
+    + '<div style="display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg3);margin:10px 0 0;">'
       + [
           [getFollowingCount(), 'Following', "showFollowList('following')"],
           [getFollowerCount(user.name), 'Followers', "showFollowList('followers')"],
           [posts.length, 'Posts', ''],
           [likes, 'Likes', ''],
         ].map(([val, label, oc]) =>
-          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid rgba(255,255,255,0.07);">'
-          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + val + '</div>'
-          + '<div style="font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
+          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid var(--border);">'
+          + '<div style="font-size:16px;font-weight:900;color:var(--text);font-family:Space Mono,monospace;">' + val + '</div>'
+          + '<div style="font-size:9px;color:var(--text3);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
           + '</div>'
         ).join('')
     + '</div>'
 
-    + '</div>'  // outer card
+    + '</div>'  // end stats
+    + '</div>'  // end content section
 
     // ── Recent posts ──
     + '<div style="padding:16px 4px 0;">'
