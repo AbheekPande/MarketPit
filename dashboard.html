@@ -1477,11 +1477,11 @@ header {
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📰 MARKET NEWS</div>
       <div style="display:flex;gap:6px;" id="newsCatBtns">
-        <button onclick="loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
-        <button onclick="loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
-        <button onclick="loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
-        <button onclick="loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
-        <button onclick="loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
+        <button onclick="window._currentNewsCat='markets';loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
+        <button onclick="window._currentNewsCat='stocks';loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
+        <button onclick="window._currentNewsCat='economy';loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
+        <button onclick="window._currentNewsCat='crypto';loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
+        <button onclick="window._currentNewsCat='commodities';loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
       </div>
     </div>
     <div class="feed-scroll" id="newsContainer">
@@ -10252,50 +10252,43 @@ async function loadNews(cat, btn) {
 
   const rssUrl = NEWS_URLS[cat] || NEWS_URLS.markets;
 
-  // ── Source 1: Vercel /api/news ──
+  // Source 1: corsproxy.io — most reliable, no rate limits
   try {
-    const r = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal:AbortSignal.timeout(8000)});
-    if(r.ok){ const j=await r.json(); const items=(j.items||[]).filter(i=>i.title&&i.title.length>8);
-      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(rssUrl), {signal: AbortSignal.timeout(10000)});
+    if(r.ok){ const text = await r.text();
+      if(text.includes('<item>')){ const items = parseRSS(text);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
   } catch(e){}
 
-  // ── Source 2: RSS2JSON (free public API, no CORS) ──
+  // Source 2: allorigins.win
   try {
-    const url2 = 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)+'&count=16';
-    const r2 = await fetch(url2, {signal:AbortSignal.timeout(8000)});
-    if(r2.ok){ const j2=await r2.json();
-      if(j2.status==='ok' && j2.items?.length){
-        const items = j2.items.map(i=>({title:i.title||'',link:i.link||'#',date:i.pubDate||'',
-          source:(j2.feed?.title||i.author||'Google News'), ago:timeAgo(i.pubDate||'')})).filter(i=>i.title.length>8);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }
-      }
-    }
+    const r2 = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(rssUrl), {signal: AbortSignal.timeout(10000)});
+    if(r2.ok){ const j2 = await r2.json(); const text2 = j2.contents || '';
+      if(text2.includes('<item>')){ const items = parseRSS(text2);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
   } catch(e){}
 
-  // ── Source 3: allorigins.win ──
+  // Source 3: Vercel /api/news proxy
   try {
-    const r3 = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
-    if(r3.ok){ const j3=await r3.json(); const text=j3.contents||'';
-      if(text.includes('<item>')){ const items=parseRSS(text);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
-    }
+    const r3 = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal: AbortSignal.timeout(8000)});
+    if(r3.ok){ const j3 = await r3.json(); const items = (j3.items||[]).filter(i=>i.title&&i.title.length>8);
+      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}
   } catch(e){}
 
-  // ── Source 4: corsproxy.io ──
+  // Source 4: thingproxy
   try {
-    const r4 = await fetch('https://corsproxy.io/?'+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
-    if(r4.ok){ const text4=await r4.text();
-      if(text4.includes('<item>')){ const items=parseRSS(text4);
-        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
-    }
+    const r4 = await fetch('https://thingproxy.freeboard.io/fetch/' + rssUrl, {signal: AbortSignal.timeout(10000)});
+    if(r4.ok){ const text4 = await r4.text();
+      if(text4.includes('<item>')){ const items = parseRSS(text4);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; }}}
   } catch(e){}
 
-  // All failed
+  // All failed — show retry
   window._mpNewsRetry = ()=>{ delete _newsLoaded[cat]; loadNews(cat,btn); };
   container.innerHTML = '<div style="text-align:center;padding:48px;">'
     +'<div style="font-size:32px;margin-bottom:12px;">📡</div>'
     +'<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
-    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection.</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection or try again.</div>'
     +'<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
     +'</div>';
 }
@@ -12472,6 +12465,17 @@ function renderStorySlide() {
 // ── Auto-refresh every hour ──
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
+
+// ── Auto-load Market News on page start & refresh every 10 min ──
+setTimeout(() => {
+  loadNews('markets', document.getElementById('nc_markets'));
+}, 1500);
+setInterval(() => {
+  const cat = window._currentNewsCat || 'markets';
+  const btn = document.getElementById('nc_' + cat);
+  delete _newsLoaded[cat]; // force refresh
+  loadNews(cat, btn);
+}, 10 * 60 * 1000);
 
 // Also refresh stories when live data arrives
 const _origOnLiveDataUpdate = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : null;
