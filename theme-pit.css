@@ -1,199 +1,195 @@
 /*
- * theme-pit.css — Market Pit Visual Override
- * Paste this link into dashboard.html <head>, AFTER all other styles:
+ * theme-pit.css — Market Pit Visual Override v2
+ *
+ * HOW TO USE:
+ * Add this ONE line to dashboard.html <head>, after all other styles:
  * <link rel="stylesheet" href="theme-pit.css">
  *
- * Changes fonts → Noto Serif (headlines) + Manrope (body)
- * Changes colour theme → institutional light green
- * Does NOT touch any functionality
+ * This file changes ONLY visuals. Zero functional changes.
  */
 
-/* ── IMPORT FONTS ───────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+/* ── FONTS ──────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
-/* ── ROOT COLOUR OVERRIDES ──────────────────────────────────────────────────── */
+/* ── CSS VARIABLE OVERRIDES ─────────────────────────────────────────────────── */
 :root,
 body,
 body.theme-dim,
-body.theme-dark {
-  /* Backgrounds */
-  --bg:    #f2f4f1 !important;
+body.theme-dark,
+body[class*='bg-'],
+body[class*='accent-'] {
+  --bg:    #f8faf7 !important;
   --bg2:   #ffffff !important;
-  --bg3:   #eceeeb !important;
+  --bg3:   #f2f4f1 !important;
   --panel: #ffffff !important;
-
-  /* Borders */
-  --border:  rgba(0,50,39,0.10) !important;
-  --border2: rgba(0,50,39,0.25) !important;
-
-  /* Text */
+  --border:  rgba(25,28,27,0.08) !important;
+  --border2: rgba(0,50,39,0.18)  !important;
   --text:  #191c1b !important;
   --text2: #404945 !important;
   --text3: #707975 !important;
-
-  /* Accent → institutional green */
   --accent:  #003227 !important;
-  --accent2: #4c1e14 !important;
+  --accent2: #004b3c !important;
   --green:   #2b6958 !important;
   --red:     #ba1a1a !important;
   --gold:    #a16207 !important;
+  background: #f8faf7 !important;
 }
 
-/* Override all bg-theme and accent-* classes too */
-body[class*='bg-'],
-body[class*='accent-'] {
-  --bg:    #f2f4f1 !important;
-  --bg2:   #ffffff !important;
-  --bg3:   #eceeeb !important;
-  --panel: #ffffff !important;
-  --text:  #191c1b !important;
-  --text2: #404945 !important;
-  --text3: #707975 !important;
-  --accent: #003227 !important;
-  background: #f2f4f1 !important;
-}
-
-/* ── BODY & BASE ────────────────────────────────────────────────────────────── */
+/* ── BODY ───────────────────────────────────────────────────────────────────── */
 body {
-  background: #f2f4f1 !important;
+  background: #f8faf7 !important;
   color: #191c1b !important;
   font-family: 'Manrope', sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
-/* ── FONT OVERRIDES ─────────────────────────────────────────────────────────── */
-/* Headings → Noto Serif */
+/* ── TYPOGRAPHY ─────────────────────────────────────────────────────────────── */
+/* Noto Serif for all headings */
 h1, h2, h3, h4, h5, h6,
 .logo-wordmark,
-.section-title,
-.card-title,
-.feed-card h3,
-.panel h3,
-.panel h2,
-.modal-title,
-[class*="title"],
+.section-title, .card-title,
+.font-headline, [class*="headline"],
+.panel h2, .panel h3,
+.modal-title, [class*="title"],
 [class*="heading"] {
   font-family: 'Noto Serif', serif !important;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.02em !important;
 }
 
-/* Body / UI text → Manrope */
-body, p, span, div, button, input, textarea, select, label, a,
-.stock-name, .stock-price, .feed-text, .nav-tab, .filter-btn,
-.pcat-btn, .notif-btn, .bn-item, .card-meta, .card-sub {
+/* Manrope for everything else */
+body, p, span, div, button, input, textarea,
+select, label, a, li, td, th,
+.stock-name, .feed-text, .nav-tab,
+.filter-btn, .pcat-btn, .card-meta {
   font-family: 'Manrope', sans-serif !important;
 }
 
-/* Monospace stays for prices/tickers */
-.price, .change, .ticker-price, [class*="mono"],
-.stock-price, .stock-change {
-  font-family: 'Manrope', monospace !important;
-  font-weight: 600;
+/* Logo: italic Noto Serif */
+.logo-wordmark, .logo em {
+  font-family: 'Noto Serif', serif !important;
+  font-style: italic !important;
+  font-weight: 900 !important;
+  color: #003227 !important;
+  letter-spacing: -0.5px !important;
 }
 
 /* ── HEADER ─────────────────────────────────────────────────────────────────── */
 header {
-  background: rgba(248, 250, 247, 0.92) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(0,50,39,0.10) !important;
-  box-shadow: 0 1px 0 rgba(0,50,39,0.08), 0 4px 24px rgba(25,28,27,0.06) !important;
+  background: rgba(248,250,247,0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(25,28,27,0.08) !important;
+  box-shadow: 0 20px 40px rgba(25,28,27,0.06) !important;
+  height: 80px !important;
 }
 
-/* Logo wordmark */
-.logo-wordmark {
-  font-family: 'Noto Serif', serif !important;
-  font-style: italic !important;
-  color: #003227 !important;
-  font-size: 18px !important;
-  letter-spacing: 0.5px !important;
-}
 .logo-mark {
-  background: linear-gradient(140deg, #003227 0%, #2b6958 100%) !important;
-  box-shadow: 0 2px 10px rgba(0,50,39,0.30) !important;
+  background: linear-gradient(135deg, #003227 0%, #2b6958 100%) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 12px rgba(0,50,39,0.25) !important;
 }
 
-/* Nav tabs */
-.nav-tab {
-  font-family: 'Noto Serif', serif !important;
-  font-weight: 700 !important;
+/* Nav links */
+.nav-tab, .nav-link, [class*="nav-tab"] {
+  font-family: 'Manrope', sans-serif !important;
+  font-weight: 600 !important;
   color: rgba(25,28,27,0.55) !important;
+  border-bottom: 2px solid transparent !important;
+  transition: color 0.2s, border-color 0.2s !important;
 }
-.nav-tab.active,
+.nav-tab.active, .nav-tab:focus,
 .nav-tab[class*="active"] {
   color: #003227 !important;
-  border-bottom-color: #003227 !important;
+  border-bottom-color: #004b3c !important;
 }
-.nav-tab:hover {
-  color: #003227 !important;
-  background: rgba(0,50,39,0.06) !important;
+.nav-tab:hover { color: #003227 !important; }
+
+/* ── LAYOUT BACKGROUNDS ──────────────────────────────────────────────────────── */
+.main-layout, #mainContent, .content-area,
+body[class*='bg-'] .main-layout {
+  background: #f8faf7 !important;
 }
 
-/* ── SIDEBAR & PANELS ───────────────────────────────────────────────────────── */
-.left-panel, .right-panel, .panel,
-[class*="left-panel"], [class*="right-panel"],
-aside, .sidebar {
+/* ── CARDS & PANELS ──────────────────────────────────────────────────────────── */
+.card, .feed-card, .panel,
+.left-panel, .right-panel,
+aside, .sidebar,
+[class*="panel"]:not(header),
+[class*="card"]:not(.logo-mark) {
   background: #ffffff !important;
-  border-color: rgba(0,50,39,0.10) !important;
-}
-
-/* ── CARDS ──────────────────────────────────────────────────────────────────── */
-.card, .feed-card, .stock-card,
-[class*="card"], [class*="panel"]:not(header) {
-  background: #ffffff !important;
-  border: 1px solid rgba(0,50,39,0.08) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 1px 4px rgba(25,28,27,0.06), 0 4px 16px rgba(25,28,27,0.04) !important;
+  border: 1px solid rgba(25,28,27,0.07) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(25,28,27,0.05), 0 8px 24px rgba(25,28,27,0.04) !important;
   color: #191c1b !important;
 }
+
 .card:hover, .feed-card:hover {
-  box-shadow: 0 4px 16px rgba(25,28,27,0.10), 0 8px 32px rgba(25,28,27,0.06) !important;
+  box-shadow: 0 4px 16px rgba(25,28,27,0.08), 0 16px 40px rgba(25,28,27,0.06) !important;
   transform: translateY(-1px) !important;
 }
 
-/* ── ACCENT COLOURS (buttons, links, highlights) ───────────────────────────── */
-/* Primary green */
-[style*="var(--accent)"],
-.accent, .active-pcat, .filter-btn.active,
-.notif-btn, .pcat-btn.active-pcat {
-  background: #003227 !important;
-  color: #ffffff !important;
-  border-color: #003227 !important;
+/* Feed articles */
+article, .feed-post, [class*="feed-card"],
+[class*="post-card"] {
+  background: #f2f4f1 !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(25,28,27,0.07) !important;
+  transition: background 0.2s ease !important;
 }
+article:hover { background: #e7e9e6 !important; }
 
-/* Text accents */
-.text-accent, [class*="text-accent"],
-.change.positive, .stock-change.pos,
-[class*="gain"], [class*="up"] {
-  color: #2b6958 !important;
-}
-.change.negative, .stock-change.neg,
-[class*="loss"], [class*="down"] {
-  color: #ba1a1a !important;
-}
-
-/* Post/action buttons */
-button[class*="post"],
-button[class*="submit"],
-button[class*="primary"],
-.post-btn, .submit-btn {
+/* ── BUTTONS ─────────────────────────────────────────────────────────────────── */
+/* Primary */
+button[class*="post"], button[class*="submit"],
+button[class*="primary"], .post-btn,
+.submit-btn, .btn-primary,
+button.active-pcat, .filter-btn.active,
+[class*="btn-accent"] {
   background: linear-gradient(135deg, #003227 0%, #004b3c 100%) !important;
   color: #ffffff !important;
   border: none !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   font-family: 'Manrope', sans-serif !important;
   font-weight: 700 !important;
   box-shadow: 0 4px 14px rgba(0,50,39,0.25) !important;
+  transition: opacity 0.2s, transform 0.15s !important;
 }
 button[class*="post"]:hover,
-button[class*="primary"]:hover {
-  filter: brightness(1.1) !important;
-  transform: translateY(-1px) !important;
+button[class*="primary"]:hover { opacity: 0.9 !important; transform: translateY(-1px) !important; }
+
+/* Icon buttons */
+button.material-symbols-outlined,
+button > .material-symbols-outlined {
+  color: #003227 !important;
 }
 
-/* ── STOCK LIST ITEMS ───────────────────────────────────────────────────────── */
+/* ── INPUTS ─────────────────────────────────────────────────────────────────── */
+input, textarea, select {
+  background: #e7e9e6 !important;
+  border: none !important;
+  color: #191c1b !important;
+  border-radius: 8px !important;
+  font-family: 'Manrope', sans-serif !important;
+}
+input::placeholder, textarea::placeholder { color: #707975 !important; }
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 2px rgba(43,105,88,0.30) !important;
+  outline: none !important;
+  background: #eceeeb !important;
+}
+
+/* ── TICKER ──────────────────────────────────────────────────────────────────── */
+.ticker-bar, [id*="ticker"], [class*="ticker"],
+section:has(.ticker-scroll), .top-ticker {
+  background: #ffffff !important;
+  border-bottom: 1px solid rgba(25,28,27,0.08) !important;
+}
+
+/* ── STOCK ITEMS ─────────────────────────────────────────────────────────────── */
 .stock-item {
-  background: transparent !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   border: 1px solid transparent !important;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s !important;
 }
 .stock-item:hover {
   background: rgba(0,50,39,0.05) !important;
@@ -203,140 +199,146 @@ button[class*="primary"]:hover {
 .stock-name { color: #191c1b !important; font-weight: 600 !important; }
 .stock-price { color: #191c1b !important; font-weight: 700 !important; }
 
-/* ── INPUTS ─────────────────────────────────────────────────────────────────── */
-input, textarea, select {
-  background: #f2f4f1 !important;
-  border: 1px solid rgba(0,50,39,0.15) !important;
-  color: #191c1b !important;
-  border-radius: 6px !important;
-  font-family: 'Manrope', sans-serif !important;
+/* ── COLOURS ─────────────────────────────────────────────────────────────────── */
+/* Green text */
+.change.positive, [class*="gain"], [class*="up"],
+.text-green, [class*="text-green"],
+[class*="positive"], [class*="bull"],
+.stock-change.pos {
+  color: #2b6958 !important;
 }
-input::placeholder, textarea::placeholder {
-  color: #707975 !important;
+/* Red text */
+.change.negative, [class*="loss"], [class*="down"],
+.text-red, [class*="text-red"],
+[class*="negative"], [class*="bear"],
+.stock-change.neg {
+  color: #ba1a1a !important;
 }
-input:focus, textarea:focus, select:focus {
-  border-color: #2b6958 !important;
-  box-shadow: 0 0 0 3px rgba(43,105,88,0.12) !important;
-  outline: none !important;
-}
+/* Primary green */
+.text-accent, [class*="text-accent"],
+.text-primary-val { color: #003227 !important; }
 
-/* ── SCROLLBARS ─────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #f2f4f1; }
-::-webkit-scrollbar-thumb { background: rgba(0,50,39,0.18); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,50,39,0.30); }
-
-/* ── TICKER / MARKET BAR ────────────────────────────────────────────────────── */
-.ticker-bar, .market-bar, [class*="ticker"],
-.top-ticker, #marketBar, #tickerBar {
-  background: #ffffff !important;
-  border-color: rgba(0,50,39,0.10) !important;
-}
-.ticker-item, .market-item {
-  color: #191c1b !important;
-}
-
-/* ── MODALS ─────────────────────────────────────────────────────────────────── */
-.modal-box, .modal, [class*="modal"],
-.popup, [class*="popup"], .dropdown-menu {
-  background: #ffffff !important;
-  border: 1px solid rgba(0,50,39,0.12) !important;
-  box-shadow: 0 20px 60px rgba(25,28,27,0.15) !important;
-  color: #191c1b !important;
-}
-
-/* ── BADGES / TAGS ──────────────────────────────────────────────────────────── */
-.badge, .tag, .pill, [class*="badge"], [class*="tag"] {
+/* ── BADGES & TAGS ───────────────────────────────────────────────────────────── */
+.badge, .tag, .pill,
+[class*="badge"], [class*="tag"],
+[class*="label-pill"] {
   font-family: 'Manrope', sans-serif !important;
   font-weight: 700 !important;
+  border-radius: 999px !important;
 }
-
-/* Green badge */
-.badge-green, [class*="badge-buy"], [class*="bullish"],
-[class*="badge"][class*="positive"] {
+[class*="badge"][class*="bull"],
+[class*="badge"][class*="buy"],
+[class*="badge"][class*="positive"],
+[class*="badge"][class*="green"] {
   background: rgba(0,50,39,0.10) !important;
   color: #003227 !important;
   border: 1px solid rgba(0,50,39,0.20) !important;
 }
-/* Red badge */
-.badge-red, [class*="badge-sell"], [class*="bearish"] {
+[class*="badge"][class*="bear"],
+[class*="badge"][class*="sell"],
+[class*="badge"][class*="negative"],
+[class*="badge"][class*="red"] {
   background: rgba(186,26,26,0.08) !important;
   color: #ba1a1a !important;
   border: 1px solid rgba(186,26,26,0.20) !important;
 }
 
-/* ── SECTION HEADERS ────────────────────────────────────────────────────────── */
-.section-header, .section-title,
-h2.panel-title, h3.panel-title {
-  font-family: 'Noto Serif', serif !important;
-  font-weight: 700 !important;
-  color: #191c1b !important;
-  font-style: italic !important;
-}
-
-/* ── DIVIDERS ───────────────────────────────────────────────────────────────── */
-hr, .divider, [class*="divider"],
-.border-b, .border-t {
-  border-color: rgba(0,50,39,0.10) !important;
-}
-
-/* ── FOOTER / BOTTOM BAR ────────────────────────────────────────────────────── */
-footer, .footer, [class*="footer"],
-.bottom-bar, #bottomBar {
+/* ── MODALS ──────────────────────────────────────────────────────────────────── */
+.modal-box, .modal, [class*="modal"],
+.popup, .dropdown-menu, [class*="dropdown"] {
   background: #ffffff !important;
-  border-top: 1px solid rgba(0,50,39,0.10) !important;
-  color: #707975 !important;
+  border: 1px solid rgba(25,28,27,0.10) !important;
+  box-shadow: 0 20px 60px rgba(25,28,27,0.15) !important;
+  border-radius: 16px !important;
+  color: #191c1b !important;
 }
 
-/* ── FEED POSTS ─────────────────────────────────────────────────────────────── */
-.feed-card {
-  border-left: 3px solid transparent !important;
-  transition: border-color 0.2s ease !important;
+/* ── MARKET MOOD GAUGE ───────────────────────────────────────────────────────── */
+[class*="gauge"], [class*="mood"],
+[class*="progress"] > div,
+.gauge-fill {
+  background: linear-gradient(90deg, #ba1a1a 0%, #a16207 50%, #2b6958 100%) !important;
 }
-.feed-card:hover {
-  border-left-color: #95d3bf !important;
+
+/* ── HERO BANNER (inside dashboard) ─────────────────────────────────────────── */
+[class*="hero"], .hero-card,
+section[class*="hero"],
+div[class*="hero-banner"] {
+  background: linear-gradient(135deg, #003227 0%, #004b3c 100%) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
 }
-.feed-card .username {
+
+/* ── SIDEBAR SECTIONS ────────────────────────────────────────────────────────── */
+.section-header, .section-title,
+h3.panel-title, h2.panel-title {
   font-family: 'Noto Serif', serif !important;
   font-weight: 700 !important;
   color: #003227 !important;
 }
-.feed-card .handle, .feed-card .time {
-  color: #707975 !important;
+
+/* ── SMART SCREENER CARD (dark green) ────────────────────────────────────────── */
+[class*="screener"], [id*="screener"],
+[class*="screener-card"] {
+  background: linear-gradient(135deg, #003227 0%, #004b3c 100%) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
 }
 
-/* ── ICON COLOURS ───────────────────────────────────────────────────────────── */
-.material-symbols-outlined {
-  color: inherit;
+/* ── FOOTER ──────────────────────────────────────────────────────────────────── */
+footer, .footer, #footer, [class*="footer"],
+.bottom-bar {
+  background: #f2f4f1 !important;
+  border-top: 1px solid rgba(25,28,27,0.10) !important;
+  color: #404945 !important;
 }
 
-/* ── PROGRESS / GAUGE BARS ──────────────────────────────────────────────────── */
-[class*="progress"], [class*="gauge"],
-.mood-bar, .gauge-fill {
-  background: linear-gradient(90deg, #ba1a1a 0%, #a16207 50%, #2b6958 100%) !important;
-}
+/* ── SCROLLBARS ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f2f4f1; }
+::-webkit-scrollbar-thumb { background: rgba(0,50,39,0.20); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,50,39,0.35); }
 
-/* ── ENSURE LIGHT BG PANELS WITH DARK TEXT ──────────────────────────────────── */
-body[class*='bg-'] header,
-body[class*='bg-'] .panel,
-body[class*='bg-'] .left-panel,
-body[class*='bg-'] .right-panel,
-body[class*='bg-'] .feed-card,
-body[class*='bg-'] .card,
-body[class*='bg-'] .modal-box,
-body[class*='bg-'] .nav-tabs,
-body[class*='bg-'] #eyesBanner {
-  background: #ffffff !important;
-  border-color: rgba(0,50,39,0.10) !important;
-  color: #191c1b !important;
-}
+/* ── LINKS ───────────────────────────────────────────────────────────────────── */
+a { color: #2b6958 !important; }
+a:hover { color: #003227 !important; }
 
-/* ── SELECTION ──────────────────────────────────────────────────────────────── */
+/* ── SELECTION ───────────────────────────────────────────────────────────────── */
 ::selection {
   background: #b0efda !important;
   color: #002019 !important;
 }
 
-/* ── LINKS ──────────────────────────────────────────────────────────────────── */
-a { color: #2b6958 !important; }
-a:hover { color: #003227 !important; }
+/* ── DIVIDERS ────────────────────────────────────────────────────────────────── */
+hr, .divider, [class*="divider"] {
+  border-color: rgba(25,28,27,0.10) !important;
+}
+
+/* ── FEED POST ACCENT ────────────────────────────────────────────────────────── */
+article { border-left: 3px solid transparent !important; }
+article:hover { border-left-color: #b0efda !important; }
+
+/* ── VERIFIED BADGE ──────────────────────────────────────────────────────────── */
+[class*="verified"], .verified-badge {
+  background: rgba(176,239,218,0.30) !important;
+  color: #003227 !important;
+  border-radius: 999px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+/* ── TRENDING PITS / ACTIVE PITS ─────────────────────────────────────────────── */
+[class*="pit-item"], [class*="pit-card"],
+[class*="trending-item"] {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(25,28,27,0.07) !important;
+}
+
+/* ── NOTIFICATION COUNTER ────────────────────────────────────────────────────── */
+[class*="notif-count"], [class*="badge-count"],
+.notification-badge {
+  background: #ba1a1a !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+}
