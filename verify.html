@@ -162,14 +162,20 @@
 </footer>
 
 <script>
-  // ── Auto-advance OTP inputs ──────────────────────────────────────────────
   const inputs = document.querySelectorAll('#otp-inputs input');
+  let userEmail = new URLSearchParams(window.location.search).get('email') || '';
+
+  // Show email in subtitle
+  if (userEmail) {
+    document.getElementById('verify-subtitle').textContent =
+      `A 6-digit authentication code was sent to ${userEmail}. Enter the sequence below to secure your institutional-grade access.`;
+  }
+
+  // Auto-advance inputs
   inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
       if (input.value.length === 1 && i < inputs.length - 1) inputs[i+1].focus();
-      if ([...inputs].every(inp => inp.value.length === 1)) {
-        setTimeout(() => window.location.href = 'dashboard.html', 300);
-      }
+      if ([...inputs].every(inp => inp.value.length === 1)) submitOTP();
     });
     input.addEventListener('keydown', e => {
       if (e.key === 'Backspace' && !input.value && i > 0) inputs[i-1].focus();
@@ -177,14 +183,7 @@
     input.addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
   });
 
-  // ── Show email from URL param ────────────────────────────────────────────
-  const email = new URLSearchParams(window.location.search).get('email');
-  if (email) {
-    document.getElementById('verify-subtitle').textContent =
-      `A 6-digit authentication code was sent to ${email}. Enter the sequence below to secure your institutional-grade access.`;
-  }
-
-  // ── Countdown timer ──────────────────────────────────────────────────────
+  // Countdown timer
   let secs = 299;
   const cd = document.getElementById('countdown');
   const timer = setInterval(() => {
@@ -193,11 +192,71 @@
     cd.textContent = String(Math.floor(secs/60)).padStart(2,'0') + ':' + String(secs%60).padStart(2,'0');
   }, 1000);
 
-  // ── Resend feedback ──────────────────────────────────────────────────────
-  function resendCode(btn) {
-    btn.textContent = '✓ Code resent!';
-    btn.style.color = '#003227';
-    secs = 299;
+  // Submit OTP to backend
+  async function submitOTP() {
+    const otp = [...inputs].map(inp => inp.value).join('');
+    const btn = document.querySelector('button[type="submit"]');
+    btn.textContent = 'Verifying…';
+    btn.disabled    = true;
+
+    try {
+      const res  = await fetch('/api/verify-otp', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: userEmail, otp }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        btn.textContent = '✓ Verified!';
+        setTimeout(() => window.location.href = 'dashboard.html', 400);
+      } else {
+        // Show error, clear inputs, re-focus first
+        showError(data.message || 'Incorrect code. Please try again.');
+        inputs.forEach(inp => inp.value = '');
+        inputs[0].focus();
+        btn.textContent = 'Verify Access';
+        btn.disabled    = false;
+      }
+    } catch (err) {
+      showError('Network error. Please try again.');
+      btn.textContent = 'Verify Access';
+      btn.disabled    = false;
+    }
+  }
+
+  // Show error message
+  function showError(msg) {
+    let el = document.getElementById('otp-error');
+    if (!el) {
+      el = document.createElement('p');
+      el.id = 'otp-error';
+      el.style.cssText = 'color:#ba1a1a;font-size:13px;text-align:center;margin-top:-16px;font-family:Manrope,sans-serif;';
+      document.querySelector('form').insertBefore(el, document.querySelector('form .space-y-6'));
+    }
+    el.textContent = msg;
+  }
+
+  // Form submit handler
+  document.querySelector('form').onsubmit = function(e) {
+    e.preventDefault();
+    submitOTP();
+  };
+
+  // Resend OTP
+  async function resendCode(btn) {
+    if (!userEmail) { showError('No email found. Please go back and log in again.'); return; }
+    btn.textContent = 'Sending…';
+    try {
+      const res  = await fetch('/api/send-otp', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: userEmail }),
+      });
+      const data = await res.json();
+      btn.textContent = data.ok ? '✓ Code resent!' : '✗ Failed. Try again.';
+      if (data.ok) { secs = 299; }
+    } catch { btn.textContent = '✗ Network error.'; }
     setTimeout(() => { btn.textContent = 'Resend code'; }, 3000);
   }
 </script>

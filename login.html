@@ -146,7 +146,7 @@
 </div>
 </div>
 <!-- Form → submits to verify.html with email -->
-<form class="space-y-6" onsubmit="var e=document.getElementById('email').value; window.location.href='verify.html'+(e?'?email='+encodeURIComponent(e):''); return false;">
+<form class="space-y-6" onsubmit="handleLogin(event)">
 <div class="space-y-2">
 <label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant" for="email">Email Address</label>
 <input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="email" placeholder="name@company.com" type="email"/>
@@ -194,4 +194,38 @@
 </div>
 </div>
 </footer>
+<script>
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const btn   = e.target.querySelector('button[type="submit"]');
+
+  if (!email) { alert('Please enter your email address.'); return; }
+
+  btn.textContent = 'Sending code…';
+  btn.disabled    = true;
+
+  try {
+    const res  = await fetch('/api/send-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // Success — go to verify page with email
+      window.location.href = 'verify.html?email=' + encodeURIComponent(email);
+    } else {
+      alert(data.message || 'Failed to send OTP. Please try again.');
+      btn.textContent = 'Sign In to Market Pit';
+      btn.disabled    = false;
+    }
+  } catch (err) {
+    alert('Network error. Please try again.');
+    btn.textContent = 'Sign In to Market Pit';
+    btn.disabled    = false;
+  }
+}
+</script>
 </body></html>
