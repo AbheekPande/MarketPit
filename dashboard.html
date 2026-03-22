@@ -2386,8 +2386,8 @@ let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s, _live: false})),
   // Crypto: seed with name/sym but NO price — show live only, never stale static
   ...STATIC_CRYPTO.map(s => ({...s, price: null, chg: null, _loading: true})),
-  // Commodities: same — no static price shown, wait for live fetch
-  ...STATIC_COMMODITIES.map(s => ({...s, price: null, chg: null, _loading: true})),
+  // Commodities: seed with static prices immediately, replaced by live on fetch
+  ...STATIC_COMMODITIES.map(s => ({...s, _live: false})),
 ];
 
 // ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
@@ -3316,8 +3316,8 @@ function renderTrending(data) {
   const cryptoDisplay = cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
   // Always show ALL commodities — overlay live prices on top of static fallback
   const commDisplay = STATIC_COMMODITIES.map(sc => {
-    const live = liveStocks.find(s => s.sym === sc.sym && s._live);
-    return live ? live : sc;
+    const live = liveStocks.find(s => s.sym === sc.sym && s.price);
+    return live || sc;
   });
 
   function stockRow(s, cur) {
