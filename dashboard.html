@@ -13481,63 +13481,66 @@ document.addEventListener('keydown',function(e){
 });
 async function fetchCommoditiesLive(){
   const C = [
-    {sym:'GOLD',      yf:'GC=F',  name:'Gold',           currency:'$'},
-    {sym:'SILVER',    yf:'SI=F',  name:'Silver',          currency:'$'},
-    {sym:'CRUDE',     yf:'CL=F',  name:'Crude Oil (WTI)', currency:'$'},
-    {sym:'BRENT',     yf:'BZ=F',  name:'Brent Crude',     currency:'$'},
-    {sym:'NATURALGAS',yf:'NG=F',  name:'Natural Gas',     currency:'$'},
-    {sym:'COPPER',    yf:'HG=F',  name:'Copper',          currency:'$'},
-    {sym:'PLATINUM',  yf:'PL=F',  name:'Platinum',        currency:'$'},
-    {sym:'WHEAT',     yf:'ZW=F',  name:'Wheat',           currency:'$'},
-    {sym:'CORN',      yf:'ZC=F',  name:'Corn',            currency:'$'},
+    {sym:'GOLD',      yf:'GC=F'}, {sym:'SILVER',     yf:'SI=F'},
+    {sym:'CRUDE',     yf:'CL=F'}, {sym:'BRENT',      yf:'BZ=F'},
+    {sym:'NATURALGAS',yf:'NG=F'}, {sym:'COPPER',     yf:'HG=F'},
+    {sym:'PLATINUM',  yf:'PL=F'}, {sym:'WHEAT',      yf:'ZW=F'},
+    {sym:'CORN',      yf:'ZC=F'},
   ];
 
   const upd = (sym, price, chgPct) => {
     const up  = chgPct >= 0;
-    const chg = (up ? '+' : '') + chgPct.toFixed(2) + '%';
+    const chg = (up?'+':'') + chgPct.toFixed(2) + '%';
     const ex  = liveStocks.find(s => s.sym === sym);
-    if (ex) { ex.price = price; ex.chg = chg; ex.up = up; ex._live = true; }
-    else {
-      const sc = STATIC_COMMODITIES.find(s => s.sym === sym);
-      liveStocks.push({...(sc||{sym,name:sym,currency:'$'}), price, chg, up, _live:true});
-    }
+    if (ex) { ex.price=price; ex.chg=chg; ex.up=up; ex._live=true; }
+    else { const sc=STATIC_COMMODITIES.find(s=>s.sym===sym); liveStocks.push({...(sc||{sym,name:sym,currency:'$'}),price,chg,up,_live:true}); }
   };
 
   const refresh = () => { updateTickerFromLive(); buildGlobalTicker(); renderTrending(liveStocks); };
 
-  // Try each commodity individually via allorigins → Yahoo Finance (most reliable path)
-  let updated = 0;
-  await Promise.allSettled(C.map(async item => {
-    const yfUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d';
-    const proxies = [
-      'https://api.allorigins.win/get?url=' + encodeURIComponent(yfUrl),
-      'https://corsproxy.io/?' + encodeURIComponent(yfUrl),
-      'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(yfUrl),
-    ];
-    for (const proxyUrl of proxies) {
-      try {
-        const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
-        if (!r.ok) continue;
-        const raw  = await r.text();
-        let data;
-        try { const w = JSON.parse(raw); data = w.contents ? JSON.parse(w.contents) : w; }
-        catch(e) { continue; }
-        const meta = data?.chart?.result?.[0]?.meta;
-        if (!meta?.regularMarketPrice) continue;
-        const price  = meta.regularMarketPrice;
-        const prev   = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen || price;
-        const chgPct = prev ? ((price - prev) / prev * 100) : 0;
+  // Use Vercel /api/quote — server-side Yahoo Finance, no CORS issues
+  try {
+    const syms = C.map(c=>c.yf).join(',');
+    const r = await fetch('/api/quote?symbols='+encodeURIComponent(syms), {signal:AbortSignal.timeout(12000)});
+    if (r.ok) {
+      const j = await r.json();
+      let updated = 0;
+      (j?.quoteResponse?.result||[]).forEach(q => {
+        if (!q?.regularMarketPrice) return;
+        const item = C.find(c=>c.yf===q.symbol);
+        if (!item) return;
+        const price   = q.regularMarketPrice;
+        const chgPct  = q.regularMarketChangePercent ?? 0;
         upd(item.sym, price, chgPct);
         updated++;
-        break; // success for this commodity
-      } catch(e) { continue; }
+      });
+      if (updated > 0) { refresh(); console.log('Commodities: '+updated+' updated via /api/quote'); return; }
     }
-  }));
+  } catch(e) { console.log('Commodities /api/quote error:', e.message); }
 
+  // Fallback: fetch individually via allorigins (server-side Yahoo Finance)
+  console.log('Commodities: trying proxy fallback...');
+  let updated = 0;
+  await Promise.allSettled(C.map(async item => {
+    try {
+      const yfUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/'+item.yf+'?interval=1d&range=2d';
+      const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(yfUrl), {signal:AbortSignal.timeout(10000)});
+      if (!r.ok) return;
+      const j = await r.json();
+      const data = j.contents ? JSON.parse(j.contents) : null;
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) return;
+      const price  = meta.regularMarketPrice;
+      const prev   = meta.previousClose || meta.chartPreviousClose || price;
+      const chgPct = prev ? ((price-prev)/prev*100) : 0;
+      upd(item.sym, price, chgPct);
+      updated++;
+    } catch(e) {}
+  }));
   if (updated > 0) refresh();
 }
-setTimeout(fetchCommoditiesLive, 800);
-setInterval(fetchCommoditiesLive, 5 * 60 * 1000);
+setTimeout(fetchCommoditiesLive, 500);
+setInterval(fetchCommoditiesLive, 5*60*1000);
 setTimeout(()=>{loadNews('markets',document.getElementById('nc_markets'));},2000);
 setInterval(()=>{const cat=window._mpNewsCat||'markets';delete _newsLoaded[cat];loadNews(cat,document.getElementById('nc_'+cat));},10*60*1000);
 </script>
