@@ -2,6 +2,16 @@
 
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
+<script>
+// Auto-redirect if already logged in
+try {
+  const kept = localStorage.getItem('mp_keep_session');
+  const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+  if (kept === '1' && user && user.email) {
+    window.location.replace('dashboard.html');
+  }
+} catch(e) {}
+</script>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Sign In | Market Pit</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -136,7 +146,7 @@
 <!-- Real Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="g_id_onload"
-  data-client_id="329129705952-ebejg4u7le9dfa3fq9hdnojv572r2atb.apps.googleusercontent.com"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
   data-callback="handleGoogleLogin"
   data-auto_select="false"
   data-itp_support="true">

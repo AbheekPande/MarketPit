@@ -5008,9 +5008,9 @@ function showFollowList(type) {
 function logOut() {
   if (!confirm('Log out of MarketPit?')) return;
   localStorage.removeItem('mp_user');
-  closeModal('profileModal');
-  updateAvatars();
-  renderPosts(); renderChat();
+  localStorage.removeItem('mp_keep_session');
+  localStorage.removeItem('mp_session_email');
+  window.location.href = 'login.html';
 }
 
 function showEditProfile() {
