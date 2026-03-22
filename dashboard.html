@@ -12178,524 +12178,90 @@ function renderHeatmap() {
   const el = document.getElementById('heatmapBody');
   if (!el) return;
 
-  // Trigger live fetch when heatmap opens, throttled to once per minute
+  // Trigger live fetch (throttled to once per minute)
   if (!window._heatmapFetchDone || Date.now() - window._heatmapFetchDone > 60000) {
     window._heatmapFetchDone = Date.now();
     fetchPriorityStocks();
-    setTimeout(() => { _fastBootstrapStocks(); }, 500);
+    setTimeout(_fastBootstrapStocks, 600);
   }
-
-  const data = buildHeatmapData();
-  const total = data.reduce((a,s)=>a+s.stocks.length, 0);
-  const liveCount = liveStocks.filter(s=>s._live && !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym)).length;
-  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
 
   // Auto-refresh every 30s while visible
   clearInterval(window._heatmapTimer);
   window._heatmapTimer = setInterval(() => {
-    if (window._activePage === 'heatmap') fetchPriorityStocks().then(() => renderHeatmap());
+    if (window._activePage === 'heatmap') { fetchPriorityStocks(); setTimeout(renderHeatmap, 3000); }
     else clearInterval(window._heatmapTimer);
   }, 30000);
 
+  const data = buildHeatmapData();
+  const total = data.reduce((a,s) => a + s.stocks.length, 0);
   if (!total) {
-    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);">
-      <div class="loading-spin" style="margin:0 auto 16px;"></div>
-      <div style="font-size:14px;font-weight:600;color:var(--text2);">Loading prices…</div>
-    </div>`;
-    setTimeout(() => renderHeatmap(), 2000);
+    el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text3);"><div class="loading-spin" style="margin:0 auto 16px;"></div><div style="font-size:14px;font-weight:600;color:var(--text2);">Loading prices…</div></div>';
+    setTimeout(renderHeatmap, 2000);
     return;
   }
 
-  el.innerHTML = `
-    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:12px;color:var(--text3);">Showing <b style="color:var(--text)">${total} stocks</b> across <b style="color:var(--text)">${data.length} sectors</b></span>
-        <span style="font-size:10px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:4px;background:${liveCount>0?'rgba(0,200,83,0.12)':'var(--bg3)'};color:${liveCount>0?'#00c853':'var(--text3)'};">${liveCount>0?'● LIVE · '+liveCount+' live · '+ts:'⏳ Fetching live…'}</span>
-      </div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        ${[[-3,'#b71c1c'],[-2,'#e53935'],[-1,'#ef9a9a'],[0,'#607d8b'],[1,'#a5d6a7'],[2,'#4caf50'],[3,'#1b5e20']].map(([v,c])=>`<span style="background:${c};color:#fff;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;">${v>0?'+':''}${v}%</span>`).join('')}
-      </div>
-    </div>
-    ${data.map(sector => {
-      const avgChg = sector.stocks.reduce((a,s)=>a+s.chg,0)/sector.stocks.length;
-      const sColor = avgChg>=2?'#1b5e20':avgChg>=0.5?'#2e7d32':avgChg>=0?'#558b2f':avgChg>=-0.5?'#8d6e63':avgChg>=-2?'#c62828':'#b71c1c';
-      return `
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-            <span style="color:var(--text3);">${sector.sector}</span>
-            <span style="background:${sColor};color:#fff;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700;">${avgChg>=0?'+':''}${avgChg.toFixed(2)}% avg</span>
-            <span style="color:var(--text3);font-size:9px;">${sector.stocks.length} stocks</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px;">
-            ${sector.stocks.map(s => {
-              const c = s.chg;
-              const bg = c>=3?'#1b5e20':c>=2?'#2e7d32':c>=1?'#388e3c':c>=0?'#558b2f':c>=-1?'#8d6e63':c>=-2?'#c62828':'#b71c1c';
-              return `<div class="heatmap-cell" style="background:${bg};" onclick="fetchAndShowStock('${s.sym}')" title="${s.name||s.sym}: ${c>=0?'+':''}${c}%">
-                <div class="heatmap-sector">${s.sym}${s._live?'<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.7);margin-left:3px;vertical-align:middle;"></span>':''}</div>
-                <div class="heatmap-chg">${c>=0?'+':''}${c.toFixed(2)}%</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-    }).join('')}
-    <div style="margin-top:16px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:8px;">NIFTY SECTORAL INDICES</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;">
-        ${(()=>{
-          const idx = window._liveIndices || {};
-          return [
-            ['NIFTY 50',    idx['NIFTY']?.chg_pct    ?? 0.82],
-            ['BANK NIFTY',  idx['BANKNIFTY']?.chg_pct ?? 1.23],
-            ['NIFTY IT',    idx['CNXIT']?.chg_pct     ?? -0.45],
-            ['NIFTY AUTO',  idx['CNXAUTO']?.chg_pct   ?? 1.67],
-            ['NIFTY PHARMA',idx['CNXPHARMA']?.chg_pct ?? 0.34],
-            ['NIFTY METAL', idx['CNXMETAL']?.chg_pct  ?? 0.78],
-            ['NIFTY FMCG',  idx['CNXFMCG']?.chg_pct  ?? -0.12],
-            ['NIFTY ENERGY',idx['CNXENERGY']?.chg_pct ?? 0.91],
-          ];
-        })().map(([n,c])=>`
-          <div style="background:${c>=0?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)'};border:1px solid ${c>=0?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)'};border-radius:8px;padding:8px;text-align:center;">
-            <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">${n}</div>
-            <div style="font-weight:800;font-size:14px;color:${c>=0?'var(--green)':'var(--red)'};">${c>=0?'+':''}${c}%</div>
-          </div>`).join('')}
-      </div>
-    </div>`;
+  const liveCount = liveStocks.filter(s => s._live && !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym)).length;
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+
+  const legend = [[-3,'#b71c1c'],[-2,'#e53935'],[-1,'#ef9a9a'],[0,'#607d8b'],[1,'#a5d6a7'],[2,'#4caf50'],[3,'#1b5e20']]
+    .map(([v,c]) => '<span style="background:'+c+';color:#fff;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;">'+(v>0?'+':'')+v+'%</span>').join('');
+
+  const liveTag = liveCount > 0
+    ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(0,200,83,0.12);color:#00c853;font-family:Space Mono,monospace;">● LIVE · '+liveCount+' stocks · '+ts+'</span>'
+    : '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg3);color:var(--text3);font-family:Space Mono,monospace;">⏳ Fetching live…</span>';
+
+  const sectorRows = data.map(sector => {
+    const avgChg = sector.stocks.reduce((a,s) => a + s.chg, 0) / sector.stocks.length;
+    const sColor = avgChg>=2?'#1b5e20':avgChg>=0.5?'#2e7d32':avgChg>=0?'#558b2f':avgChg>=-0.5?'#8d6e63':avgChg>=-2?'#c62828':'#b71c1c';
+    const cells = sector.stocks.map(s => {
+      const c = typeof s.chg === 'number' ? s.chg : 0;
+      const bg = c>=3?'#1b5e20':c>=2?'#2e7d32':c>=1?'#388e3c':c>=0?'#558b2f':c>=-1?'#8d6e63':c>=-2?'#c62828':'#b71c1c';
+      const dot = s._live ? '<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.7);margin-left:3px;vertical-align:middle;"></span>' : '';
+      return '<div class="heatmap-cell" style="background:'+bg+';" onclick="fetchAndShowStock(''+s.sym+'')" title="'+s.sym+': '+(c>=0?'+':'')+c.toFixed(2)+'%">'
+        + '<div class="heatmap-sector">'+s.sym+dot+'</div>'
+        + '<div class="heatmap-chg">'+(c>=0?'+':'')+c.toFixed(2)+'%</div>'
+        + '</div>';
+    }).join('');
+    return '<div style="margin-bottom:18px;">'
+      + '<div style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">'
+      + '<span style="color:var(--text3);">'+sector.sector+'</span>'
+      + '<span style="background:'+sColor+';color:#fff;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700;">'+(avgChg>=0?'+':'')+avgChg.toFixed(2)+'% avg</span>'
+      + '<span style="color:var(--text3);font-size:9px;">'+sector.stocks.length+' stocks</span>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px;">'+cells+'</div>'
+      + '</div>';
+  }).join('');
+
+  // Sectoral indices
+  const idx2 = window._liveIndices || {};
+  const indices = [
+    ['NIFTY 50',    idx2['NIFTY 50']?.chg    ?? idx2['NIFTY']?.chg    ?? null],
+    ['BANK NIFTY',  idx2['NIFTY BANK']?.chg  ?? idx2['BANKNIFTY']?.chg ?? null],
+  ].filter(([,c]) => c != null);
+  const indexCards = indices.map(([n,c]) => {
+    const chg = parseFloat((c+'').replace('%','').replace('+','')) || 0;
+    const bg = chg>=0?'rgba(0,168,84,0.12)':'rgba(229,57,53,0.12)';
+    const bc = chg>=0?'rgba(0,168,84,0.3)':'rgba(229,57,53,0.3)';
+    const col = chg>=0?'#00c853':'#ff3b3b';
+    return '<div style="background:'+bg+';border:1px solid '+bc+';border-radius:8px;padding:8px;text-align:center;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:2px;">'+n+'</div>'
+      + '<div style="font-size:14px;font-weight:800;color:'+col+';">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div>'
+      + '</div>';
+  }).join('');
+
+  el.innerHTML = '<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;">'
+    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+    + '<span style="font-size:12px;color:var(--text3);">Showing <b style="color:var(--text)">'+total+' stocks</b> across <b style="color:var(--text)">'+data.length+' sectors</b></span>'
+    + liveTag + '</div>'
+    + '<div style="display:flex;gap:4px;flex-wrap:wrap;">'+legend+'</div>'
+    + '</div>'
+    + sectorRows
+    + (indexCards ? '<div style="margin-top:16px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">'
+      + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:8px;">LIVE INDICES</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;">'+indexCards+'</div>'
+      + '</div>' : '');
 }
 
-
-
-
-// ── CURSOR SPOTLIGHT HERO ──
-(function() {
-  let heroEl, glow, glow2, cursor, animFrame;
-  let mouseX = 0, mouseY = 0;
-  let currentX = 0, currentY = 0;
-
-  function initSpotlight() {
-    heroEl = document.getElementById('spotlightHero');
-    glow   = document.getElementById('spotlightGlow');
-    glow2  = document.getElementById('spotlightGlow2');
-    cursor = document.getElementById('spotlightCursor');
-    if (!heroEl) return;
-
-    heroEl.addEventListener('mousemove', function(e) {
-      const rect = heroEl.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-      if (!animFrame) animFrame = requestAnimationFrame(animate);
-    });
-
-    heroEl.addEventListener('mouseleave', function() {
-      if (glow)   glow.style.opacity   = '0.3';
-      if (glow2)  glow2.style.opacity  = '0.2';
-      if (cursor) cursor.style.opacity = '0';
-      cancelAnimationFrame(animFrame);
-      animFrame = null;
-      const rect = heroEl.getBoundingClientRect();
-      mouseX = rect.width  / 2;
-      mouseY = rect.height / 2;
-    });
-
-    heroEl.addEventListener('mouseenter', function() {
-      if (glow)   glow.style.opacity   = '1';
-      if (glow2)  glow2.style.opacity  = '1';
-      if (cursor) cursor.style.opacity = '1';
-    });
-
-    heroEl.addEventListener('click', function(e) {
-      const rect = heroEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const ripple = document.createElement('div');
-      ripple.style.cssText = `position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(0,112,243,0.6);transform:translate(-50%,-50%) scale(1);left:${x}px;top:${y}px;pointer-events:none;z-index:5;transition:transform 0.6s ease-out,opacity 0.6s ease-out;`;
-      heroEl.appendChild(ripple);
-      requestAnimationFrame(() => {
-        ripple.style.transform = `translate(-50%,-50%) scale(20)`;
-        ripple.style.opacity = '0';
-      });
-      setTimeout(() => ripple.remove(), 700);
-    });
-
-    if (cursor) cursor.style.opacity = '0';
-    const rect = heroEl.getBoundingClientRect();
-    mouseX = currentX = rect.width  / 2;
-    mouseY = currentY = rect.height / 2;
-    updatePositions();
-    updateHeroPrices();
-    setInterval(updateHeroPrices, 30000);
-  }
-
-  function animate() {
-    currentX += (mouseX - currentX) * 0.12;
-    currentY += (mouseY - currentY) * 0.12;
-    updatePositions();
-    animFrame = requestAnimationFrame(animate);
-  }
-
-  function updatePositions() {
-    if (glow)   { glow.style.left   = currentX + 'px'; glow.style.top   = currentY + 'px'; }
-    if (glow2)  { glow2.style.left  = currentX + 'px'; glow2.style.top  = currentY + 'px'; }
-    if (cursor) { cursor.style.left = mouseX   + 'px'; cursor.style.top = mouseY   + 'px'; }
-  }
-
-  const HERO_SYMBOLS = [
-    { id: 'heroNifty',     yfSym: '%5ENSEI',    label: 'NIFTY 50',   prefix: '',  color: '#0070f3', fmt: 'IN' },
-    { id: 'heroBankNifty', yfSym: '%5ENSEBANK', label: 'BANK NIFTY', prefix: '',  color: '#0070f3', fmt: 'IN' },
-    { id: 'heroBtc',       yfSym: 'BTC-USD',    label: 'BITCOIN',    prefix: '$', color: '#f5a623', fmt: 'US' },
-  ];
-
-  const HERO_PROXIES = [
-    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  ];
-
-  async function fetchHeroPrice(sym) {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m&range=1d`;
-    for (const proxyFn of HERO_PROXIES) {
-      try {
-        const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(7000) });
-        if (!r.ok) continue;
-        const raw = await r.text();
-        let parsed;
-        try { const wrap = JSON.parse(raw); parsed = wrap.contents ? JSON.parse(wrap.contents) : wrap; }
-        catch(e) { parsed = JSON.parse(raw); }
-        const meta = parsed?.chart?.result?.[0]?.meta;
-        if (!meta?.regularMarketPrice) continue;
-        const price   = meta.regularMarketPrice;
-        const chgPct  = meta.regularMarketChangePercent   // direct % field — most reliable
-                     ?? (meta.previousClose && meta.previousClose > 0
-                         ? ((price - meta.previousClose) / meta.previousClose * 100)
-                         : (meta.chartPreviousClose && meta.chartPreviousClose > 0
-                             ? ((price - meta.chartPreviousClose) / meta.chartPreviousClose * 100)
-                             : null));
-        return { price, chgPct };
-      } catch(e) { continue; }
-    }
-    throw new Error('all proxies failed');
-  }
-
-  function renderHeroItem(el, s, price, chgPct, up) {
-    if (!el || !price) return;
-    const fmtPrice = s.fmt === 'IN'
-      ? price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-      : price.toLocaleString('en-US', { maximumFractionDigits: 0 });
-    const sign = up ? '+' : '';
-    const chgStr = chgPct != null ? `${sign}${chgPct.toFixed(2)}%` : '';
-    el.innerHTML = `<span style="color:${s.color};font-family:'Bebas Neue',sans-serif;font-size:20px;">${s.prefix}${fmtPrice}</span>`
-      + (chgStr ? `<span style="font-size:10px;margin-left:4px;color:${up?'#00c97a':'#ff4d4f'};">${chgStr}</span>` : '');
-    el.style.transform = 'scale(1.06)';
-    el.style.transition = 'transform 0.2s';
-    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
-  }
-
-  function updateHeroFromLiveStocks() {
-    const idx = window._liveIndices || {};
-    let gotNifty = false, gotBank = false, gotBtc = false;
-    const niftyEl  = document.getElementById('heroNifty');
-    const niftyData = idx['NIFTY 50'] || idx['NIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='NIFTY'||s.sym==='NIFTY50'));
-    if (niftyEl && niftyData?.price) {
-      const c = parseFloat((niftyData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(niftyEl, HERO_SYMBOLS[0], niftyData.price, isNaN(c)?null:c, (niftyData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotNifty = true;
-    }
-    const bankEl   = document.getElementById('heroBankNifty');
-    const bankData  = idx['NIFTY BANK'] || idx['BANKNIFTY'] || (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BANKNIFTY'));
-    if (bankEl && bankData?.price) {
-      const c = parseFloat((bankData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(bankEl, HERO_SYMBOLS[1], bankData.price, isNaN(c)?null:c, (bankData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotBank = true;
-    }
-    const btcEl    = document.getElementById('heroBtc');
-    const btcData   = (typeof liveStocks !== 'undefined' && liveStocks.find(s=>s.sym==='BTC'||s.sym==='BTC-USD'));
-    if (btcEl && btcData?.price) {
-      const c = parseFloat((btcData.chg||'0').replace('%','').replace('+',''));
-      renderHeroItem(btcEl, HERO_SYMBOLS[2], btcData.price, isNaN(c)?null:c, (btcData.up!==false)&&(!isNaN(c)&&c>=0));
-      gotBtc = true;
-    }
-    return gotNifty && gotBtc;
-  }
-
-  async function updateHeroPrices() {
-    const gotLive = updateHeroFromLiveStocks();
-    if (gotLive) return;
-    for (const s of HERO_SYMBOLS) {
-      const el = document.getElementById(s.id);
-      if (!el) continue;
-      try {
-        const { price, chgPct } = await fetchHeroPrice(s.yfSym);
-        if (!price) continue;
-        renderHeroItem(el, s, price, chgPct, chgPct == null ? true : chgPct >= 0);
-      } catch(e) {}
-    }
-  }
-
-  window.updateHeroPrices = updateHeroPrices;
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(initSpotlight, 1000));
-  } else {
-    setTimeout(initSpotlight, 100);
-  }
-})();
-
-// ── CUBE HOVER TRACKER (Eyes Banner) ──
-(function() {
-  const banner = document.getElementById('eyesBanner');
-  const glow   = document.getElementById('ebGlow');
-  if (!banner || !glow) return;
-
-  // Build a fresh list of sub elements (no cached rects — always live)
-  function getAllSubs() {
-    const result = [];
-    banner.querySelectorAll('.eb-tile').forEach(tile => {
-      tile.querySelectorAll('.eb-sub').forEach((sub, qi) => {
-        result.push({ el: sub, qi });
-      });
-    });
-    return result;
-  }
-
-  let _allSubs = [];
-  let _activeSub = null;
-
-  function init() {
-    _allSubs = getAllSubs();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 800));
-  } else {
-    init();
-  }
-  window.addEventListener('resize', init);
-
-  // Color gradient: orange(left) → gold(mid) → violet(right)
-  function getColor(pct) {
-    const p = Math.max(0, Math.min(1, pct));
-    let r, g, b;
-    if (p < 0.5) {
-      const t = p * 2;
-      r = 255;
-      g = Math.round(90  + 130 * t);
-      b = Math.round(10  +  80 * t);
-    } else {
-      const t = (p - 0.5) * 2;
-      r = Math.round(255 - 120 * t);
-      g = Math.round(220 -  80 * t);
-      b = Math.round(90  + 165 * t);
-    }
-    return { r, g, b };
-  }
-
-  // Light from top-left: TL brightest → BR darkest
-  const BRIGHTNESS = [1.0, 0.76, 0.66, 0.50];
-
-  function showSub(sub, qi, r, g, b) {
-    const br = BRIGHTNESS[qi] ?? 0.7;
-    const fr = Math.round(r * br), fg = Math.round(g * br), fb = Math.round(b * br);
-    const isTop  = qi < 2, isLeft = qi % 2 === 0;
-    const hi = 'rgba(255,255,255,0.38)';
-    const sh = 'rgba(0,0,0,0.50)';
-    sub.style.opacity           = '1';
-    sub.style.background        = `rgba(${fr},${fg},${fb},0.85)`;
-    sub.style.borderTopColor    = isTop  ? hi : sh;
-    sub.style.borderLeftColor   = isLeft ? hi : sh;
-    sub.style.borderBottomColor = isTop  ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.borderRightColor  = isLeft ? sh : 'rgba(0,0,0,0.65)';
-    sub.style.boxShadow         = `inset 0 1px 5px rgba(255,255,255,0.22),`
-                                + `inset 0 -2px 5px rgba(0,0,0,0.38),`
-                                + `0 0 8px rgba(${r},${g},${b},0.45)`;
-  }
-
-  function hideSub(sub) {
-    if (!sub) return;
-    sub.style.opacity           = '0';
-    sub.style.background        = 'transparent';
-    sub.style.borderTopColor    = 'transparent';
-    sub.style.borderLeftColor   = 'transparent';
-    sub.style.borderBottomColor = 'transparent';
-    sub.style.borderRightColor  = 'transparent';
-    sub.style.boxShadow         = 'none';
-  }
-
-  // Use live getBoundingClientRect() on every move — no stale cache
-  function findSub(cx, cy) {
-    for (let i = 0; i < _allSubs.length; i++) {
-      const { el, qi } = _allSubs[i];
-      const rect = el.getBoundingClientRect();
-      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
-        return { el, qi };
-      }
-    }
-    return null;
-  }
-
-  // ── Pupil tracking ──
-  function trackPupils(cx, cy) {
-    banner.querySelectorAll('.eyeball').forEach(eyeball => {
-      const pupil = eyeball.querySelector('.pupil');
-      if (!pupil) return;
-      const er = eyeball.getBoundingClientRect();
-      const ex = er.left + er.width  / 2;
-      const ey = er.top  + er.height / 2;
-      const dx = cx - ex;
-      const dy = cy - ey;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      // Max travel: 3px
-      const maxTravel = 3;
-      const travel = Math.min(dist, maxTravel);
-      const angle = Math.atan2(dy, dx);
-      const ox = Math.cos(angle) * travel;
-      const oy = Math.sin(angle) * travel;
-      pupil.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px)`;
-    });
-  }
-
-  function resetPupils() {
-    banner.querySelectorAll('.pupil').forEach(p => {
-      p.style.transform = 'translate(0,0)';
-    });
-  }
-
-  // Global cursor tracking — works no matter where on the page the cursor is
-  document.addEventListener('mousemove', function(e) {
-    const bannerRect = banner.getBoundingClientRect();
-    const pct = (e.clientX - bannerRect.left) / bannerRect.width;
-    const { r, g, b } = getColor(Math.max(0, Math.min(1, pct)));
-
-    // Move glow (only visible when cursor is over banner via CSS opacity rule)
-    glow.style.left       = (e.clientX - bannerRect.left) + 'px';
-    glow.style.top        = (e.clientY - bannerRect.top)  + 'px';
-    glow.style.background = `radial-gradient(circle,`
-      + `rgba(${r},${g},${b},0.88) 0%,`
-      + `rgba(${r},${Math.round(g*0.65)},${Math.round(b*0.35)},0.4) 50%,`
-      + `transparent 72%)`;
-
-    // Light up tile sub only when cursor is physically over the banner
-    const overBanner = e.clientX >= bannerRect.left && e.clientX <= bannerRect.right
-                    && e.clientY >= bannerRect.top  && e.clientY <= bannerRect.bottom;
-    if (overBanner) {
-      const hit   = findSub(e.clientX, e.clientY);
-      const hitEl = hit ? hit.el : null;
-      if (hitEl !== _activeSub) {
-        hideSub(_activeSub);
-        _activeSub = null;
-        if (hit) {
-          showSub(hit.el, hit.qi, r, g, b);
-          _activeSub = hit.el;
-        }
-      }
-    } else {
-      if (_activeSub) { hideSub(_activeSub); _activeSub = null; }
-    }
-
-    // Pupils follow cursor from ANYWHERE on the page
-    trackPupils(e.clientX, e.clientY);
-  });
-})();
-
-</script>
-
-
-<!-- STORY MODAL -->
-<div id="storyModal" onclick="if(event.target===this)closeStory()">
-  <div class="story-card" id="storyCard">
-    <div class="story-progress-bar"><div class="story-progress-fill" id="storyProgress"></div></div>
-    <div id="storyContent" style="padding:20px;min-height:320px;"></div>
-    <button class="story-nav-btn" style="left:10px;" onclick="navigateStory(-1)">‹</button>
-    <button class="story-nav-btn" style="right:10px;" onclick="navigateStory(1)">›</button>
-    <button onclick="closeStory()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;z-index:11;">✕</button>
-  </div>
-</div>
-
-<script>
-// ══════════════════════════════════════════════════════
-// STORIES SYSTEM — Live price + news, updates every hour
-// ══════════════════════════════════════════════════════
-
-const STORY_SUBJECTS = [
-  // NSE Stocks
-  {id:'RELIANCE',  label:'Reliance',   emoji:'🛢️',  type:'stock',     yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',        emoji:'💻',  type:'stock',     yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank',  emoji:'🏦',  type:'stock',     yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',    emoji:'🖥️',  type:'stock',     yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',        emoji:'🏛️',  type:'stock',     yf:'SBIN.NS'},
-  {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗',  type:'stock',     yf:'TATAMOTORS.NS'},
-  {id:'ADANIENT',  label:'Adani',      emoji:'⚡',  type:'stock',     yf:'ADANIENT.NS'},
-  {id:'ZOMATO',    label:'Zomato',     emoji:'🍕',  type:'stock',     yf:'ZOMATO.NS'},
-  // Crypto
-  {id:'BTC',       label:'Bitcoin',    emoji:'₿',   type:'crypto',    cg:'bitcoin'},
-  {id:'ETH',       label:'Ethereum',   emoji:'💎',  type:'crypto',    cg:'ethereum'},
-  {id:'SOL',       label:'Solana',     emoji:'☀️',  type:'crypto',    cg:'solana'},
-  // Commodities
-  {id:'GOLD',      label:'Gold',       emoji:'🥇',  type:'commodity', yf:'GC=F'},
-  {id:'CRUDE',     label:'Crude Oil',  emoji:'🛢️',  type:'commodity', yf:'CL=F'},
-  {id:'SILVER',    label:'Silver',     emoji:'🪙',  type:'commodity', yf:'SI=F'},
-];
-
-let _stories = {};          // {id: {price, chg, up, news, ts}}
-let _seenStories = new Set(JSON.parse(localStorage.getItem('mp_seen_stories')||'[]'));
-let _storyIdx = 0;
-let _storyTimer = null;
-const STORY_DURATION = 8000; // 8s per slide
-
-// ── Build stories from live data ──
-async function buildStories() {
-  const track = document.getElementById('storiesTrack');
-  if (!track) return;
-
-  // Fetch prices for all stock/commodity subjects in one batch
-  try {
-    const yfSyms = STORY_SUBJECTS.filter(s => s.yf).map(s => s.yf).join(',');
-    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), {signal: AbortSignal.timeout(12000)});
-    if (r.ok) {
-      const j = await r.json();
-      (j?.quoteResponse?.result || []).forEach(q => {
-        const subj = STORY_SUBJECTS.find(s => s.yf === q.symbol);
-        if (!subj || !q.regularMarketPrice) return;
-        const price  = q.regularMarketPrice;
-        const prev   = q.regularMarketPreviousClose || price;
-        const chgPct = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
-        _stories[subj.id] = { price, chgPct, up: chgPct >= 0, ts: Date.now() };
-      });
-    }
-  } catch(e) {}
-
-  // Fetch crypto prices from liveStocks (already fetched by CoinGecko)
-  STORY_SUBJECTS.filter(s => s.type === 'crypto').forEach(s => {
-    const live = liveStocks.find(x => x.sym === s.id);
-    if (live && live.price) {
-      const chg = parseFloat((live.chg||'0').replace('%','').replace('+',''));
-      _stories[s.id] = { price: live.price, chgPct: chg, up: live.up, ts: Date.now() };
-    }
-  });
-
-  // Fetch news via corsproxy + Google News RSS
-  await Promise.allSettled(STORY_SUBJECTS.map(async subj => {
-    if (_stories[subj.id]?.news && _stories[subj.id]?.newsTs && (Date.now()-_stories[subj.id].newsTs) < 50*60*1000) return;
-    try {
-      const q   = encodeURIComponent('"' + subj.label + '" stock');
-      const rss = 'https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en';
-      const r   = await fetch('https://corsproxy.io/?' + encodeURIComponent(rss), {signal: AbortSignal.timeout(8000)});
-      if (!r.ok) return;
-      const text = await r.text();
-      const xml  = new DOMParser().parseFromString(text, 'text/xml');
-      const items = [...xml.querySelectorAll('item')].slice(0, 4);
-      if (!items.length) return;
-      if (!_stories[subj.id]) _stories[subj.id] = {};
-      _stories[subj.id].news = items.map(el => ({
-        title: (el.querySelector('title')?.textContent||'').replace(/<!\[CDATA\[|\]\]>/g,'').trim(),
-        link:  el.querySelector('link')?.textContent || '#',
-        ago:   timeAgo(el.querySelector('pubDate')?.textContent || ''),
-        src:   (el.querySelector('source')?.textContent||'Google News').trim(),
-      })).filter(n => n.title.length > 10);
-      _stories[subj.id].newsTs = Date.now();
-    } catch(e) {}
-  }));
-
-  renderStoryBubbles();
-}
 
 function renderStoryBubbles() {
   const track = document.getElementById('storiesTrack');
