@@ -2750,6 +2750,67 @@ async function fetchCryptoLive() {
   }
 }
 
+
+// ── Fetch commodity prices directly via corsproxy (no Railway needed) ──────
+async function fetchCommoditiesLive() {
+  const commodities = [
+    {sym:'GOLD',     yf:'GC=F'},  {sym:'SILVER',  yf:'SI=F'},
+    {sym:'CRUDE',    yf:'CL=F'},  {sym:'BRENT',   yf:'BZ=F'},
+    {sym:'NATURALGAS',yf:'NG=F'}, {sym:'COPPER',  yf:'HG=F'},
+    {sym:'PLATINUM', yf:'PL=F'},  {sym:'WHEAT',   yf:'ZW=F'},
+    {sym:'CORN',     yf:'ZC=F'},
+  ];
+
+  // First try /api/quote (Railway)
+  try {
+    const syms = commodities.map(c=>c.yf).join(',');
+    const r = await fetch('/api/quote?symbols='+encodeURIComponent(syms), {signal:AbortSignal.timeout(10000)});
+    if (r.ok) {
+      const j = await r.json();
+      let updated = 0;
+      (j?.quoteResponse?.result||[]).forEach(q => {
+        if (!q?.regularMarketPrice) return;
+        const item = commodities.find(c=>c.yf===q.symbol);
+        if (!item) return;
+        const price = q.regularMarketPrice;
+        const chgPct = q.regularMarketChangePercent ?? 0;
+        const up = chgPct >= 0;
+        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+        const ex = liveStocks.find(s=>s.sym===item.sym);
+        if (ex) { ex.price=price; ex.chg=chgStr; ex.up=up; ex._live=true; }
+        else { const se=STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
+        updated++;
+      });
+      if (updated > 0) { updateTickerFromLive(); buildGlobalTicker(); renderTrending(liveStocks); return; }
+    }
+  } catch(e) {}
+
+  // Fallback: direct Yahoo Finance via corsproxy
+  await Promise.allSettled(commodities.map(async item => {
+    try {
+      const url = 'https://corsproxy.io/?' + encodeURIComponent(
+        'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d'
+      );
+      const r = await fetch(url, {signal:AbortSignal.timeout(8000)});
+      if (!r.ok) return;
+      const j = await r.json();
+      const meta = j?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) return;
+      const price  = meta.regularMarketPrice;
+      const prev   = meta.previousClose || meta.chartPreviousClose || price;
+      const chgPct = ((price-prev)/(prev||1))*100;
+      const up     = chgPct >= 0;
+      const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+      const ex = liveStocks.find(s=>s.sym===item.sym);
+      if (ex) { ex.price=price; ex.chg=chgStr; ex.up=up; ex._live=true; }
+      else { const se=STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
+    } catch(e2) {}
+  }));
+  updateTickerFromLive();
+  buildGlobalTicker();
+  renderTrending(liveStocks);
+}
+
 async function fetchLiveData() {
   // Only show fetching status — static data already rendered by _mpInit
   // Status managed by individual fetch functions
@@ -3043,14 +3104,27 @@ function buildGlobalTicker() {
   const track = document.getElementById('globalTickerTrack');
   if (!track) return;
 
-  // All assets: indices first, then LIVE stocks only, then crypto + commodities
+  // NSE stocks: live only
   const _liveNseGlobal = liveStocks.filter(s =>
     !STATIC_CRYPTO.find(c=>c.sym===s.sym) &&
     !STATIC_COMMODITIES.find(c=>c.sym===s.sym) &&
     s.price && s.price !== '—' && s._live
   ).slice(0, 25);
-  const _liveCryptoGlobal = liveStocks.filter(s => STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 8);
-  const _liveCommGlobal   = liveStocks.filter(s => STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 5);
+
+  // Crypto: live or static
+  const _liveCryptoGlobal = liveStocks.filter(s =>
+    STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
+  ).slice(0, 8);
+
+  // Commodities: live first, fall back to STATIC_COMMODITIES prices
+  const _liveCommGlobal = (() => {
+    const live = liveStocks.filter(s =>
+      STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
+    );
+    if (live.length > 0) return live.slice(0, 6);
+    // Fallback: use static prices
+    return STATIC_COMMODITIES.slice(0, 6).map(s => ({...s, _live: false}));
+  })();
   const allAssets = [
     {sym:'NIFTY',     name:'Nifty 50',   price:null, chg:null, up:true, isIndex:true},
     {sym:'BANKNIFTY', name:'Bank Nifty', price:null, chg:null, up:true, isIndex:true},
@@ -9584,6 +9658,7 @@ function _mpInit() {
   // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
   fetchCryptoLive();
   _fetchIndicesVercel();
+  fetchCommoditiesLive();
   fetchPriorityStocks();
   _fastBootstrapStocks();
   _fetchAllMovers();
@@ -12656,6 +12731,9 @@ setInterval(buildStories, 60 * 60 * 1000);
 setInterval(() => {
   _fetchIndicesVercel();
 }, 60000);
+
+// Auto-refresh commodity prices every 30 minutes
+setInterval(() => { fetchCommoditiesLive(); }, 30 * 60 * 1000);
 setTimeout(() => { loadNews('markets', document.getElementById('nc_markets')); }, 2000);
 setInterval(() => {
   const cat = window._mpNewsCat || 'markets';
