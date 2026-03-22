@@ -1871,7 +1871,21 @@ header {
         <span id="sidebarMmiTs" style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;"></span>
       </div>
       <div id="sidebarMmiContent">
-        <div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div>
+        <div style="text-align:center;padding:4px 0 8px;">
+          <svg viewBox="0 0 160 90" width="180" height="102" style="overflow:visible;">
+            <path d="M14 80 A66 66 0 0 1 47 20" stroke="#ff3b3b" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <path d="M47 20 A66 66 0 0 1 80 12" stroke="#ff6d00" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <path d="M80 12 A66 66 0 0 1 113 20" stroke="#ffd740" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <path d="M113 20 A66 66 0 0 1 146 80" stroke="#00c853" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <text x="8" y="90" font-size="7" fill="#ff3b3b" font-family="monospace" opacity="0.8">Fear</text>
+            <text x="126" y="90" font-size="7" fill="#00c853" font-family="monospace" opacity="0.8">Greed</text>
+            <line x1="80" y1="80" x2="80" y2="18" stroke="#ffd740" stroke-width="3" stroke-linecap="round" transform="rotate(0 80 80)"/>
+            <circle cx="80" cy="80" r="6" fill="#ffd740"/><circle cx="80" cy="80" r="3" fill="var(--bg2)"/>
+            <text x="80" y="72" text-anchor="middle" font-size="18" font-weight="900" fill="#ffd740" font-family="monospace">50</text>
+          </svg>
+          <div style="font-size:16px;font-weight:900;color:#ffd740;">😐 Neutral</div>
+          <div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;">Loading live data…</div>
+        </div>
       </div>
     </div>
 
@@ -1883,11 +1897,19 @@ header {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
-          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmGainers">
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">TATASTEEL</div><div style="font-size:9px;color:var(--text3);">₹148</div></div><span style="font-size:11px;font-weight:800;color:var(--green);">+2.78%</span></div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">SBIN</div><div style="font-size:9px;color:var(--text3);">₹812</div></div><span style="font-size:11px;font-weight:800;color:var(--green);">+2.10%</span></div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">TATAMOTORS</div><div style="font-size:9px;color:var(--text3);">₹689</div></div><span style="font-size:11px;font-weight:800;color:var(--green);">+1.45%</span></div>
+          </div>
         </div>
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
-          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmLosers">
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">WIPRO</div><div style="font-size:9px;color:var(--text3);">₹298</div></div><span style="font-size:11px;font-weight:800;color:var(--red);">-1.02%</span></div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">INFY</div><div style="font-size:9px;color:var(--text3);">₹1,456</div></div><span style="font-size:11px;font-weight:800;color:var(--red);">-0.89%</span></div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;"><div style="flex:1;"><div style="font-weight:700;font-size:10px;">TCS</div><div style="font-size:9px;color:var(--text3);">₹3,421</div></div><span style="font-size:11px;font-weight:800;color:var(--red);">-0.45%</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2560,15 +2582,12 @@ const LIVE_SIDEBAR_SYMS = [
 // Priority stocks to fetch first for What's Moving
 
 function updateWhatsMoving() {
-  // Always use all stocks that have price + chg — static or live, doesn't matter
-  // liveStocks is pre-seeded from STATIC_STOCKS so this is never empty
   const source = liveStocks && liveStocks.length ? liveStocks : STATIC_STOCKS;
 
-  // Only NSE stocks (exclude crypto/commodities), must have a valid chg value
+  // NSE stocks only — accept any with a price and chg, exclude crypto/commodity
   const stocks = source.filter(s =>
     s.price && s.price !== '—' &&
     s.chg && s.chg !== '—' &&
-    !s.currency &&
     !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym)
   );
 
@@ -9576,6 +9595,7 @@ function _mpInit() {
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
   renderTrending(liveStocks);
   updateWhatsMoving();   // shows static gainers/losers immediately
+  renderSidebarMmi();    // shows static MMI immediately (score 50 until live data arrives)
   onLiveDataUpdate();
   // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
   fetchCryptoLive();
