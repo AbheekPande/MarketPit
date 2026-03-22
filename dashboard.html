@@ -9852,6 +9852,7 @@ function _mpInit() {
     try { renderPosts(); } catch(e) {}
     try { renderTrendingTags(); } catch(e) {}
     try { onLiveDataUpdate(); } catch(e) {}
+    try { renderStoryBubbles(); } catch(e) {}
     buildGlobalTicker();
   });
 
@@ -12792,8 +12793,15 @@ function renderStorySlide() {
 
 // ── Auto-refresh every hour ──
 // Render stories immediately with static data, then fetch live prices
-renderStoryBubbles();
-setTimeout(buildStories, 1000);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    renderStoryBubbles();
+    setTimeout(buildStories, 1500);
+  });
+} else {
+  renderStoryBubbles();
+  setTimeout(buildStories, 1500);
+}
 setInterval(buildStories, 60 * 60 * 1000);
 
 // Also refresh stories when live data arrives
