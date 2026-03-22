@@ -4587,75 +4587,58 @@ function renderProfileModal() {
     ? '<img loading="lazy" src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
     : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
-  // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
+  // ── Clean profile layout: banner → avatar row → info → stats ──
   el.innerHTML =
-    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:340px;">'
-
-    // Full-bleed background (banner image or gradient)
-    + '<div onclick="editBanner()" title="Change banner" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;transition:opacity 0.2s;"></div>'
-
-    // Heavy gradient overlay from bottom — the key visual effect
-    + '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.15) 35%,rgba(0,0,0,0.82) 65%,rgba(0,0,0,0.97) 100%);pointer-events:none;"></div>'
-
-    // Edit banner badge top-right
-    + '<div onclick="editBanner()" style="position:absolute;top:12px;right:12px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
-
-    // Avatar — overlapping the gradient, positioned mid-bottom
-    + '<div style="position:absolute;bottom:96px;left:20px;z-index:3;">'
-      + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,255,255,0.25);box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;position:relative;">'
-        + avatarHtml
-        + '<div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,0.12);"></div>'
-      + '</div>'
-      + '<div style="position:absolute;bottom:1px;right:1px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid #000;">✏️</div>'
+    // 1. Banner (fixed height, clickable)
+    '<div style="position:relative;height:150px;border-radius:14px 14px 0 0;overflow:hidden;margin:-16px -16px 0;">'
+    + '<div onclick="editBanner()" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;"></div>'
+    + '<div onclick="editBanner()" style="position:absolute;top:10px;right:10px;font-size:10px;color:#fff;background:rgba(0,0,0,0.45);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
     + '</div>'
 
-    // Bottom text content — sits on top of gradient
-    + '<div style="position:relative;z-index:3;padding:0 20px 20px;margin-top:200px;">'
-
-      // Name + handle row with action buttons
-      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;">'
-        + '<div>'
-          + '<div style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.3px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">'
-            + (user.displayName||user.name)
-            + ' <span style="color:var(--accent);font-size:15px;">✓</span>'
-          + '</div>'
-          + '<div style="font-size:11px;color:rgba(255,255,255,0.55);font-family:Space Mono,monospace;margin-top:1px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
+    // 2. Avatar + buttons row (avatar overlaps banner by 30px)
+    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-top:-34px;margin-bottom:10px;">'
+      + '<div style="position:relative;display:inline-block;">'
+        + '<div onclick="editAvatar()" style="width:64px;height:64px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--bg2);box-shadow:0 2px 12px rgba(0,0,0,0.3);cursor:pointer;">'
+          + avatarHtml
         + '</div>'
-        + '<div style="display:flex;gap:6px;">'
-          + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:#fff;font-size:13px;cursor:pointer;">⚙️</button>'
-          + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);font-weight:700;font-size:12px;cursor:pointer;color:#fff;letter-spacing:0.3px;">Edit</button>'
-        + '</div>'
+        + '<div style="position:absolute;bottom:1px;right:1px;width:17px;height:17px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;border:2px solid var(--bg2);">✏️</div>'
       + '</div>'
+      + '<div style="display:flex;gap:8px;padding-bottom:4px;">'
+        + '<button onclick="_openProfileSettings()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;">⚙️</button>'
+        + '<button onclick="showEditProfile()" style="padding:7px 18px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);font-weight:700;font-size:12px;cursor:pointer;color:var(--text);">Edit</button>'
+      + '</div>'
+    + '</div>'
 
-      // Bio
+    // 3. Name + handle + bio
+    + '<div style="padding:0 4px 12px;">'
+      + '<div style="font-size:19px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">'
+        + (user.displayName||user.name)
+        + ' <span style="color:var(--accent);font-size:13px;">✓</span>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;margin-top:2px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
       + (user.bio
-        ? '<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:10px;">' + user.bio + '</div>'
-        : '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:10px;font-style:italic;">No bio yet — tap Edit to add one</div>')
-
-      // Location / website
-      + (user.location || user.website ? '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">'
-        + (user.location ? '<span style="font-size:11px;color:rgba(255,255,255,0.5);">📍 ' + user.location + '</span>' : '')
+        ? '<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-top:8px;">' + user.bio + '</div>'
+        : '<div style="font-size:12px;color:var(--text3);margin-top:6px;font-style:italic;">No bio yet — tap Edit to add one</div>')
+      + (user.location || user.website ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">'
+        + (user.location ? '<span style="font-size:11px;color:var(--text3);">📍 ' + user.location + '</span>' : '')
         + (user.website  ? '<a href="' + user.website + '" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">🔗 ' + user.website.replace(/https?:\/\//,'') + '</a>' : '')
         + '</div>' : '')
+    + '</div>'
 
-    + '</div>'  // bottom text
-
-    // ── Stats bar — glassmorphism strip at very bottom ──
-    + '<div style="position:relative;z-index:3;display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);">'
+    // 4. Stats bar
+    + '<div style="display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:0 -16px;background:var(--bg3);">'
       + [
           [getFollowingCount(), 'Following', "showFollowList('following')"],
           [getFollowerCount(user.name), 'Followers', "showFollowList('followers')"],
           [posts.length, 'Posts', ''],
           [likes, 'Likes', ''],
         ].map(([val, label, oc]) =>
-          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid rgba(255,255,255,0.07);">'
-          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + val + '</div>'
-          + '<div style="font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
+          '<div onclick="' + oc + '" style="flex:1;padding:11px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid var(--border);">'
+          + '<div style="font-size:15px;font-weight:900;color:var(--text);font-family:Space Mono,monospace;">' + val + '</div>'
+          + '<div style="font-size:9px;color:var(--text3);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
           + '</div>'
         ).join('')
     + '</div>'
-
-    + '</div>'  // outer card
 
     // ── Recent posts ──
     + '<div style="padding:16px 4px 0;">'
