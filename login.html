@@ -304,25 +304,24 @@ async function handleLogin(e) {
   if (!email)    { alert('Please enter your email address.'); return; }
   if (!password) { alert('Please enter your password.'); return; }
 
-  // Check password if account exists locally
+  let isNew = false;
   if (isExistingUser(email)) {
     const account = getStoredAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
     if (account?.password && account.password !== password) {
       alert('Incorrect password. Please try again.');
       return;
     }
-    // Existing user — restore their saved name
     const name = account.name || email.split('@')[0];
     _saveAccount(name, email, password);
+    isNew = false;
   } else {
-    // New user via email login — use part before @ as name
     const name = email.split('@')[0];
-    _saveAccount(name, email, password);
+    isNew = _saveAccount(name, email, password);
   }
 
   btn.textContent = 'Signing in…';
   btn.disabled    = true;
-  window.location.href = 'dashboard.html';
+  window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
 }
 
 // ── Toggle between login and signup panels ──────────────────────────────────
