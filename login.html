@@ -136,7 +136,7 @@
 <!-- Real Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="g_id_onload"
-  data-client_id="329129705952-ebejg4u7le9dfa3fq9hdnojv572r2atb.apps.googleusercontent.com"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
   data-callback="handleGoogleLogin"
   data-auto_select="false"
   data-itp_support="true">
@@ -262,7 +262,7 @@ function handleGoogleLogin(response) {
     const email = payload.email || '';
     if (!email) { alert('Could not get email from Google. Try again.'); return; }
     const isNew = _saveAccount(name, email, '');
-    window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
+    window.location.href = 'session-keep.html';
   } catch(e) {
     alert('Google sign-in failed. Please use email login below.');
   }
@@ -321,7 +321,7 @@ async function handleLogin(e) {
 
   btn.textContent = 'Signing in…';
   btn.disabled    = true;
-  window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
+  window.location.href = 'session-keep.html';
 }
 
 // ── Toggle between login and signup panels ──────────────────────────────────
@@ -355,7 +355,7 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   const isNew = _saveAccount(name, email, password);
-  window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
+  window.location.href = 'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
