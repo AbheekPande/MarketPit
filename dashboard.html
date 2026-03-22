@@ -1234,12 +1234,12 @@ header {
     </div>
     <script>
     // Retry rendering stories until the function is available
-    // Poll until stories functions are ready (up to 30 seconds)
+    // Poll until stories functions are ready (up to 15 seconds)
     (function tryStories(attempt) {
       if (typeof renderStoryBubbles === 'function' && typeof STORY_SUBJECTS !== 'undefined') {
         renderStoryBubbles();
         if (typeof buildStories === 'function') setTimeout(buildStories, 1000);
-      } else if (attempt < 150) {
+      } else if (attempt < 75) {
         setTimeout(() => tryStories(attempt + 1), 200);
       }
     })(0);
@@ -12185,12 +12185,15 @@ function renderHeatmap() {
     setTimeout(_fastBootstrapStocks, 600);
   }
 
-  // Auto-refresh every 30s while visible
-  clearInterval(window._heatmapTimer);
-  window._heatmapTimer = setInterval(() => {
-    if (window._activePage === 'heatmap') { fetchPriorityStocks(); setTimeout(renderHeatmap, 3000); }
-    else clearInterval(window._heatmapTimer);
-  }, 30000);
+  // Auto-refresh every 60s while visible (set once, not on every render)
+  if (!window._heatmapTimer) {
+    window._heatmapTimer = setInterval(() => {
+      if (window._activePage === 'heatmap') {
+        // Refresh data - onLiveDataUpdate will re-render heatmap
+        fetchPriorityStocks();
+      }
+    }, 60000);
+  }
 
   const data = buildHeatmapData();
   const total = data.reduce((a,s) => a + s.stocks.length, 0);
@@ -12406,14 +12409,8 @@ function renderStorySlide() {
     setTimeout(buildStories, 1500);
   }
 })();
-// Also re-render on page show (tab switch back)
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) renderStoryBubbles();
-});
-setInterval(() => {
-  const t = document.getElementById('storiesTrack');
-  if (t && t.children.length === 0) renderStoryBubbles();
-}, 2000);
+
+
 setInterval(buildStories, 60 * 60 * 1000);
 
 // Also refresh stories when live data arrives
