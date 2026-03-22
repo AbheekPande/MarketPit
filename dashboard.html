@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="render-blocking" content="none">
+<link rel="dns-prefetch" href="https://query1.finance.yahoo.com">
+<link rel="dns-prefetch" href="https://api.coingecko.com">
+<link rel="dns-prefetch" href="https://corsproxy.io">
+<link rel="dns-prefetch" href="https://api.allorigins.win">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MarketPit — Trading Community</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2264,7 +2269,11 @@ const STATIC_COMMODITIES = [
 
 // ── STATIC TECHNICAL ANALYSIS DATA ──
 // Pre-computed signals shown while Railway loads real data
-const STATIC_TECH = {
+let _STATIC_TECH_DATA = null;
+function getStaticTech(sym) {
+  // Lazy-parse STATIC_TECH only when first needed (stock modal open)
+  if (!_STATIC_TECH_DATA) {
+    _STATIC_TECH_DATA = {
   // FORMAT: rsi, overall, macd_bullish, above_ma50, above_ma200, golden_cross, death_cross,
   //         change_1d, change_1w, change_1m, change_3m, high_52w, low_52w,
   //         support, resistance, bb_pct, adx, stoch_k, stoch_d,
@@ -2301,7 +2310,11 @@ const STATIC_TECH = {
   'COPPER':   {price:4.56,rsi:57.8,overall:'BUY',buy_signals:5,sell_signals:2,total_signals:8,macd_bullish:true,macd_increasing:true,macd:0.062,macd_signal:0.041,macd_hist:0.021,above_ma50:true,above_ma200:true,golden_cross:false,death_cross:false,stoch_k:61,stoch_d:58,stoch_bullish:true,cci:74,adx:24,bb_pct:61,bb_width:5.2,change_1d:0.45,change_1w:1.8,change_1m:4.2,change_3m:6.8,high_52w:5.20,low_52w:3.78,pct_from_52h:-12.3,pct_from_52l:20.6,support:4.38,resistance:4.76,support_50:4.22,resistance_50:4.92,ma10:4.52,ma20:4.46,ma50:4.38,ma100:4.28,ma200:4.12,ema9:4.54,ema21:4.48,ema50:4.40,ema200:4.10,bb_upper:4.82,bb_lower:4.10,bb_mid:4.46,vwap:4.58,vol_ratio:1.2,vol_spike:false,atr_pct:1.8,pivot:4.58,r1:4.76,r2:4.94,s1:4.40,s2:4.22},
   'BRENT':    {price:75.67,rsi:40.2,overall:'SELL',buy_signals:2,sell_signals:5,total_signals:8,macd_bullish:false,macd_increasing:false,macd:-1.92,macd_signal:-1.18,macd_hist:-0.74,above_ma50:false,above_ma200:false,golden_cross:false,death_cross:true,stoch_k:37,stoch_d:40,stoch_bullish:false,cci:-88,adx:28,bb_pct:34,bb_width:6.8,change_1d:0.89,change_1w:-1.8,change_1m:-7.4,change_3m:-16.2,high_52w:97.48,low_52w:68.92,pct_from_52h:-22.4,pct_from_52l:9.8,support:72,resistance:80,support_50:69.5,resistance_50:82.5,ma10:76.48,ma20:77.84,ma50:80.92,ma100:83.48,ma200:86.24,ema9:76.02,ema21:77.28,ema50:80.48,ema200:85.98,bb_upper:83.12,bb_lower:72.56,bb_mid:77.84,vwap:76.24,vol_ratio:1.0,vol_spike:false,atr_pct:2.6,pivot:76.08,r1:79.88,r2:83.68,s1:72.28,s2:68.48},
 };
-
+;
+  }
+  return _STATIC_TECH_DATA[sym];
+}
+const STATIC_TECH = new Proxy({}, { get: (_, sym) => getStaticTech(sym) });
 // ── STORAGE ──
 const getPosts    = () => { try { return JSON.parse(localStorage.getItem('mp_posts')||'[]'); } catch(e){return [];} };
 const savePosts   = p  => localStorage.setItem('mp_posts', JSON.stringify(p));
@@ -9684,31 +9697,35 @@ function onLiveDataUpdate(){
 
 // ── STARTUP — wait for DOM to be ready ──
 function _mpInit() {
-  updateAvatars();
-  renderPosts();
-  renderTrendingTags();
-  renderLeaderboard();
-
-  // ── STEP 1: Render static prices INSTANTLY at frame 0 — UI is never blank ──
+  // ── Phase 1: Critical UI only — runs immediately ──
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
   renderTrending(liveStocks);
-  updateWhatsMoving();   // shows static gainers/losers immediately
-  renderSidebarMmi();    // shows static MMI immediately (score 50 until live data arrives)
-  onLiveDataUpdate();
-  // ── STEP 2: Staggered fetches — critical first to avoid network congestion ──
-  fetchCryptoLive();          // t=0: crypto
-  _fetchIndicesVercel();      // t=0: Nifty for MMI
-  fetchCommoditiesLive();     // t=0: commodity ticker
-  setTimeout(() => fetchPriorityStocks(),  200);
-  setTimeout(() => _fastBootstrapStocks(), 500);
-  setTimeout(() => _fetchAllMovers(),      900);
-  setTimeout(() => fetchLiveData(),       1400);
-  setTimeout(() => loadSymbols(),         2000);
+  updateWhatsMoving();
+  renderSidebarMmi();
 
-  // ── STEP 3: Safety re-renders ──
-  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); onLiveDataUpdate(); }), 2500);
-  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); updateTickerFromLive(); }), 6000);
+  // ── Phase 2: Non-critical UI — next frame ──
+  requestAnimationFrame(() => {
+    try { updateAvatars(); } catch(e) {}
+    try { renderPosts(); } catch(e) {}
+    try { renderTrendingTags(); } catch(e) {}
+    try { onLiveDataUpdate(); } catch(e) {}
+    buildGlobalTicker();
+  });
+
+  // ── Phase 3: Network fetches — staggered, never block paint ──
+  setTimeout(() => fetchCryptoLive(),        500);
+  setTimeout(() => _fetchIndicesVercel(),    600);
+  setTimeout(() => fetchCommoditiesLive(),   700);
+  setTimeout(() => fetchPriorityStocks(),    900);
+  setTimeout(() => _fastBootstrapStocks(),  1500);
+  setTimeout(() => _fetchAllMovers(),       2500);
+  setTimeout(() => fetchLiveData(),         3500);
+  setTimeout(() => loadSymbols(),           4000);
+
+  // ── Phase 4: Safety re-renders after data arrives ──
+  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); updateWhatsMoving(); updateTickerFromLive(); buildGlobalTicker(); }), 5000);
+  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); onLiveDataUpdate(); }), 10000);
 }
 
 // Fetch Nifty/BankNifty/Sensex via Vercel /api/indices (server-side, no CORS)
@@ -9829,13 +9846,17 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', _mpInit);
+  document.addEventListener('DOMContentLoaded', () => {
+    // Let browser paint the initial HTML first, then init
+    requestAnimationFrame(() => requestAnimationFrame(_mpInit));
+  });
 
 // ══════════════════════════════════════════════════════════════
 // UNLISTED SHARES
 // HOW TO UPDATE: edit the arrays below — price, chg, chgPct, prevClose, week1
 // ══════════════════════════════════════════════════════════════
-const UNLISTED_DATA = {
+let _UNLISTED_DATA_RAW = null;
+function _getUnlisted(){if(!_UNLISTED_DATA_RAW){_UNLISTED_DATA_RAW={
   top: [
     // {name, price, chg, chgPct, prevClose, week1}
     {name:'Orbis Financial',       price:426.00,  chg:-4.00,  chgPct:-0.93, prevClose:430.00,  week1:-0.60},
@@ -9862,7 +9883,8 @@ const UNLISTED_DATA = {
     {name:'Dr Fresh Assets',        price:44.31,  chg:-0.01,  chgPct:-0.01, prevClose:44.31,   week1:-0.01},
     {name:'Crescent Finstock',      price:44.31,  chg:-0.01,  chgPct:-0.01, prevClose:44.31,   week1:-0.01},
   ],
-};
+};} return _UNLISTED_DATA_RAW;}
+const UNLISTED_DATA = new Proxy({},{get:(_,k)=>_getUnlisted()[k]});
 
 let _unlistedTab = 'top';
 function switchUnlistedTab(tab, btn) {
@@ -12185,7 +12207,7 @@ function renderHeatmap() {
   window.updateHeroPrices = updateHeroPrices;
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSpotlight);
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initSpotlight, 1000));
   } else {
     setTimeout(initSpotlight, 100);
   }
@@ -12216,7 +12238,7 @@ function renderHeatmap() {
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 800));
   } else {
     init();
   }
