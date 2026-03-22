@@ -2295,20 +2295,12 @@ let allStockSymbols = [];
 const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
 const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
 
-// Pre-seed liveStocks with static commodity prices so COMMOD tab shows immediately
-setTimeout(() => {
-  STATIC_COMMODITIES.forEach(s => {
-    if (!liveStocks.find(x => x.sym === s.sym)) liveStocks.push({...s, _live:false});
-  });
-  renderTrending(liveStocks);
-}, 100);
-
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s, _live: false})),
   // Crypto: seed with name/sym but NO price — show live only, never stale static
   ...STATIC_CRYPTO.map(s => ({...s, price: null, chg: null, _loading: true})),
-  // Commodities: same — no static price shown, wait for live fetch
-  ...STATIC_COMMODITIES.map(s => ({...s, price: null, chg: null, _loading: true})),
+  // Commodities: seed with STATIC prices so COMMOD tab shows immediately
+  ...STATIC_COMMODITIES.map(s => ({...s, _live: false})),
 ];
 
 // ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
@@ -9598,7 +9590,7 @@ function _mpInit() {
 async function _fetchIndicesVercel() {
   try {
     const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) return;
+    if (!r.ok) throw new Error('indices api failed');
     const d = await r.json();
     if (!window._liveIndices) window._liveIndices = {};
     if (d.nifty)     { window._liveIndices['NIFTY 50']   = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
@@ -9606,6 +9598,42 @@ async function _fetchIndicesVercel() {
     if (d.sensex)    { window._liveIndices['SENSEX']     = d.sensex; }
     if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
     updateTickerFromLive();
+    renderSidebarMmi();
+    return;
+  } catch(e) {}
+
+  // ── Direct fallback: fetch Nifty & BankNifty from Yahoo Finance via corsproxy ──
+  try {
+    const pairs = [
+      { sym: '^NSEI',     key1: 'NIFTY 50',   key2: 'NIFTY'     },
+      { sym: '^NSEBANK',  key1: 'NIFTY BANK',  key2: 'BANKNIFTY' },
+      { sym: '^BSESN',    key1: 'SENSEX',      key2: 'SENSEX'    },
+    ];
+    if (!window._liveIndices) window._liveIndices = {};
+
+    await Promise.allSettled(pairs.map(async ({ sym, key1, key2 }) => {
+      try {
+        const url = 'https://corsproxy.io/?' + encodeURIComponent(
+          'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=2d'
+        );
+        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return;
+        const j = await r.json();
+        const meta = j?.chart?.result?.[0]?.meta;
+        if (!meta?.regularMarketPrice) return;
+        const price  = meta.regularMarketPrice;
+        const prev   = meta.previousClose || meta.chartPreviousClose || price;
+        const chgAbs = price - prev;
+        const chgPct = ((chgAbs) / (prev || 1)) * 100;
+        const up     = chgPct >= 0;
+        const obj    = { price, chg: chgPct, up, chgAbs };
+        window._liveIndices[key1] = obj;
+        window._liveIndices[key2] = obj;
+      } catch(e2) {}
+    }));
+
+    updateTickerFromLive();
+    renderSidebarMmi();
   } catch(e) {}
 }
 
@@ -12614,7 +12642,10 @@ function renderStorySlide() {
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
 
-// Auto-load Market News on page start + refresh every 10 min
+// Auto-refresh Market Mood gauge every 60 seconds
+setInterval(() => {
+  _fetchIndicesVercel();
+}, 60000);
 setTimeout(() => { loadNews('markets', document.getElementById('nc_markets')); }, 2000);
 setInterval(() => {
   const cat = window._mpNewsCat || 'markets';
