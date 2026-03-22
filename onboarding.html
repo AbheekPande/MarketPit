@@ -45,6 +45,18 @@ tailwind.config = {
 </head>
 <body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
 <main class="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+  <!-- Progress -->
+  <div class="w-full max-w-5xl mx-auto mb-10 px-0">
+    <div class="flex justify-between items-center mb-3">
+      <span class="font-label text-xs tracking-wider uppercase text-on-surface-variant font-semibold">Your Preferences</span>
+      <span class="font-label text-xs tracking-wider uppercase text-primary font-bold">Step 1 of 3 &nbsp;·&nbsp; 33% Complete</span>
+    </div>
+    <div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+      <div class="bg-primary h-full rounded-full" style="width:33%"></div>
+    </div>
+  </div>
+
+
 
   <!-- Header -->
   <header class="w-full max-w-5xl mb-16 text-center lg:text-left">
