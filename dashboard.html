@@ -13284,49 +13284,88 @@ document.addEventListener('keydown',function(e){
 });
 async function fetchCommoditiesLive(){
   const C=[
-    {sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},
-    {sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},
-    {sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'}
+    {sym:'GOLD',      yf:'GC=F',  stooq:'gc.f'},
+    {sym:'SILVER',    yf:'SI=F',  stooq:'si.f'},
+    {sym:'CRUDE',     yf:'CL=F',  stooq:'cl.f'},
+    {sym:'BRENT',     yf:'BZ=F',  stooq:'bz.f'},
+    {sym:'NATURALGAS',yf:'NG=F',  stooq:'ng.f'},
+    {sym:'COPPER',    yf:'HG=F',  stooq:'hg.f'},
+    {sym:'PLATINUM',  yf:'PL=F',  stooq:'pl.f'},
+    {sym:'WHEAT',     yf:'ZW=F',  stooq:'zw.f'},
+    {sym:'CORN',      yf:'ZC=F',  stooq:'zc.f'},
   ];
   const upd=(sym,p,cp)=>{
-    const up=cp>=0,cs=(up?'+':'')+cp.toFixed(2)+'%';
+    const up=cp>=0, cs=(up?'+':'')+cp.toFixed(2)+'%';
     const ex=liveStocks.find(s=>s.sym===sym);
     if(ex){ex.price=p;ex.chg=cs;ex.up=up;ex._live=true;}
     else{const se=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(se||{sym,name:sym,currency:'$'}),price:p,chg:cs,up,_live:true});}
   };
-  // Source 1: Vercel batch
+
+  const done = () => { updateTickerFromLive(); buildGlobalTicker(); renderTrending(liveStocks); };
+
+  // ── Source 1: Vercel /api/quote (server-side, fastest) ──
   try{
-    const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(8000)});
-    if(r.ok){const j=await r.json();let u=0;
-      (j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const it=C.find(c=>c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);u++;});
-      if(u>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}
+    const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(6000)});
+    if(r.ok){
+      const j=await r.json(); let u=0;
+      (j?.quoteResponse?.result||[]).forEach(q=>{
+        if(!q?.regularMarketPrice)return;
+        const it=C.find(c=>c.yf===q.symbol);if(!it)return;
+        upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);u++;
+      });
+      if(u>0){done();return;}
     }
   }catch(e){}
-  // Source 2: direct per-commodity with 3 proxy fallbacks
-  const proxyFns=[
-    yf=>'https://api.allorigins.win/get?url='+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=2d'),
-    yf=>'https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=2d'),
-    yf=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=2d'),
+
+  // ── Source 2: Race all proxies in parallel per commodity ──
+  const parseYF=(raw)=>{
+    try{const w=JSON.parse(raw);const j=w.contents?JSON.parse(w.contents):w;const m=j?.chart?.result?.[0]?.meta;if(!m?.regularMarketPrice)return null;const p=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p;return{p,cp:((p-prev)/(prev||1))*100};}catch(e){return null;}
+  };
+
+  const parseStooq=(csv,sym)=>{
+    try{
+      const lines=csv.trim().split('
+');
+      if(lines.length<2)return null;
+      const vals=lines[lines.length-1].split(',');
+      // stooq CSV: Date,Open,High,Low,Close,Volume
+      const close=parseFloat(vals[4]);
+      const open=parseFloat(vals[1]);
+      if(!close||isNaN(close))return null;
+      const cp=((close-open)/(open||1))*100;
+      return{p:close,cp};
+    }catch(e){return null;}
+  };
+
+  const yfUrls=(yf)=>[
+    'https://query1.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=2d',
+    'https://query2.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=2d',
   ];
+
+  const proxies=(url)=>[
+    fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(5000)}).then(r=>r.json()).then(j=>j.contents||''),
+    fetch('https://corsproxy.io/?'+encodeURIComponent(url),{signal:AbortSignal.timeout(5000)}).then(r=>r.text()),
+    fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url),{signal:AbortSignal.timeout(5000)}).then(r=>r.text()),
+  ];
+
   await Promise.allSettled(C.map(async it=>{
-    for(const pfn of proxyFns){
-      try{
-        const r=await fetch(pfn(it.yf),{signal:AbortSignal.timeout(9000)});
-        if(!r.ok)continue;
-        const raw=await r.text();
-        let j;try{const w=JSON.parse(raw);j=w.contents?JSON.parse(w.contents):w;}catch(e){continue;}
-        const m=j?.chart?.result?.[0]?.meta;
-        if(!m?.regularMarketPrice)continue;
-        const p=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p;
-        upd(it.sym,p,((p-prev)/(prev||1))*100);
-        break;
-      }catch(e){continue;}
-    }
+    // Race YF proxies
+    const allFetches=[
+      ...yfUrls(it.yf).flatMap(url=>proxies(url).map(async p=>{try{const raw=await p;const res=parseYF(raw);if(res)return{...res,src:'yf'};}catch(e){}})),
+      // Stooq CSV — direct CORS allowed
+      (async()=>{try{const r=await fetch('https://stooq.com/q/l/?s='+it.stooq+'&f=sd2t2ohlcv&h&e=csv',{signal:AbortSignal.timeout(5000)});if(!r.ok)return;const csv=await r.text();const res=parseStooq(csv,it.sym);if(res)return{...res,src:'stooq'};}catch(e){}})(),
+    ];
+    // Use first successful result
+    const results=await Promise.allSettled(allFetches);
+    const winner=results.find(r=>r.status==='fulfilled'&&r.value?.p);
+    if(winner?.value){upd(it.sym,winner.value.p,winner.value.cp);}
   }));
-  updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);
+
+  done();
 }
-setTimeout(fetchCommoditiesLive,1000);
-setInterval(fetchCommoditiesLive,5*60*1000);
+// Run immediately on load, then every 3 minutes
+fetchCommoditiesLive();
+setInterval(fetchCommoditiesLive, 3*60*1000);
 setTimeout(()=>{loadNews('markets',document.getElementById('nc_markets'));},2000);
 setInterval(()=>{const cat=window._mpNewsCat||'markets';delete _newsLoaded[cat];loadNews(cat,document.getElementById('nc_'+cat));},10*60*1000);
 </script>
