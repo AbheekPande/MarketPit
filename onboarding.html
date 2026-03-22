@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tailor Your Terminal | Market Pit</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-tertiary": "#ffffff", "inverse-surface": "#2e312f",
+        "on-surface-variant": "#404945", "on-secondary": "#ffffff",
+        "on-background": "#191c1b", "secondary-container": "#cce5db",
+        "secondary": "#4c635b", "surface-container-lowest": "#ffffff",
+        "surface-container": "#eceeeb", "primary-fixed-dim": "#95d3bf",
+        "outline-variant": "#bfc9c4", "on-surface": "#191c1b",
+        "on-primary-fixed": "#002019", "surface-container-high": "#e7e9e6",
+        "outline": "#707975", "primary": "#003227", "on-primary": "#ffffff",
+        "surface-container-low": "#f2f4f1", "surface": "#f8faf7",
+        "primary-fixed": "#b0efda", "on-primary-fixed-variant": "#0a5041",
+        "primary-container": "#004b3c"
+      },
+      fontFamily: { "headline": ["Noto Serif"], "body": ["Manrope"], "label": ["Manrope"] },
+      borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+    },
+  },
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; font-size: 24px; }
+  .serif-italic { font-family: 'Noto Serif'; font-style: italic; }
+  .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(140px, auto); gap: 1.5rem; }
+  @media (max-width: 1024px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .bento-grid { grid-template-columns: 1fr; } }
+  .card-selected { background: #ffffff !important; border-color: #003227 !important; box-shadow: 0 0 0 2px #003227; }
+  .card-selected .card-icon { color: #003227 !important; }
+  .card-selected .card-title { color: #003227 !important; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<main class="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+
+  <!-- Header -->
+  <header class="w-full max-w-5xl mb-16 text-center lg:text-left">
+    <div class="mb-8 inline-block">
+      <span class="font-headline italic text-2xl text-primary tracking-tight">Market Pit</span>
+    </div>
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+      <div class="max-w-2xl">
+        <h1 class="font-headline text-5xl md:text-6xl text-primary font-bold tracking-tight mb-4">
+          Tailor Your <span class="serif-italic">Terminal</span>
+        </h1>
+        <p class="font-body text-lg text-on-surface-variant/80 max-w-xl">
+          Select your core interests to personalize your market intelligence feed.
+        </p>
+      </div>
+      <div class="hidden lg:block">
+        <button onclick="goToDashboard()" class="text-sm font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors duration-300">
+          Skip for now
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bento Grid -->
+  <section class="w-full max-w-5xl">
+    <div class="bento-grid" id="interestGrid">
+
+      <!-- Stocks -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="stocks" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">monitoring</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Stocks</h3>
+      </div>
+
+      <!-- Crypto -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="crypto" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">currency_bitcoin</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Crypto</h3>
+      </div>
+
+      <!-- Forex -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="forex" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">currency_exchange</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Forex</h3>
+      </div>
+
+      <!-- Commodities -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="commodities" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">grid_goldenratio</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Commodities</h3>
+      </div>
+
+      <!-- IPOs (wide) -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30 lg:col-span-2"
+           data-interest="ipos" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">rocket_launch</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <div>
+          <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">IPOs</h3>
+          <p class="text-sm text-on-surface-variant/60 mt-2">Track upcoming market debuts.</p>
+        </div>
+      </div>
+
+      <!-- Unlisted Shares -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="unlisted" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">lock</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Unlisted Shares</h3>
+      </div>
+
+      <!-- Mutual Funds -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30"
+           data-interest="mutualfunds" onclick="toggleCard(this)">
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">account_balance</span>
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+        </div>
+        <h3 class="card-title font-headline text-xl font-bold text-on-surface mt-8">Mutual Funds</h3>
+      </div>
+
+      <!-- Macro (full width) -->
+      <div class="interest-card group relative flex flex-col justify-between p-8 bg-surface-container-low hover:bg-surface-container-lowest rounded-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-outline-variant/30 lg:col-span-4 lg:flex-row lg:items-center"
+           data-interest="macro" onclick="toggleCard(this)">
+        <div class="flex items-center gap-6">
+          <span class="material-symbols-outlined card-icon text-on-surface-variant/70 text-3xl">public</span>
+          <div>
+            <h3 class="card-title font-headline text-xl font-bold text-on-surface">Macro</h3>
+            <p class="text-sm text-on-surface-variant/60">Global economic indicators and central bank updates.</p>
+          </div>
+        </div>
+        <div class="mt-4 lg:mt-0 flex items-center gap-3">
+          <span class="check-badge hidden bg-primary text-on-primary rounded-full p-1 flex items-center justify-center">
+            <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+          </span>
+          <span class="material-symbols-outlined text-on-surface-variant/20">arrow_forward</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-5xl mt-16 flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-outline-variant/10">
+    <div class="flex items-center gap-4 text-on-surface-variant/40">
+      <span class="text-xs font-label uppercase tracking-widest">Selected</span>
+      <span class="h-1 w-8 bg-primary-fixed rounded-full"></span>
+      <span id="selectedCount" class="text-on-surface font-bold">0/8</span>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
+      <button onclick="goToDashboard()" class="w-full sm:w-auto px-8 py-4 text-sm font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors sm:hidden">
+        Skip for now
+      </button>
+      <button onclick="completeSetup()" class="w-full sm:w-auto px-12 py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-lg font-label font-bold uppercase tracking-widest hover:shadow-[0px_10px_30px_rgba(0,50,39,0.2)] transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95">
+        Complete Setup
+      </button>
+    </div>
+  </footer>
+
+  <!-- Decorative blobs -->
+  <div class="fixed -bottom-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed -top-24 -left-24 w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl -z-10"></div>
+</main>
+
+<script>
+const selected = new Set();
+
+function toggleCard(card) {
+  const interest = card.dataset.interest;
+  const badge = card.querySelector('.check-badge');
+  const icon  = card.querySelector('.card-icon');
+  const title = card.querySelector('.card-title');
+
+  if (selected.has(interest)) {
+    selected.delete(interest);
+    card.classList.remove('card-selected');
+    badge.classList.add('hidden');
+    icon.style.color  = '';
+    title.style.color = '';
+    card.style.boxShadow = '';
+  } else {
+    selected.add(interest);
+    card.classList.add('card-selected');
+    badge.classList.remove('hidden');
+    icon.style.color  = '#003227';
+    title.style.color = '#003227';
+  }
+
+  document.getElementById('selectedCount').textContent = selected.size + '/8';
+}
+
+function goToDashboard() {
+  window.location.href = 'dashboard.html';
+}
+
+function completeSetup() {
+  // Save interests to localStorage
+  try {
+    const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    if (user) {
+      user.interests = [...selected];
+      user.onboardingDone = true;
+      localStorage.setItem('mp_user', JSON.stringify(user));
+    } else {
+      localStorage.setItem('mp_interests', JSON.stringify([...selected]));
+    }
+  } catch(e) {}
+  window.location.href = 'dashboard.html';
+}
+
+// If user has already done onboarding, skip straight to dashboard
+try {
+  const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+  if (user && user.onboardingDone) {
+    window.location.href = 'dashboard.html';
+  }
+} catch(e) {}
+</script>
+</body></html>

@@ -261,14 +261,8 @@ function handleGoogleLogin(response) {
     const name  = payload.name || payload.given_name || 'User';
     const email = payload.email || '';
     if (!email) { alert('Could not get email from Google. Try again.'); return; }
-    const accounts = JSON.parse(localStorage.getItem('mp_accounts') || '[]');
-    if (!accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
-      accounts.push({ name, email, password: '', joinedAt: Date.now() });
-      localStorage.setItem('mp_accounts', JSON.stringify(accounts));
-    }
-    localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now() }));
-    localStorage.setItem('mp_session_email', email);
-    window.location.href = 'dashboard.html';
+    const isNew = _saveAccount(name, email, '');
+    window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
   } catch(e) {
     alert('Google sign-in failed. Please use email login below.');
   }
@@ -361,19 +355,21 @@ async function handleSignup(e) {
   btn.textContent = 'Creating account…';
   btn.disabled    = true;
 
-  _saveAccount(name, email, password);
-  window.location.href = 'dashboard.html';
+  const isNew = _saveAccount(name, email, password);
+  window.location.href = isNew ? 'onboarding.html' : 'dashboard.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
-function _saveAccount(name, email, password) {
+function _saveAccount(name, email, password, isNew) {
   const accounts = getStoredAccounts();
-  if (!accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
+  const exists = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+  if (!exists) {
     accounts.push({ name, email, password, joinedAt: Date.now() });
     localStorage.setItem('mp_accounts', JSON.stringify(accounts));
   }
   localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now() }));
   localStorage.setItem('mp_session_email', email);
+  return !exists; // returns true if brand new user
 }
 </script>
 </body></html>
