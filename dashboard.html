@@ -1214,6 +1214,17 @@ header {
     <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:5px 10px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
       <div id="storiesTrack" style="display:flex;gap:5px;align-items:center;min-width:max-content;"></div>
     </div>
+    <script>
+    // Retry rendering stories until the function is available
+    (function tryStories(attempt) {
+      if (typeof renderStoryBubbles === 'function') {
+        renderStoryBubbles();
+        if (typeof buildStories === 'function') setTimeout(buildStories, 2000);
+      } else if (attempt < 30) {
+        setTimeout(() => tryStories(attempt + 1), 200);
+      }
+    })(0);
+    </script>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
@@ -9852,7 +9863,6 @@ function _mpInit() {
     try { renderPosts(); } catch(e) {}
     try { renderTrendingTags(); } catch(e) {}
     try { onLiveDataUpdate(); } catch(e) {}
-    try { renderStoryBubbles(); } catch(e) {}
     buildGlobalTicker();
   });
 
