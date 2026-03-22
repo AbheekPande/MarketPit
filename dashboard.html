@@ -2766,6 +2766,7 @@ async function _fetchAllMovers() {
 setInterval(_fetchAllMovers, 30000);
 // Refresh ticker every 20 seconds
 setInterval(updateTickerFromLive, 20000);
+setInterval(() => renderTrending(liveStocks), 30000);
 // Refresh sidebar every 15 seconds
 setInterval(() => renderTrending(liveStocks), 15000);
 // Auto-refresh news every 5 minutes if news page is open
@@ -3226,9 +3227,13 @@ function renderTrending(data) {
   if (!el) return;
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
+  // Always show data - live preferred, static fallback
   const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
   const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
   const commList   = STATIC_COMMODITIES.map(sc=>{const l=liveStocks.find(s=>s.sym===sc.sym&&s.price);return l||sc;});
+  const nseDisplay    = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
+  const cryptoDisplay = cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,8);
+  const commDisplay   = commList;
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
@@ -3252,12 +3257,19 @@ function renderTrending(data) {
   function renderTab(tab) {
     renderTrending._tab = tab;
     let rows = '';
-    if (tab === 'nse')    rows = nseStocks.map(s=>stockRow(s,'₹')).join('');
-    if (tab === 'crypto') rows = cryptoList.map(s=>stockRow(s,'$')).join('');
-    if (tab === 'comm')   rows = commList.map(s=>stockRow(s,'$')).join('');
-    if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading live data…</div>';
+    if (tab === 'nse')    rows = nseDisplay.map(s=>stockRow(s,'₹')).join('');
+    if (tab === 'crypto') rows = cryptoDisplay.map(s=>stockRow(s,'$')).join('');
+    if (tab === 'comm')   rows = commDisplay.map(s=>stockRow(s,'$')).join('');
+    if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading…</div>';
     const rowsEl = document.getElementById('trendListRows');
-    if (rowsEl) { rowsEl.innerHTML = rows; return; }
+    if (rowsEl) {
+      rowsEl.innerHTML = rows;
+      document.querySelectorAll('.tl-tab').forEach(b => {
+        b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
+        b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
+      });
+      return;
+    }
     // First build
     el.innerHTML = '<div style="display:flex;border-bottom:1px solid var(--border);">'
       + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="nse"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:Space Mono,monospace;">NSE</button>'
@@ -9635,8 +9647,10 @@ function _mpInit() {
   // ── STEP 1: Render static prices INSTANTLY at frame 0 — UI is never blank ──
   STATIC_CRYPTO.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
   STATIC_COMMODITIES.forEach(s => { if (!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s, _live:false}); });
-  renderTrending(liveStocks);
+  renderTrending(liveStocks);  // shows static NSE prices immediately
+  buildGlobalTicker();         // shows ticker immediately
   updateWhatsMoving();   // shows static gainers/losers immediately
+  renderSidebarMmi();
   onLiveDataUpdate();
   // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
   fetchCryptoLive();
