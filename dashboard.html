@@ -252,10 +252,10 @@ header {
 /* STORIES */
 #storiesBar::-webkit-scrollbar{display:none;}
 .story-bubble{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;width:52px;}
-.story-ring{width:46px;height:46px;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;}
+.story-ring{width:46px;height:46px;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s;position:relative;}
 .story-ring.seen{opacity:0.55;}
-.story-ring:hover{transform:scale(1.07);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-.story-ring-inner{font-size:18px;line-height:1;}
+.story-ring:hover{transform:scale(1.06);border-color:var(--accent);}
+.story-ring-inner{width:100%;height:100%;border-radius:10px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
 /* Story Modal */
 #storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
@@ -1205,7 +1205,7 @@ header {
 
     <!-- ── STORIES BAR ── -->
     <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
-      <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
+      <div id="storiesTrack" style="display:flex;gap:8px;align-items:center;min-width:max-content;"></div>
     </div>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
@@ -1477,11 +1477,11 @@ header {
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">📰 MARKET NEWS</div>
       <div style="display:flex;gap:6px;" id="newsCatBtns">
-        <button onclick="window._mpNewsCat='markets';loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
-        <button onclick="window._mpNewsCat='stocks';loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
-        <button onclick="window._mpNewsCat='economy';loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
-        <button onclick="window._mpNewsCat='crypto';loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
-        <button onclick="window._mpNewsCat='commodities';loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
+        <button onclick="loadNews('markets',this)" id="nc_markets" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:rgba(0,112,243,0.1);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">Markets</button>
+        <button onclick="loadNews('stocks',this)" id="nc_stocks" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Stocks</button>
+        <button onclick="loadNews('economy',this)" id="nc_economy" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Economy</button>
+        <button onclick="loadNews('crypto',this)" id="nc_crypto" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Crypto</button>
+        <button onclick="loadNews('commodities',this)" id="nc_commodities" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;">Commodities</button>
       </div>
     </div>
     <div class="feed-scroll" id="newsContainer">
@@ -2290,13 +2290,14 @@ let allStockSymbols = [];
 // Global symbol sets used across multiple functions
 const CRYPTO_SYMS = new Set(['BTC','ETH','BNB','SOL','XRP','DOGE','USDT','ADA','MATIC','DOT','AVAX','LTC','LINK']);
 const COMM_SYMS   = new Set(['GOLD','SILVER','CRUDE','BRENT','NATURALGAS','COPPER','ALUMINIUM','NICKEL','ZINC','PLATINUM','WHEAT','CORN']);
+setTimeout(()=>{ STATIC_COMMODITIES.forEach(s=>{ if(!liveStocks.find(x=>x.sym===s.sym)) liveStocks.push({...s,_live:false}); }); renderTrending(liveStocks); },100);
 
 let liveStocks = [
   ...STATIC_STOCKS.map(s => ({...s, _live: false})),
   // Crypto: seed with name/sym but NO price — show live only, never stale static
   ...STATIC_CRYPTO.map(s => ({...s, price: null, chg: null, _loading: true})),
-  // Commodities: seed with STATIC prices so COMMOD tab shows immediately
-  ...STATIC_COMMODITIES.map(s => ({...s, _live: false})),
+  // Commodities: same — no static price shown, wait for live fetch
+  ...STATIC_COMMODITIES.map(s => ({...s, price: null, chg: null, _loading: true})),
 ];
 
 // ── UNIVERSAL LIVE PRICE HELPER ──────────────────────────────
@@ -2746,67 +2747,6 @@ async function fetchCryptoLive() {
   }
 }
 
-
-// ── Fetch commodity prices directly via corsproxy (no Railway needed) ──────
-async function fetchCommoditiesLive() {
-  const commodities = [
-    {sym:'GOLD',     yf:'GC=F'},  {sym:'SILVER',  yf:'SI=F'},
-    {sym:'CRUDE',    yf:'CL=F'},  {sym:'BRENT',   yf:'BZ=F'},
-    {sym:'NATURALGAS',yf:'NG=F'}, {sym:'COPPER',  yf:'HG=F'},
-    {sym:'PLATINUM', yf:'PL=F'},  {sym:'WHEAT',   yf:'ZW=F'},
-    {sym:'CORN',     yf:'ZC=F'},
-  ];
-
-  // First try /api/quote (Railway)
-  try {
-    const syms = commodities.map(c=>c.yf).join(',');
-    const r = await fetch('/api/quote?symbols='+encodeURIComponent(syms), {signal:AbortSignal.timeout(10000)});
-    if (r.ok) {
-      const j = await r.json();
-      let updated = 0;
-      (j?.quoteResponse?.result||[]).forEach(q => {
-        if (!q?.regularMarketPrice) return;
-        const item = commodities.find(c=>c.yf===q.symbol);
-        if (!item) return;
-        const price = q.regularMarketPrice;
-        const chgPct = q.regularMarketChangePercent ?? 0;
-        const up = chgPct >= 0;
-        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
-        const ex = liveStocks.find(s=>s.sym===item.sym);
-        if (ex) { ex.price=price; ex.chg=chgStr; ex.up=up; ex._live=true; }
-        else { const se=STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
-        updated++;
-      });
-      if (updated > 0) { updateTickerFromLive(); buildGlobalTicker(); renderTrending(liveStocks); return; }
-    }
-  } catch(e) {}
-
-  // Fallback: direct Yahoo Finance via corsproxy
-  await Promise.allSettled(commodities.map(async item => {
-    try {
-      const url = 'https://corsproxy.io/?' + encodeURIComponent(
-        'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d'
-      );
-      const r = await fetch(url, {signal:AbortSignal.timeout(8000)});
-      if (!r.ok) return;
-      const j = await r.json();
-      const meta = j?.chart?.result?.[0]?.meta;
-      if (!meta?.regularMarketPrice) return;
-      const price  = meta.regularMarketPrice;
-      const prev   = meta.previousClose || meta.chartPreviousClose || price;
-      const chgPct = ((price-prev)/(prev||1))*100;
-      const up     = chgPct >= 0;
-      const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
-      const ex = liveStocks.find(s=>s.sym===item.sym);
-      if (ex) { ex.price=price; ex.chg=chgStr; ex.up=up; ex._live=true; }
-      else { const se=STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
-    } catch(e2) {}
-  }));
-  updateTickerFromLive();
-  buildGlobalTicker();
-  renderTrending(liveStocks);
-}
-
 async function fetchLiveData() {
   // Only show fetching status — static data already rendered by _mpInit
   // Status managed by individual fetch functions
@@ -2975,28 +2915,17 @@ async function _fetchYFDirectInner() {
       });
     }
   } catch(e) {
-    // Fallback: direct Yahoo Finance via corsproxy (no Railway needed)
+    // Fallback: one-by-one via yfFetch
     await Promise.allSettled(commodities.map(async item => {
       try {
-        const url = 'https://corsproxy.io/?' + encodeURIComponent(
-          'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d'
-        );
-        const r = await fetch(url, {signal: AbortSignal.timeout(8000)});
-        if (!r.ok) return;
-        const j = await r.json();
-        const meta = j?.chart?.result?.[0]?.meta;
-        if (!meta?.regularMarketPrice) return;
-        const price  = meta.regularMarketPrice;
-        const prev   = meta.previousClose || meta.chartPreviousClose || price;
-        const chgPct = ((price - prev) / (prev || 1)) * 100;
-        const up     = chgPct >= 0;
-        const chgStr = (up?'+':'') + chgPct.toFixed(2) + '%';
+        const r = await yfFetch(item.yf);
+        if (!r.price) return;
+        const chgStr = (r.up?'+':'') + r.chg.toFixed(2) + '%';
         const existing = liveStocks.find(s => s.sym === item.sym);
-        if (existing) { existing.price = price; existing.chg = chgStr; existing.up = up; existing._live = true; }
-        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price,chg:chgStr,up,_live:true}); }
+        if (existing) { existing.price = r.price; existing.chg = chgStr; existing.up = r.up; }
+        else { const se = STATIC_COMMODITIES.find(s=>s.sym===item.sym); liveStocks.push({...(se||{sym:item.sym,name:item.sym,currency:'$'}),price:r.price,chg:chgStr,up:r.up}); }
       } catch(e2) {}
     }));
-    renderTrending(liveStocks);
   }
 
   const total = stocksUpdated + cryptoUpdated;
@@ -3100,27 +3029,14 @@ function buildGlobalTicker() {
   const track = document.getElementById('globalTickerTrack');
   if (!track) return;
 
-  // NSE stocks: live only
+  // All assets: indices first, then LIVE stocks only, then crypto + commodities
   const _liveNseGlobal = liveStocks.filter(s =>
     !STATIC_CRYPTO.find(c=>c.sym===s.sym) &&
     !STATIC_COMMODITIES.find(c=>c.sym===s.sym) &&
     s.price && s.price !== '—' && s._live
   ).slice(0, 25);
-
-  // Crypto: live or static
-  const _liveCryptoGlobal = liveStocks.filter(s =>
-    STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
-  ).slice(0, 8);
-
-  // Commodities: live first, fall back to STATIC_COMMODITIES prices
-  const _liveCommGlobal = (() => {
-    const live = liveStocks.filter(s =>
-      STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—'
-    );
-    if (live.length > 0) return live.slice(0, 6);
-    // Fallback: use static prices
-    return STATIC_COMMODITIES.slice(0, 6).map(s => ({...s, _live: false}));
-  })();
+  const _liveCryptoGlobal = liveStocks.filter(s => STATIC_CRYPTO.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 8);
+  const _liveCommGlobal   = liveStocks.filter(s => STATIC_COMMODITIES.find(c=>c.sym===s.sym) && s.price && s.price !== '—').slice(0, 5);
   const allAssets = [
     {sym:'NIFTY',     name:'Nifty 50',   price:null, chg:null, up:true, isIndex:true},
     {sym:'BANKNIFTY', name:'Bank Nifty', price:null, chg:null, up:true, isIndex:true},
@@ -3243,15 +3159,12 @@ function renderTrending(data) {
   if (!el) return;
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  // Show ALL stocks with a price (static or live) — never show empty
-  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,15);
-  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,10);
-  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,8);
-
-  // Fallback to STATIC if liveStocks has none
-  const nseDisplay  = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
-  const commDisplay = commList.length   ? commList   : STATIC_COMMODITIES.slice(0,8);
-  const cryptoDisplay = cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
+  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
+  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
+  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,8);
+  const nseDisplay   = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
+  const cryptoDisplay= cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
+  const commDisplay  = commList.length   ? commList   : STATIC_COMMODITIES.slice(0,8);
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
@@ -3280,22 +3193,18 @@ function renderTrending(data) {
     if (tab === 'comm')   rows = commDisplay.map(s=>stockRow(s,'$')).join('');
     if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading live data…</div>';
     const rowsEl = document.getElementById('trendListRows');
-    if (rowsEl) {
-      rowsEl.innerHTML = rows;
-      // Always update tab highlight styles
-      document.querySelectorAll('.tl-tab').forEach(b => {
-        b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
-        b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
-      });
-      return;
-    }
+    if (rowsEl) { rowsEl.innerHTML = rows; document.querySelectorAll('.tl-tab').forEach(b=>{b.style.color=b.dataset.tab===tab?'var(--accent)':'var(--text3)';b.style.borderBottom=b.dataset.tab===tab?'2px solid var(--accent)':'2px solid transparent';}); return; }
     // First build
     el.innerHTML = '<div style="display:flex;border-bottom:1px solid var(--border);">'
-      + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='nse'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='nse'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">NSE</button>'
-      + '<button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='crypto'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='crypto'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">CRYPTO</button>'
-      + '<button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='comm'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='comm'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">COMMOD</button>'
+      + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="nse"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:Space Mono,monospace;">NSE</button>'
+      + '<button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="crypto" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">CRYPTO</button>'
+      + '<button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="comm"   style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">COMMOD</button>'
       + '</div>'
       + '<div id="trendListRows" style="overflow-y:auto;max-height:360px;">' + rows + '</div>';
+    document.querySelectorAll('.tl-tab').forEach(b => {
+      b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
+      b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
+    });
   }
 
   renderTrending._renderTab = renderTab;
@@ -4547,58 +4456,75 @@ function renderProfileModal() {
     ? '<img src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
     : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
-  // ── Clean profile layout: banner → avatar row → info → stats ──
+  // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
   el.innerHTML =
-    // 1. Banner (fixed height, no content inside)
-    '<div style="position:relative;height:150px;border-radius:14px 14px 0 0;overflow:hidden;margin:-16px -16px 0;">'
-    + '<div onclick="editBanner()" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;"></div>'
-    + '<div onclick="editBanner()" style="position:absolute;top:10px;right:10px;font-size:10px;color:#fff;background:rgba(0,0,0,0.45);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
+    '<div style="position:relative;border-radius:22px;overflow:hidden;margin:-16px -16px 0;background:#000;min-height:340px;">'
+
+    // Full-bleed background (banner image or gradient)
+    + '<div onclick="editBanner()" title="Change banner" style="position:absolute;inset:0;background:' + bannerBg + ';cursor:pointer;transition:opacity 0.2s;"></div>'
+
+    // Heavy gradient overlay from bottom — the key visual effect
+    + '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.15) 35%,rgba(0,0,0,0.82) 65%,rgba(0,0,0,0.97) 100%);pointer-events:none;"></div>'
+
+    // Edit banner badge top-right
+    + '<div onclick="editBanner()" style="position:absolute;top:12px;right:12px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;z-index:2;">✏️ Edit banner</div>'
+
+    // Avatar — overlapping the gradient, positioned mid-bottom
+    + '<div style="position:absolute;bottom:96px;left:20px;z-index:3;">'
+      + '<div onclick="editAvatar()" style="width:68px;height:68px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,255,255,0.25);box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;position:relative;">'
+        + avatarHtml
+        + '<div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,0.12);"></div>'
+      + '</div>'
+      + '<div style="position:absolute;bottom:1px;right:1px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid #000;">✏️</div>'
     + '</div>'
 
-    // 2. Avatar row — sits below banner, overlaps by 30px
-    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;margin-top:-30px;margin-bottom:12px;">'
-      + '<div style="position:relative;display:inline-block;">'
-        + '<div onclick="editAvatar()" style="width:62px;height:62px;border-radius:50%;background:' + (av.type==='image'?'#111':av.bg) + ';display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--bg2);box-shadow:0 2px 12px rgba(0,0,0,0.3);cursor:pointer;">'
-          + avatarHtml
+    // Bottom text content — sits on top of gradient
+    + '<div style="position:relative;z-index:3;padding:0 20px 20px;margin-top:200px;">'
+
+      // Name + handle row with action buttons
+      + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;">'
+        + '<div>'
+          + '<div style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.3px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">'
+            + (user.displayName||user.name)
+            + ' <span style="color:var(--accent);font-size:15px;">✓</span>'
+          + '</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,0.55);font-family:Space Mono,monospace;margin-top:1px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
         + '</div>'
-        + '<div style="position:absolute;bottom:1px;right:1px;width:17px;height:17px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;border:2px solid var(--bg2);">✏️</div>'
+        + '<div style="display:flex;gap:6px;">'
+          + '<button onclick="_openProfileSettings()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:#fff;font-size:13px;cursor:pointer;">⚙️</button>'
+          + '<button onclick="showEditProfile()" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);font-weight:700;font-size:12px;cursor:pointer;color:#fff;letter-spacing:0.3px;">Edit</button>'
+        + '</div>'
       + '</div>'
-      + '<div style="display:flex;gap:8px;padding-bottom:4px;">'
-        + '<button onclick="_openProfileSettings()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;">⚙️</button>'
-        + '<button onclick="showEditProfile()" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);font-weight:700;font-size:12px;cursor:pointer;color:var(--text);">Edit</button>'
-      + '</div>'
-    + '</div>'
 
-    // 3. Name + handle + bio
-    + '<div style="padding:0 4px 12px;">'
-      + '<div style="font-size:19px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">'
-        + (user.displayName||user.name)
-        + ' <span style="color:var(--accent);font-size:13px;">✓</span>'
-      + '</div>'
-      + '<div style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;margin-top:2px;">@' + user.name.toLowerCase().replace(/\s/g,'') + '</div>'
+      // Bio
       + (user.bio
-        ? '<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-top:8px;">' + user.bio + '</div>'
-        : '<div style="font-size:12px;color:var(--text3);margin-top:6px;font-style:italic;">No bio yet — tap Edit to add one</div>')
-      + (user.location || user.website ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">'
-        + (user.location ? '<span style="font-size:11px;color:var(--text3);">📍 ' + user.location + '</span>' : '')
+        ? '<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:10px;">' + user.bio + '</div>'
+        : '<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:10px;font-style:italic;">No bio yet — tap Edit to add one</div>')
+
+      // Location / website
+      + (user.location || user.website ? '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">'
+        + (user.location ? '<span style="font-size:11px;color:rgba(255,255,255,0.5);">📍 ' + user.location + '</span>' : '')
         + (user.website  ? '<a href="' + user.website + '" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">🔗 ' + user.website.replace(/https?:\/\//,'') + '</a>' : '')
         + '</div>' : '')
-    + '</div>'
 
-    // 4. Stats bar
-    + '<div style="display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:0 -16px;background:var(--bg3);">'
+    + '</div>'  // bottom text
+
+    // ── Stats bar — glassmorphism strip at very bottom ──
+    + '<div style="position:relative;z-index:3;display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);">'
       + [
           [getFollowingCount(), 'Following', "showFollowList('following')"],
           [getFollowerCount(user.name), 'Followers', "showFollowList('followers')"],
           [posts.length, 'Posts', ''],
           [likes, 'Likes', ''],
         ].map(([val, label, oc]) =>
-          '<div onclick="' + oc + '" style="flex:1;padding:11px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid var(--border);">'
-          + '<div style="font-size:15px;font-weight:900;color:var(--text);font-family:Space Mono,monospace;">' + val + '</div>'
-          + '<div style="font-size:9px;color:var(--text3);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
+          '<div onclick="' + oc + '" style="flex:1;padding:12px 4px;text-align:center;cursor:' + (oc?'pointer':'default') + ';border-right:1px solid rgba(255,255,255,0.07);">'
+          + '<div style="font-size:16px;font-weight:900;color:#fff;font-family:Space Mono,monospace;">' + val + '</div>'
+          + '<div style="font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;margin-top:1px;">' + label.toUpperCase() + '</div>'
           + '</div>'
         ).join('')
     + '</div>'
+
+    + '</div>'  // outer card
 
     // ── Recent posts ──
     + '<div style="padding:16px 4px 0;">'
@@ -9654,7 +9580,6 @@ function _mpInit() {
   // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
   fetchCryptoLive();
   _fetchIndicesVercel();
-  fetchCommoditiesLive();
   fetchPriorityStocks();
   _fastBootstrapStocks();
   _fetchAllMovers();
@@ -9671,7 +9596,7 @@ function _mpInit() {
 async function _fetchIndicesVercel() {
   try {
     const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) throw new Error('indices api failed');
+    if (!r.ok) return;
     const d = await r.json();
     if (!window._liveIndices) window._liveIndices = {};
     if (d.nifty)     { window._liveIndices['NIFTY 50']   = d.nifty;     window._liveIndices['NIFTY']     = d.nifty; }
@@ -9679,42 +9604,6 @@ async function _fetchIndicesVercel() {
     if (d.sensex)    { window._liveIndices['SENSEX']     = d.sensex; }
     if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
     updateTickerFromLive();
-    renderSidebarMmi();
-    return;
-  } catch(e) {}
-
-  // ── Direct fallback: fetch Nifty & BankNifty from Yahoo Finance via corsproxy ──
-  try {
-    const pairs = [
-      { sym: '^NSEI',     key1: 'NIFTY 50',   key2: 'NIFTY'     },
-      { sym: '^NSEBANK',  key1: 'NIFTY BANK',  key2: 'BANKNIFTY' },
-      { sym: '^BSESN',    key1: 'SENSEX',      key2: 'SENSEX'    },
-    ];
-    if (!window._liveIndices) window._liveIndices = {};
-
-    await Promise.allSettled(pairs.map(async ({ sym, key1, key2 }) => {
-      try {
-        const url = 'https://corsproxy.io/?' + encodeURIComponent(
-          'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=2d'
-        );
-        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!r.ok) return;
-        const j = await r.json();
-        const meta = j?.chart?.result?.[0]?.meta;
-        if (!meta?.regularMarketPrice) return;
-        const price  = meta.regularMarketPrice;
-        const prev   = meta.previousClose || meta.chartPreviousClose || price;
-        const chgAbs = price - prev;
-        const chgPct = ((chgAbs) / (prev || 1)) * 100;
-        const up     = chgPct >= 0;
-        const obj    = { price, chg: chgPct, up, chgAbs };
-        window._liveIndices[key1] = obj;
-        window._liveIndices[key2] = obj;
-      } catch(e2) {}
-    }));
-
-    updateTickerFromLive();
-    renderSidebarMmi();
   } catch(e) {}
 }
 
@@ -10347,106 +10236,55 @@ async function loadNews(cat, btn) {
 
   // Cache: 5 min
   if(_newsLoaded[cat] && Date.now()-_newsLoaded[cat].ts < 300000){ renderNews(_newsLoaded[cat].items); return; }
-
-  // Show static fallback immediately while loading
-  const FALLBACK = {
-    markets: [
-      {title:'Nifty 50 holds key support amid global uncertainty, FIIs remain cautious',link:'#',source:'Economic Times',ago:'15m ago'},
-      {title:'Sensex gains 200 points as banking stocks lead broad-based rally',link:'#',source:'Moneycontrol',ago:'32m ago'},
-      {title:'RBI keeps repo rate unchanged at 6.5%, signals cautious stance on inflation',link:'#',source:'Business Standard',ago:'1h ago'},
-      {title:'Midcap and smallcap indices outperform benchmarks in afternoon trade',link:'#',source:'Mint',ago:'1h ago'},
-      {title:'FII net sellers in cash market; DII buying provides cushion to markets',link:'#',source:'NDTV Profit',ago:'2h ago'},
-      {title:'India VIX eases to 14.2 as volatility concerns recede heading into expiry',link:'#',source:'Moneycontrol',ago:'2h ago'},
-    ],
-    stocks: [
-      {title:'Reliance Industries Q3 results: Net profit rises 12% YoY, beats estimates',link:'#',source:'Economic Times',ago:'20m ago'},
-      {title:'HDFC Bank NIM pressure eases; analysts upgrade target to ₹1,900',link:'#',source:'Business Standard',ago:'45m ago'},
-      {title:'Infosys guides for 4-7% revenue growth in FY25; stock up 3%',link:'#',source:'Mint',ago:'1h ago'},
-      {title:'Adani Group stocks rally as Bain Capital eyes stake in Adani Enterprises',link:'#',source:'Reuters',ago:'2h ago'},
-      {title:'Tata Motors EV sales cross 10,000 units in March; stock hits 52-week high',link:'#',source:'Moneycontrol',ago:'2h ago'},
-    ],
-    economy: [
-      {title:'India GDP growth at 7.2% in Q3 FY25, beats IMF forecast of 6.8%',link:'#',source:'Economic Times',ago:'30m ago'},
-      {title:'CPI inflation eases to 4.8% in February, within RBI comfort zone',link:'#',source:'Business Standard',ago:'1h ago'},
-      {title:'GST collections hit ₹1.78 lakh crore in March, second highest ever',link:'#',source:'Mint',ago:'2h ago'},
-      {title:'India current account deficit narrows to 1.2% of GDP in Q3',link:'#',source:'Reuters',ago:'3h ago'},
-      {title:'FM Sitharaman: India on track to become $5 trillion economy by 2027',link:'#',source:'NDTV Profit',ago:'4h ago'},
-    ],
-    crypto: [
-      {title:'Bitcoin holds above $85,000 as ETF inflows remain strong amid rate cut hopes',link:'#',source:'CoinDesk',ago:'10m ago'},
-      {title:'Ethereum upgrade boosts transaction speed by 40%; price jumps 5%',link:'#',source:'CoinTelegraph',ago:'30m ago'},
-      {title:'SEC approves three new spot Bitcoin ETFs; market eyes next resistance at $90K',link:'#',source:'Bloomberg Crypto',ago:'1h ago'},
-      {title:'Solana TVL crosses $8 billion as DeFi activity surges on the network',link:'#',source:'CoinDesk',ago:'2h ago'},
-      {title:'India crypto trading volume up 120% MoM as retail interest returns',link:'#',source:'Economic Times',ago:'3h ago'},
-    ],
-    commodities: [
-      {title:'Gold hits new all-time high above $3,100 on safe-haven demand and dollar weakness',link:'#',source:'Reuters',ago:'15m ago'},
-      {title:'Crude oil slips to $71 as OPEC+ mulls output increase ahead of summer',link:'#',source:'Bloomberg',ago:'40m ago'},
-      {title:'Silver outperforms gold this week; industrial demand from solar sector cited',link:'#',source:'Mint',ago:'1h ago'},
-      {title:'Natural gas prices surge 8% on unexpected cold snap across North America',link:'#',source:'Reuters',ago:'2h ago'},
-      {title:'MCX Gold at ₹89,500 per 10g; analysts see target of ₹92,000 by year end',link:'#',source:'Economic Times',ago:'3h ago'},
-    ],
-  };
-
-  // Show fallback instantly
-  const fallbackItems = FALLBACK[cat] || FALLBACK.markets;
-  renderNews(fallbackItems.map(i => ({...i, _fallback: true})));
-
-  container.insertAdjacentHTML('afterbegin', '<div id="newsLoadingBanner" style="text-align:center;padding:8px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);background:var(--bg3);">⏳ Loading live news…</div>');
+  container.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:12px;font-size:12px;">Fetching latest news...</div></div>';
 
   const parseRSS = (text) => {
-    try {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, 'text/xml');
-      return Array.from(xml.querySelectorAll('item')).slice(0,16).map(el => ({
-        title:  el.querySelector('title')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g,'').trim() || '',
-        link:   el.querySelector('link')?.textContent?.trim()  || '#',
-        date:   el.querySelector('pubDate')?.textContent?.trim() || '',
-        source: el.querySelector('source')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g,'').trim() || 'Google News',
-        ago:    timeAgo(el.querySelector('pubDate')?.textContent || ''),
-      })).filter(i => i.title.length > 8);
-    } catch(e) { return []; }
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    return Array.from(xml.querySelectorAll('item')).slice(0,16).map(el => ({
+      title:  el.querySelector('title')?.textContent?.trim() || '',
+      link:   el.querySelector('link')?.textContent?.trim()  || '#',
+      date:   el.querySelector('pubDate')?.textContent?.trim() || '',
+      source: el.querySelector('source')?.textContent?.trim() || 'Google News',
+      ago:    timeAgo(el.querySelector('pubDate')?.textContent || ''),
+    })).filter(i => i.title.length > 8);
   };
 
   const rssUrl = NEWS_URLS[cat] || NEWS_URLS.markets;
 
-  const removeBanner = () => { const b = document.getElementById('newsLoadingBanner'); if(b) b.remove(); };
+  // ── Source 1: corsproxy.io (no rate limits) ──
+  try {
+    const r = await fetch('https://corsproxy.io/?'+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r.ok){ const text=await r.text();
+      if(text.includes('<item>')){ const items=parseRSS(text);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    }
+  } catch(e){}
 
-  // Try all proxies in parallel — use whichever responds first
-  const proxies = [
-    () => fetch('https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(12000)})
-          .then(r => r.json()).then(j => j.contents || ''),
-    () => fetch('https://corsproxy.io/?'+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(12000)})
-          .then(r => r.text()),
-    () => fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)+'&count=16', {signal:AbortSignal.timeout(10000)})
-          .then(r => r.json()).then(j => {
-            if(j.status!=='ok') return '';
-            // Convert rss2json format to RSS XML-like string so parseRSS works
-            return j.items.map(i=>`<item><title>${i.title}</title><link>${i.link}</link><pubDate>${i.pubDate}</pubDate><source>${j.feed?.title||''}</source></item>`).join('');
-          }),
-    () => fetch('/api/news?cat='+encodeURIComponent(cat), {signal:AbortSignal.timeout(10000)})
-          .then(r => r.json()).then(j => {
-            if(!j.items?.length) return '';
-            return j.items.map(i=>`<item><title>${i.title}</title><link>${i.link||'#'}</link><pubDate>${i.date||''}</pubDate><source>${i.source||''}</source></item>`).join('');
-          }),
-  ];
+  // ── Source 2: allorigins.win ──
+  try {
+    const r2 = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl), {signal:AbortSignal.timeout(10000)});
+    if(r2.ok){ const j2=await r2.json(); const text2=j2.contents||'';
+      if(text2.includes('<item>')){ const items=parseRSS(text2);
+        if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+    }
+  } catch(e){}
 
-  for (const proxy of proxies) {
-    try {
-      const text = await proxy();
-      if (!text || !text.includes('<item>')) continue;
-      const items = parseRSS('<rss><channel>'+text+'</channel></rss>');
-      if (items.length) {
-        _newsLoaded[cat] = {ts:Date.now(), items};
-        renderNews(items);
-        removeBanner();
-        return;
-      }
-    } catch(e) {}
-  }
+  // ── Source 3: Vercel /api/news ──
+  try {
+    const r3 = await fetch('/api/news?cat='+encodeURIComponent(cat), {signal:AbortSignal.timeout(8000)});
+    if(r3.ok){ const j3=await r3.json(); const items=(j3.items||[]).filter(i=>i.title&&i.title.length>8);
+      if(items.length){ _newsLoaded[cat]={ts:Date.now(),items}; renderNews(items); return; } }
+  } catch(e){}
 
-  // All proxies failed — keep fallback, just remove loading banner
-  removeBanner();
+  // All failed
+  window._mpNewsRetry = ()=>{ delete _newsLoaded[cat]; loadNews(cat,btn); };
+  container.innerHTML = '<div style="text-align:center;padding:48px;">'
+    +'<div style="font-size:32px;margin-bottom:12px;">📡</div>'
+    +'<div style="font-size:14px;color:var(--text2);font-weight:600;">Could not load news</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-top:6px;margin-bottom:16px;">Check your connection.</div>'
+    +'<button onclick="_mpNewsRetry()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">🔄 Retry</button>'
+    +'</div>';
 }
 
 
@@ -12403,127 +12241,24 @@ function renderHeatmap() {
 // STORIES SYSTEM — Live price + news, updates every hour
 // ══════════════════════════════════════════════════════
 
-
-// ── Static fallback news per story subject (shown instantly while live news loads) ──
-const STORY_FALLBACK_NEWS = {
-  'RELIANCE': [
-    {title:'Reliance Industries reports strong Q3 earnings, Jio leads growth', link:'#', src:'Economic Times', ago:'1h ago'},
-    {title:'RIL unveils new green energy investments worth ₹75,000 crore', link:'#', src:'Moneycontrol', ago:'2h ago'},
-    {title:'Reliance Retail expands to 100 new cities in tier-2 markets', link:'#', src:'Business Standard', ago:'3h ago'},
-    {title:'Analysts upgrade Reliance target to ₹3,200 on Jio subscriber growth', link:'#', src:'Mint', ago:'4h ago'},
-  ],
-  'TCS': [
-    {title:'TCS wins $500 million multi-year deal from European banking giant', link:'#', src:'Economic Times', ago:'30m ago'},
-    {title:'TCS Q3 net profit up 8.6% YoY; CEO sees demand recovery in FY26', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'TCS attrition falls to 12.5%, lowest in 10 quarters', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'TCS launches AI-powered platform for enterprise automation', link:'#', src:'Mint', ago:'5h ago'},
-  ],
-  'HDFCBANK': [
-    {title:'HDFC Bank NIM stabilises at 3.5%; credit growth at 15% YoY', link:'#', src:'Economic Times', ago:'45m ago'},
-    {title:'HDFC Bank to raise ₹10,000 crore via infrastructure bonds', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'Analysts bullish on HDFC Bank; target raised to ₹1,950', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'HDFC Bank digital transactions cross 5 billion in Q3', link:'#', src:'Mint', ago:'4h ago'},
-  ],
-  'INFY': [
-    {title:'Infosys Q3 revenue beats estimates; raises FY25 guidance to 5-6%', link:'#', src:'Economic Times', ago:'1h ago'},
-    {title:'Infosys signs $1.5 billion deal with Fortune 500 client', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'Infosys Topaz AI platform sees 300+ enterprise clients in Q3', link:'#', src:'Moneycontrol', ago:'4h ago'},
-    {title:'Infosys buyback at ₹1,750 per share; board approves ₹10,000 crore', link:'#', src:'Mint', ago:'5h ago'},
-  ],
-  'SBIN': [
-    {title:'SBI reports record quarterly profit of ₹18,000 crore in Q3 FY25', link:'#', src:'Economic Times', ago:'30m ago'},
-    {title:'SBI NPA ratio falls to 2.1%; asset quality improves sharply', link:'#', src:'Business Standard', ago:'1h ago'},
-    {title:'SBI YONO app crosses 100 million users; digital push accelerates', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'SBI raises MCLR by 5bps; home loan rates to inch up', link:'#', src:'Mint', ago:'4h ago'},
-  ],
-  'TATAMOTORS': [
-    {title:'Tata Motors EV sales up 80% YoY; Nexon EV bestseller for 6th month', link:'#', src:'Economic Times', ago:'20m ago'},
-    {title:'JLR posts best quarterly revenue in 10 years on China recovery', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'Tata Motors launches new Harrier EV at ₹24.99 lakh', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'Analysts raise Tata Motors target to ₹1,100 on strong order book', link:'#', src:'Mint', ago:'5h ago'},
-  ],
-  'ADANIENT': [
-    {title:'Adani Enterprises posts 22% rise in Q3 profit; airports segment shines', link:'#', src:'Economic Times', ago:'1h ago'},
-    {title:'Adani Green Energy wins 1,500 MW solar project in Rajasthan', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'Adani Ports handles record cargo volume in Q3 FY25', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'S&P upgrades Adani Group credit outlook to stable from negative', link:'#', src:'Reuters', ago:'6h ago'},
-  ],
-  'ZOMATO': [
-    {title:'Zomato turns profitable for third consecutive quarter; revenue up 70%', link:'#', src:'Economic Times', ago:'40m ago'},
-    {title:'Zomato Blinkit hits 1,000 dark store milestone ahead of schedule', link:'#', src:'Business Standard', ago:'2h ago'},
-    {title:'Zomato acquires Paytm Insider for ₹2,000 crore to enter events space', link:'#', src:'Moneycontrol', ago:'3h ago'},
-    {title:'Analysts value Zomato at ₹350 per share; upgrade to Strong Buy', link:'#', src:'Mint', ago:'4h ago'},
-  ],
-  'BTC': [
-    {title:'Bitcoin surges past $87,000 as ETF inflows hit record $1.2 billion in a week', link:'#', src:'CoinDesk', ago:'15m ago'},
-    {title:'MicroStrategy adds 10,000 BTC to treasury; total holdings near 250,000', link:'#', src:'CoinTelegraph', ago:'1h ago'},
-    {title:'Bitcoin hash rate hits all-time high, signaling network strength', link:'#', src:'Bloomberg Crypto', ago:'2h ago'},
-    {title:'Analysts set Bitcoin year-end target at $120,000 post-halving cycle', link:'#', src:'CoinDesk', ago:'4h ago'},
-  ],
-  'ETH': [
-    {title:'Ethereum staking yield rises to 4.8% after Pectra upgrade approval', link:'#', src:'CoinDesk', ago:'30m ago'},
-    {title:'ETH ETF sees $400 million net inflows in past 5 trading sessions', link:'#', src:'CoinTelegraph', ago:'2h ago'},
-    {title:'Ethereum L2 ecosystem TVL crosses $50 billion milestone', link:'#', src:'Bloomberg Crypto', ago:'3h ago'},
-    {title:'Vitalik Buterin outlines roadmap for Ethereum scaling to 100,000 TPS', link:'#', src:'CoinDesk', ago:'5h ago'},
-  ],
-  'SOL': [
-    {title:'Solana DEX volume surpasses Ethereum for second consecutive month', link:'#', src:'CoinDesk', ago:'20m ago'},
-    {title:'Solana ETF applications filed by 5 asset managers with SEC', link:'#', src:'CoinTelegraph', ago:'1h ago'},
-    {title:'Solana TVL crosses $10 billion as DeFi activity explodes', link:'#', src:'Bloomberg Crypto', ago:'3h ago'},
-    {title:'SOL hits 6-month high; analysts target $220 on momentum', link:'#', src:'CoinDesk', ago:'5h ago'},
-  ],
-  'GOLD': [
-    {title:'Gold hits new all-time high of $3,150/oz on dollar weakness and Fed rate hopes', link:'#', src:'Reuters', ago:'10m ago'},
-    {title:'Central banks globally add record 1,136 tonnes of gold in 2024', link:'#', src:'Bloomberg', ago:'1h ago'},
-    {title:'MCX Gold touches ₹90,000 per 10g for first time; jewellery demand softens', link:'#', src:'Economic Times', ago:'2h ago'},
-    {title:'Goldman Sachs raises gold year-end target to $3,500/oz', link:'#', src:'Reuters', ago:'4h ago'},
-  ],
-  'CRUDE': [
-    {title:'Crude oil falls to $70/bbl as OPEC+ signals output increase in June', link:'#', src:'Reuters', ago:'25m ago'},
-    {title:'US crude inventories rise by 4.2 million barrels, more than expected', link:'#', src:'Bloomberg', ago:'2h ago'},
-    {title:'Brent-WTI spread widens to $4 on US supply glut concerns', link:'#', src:'Reuters', ago:'3h ago'},
-    {title:'India crude import bill falls 8% as Asian discount widens', link:'#', src:'Economic Times', ago:'5h ago'},
-  ],
-  'SILVER': [
-    {title:'Silver outperforms gold YTD on rising industrial demand from solar sector', link:'#', src:'Reuters', ago:'1h ago'},
-    {title:'Silver deficit to hit 215 million oz in 2025 — Silver Institute report', link:'#', src:'Bloomberg', ago:'2h ago'},
-    {title:'MCX Silver at ₹98,500/kg; analysts see ₹1,10,000 target in 6 months', link:'#', src:'Economic Times', ago:'3h ago'},
-    {title:'EV revolution driving silver demand to record highs globally', link:'#', src:'Reuters', ago:'5h ago'},
-  ],
-};
-
 const STORY_SUBJECTS = [
-  // NSE Stocks — clean minimal SVG icons
-  {id:'RELIANCE',  label:'Reliance',   type:'stock',     yf:'RELIANCE.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h18v4H3zM3 11h18v2H3zM3 17c0 2.2 1.8 4 4 4h10c2.2 0 4-1.8 4-4"/><circle cx="7" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>'},
-  {id:'TCS',       label:'TCS',        type:'stock',     yf:'TCS.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8M12 18v2"/><path d="M7 9h2M7 12h4M7 15h8M13 9h4"/></svg>'},
-  {id:'HDFCBANK',  label:'HDFC Bank',  type:'stock',     yf:'HDFCBANK.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>'},
-  {id:'INFY',      label:'Infosys',    type:'stock',     yf:'INFY.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="12" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M14 8h3M14 12h3M4 20h16M7 16v4M12 16v4M17 16v4"/></svg>'},
-  {id:'SBIN',      label:'SBI',        type:'stock',     yf:'SBIN.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M6 8h12M5 11h14M6 14h12M4 21V8l8-5 8 5v13"/><rect x="10" y="16" width="4" height="5"/></svg>'},
-  {id:'TATAMOTORS',label:'Tata Motors',type:'stock',     yf:'TATAMOTORS.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13l2-5h14l2 5"/><path d="M1 13h22v4H1z"/><circle cx="6.5" cy="17" r="2"/><circle cx="17.5" cy="17" r="2"/><path d="M8.5 17h7"/></svg>'},
-  {id:'ADANIENT',  label:'Adani',      type:'stock',     yf:'ADANIENT.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>'},
-  {id:'ZOMATO',    label:'Zomato',     type:'stock',     yf:'ZOMATO.NS',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M8 8h8M8 16h5"/></svg>'},
+  // NSE Stocks
+  {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',       emoji:'💻',  type:'stock', yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'🏦',  type:'stock', yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',   emoji:'🖥️',  type:'stock', yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',       emoji:'🏛️',  type:'stock', yf:'SBIN.NS'},
+  {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗', type:'stock', yf:'TATAMOTORS.NS'},
+  {id:'ADANIENT',  label:'Adani',     emoji:'⚡',  type:'stock', yf:'ADANIENT.NS'},
+  {id:'ZOMATO',    label:'Zomato',    emoji:'🍱',  type:'stock', yf:'ZOMATO.NS'},
   // Crypto
-  {id:'BTC',       label:'Bitcoin',    type:'crypto',    cg:'bitcoin',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 3H15a3.5 3.5 0 010 7H9.5M9.5 10H15.5a3.5 3.5 0 010 7H9.5"/><path d="M9.5 3v18M7 3h2.5M7 21h2.5M7 10h2.5M14 3v2M14 18v2"/></svg>'},
-  {id:'ETH',       label:'Ethereum',   type:'crypto',    cg:'ethereum',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v8.5L5 13.5 12 2z"/><path d="M12 2v8.5l7 3L12 2z"/><path d="M5 13.5L12 22v-8l-7-0.5z"/><path d="M12 14v8l7-8.5L12 14z"/></svg>'},
-  {id:'SOL',       label:'Solana',     type:'crypto',    cg:'solana',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h13l3-3H7L4 7zM4 12h13l3-3H7L4 12zM4 17h13l3-3H7L4 17z"/></svg>'},
+  {id:'BTC',       label:'Bitcoin',   emoji:'₿',   type:'crypto', cg:'bitcoin'},
+  {id:'ETH',       label:'Ethereum',  emoji:'💎',  type:'crypto', cg:'ethereum'},
+  {id:'SOL',       label:'Solana',    emoji:'☀️',  type:'crypto', cg:'solana'},
   // Commodities
-  {id:'GOLD',      label:'Gold',       type:'commodity', yf:'GC=F',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg>'},
-  {id:'CRUDE',     label:'Crude Oil',  type:'commodity', yf:'CL=F',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v4M12 2v5M16 3v4"/><path d="M6 7h12l2 3v2H4v-2l2-3z"/><path d="M4 12v9h16v-9"/><path d="M9 12v9M15 12v9"/></svg>'},
-  {id:'SILVER',    label:'Silver',     type:'commodity', yf:'SI=F',
-   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 8h3.5a2.5 2.5 0 010 5H9m0-5v8m0-3h5"/></svg>'},
+  {id:'GOLD',      label:'Gold',      emoji:'🥇',  type:'commodity', yf:'GC=F'},
+  {id:'CRUDE',     label:'Crude Oil', emoji:'🛢️',  type:'commodity', yf:'CL=F'},
+  {id:'SILVER',    label:'Silver',    emoji:'🪙',  type:'commodity', yf:'SI=F'},
 ];
 
 let _stories = {};          // {id: {price, chg, up, news, ts}}
@@ -12563,25 +12298,24 @@ async function buildStories() {
     }
   });
 
-  // Fetch news via corsproxy + Google News RSS (no rate limits)
+  // Fetch news via corsproxy + Google News RSS
   await Promise.allSettled(STORY_SUBJECTS.map(async subj => {
-    if (_stories[subj.id]?.news && _stories[subj.id]?.newsTs && (Date.now() - _stories[subj.id].newsTs) < 50*60*1000) return;
+    if (_stories[subj.id]?.news && _stories[subj.id]?.newsTs && (Date.now()-_stories[subj.id].newsTs) < 50*60*1000) return;
     try {
       const q   = encodeURIComponent('"' + subj.label + '" stock');
       const rss = 'https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en';
       const r   = await fetch('https://corsproxy.io/?' + encodeURIComponent(rss), {signal: AbortSignal.timeout(8000)});
       if (!r.ok) return;
       const text = await r.text();
-      const parser = new DOMParser();
-      const xml  = parser.parseFromString(text, 'text/xml');
+      const xml  = new DOMParser().parseFromString(text, 'text/xml');
       const items = [...xml.querySelectorAll('item')].slice(0, 4);
       if (!items.length) return;
       if (!_stories[subj.id]) _stories[subj.id] = {};
-      _stories[subj.id].news = items.map(item => ({
-        title: (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').trim(),
-        link:  item.querySelector('link')?.textContent || '#',
-        ago:   timeAgo(item.querySelector('pubDate')?.textContent || ''),
-        src:   (item.querySelector('source')?.textContent || 'Google News').trim(),
+      _stories[subj.id].news = items.map(el => ({
+        title: (el.querySelector('title')?.textContent||'').replace(/<!\[CDATA\[|\]\]>/g,'').trim(),
+        link:  el.querySelector('link')?.textContent || '#',
+        ago:   timeAgo(el.querySelector('pubDate')?.textContent || ''),
+        src:   (el.querySelector('source')?.textContent||'Google News').trim(),
       })).filter(n => n.title.length > 10);
       _stories[subj.id].newsTs = Date.now();
     } catch(e) {}
@@ -12597,19 +12331,14 @@ function renderStoryBubbles() {
     const data   = _stories[subj.id] || {};
     const seen   = _seenStories.has(subj.id);
     const chgPct = data.chgPct;
-    const up     = chgPct != null ? chgPct >= 0 : null;
-    const chgStr = chgPct != null ? (up ? '+' : '') + chgPct.toFixed(2) + '%' : '—';
-    const col    = chgPct != null ? (up ? '#00c853' : '#ff3b3b') : 'var(--text3)';
-    const borderCol = chgPct != null ? (up ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
-    const iconColor = chgPct != null ? (up ? '#00c853' : '#ff3b3b') : 'var(--accent)';
-    const iconHtml = subj.icon
-      ? '<div style="color:' + iconColor + ';display:flex;align-items:center;justify-content:center;">' + subj.icon + '</div>'
-      : '<span style="font-size:22px;">' + (subj.emoji || '?') + '</span>';
+    const chgStr = chgPct != null ? (chgPct >= 0 ? '+' : '') + chgPct.toFixed(2) + '%' : '—';
+    const col    = chgPct != null ? (chgPct >= 0 ? '#00c853' : '#ff3b3b') : 'var(--text3)';
+    const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
       + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
-        + iconHtml
+        + '<div class="story-ring-inner">' + subj.emoji + '</div>'
       + '</div>'
-      + '<div style="font-family:Space Mono,monospace;font-size:8px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:68px;letter-spacing:0.2px;margin-top:1px;">' + subj.label.toUpperCase() + '</div>'
+      + '<div style="font-family:Space Mono,monospace;font-size:8px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:52px;">' + subj.label.toUpperCase() + '</div>'
       + '<div style="font-size:8px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>'
     + '</div>';
   }).join('');
@@ -12719,21 +12448,7 @@ function renderStorySlide() {
     });
     html += '</div>';
   } else {
-    // Show static fallback news instantly
-    const fallbackNews = (STORY_FALLBACK_NEWS && STORY_FALLBACK_NEWS[subj.id]) || [];
-    if (fallbackNews.length) {
-      html += '<div style="display:flex;flex-direction:column;gap:8px;">';
-      fallbackNews.forEach(n => {
-        html += '<a href="' + n.link + '" target="_blank" style="display:block;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-decoration:none;cursor:pointer;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-          + '<div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px;">' + n.title.slice(0, 90) + (n.title.length > 90 ? '…' : '') + '</div>'
-          + '<div style="font-size:10px;color:var(--text3);">' + n.src + ' · ' + n.ago + '</div>'
-        + '</a>';
-      });
-      html += '</div>';
-      html += '<div style="font-size:10px;text-align:center;color:var(--text3);margin-top:6px;opacity:0.6;">⏳ Fetching live news…</div>';
-    } else {
-      html += '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">📰 No news available</div>';
-    }
+    html += '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading news…</div>';
   }
 
   content.innerHTML = html;
@@ -12742,20 +12457,6 @@ function renderStorySlide() {
 // ── Auto-refresh every hour ──
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
-
-// Auto-refresh Market Mood gauge every 60 seconds
-setInterval(() => {
-  _fetchIndicesVercel();
-}, 60000);
-
-// Auto-refresh commodity prices every 30 minutes
-setInterval(() => { fetchCommoditiesLive(); }, 30 * 60 * 1000);
-setTimeout(() => { loadNews('markets', document.getElementById('nc_markets')); }, 2000);
-setInterval(() => {
-  const cat = window._mpNewsCat || 'markets';
-  delete _newsLoaded[cat];
-  loadNews(cat, document.getElementById('nc_' + cat));
-}, 10 * 60 * 1000);
 
 // Also refresh stories when live data arrives
 const _origOnLiveDataUpdate = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : null;
@@ -13360,127 +13061,52 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
 
 <!-- Keyboard Shortcuts Modal -->
 <div id="kbModal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);">
-      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;">⌨️ KEYBOARD SHORTCUTS</div>
-      <button onclick="document.getElementById('kbModal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1;">✕</button>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:460px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);">
+      <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);letter-spacing:1px;">KEYBOARD SHORTCUTS</div>
+      <button onclick="document.getElementById('kbModal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;">X</button>
     </div>
-    <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;">
-      <!-- Navigation -->
-      <div style="grid-column:1/-1;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;padding:10px 0 4px;">NAVIGATION</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Market Feed</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">F</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Trading Pits</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">P</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Stock Screener</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">S</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Market News</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">N</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Watchlist</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">W</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Trending</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">T</kbd>
-      </div>
-      <!-- Actions -->
-      <div style="grid-column:1/-1;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;padding:10px 0 4px;">ACTIONS</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Search stocks</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">/</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">New post</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">N</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Open profile</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">click avatar</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Close modal / Back</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">Esc</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">This help</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">?</kbd>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:12px;color:var(--text2);">Toggle dark/light</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">D</kbd>
-      </div>
-    </div>
-    <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:center;font-family:'Space Mono',monospace;">
-      Single key shortcuts · <strong>?</strong> toggles this panel
+    <div style="padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+      <div style="grid-column:1/-1;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;padding:8px 0 4px;">NAVIGATION</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Market Feed</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">F</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Trading Pits</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">P</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Stock Screener</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">S</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Market News</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">N</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Watchlist</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">W</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Trending</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">T</kbd></div>
+      <div style="grid-column:1/-1;font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;padding:8px 0 4px;">ACTIONS</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Search</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">/</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Toggle dark mode</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">D</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">This help</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">?</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:12px;color:var(--text2);">Close</span><kbd style="font-family:monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">Esc</kbd></div>
     </div>
   </div>
 </div>
-
 <script>
-function showKeyboardHelp() {
-  const m = document.getElementById('kbModal');
-  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-}
-
-// ── Global keyboard shortcuts ──────────────────────────────────────────────
-let _kbBuffer = '';
-let _kbTimer  = null;
-document.addEventListener('keydown', function(e) {
-  const tag = document.activeElement?.tagName?.toLowerCase();
-  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-  const key = e.key.toLowerCase();
-
-  // ? → toggle keyboard help
-  if (e.key === '?') { e.preventDefault(); showKeyboardHelp(); return; }
-
-  // Esc → close any open modal
-  if (e.key === 'Escape') {
-    document.getElementById('kbModal').style.display = 'none';
-    return;
-  }
-
-  // / → focus search
-  if (e.key === '/') {
-    e.preventDefault();
-    const s = document.getElementById('stockSearch') || document.getElementById('headerSearch');
-    if (s) s.focus();
-    return;
-  }
-
-  // Single-key navigation
-  const navMap = { f:'feed', p:'pits', s:'screener', n:'news', w:'watchlist', t:'trending' };
-  if (navMap[key]) {
-    e.preventDefault();
-    // Find the nav tab button with matching onclick and click it
-    const btn = [...document.querySelectorAll('.nav-tab')].find(b =>
-      b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + navMap[key] + "'")
-    );
-    if (btn) btn.click();
-    else if (typeof switchTab === 'function') switchTab(null, navMap[key]);
-    return;
-  }
-
-  // D → toggle dark mode
-  if (key === 'd') {
-    const btn = document.querySelector('[onclick*="theme-dim"], [onclick*="setTheme"]');
-    if (btn) btn.click();
-    else {
-      const body = document.body;
-      body.classList.toggle('theme-dim');
-      body.classList.toggle('theme-dark');
-    }
-    return;
-  }
+function showKeyboardHelp(){const m=document.getElementById('kbModal');m.style.display=m.style.display==='flex'?'none':'flex';}
+document.addEventListener('keydown',function(e){
+  const tag=document.activeElement?.tagName?.toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select')return;
+  const key=e.key.toLowerCase();
+  if(e.key==='?'){e.preventDefault();showKeyboardHelp();return;}
+  if(e.key==='Escape'){document.getElementById('kbModal').style.display='none';return;}
+  if(e.key==='/'){e.preventDefault();const s=document.getElementById('stockSearch')||document.getElementById('headerSearch');if(s)s.focus();return;}
+  const navMap={f:'feed',p:'pits',s:'screener',n:'news',w:'watchlist',t:'trending'};
+  if(navMap[key]){e.preventDefault();const btn=[...document.querySelectorAll('.nav-tab')].find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+navMap[key]+"'"));if(btn)btn.click();else if(typeof switchTab==='function')switchTab(null,navMap[key]);return;}
+  if(key==='d'){const btn=document.querySelector('[onclick*="theme-dim"],[onclick*="setTheme"]');if(btn)btn.click();else document.body.classList.toggle('theme-dim');}
 });
+async function fetchCommoditiesLive(){
+  const C=[{sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},{sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},{sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'}];
+  const upd=(sym,p,cp)=>{const up=cp>=0,cs=(up?'+':'')+cp.toFixed(2)+'%';const ex=liveStocks.find(s=>s.sym===sym);if(ex){ex.price=p;ex.chg=cs;ex.up=up;ex._live=true;}else{const se=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(se||{sym,name:sym,currency:'$'}),price:p,chg:cs,up,_live:true});}};
+  try{const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(10000)});if(r.ok){const j=await r.json();let u=0;(j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const it=C.find(c=>c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);u++;});if(u>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}}}catch(e){}
+  await Promise.allSettled(C.map(async it=>{try{const r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+it.yf+'?interval=1d&range=2d'),{signal:AbortSignal.timeout(8000)});if(!r.ok)return;const j=await r.json();const m=j?.chart?.result?.[0]?.meta;if(!m?.regularMarketPrice)return;const p=m.regularMarketPrice,prev=m.previousClose||p;upd(it.sym,p,((p-prev)/(prev||1))*100);}catch(e){}}));
+  updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);
+}
+setTimeout(fetchCommoditiesLive,3000);
+setInterval(fetchCommoditiesLive,30*60*1000);
+setTimeout(()=>{loadNews('markets',document.getElementById('nc_markets'));},2000);
+setInterval(()=>{const cat=window._mpNewsCat||'markets';delete _newsLoaded[cat];loadNews(cat,document.getElementById('nc_'+cat));},10*60*1000);
 </script>
+
 </body>
 </html>
