@@ -12523,7 +12523,7 @@ function renderStoryBubbles() {
     const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
       + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
-        + '<div class="story-ring-inner"><span class="material-symbols-outlined" style="font-size:16px;color:var(--accent);font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">' + subj.icon + '</span></div>'
+        + '<div class="story-ring-inner"><span class="material-symbols-outlined" style="font-size:16px;color:var(--accent);">' + subj.icon + '</span></div>'
       + '</div>'
       + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:56px;">' + subj.label.toUpperCase() + '</div>'
       + '<div style="font-size:8px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>'
