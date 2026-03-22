@@ -251,11 +251,11 @@ header {
 
 /* STORIES */
 #storiesBar::-webkit-scrollbar{display:none;}
-.story-bubble{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;width:64px;}
-.story-ring{width:54px;height:54px;border-radius:50%;padding:2px;background:conic-gradient(var(--accent),#a855f7,#ec4899,var(--accent));position:relative;flex-shrink:0;transition:transform 0.15s;}
-.story-ring.seen{background:conic-gradient(var(--border),var(--border));}
-.story-ring:hover{transform:scale(1.08);}
-.story-ring-inner{width:100%;height:100%;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--bg1);}
+.story-bubble{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:80px;}
+.story-ring{width:72px;height:72px;border-radius:16px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;}
+.story-ring.seen{opacity:0.6;}
+.story-ring:hover{transform:scale(1.06);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)22;}
+.story-ring-inner{font-size:28px;line-height:1;}
 .story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
 /* Story Modal */
 #storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
@@ -1205,7 +1205,7 @@ header {
 
     <!-- ── STORIES BAR ── -->
     <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
-      <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
+      <div id="storiesTrack" style="display:flex;gap:14px;align-items:center;min-width:max-content;"></div>
     </div>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
@@ -12589,12 +12589,13 @@ function renderStoryBubbles() {
     const chgPct = data.chgPct;
     const chgStr = chgPct != null ? (chgPct >= 0 ? '+' : '') + chgPct.toFixed(2) + '%' : null;
     const col    = chgPct != null ? (chgPct >= 0 ? '#00c853' : '#ff3b3b') : 'var(--text3)';
+    const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.3)' : 'rgba(255,59,59,0.3)') : 'var(--border)';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
-      + '<div class="story-ring' + (seen ? ' seen' : '') + '">'
+      + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
         + '<div class="story-ring-inner">' + subj.emoji + '</div>'
       + '</div>'
-      + '<div class="story-label" style="color:var(--text3);">' + subj.label + '</div>'
-      + (chgStr ? '<div style="font-size:9px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>' : '')
+      + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:80px;letter-spacing:0.3px;">' + subj.label.toUpperCase() + '</div>'
+      + '<div style="font-size:9px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + (chgStr || '—') + '</div>'
     + '</div>';
   }).join('');
 }
