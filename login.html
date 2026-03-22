@@ -278,41 +278,19 @@ async function handleLogin(e) {
   if (!email)    { alert('Please enter your email address.'); return; }
   if (!password) { alert('Please enter your password.'); return; }
 
-  // ── Existing user: skip OTP, go straight to dashboard ──
+  // Check password if account exists locally
   if (isExistingUser(email)) {
-    const accounts = getStoredAccounts();
-    const account  = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-    if (account && account.password && account.password !== password) {
+    const account = getStoredAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
+    if (account?.password && account.password !== password) {
       alert('Incorrect password. Please try again.');
       return;
     }
-    // Store session and go directly to dashboard
-    localStorage.setItem('mp_session_email', email);
-    window.location.href = 'dashboard.html';
-    return;
   }
 
-  // ── New user: send OTP first ──
-  btn.textContent = 'Sending code…';
+  btn.textContent = 'Signing in…';
   btn.disabled    = true;
-
-  try {
-    const data = await sendOTP(email);
-    if (data.ok) {
-      // Store password temporarily to save after verification
-      sessionStorage.setItem('mp_pending_email',    email);
-      sessionStorage.setItem('mp_pending_password', password);
-      window.location.href = 'verify.html?email=' + encodeURIComponent(email);
-    } else {
-      // If OTP fails (Railway offline), allow login anyway for new users
-      localStorage.setItem('mp_session_email', email);
-      window.location.href = 'dashboard.html';
-    }
-  } catch (err) {
-    // Railway offline — go to dashboard anyway
-    localStorage.setItem('mp_session_email', email);
-    window.location.href = 'dashboard.html';
-  }
+  localStorage.setItem('mp_session_email', email);
+  window.location.href = 'dashboard.html';
 }
 
 // ── Toggle between login and signup panels ──────────────────────────────────
@@ -338,32 +316,15 @@ async function handleSignup(e) {
   errEl.style.display = 'none';
   if (!name)  { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
   if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
-  if (isExistingUser(email)) { errEl.textContent = 'An account with this email already exists. Please sign in.'; errEl.style.display = 'block'; return; }
+  if (isExistingUser(email)) { errEl.textContent = 'Account already exists. Please sign in.'; errEl.style.display = 'block'; return; }
   if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
   if (password.length < 8)  { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
 
-  btn.textContent = 'Sending verification code…';
+  btn.textContent = 'Creating account…';
   btn.disabled    = true;
 
-  // Save pending signup data
-  sessionStorage.setItem('mp_pending_name',     name);
-  sessionStorage.setItem('mp_pending_email',    email);
-  sessionStorage.setItem('mp_pending_password', password);
-
-  try {
-    const data = await sendOTP(email, { name, signup: true });
-    if (data.ok) {
-      window.location.href = 'verify.html?email=' + encodeURIComponent(email) + '&signup=1';
-    } else {
-      // OTP failed — create account anyway (offline mode)
-      _saveAccount(name, email, password);
-      window.location.href = 'dashboard.html';
-    }
-  } catch (err) {
-    // Railway offline — create account and go to dashboard
-    _saveAccount(name, email, password);
-    window.location.href = 'dashboard.html';
-  }
+  _saveAccount(name, email, password);
+  window.location.href = 'dashboard.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
