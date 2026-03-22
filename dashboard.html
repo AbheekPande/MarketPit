@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #f0f4f8; --bg2: #ffffff; --bg3: #f5f7fa; --panel: #ffffff;
@@ -804,6 +805,23 @@ header {
   #optpnlBody > div > div > div { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
   #stratUnderlying { cursor: pointer; }
 
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
 </style>
 <body>
 
@@ -12803,15 +12821,25 @@ function renderStorySlide() {
 
 // ── Auto-refresh every hour ──
 // Render stories immediately with static data, then fetch live prices
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+// Stories: call immediately + safety net every 500ms until track is populated
+(function ensureStories() {
+  const track = document.getElementById('storiesTrack');
+  if (track && track.children.length === 0) {
     renderStoryBubbles();
+  }
+  if (!window._storiesInitDone) {
+    window._storiesInitDone = true;
     setTimeout(buildStories, 1500);
-  });
-} else {
-  renderStoryBubbles();
-  setTimeout(buildStories, 1500);
-}
+  }
+})();
+// Also re-render on page show (tab switch back)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) renderStoryBubbles();
+});
+setInterval(() => {
+  const t = document.getElementById('storiesTrack');
+  if (t && t.children.length === 0) renderStoryBubbles();
+}, 2000);
 setInterval(buildStories, 60 * 60 * 1000);
 
 // Also refresh stories when live data arrives
@@ -13487,10 +13515,12 @@ async function fetchCommoditiesLive(){
       if (lines.length < 2) return;
       // Header: Date,Time,Open,High,Low,Close,Volume
       const vals = lines[lines.length - 1].split(',');
-      const close = parseFloat(vals[5] || vals[4]);
-      const open  = parseFloat(vals[2]);
+      // Stooq CSV: Symbol,Date,Time,Open,High,Low,Close,Volume
+      const close = parseFloat(vals[6]);
+      const prev  = parseFloat(vals[5]); // Low as approximate prev (use close-based chg)
+      const open  = parseFloat(vals[3]);
       if (!close || isNaN(close)) return;
-      const chgPct = open ? ((close - open) / open * 100) : 0;
+      const chgPct = open && open > 0 ? ((close - open) / open * 100) : 0;
       upd(item.sym, close, chgPct);
       updated++;
     } catch(e) {}
