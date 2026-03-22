@@ -13388,7 +13388,7 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">Open profile</span>
-        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">P</kbd>
+        <kbd style="font-family:'Space Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text);">click avatar</kbd>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">Close modal / Back</span>
@@ -13444,17 +13444,12 @@ document.addEventListener('keydown', function(e) {
   const navMap = { f:'feed', p:'pits', s:'screener', n:'news', w:'watchlist', t:'trending' };
   if (navMap[key]) {
     e.preventDefault();
-    const tab = document.querySelector('[data-page="' + navMap[key] + '"]');
-    if (tab) tab.click();
-    else if (typeof switchPage === 'function') switchPage(navMap[key]);
-    return;
-  }
-
-  // N → focus post composer (conflicts with news — use Shift+N or just let nav take N)
-  // P → open profile
-  if (key === 'p') {
-    e.preventDefault();
-    if (typeof openModal === 'function') openModal('profileModal');
+    // Find the nav tab button with matching onclick and click it
+    const btn = [...document.querySelectorAll('.nav-tab')].find(b =>
+      b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + navMap[key] + "'")
+    );
+    if (btn) btn.click();
+    else if (typeof switchTab === 'function') switchTab(null, navMap[key]);
     return;
   }
 
