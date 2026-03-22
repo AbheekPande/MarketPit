@@ -3173,9 +3173,15 @@ function renderTrending(data) {
   if (!el) return;
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
-  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
-  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,8);
+  // Show ALL stocks with a price (static or live) — never show empty
+  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,15);
+  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,10);
+  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && (s.price || s.price === 0)).slice(0,8);
+
+  // Fallback to STATIC if liveStocks has none
+  const nseDisplay  = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
+  const commDisplay = commList.length   ? commList   : STATIC_COMMODITIES.slice(0,8);
+  const cryptoDisplay = cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
@@ -3199,9 +3205,9 @@ function renderTrending(data) {
   function renderTab(tab) {
     renderTrending._tab = tab;
     let rows = '';
-    if (tab === 'nse')    rows = nseStocks.map(s=>stockRow(s,'₹')).join('');
-    if (tab === 'crypto') rows = cryptoList.map(s=>stockRow(s,'$')).join('');
-    if (tab === 'comm')   rows = commList.map(s=>stockRow(s,'$')).join('');
+    if (tab === 'nse')    rows = nseDisplay.map(s=>stockRow(s,'₹')).join('');
+    if (tab === 'crypto') rows = cryptoDisplay.map(s=>stockRow(s,'$')).join('');
+    if (tab === 'comm')   rows = commDisplay.map(s=>stockRow(s,'$')).join('');
     if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading live data…</div>';
     const rowsEl = document.getElementById('trendListRows');
     if (rowsEl) { rowsEl.innerHTML = rows; return; }
