@@ -1207,6 +1207,14 @@ header {
     <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
       <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
     </div>
+    <script>
+    (function tryStories(n){
+      if(typeof renderStoryBubbles==='function'&&typeof STORY_SUBJECTS!=='undefined'){
+        renderStoryBubbles();
+        if(typeof buildStories==='function') setTimeout(buildStories,1000);
+      } else if(n<100) setTimeout(()=>tryStories(n+1),200);
+    })(0);
+    </script>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
@@ -1225,17 +1233,17 @@ header {
         <!-- TradingView Mini Ticker for live hero prices -->
         <div style="display:flex;gap:20px;margin-top:8px;pointer-events:all;" id="heroPricesRow">
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty">23,115</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
           </div>
           <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty">49,450</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
           </div>
           <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc">$68,420</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
           </div>
         </div>
@@ -1891,7 +1899,21 @@ header {
         <span id="sidebarMmiTs" style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;"></span>
       </div>
       <div id="sidebarMmiContent">
-        <div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div>
+        <div style="text-align:center;padding:4px 0 8px;">
+          <svg viewBox="0 0 160 90" width="180" height="102" style="overflow:visible;">
+            <path d="M14 80 A66 66 0 0 1 47 20" stroke="#ff3b3b" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M47 20 A66 66 0 0 1 80 12" stroke="#ff6d00" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M80 12 A66 66 0 0 1 113 20" stroke="#ffd740" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M113 20 A66 66 0 0 1 146 80" stroke="#00c853" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <text x="8" y="90" font-size="7" fill="#ff3b3b" font-family="monospace">Fear</text>
+            <text x="126" y="90" font-size="7" fill="#00c853" font-family="monospace">Greed</text>
+            <line x1="80" y1="80" x2="80" y2="18" stroke="#ffd740" stroke-width="3" stroke-linecap="round" transform="rotate(0 80 80)"/>
+            <circle cx="80" cy="80" r="6" fill="#ffd740"/><circle cx="80" cy="80" r="3" fill="var(--bg2)"/>
+            <text x="80" y="72" text-anchor="middle" font-size="18" font-weight="900" fill="#ffd740" font-family="monospace">50</text>
+          </svg>
+          <div style="font-size:14px;font-weight:900;color:#ffd740;">😐 Neutral</div>
+          <div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;">Loading live data…</div>
+        </div>
       </div>
     </div>
 
@@ -1903,20 +1925,42 @@ header {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
-          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmGainers">
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="fetchAndShowStock('TATASTEEL')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">TATASTEEL</div><div style="font-size:9px;color:var(--text3);">₹148</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--green);">+2.78%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="fetchAndShowStock('SBIN')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">SBIN</div><div style="font-size:9px;color:var(--text3);">₹812</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--green);">+2.10%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;cursor:pointer;" onclick="fetchAndShowStock('TATAMOTORS')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">TATAMOTORS</div><div style="font-size:9px;color:var(--text3);">₹689</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--green);">+1.45%</span>
+            </div>
+          </div>
         </div>
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
-          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmLosers">
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="fetchAndShowStock('WIPRO')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">WIPRO</div><div style="font-size:9px;color:var(--text3);">₹298</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--red);">-1.02%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="fetchAndShowStock('INFY')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">INFY</div><div style="font-size:9px;color:var(--text3);">₹1,456</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--red);">-0.89%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 0;cursor:pointer;" onclick="fetchAndShowStock('TCS')">
+              <div style="flex:1;"><div style="font-weight:700;font-size:10px;">TCS</div><div style="font-size:9px;color:var(--text3);">₹3,421</div></div>
+              <span style="font-size:11px;font-weight:800;color:var(--red);">-0.45%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- LEADERBOARD -->
-    <div class="leaderboard-section">
-      <div class="lb-title">TOP CALLERS THIS WEEK</div>
-      <div id="leaderboard"><div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div></div>
-    </div>
+
   </div>
 </div>
 </div>
