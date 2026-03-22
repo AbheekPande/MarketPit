@@ -263,7 +263,7 @@ header {
 .story-ring{width:48px;height:48px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.12s,border-color 0.12s,background 0.12s;position:relative;}
 .story-ring.seen{opacity:0.5;}
 .story-ring:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--bg2);box-shadow:0 4px 14px rgba(0,112,243,0.12);}
-.story-ring-inner{font-size:18px;line-height:1;}
+.story-ring-inner{font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;}
 .story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
 /* Story Modal */
 #storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
@@ -12608,22 +12608,22 @@ function renderHeatmap() {
 
 const STORY_SUBJECTS = [
   // NSE Stocks
-  {id:'RELIANCE',  label:'Reliance',   icon:'local_gas_station', type:'stock',     yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',        icon:'terminal',          type:'stock',     yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank',  icon:'account_balance',   type:'stock',     yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',    icon:'code',              type:'stock',     yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',        icon:'corporate_fare',    type:'stock',     yf:'SBIN.NS'},
-  {id:'TATAMOTORS',label:'Tata Motors',icon:'directions_car',    type:'stock',     yf:'TATAMOTORS.NS'},
-  {id:'ADANIENT',  label:'Adani',      icon:'bolt',              type:'stock',     yf:'ADANIENT.NS'},
-  {id:'ZOMATO',    label:'Zomato',     icon:'delivery_dining',   type:'stock',     yf:'ZOMATO.NS'},
+  {id:'RELIANCE',  label:'Reliance',   emoji:'🛢️',  type:'stock',     yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',        emoji:'💻',  type:'stock',     yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank',  emoji:'🏦',  type:'stock',     yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',    emoji:'🖥️',  type:'stock',     yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',        emoji:'🏛️',  type:'stock',     yf:'SBIN.NS'},
+  {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗',  type:'stock',     yf:'TATAMOTORS.NS'},
+  {id:'ADANIENT',  label:'Adani',      emoji:'⚡',  type:'stock',     yf:'ADANIENT.NS'},
+  {id:'ZOMATO',    label:'Zomato',     emoji:'🍕',  type:'stock',     yf:'ZOMATO.NS'},
   // Crypto
-  {id:'BTC',       label:'Bitcoin',    icon:'currency_bitcoin',  type:'crypto',    cg:'bitcoin'},
-  {id:'ETH',       label:'Ethereum',   icon:'diamond',           type:'crypto',    cg:'ethereum'},
-  {id:'SOL',       label:'Solana',     icon:'flash_on',          type:'crypto',    cg:'solana'},
+  {id:'BTC',       label:'Bitcoin',    emoji:'₿',   type:'crypto',    cg:'bitcoin'},
+  {id:'ETH',       label:'Ethereum',   emoji:'💎',  type:'crypto',    cg:'ethereum'},
+  {id:'SOL',       label:'Solana',     emoji:'☀️',  type:'crypto',    cg:'solana'},
   // Commodities
-  {id:'GOLD',      label:'Gold',       icon:'payments',          type:'commodity', yf:'GC=F'},
-  {id:'CRUDE',     label:'Crude Oil',  icon:'oil_barrel',        type:'commodity', yf:'CL=F'},
-  {id:'SILVER',    label:'Silver',     icon:'toll',              type:'commodity', yf:'SI=F'},
+  {id:'GOLD',      label:'Gold',       emoji:'🥇',  type:'commodity', yf:'GC=F'},
+  {id:'CRUDE',     label:'Crude Oil',  emoji:'🛢️',  type:'commodity', yf:'CL=F'},
+  {id:'SILVER',    label:'Silver',     emoji:'🪙',  type:'commodity', yf:'SI=F'},
 ];
 
 let _stories = {};          // {id: {price, chg, up, news, ts}}
@@ -12701,7 +12701,7 @@ function renderStoryBubbles() {
     const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
       + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
-        + '<div class="story-ring-inner"><span class="material-symbols-outlined" style="font-size:16px;color:var(--accent);">' + subj.icon + '</span></div>'
+        + '<div class="story-ring-inner">' + subj.emoji + '</div>'
       + '</div>'
       + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:56px;">' + subj.label.toUpperCase() + '</div>'
       + '<div style="font-size:8px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>'
@@ -12783,7 +12783,7 @@ function renderStorySlide() {
 
   let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
     + '<div style="display:flex;align-items:center;gap:10px;">'
-      + '<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;background:var(--bg3);display:flex;align-items:center;justify-content:center;'><span class='material-symbols-outlined' style='font-size:20px;color:var(--accent);'>' + subj.icon + '</span></div>'
+      + '<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;background:var(--bg3);display:flex;align-items:center;justify-content:center;'><span class='material-symbols-outlined' style='font-size:20px;color:var(--accent);'>' + subj.emoji + '</span></div>'
       + '<div>'
         + '<div style="font-weight:800;font-size:14px;">' + subj.label + '</div>'
         + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;">' + subj.type.toUpperCase() + ' · ' + counter + '</div>'
@@ -13480,59 +13480,63 @@ document.addEventListener('keydown',function(e){
   if(key==='d'){const btn=document.querySelector('[onclick*="theme-dim"],[onclick*="setTheme"]');if(btn)btn.click();else document.body.classList.toggle('theme-dim');}
 });
 async function fetchCommoditiesLive(){
-  // Stooq.com — CORS-friendly, no proxy needed, live futures prices
   const C = [
-    {sym:'GOLD',       stooq:'gc.f',  name:'Gold'},
-    {sym:'SILVER',     stooq:'si.f',  name:'Silver'},
-    {sym:'CRUDE',      stooq:'cl.f',  name:'Crude Oil (WTI)'},
-    {sym:'BRENT',      stooq:'bz.f',  name:'Brent Crude'},
-    {sym:'NATURALGAS', stooq:'ng.f',  name:'Natural Gas'},
-    {sym:'COPPER',     stooq:'hg.f',  name:'Copper'},
-    {sym:'PLATINUM',   stooq:'pl.f',  name:'Platinum'},
-    {sym:'WHEAT',      stooq:'zw.f',  name:'Wheat'},
-    {sym:'CORN',       stooq:'zc.f',  name:'Corn'},
+    {sym:'GOLD',      yf:'GC=F',  name:'Gold',           currency:'$'},
+    {sym:'SILVER',    yf:'SI=F',  name:'Silver',          currency:'$'},
+    {sym:'CRUDE',     yf:'CL=F',  name:'Crude Oil (WTI)', currency:'$'},
+    {sym:'BRENT',     yf:'BZ=F',  name:'Brent Crude',     currency:'$'},
+    {sym:'NATURALGAS',yf:'NG=F',  name:'Natural Gas',     currency:'$'},
+    {sym:'COPPER',    yf:'HG=F',  name:'Copper',          currency:'$'},
+    {sym:'PLATINUM',  yf:'PL=F',  name:'Platinum',        currency:'$'},
+    {sym:'WHEAT',     yf:'ZW=F',  name:'Wheat',           currency:'$'},
+    {sym:'CORN',      yf:'ZC=F',  name:'Corn',            currency:'$'},
   ];
 
   const upd = (sym, price, chgPct) => {
-    const up = chgPct >= 0;
+    const up  = chgPct >= 0;
     const chg = (up ? '+' : '') + chgPct.toFixed(2) + '%';
-    const ex = liveStocks.find(s => s.sym === sym);
+    const ex  = liveStocks.find(s => s.sym === sym);
     if (ex) { ex.price = price; ex.chg = chg; ex.up = up; ex._live = true; }
     else {
       const sc = STATIC_COMMODITIES.find(s => s.sym === sym);
-      liveStocks.push({...(sc || {sym, name: sym, currency: '$'}), price, chg, up, _live: true});
+      liveStocks.push({...(sc||{sym,name:sym,currency:'$'}), price, chg, up, _live:true});
     }
   };
 
+  const refresh = () => { updateTickerFromLive(); buildGlobalTicker(); renderTrending(liveStocks); };
+
+  // Try each commodity individually via allorigins → Yahoo Finance (most reliable path)
   let updated = 0;
   await Promise.allSettled(C.map(async item => {
-    try {
-      const url = 'https://stooq.com/q/l/?s=' + item.stooq + '&f=sd2t2ohlcv&h&e=csv';
-      const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) return;
-      const csv = await r.text();
-      const lines = csv.trim().split('\n');
-      if (lines.length < 2) return;
-      // Header: Date,Time,Open,High,Low,Close,Volume
-      const vals = lines[lines.length - 1].split(',');
-      // Stooq CSV: Symbol,Date,Time,Open,High,Low,Close,Volume
-      const close = parseFloat(vals[6]);
-      const prev  = parseFloat(vals[5]); // Low as approximate prev (use close-based chg)
-      const open  = parseFloat(vals[3]);
-      if (!close || isNaN(close)) return;
-      const chgPct = open && open > 0 ? ((close - open) / open * 100) : 0;
-      upd(item.sym, close, chgPct);
-      updated++;
-    } catch(e) {}
+    const yfUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/' + item.yf + '?interval=1d&range=2d';
+    const proxies = [
+      'https://api.allorigins.win/get?url=' + encodeURIComponent(yfUrl),
+      'https://corsproxy.io/?' + encodeURIComponent(yfUrl),
+      'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(yfUrl),
+    ];
+    for (const proxyUrl of proxies) {
+      try {
+        const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
+        if (!r.ok) continue;
+        const raw  = await r.text();
+        let data;
+        try { const w = JSON.parse(raw); data = w.contents ? JSON.parse(w.contents) : w; }
+        catch(e) { continue; }
+        const meta = data?.chart?.result?.[0]?.meta;
+        if (!meta?.regularMarketPrice) continue;
+        const price  = meta.regularMarketPrice;
+        const prev   = meta.previousClose || meta.chartPreviousClose || meta.regularMarketOpen || price;
+        const chgPct = prev ? ((price - prev) / prev * 100) : 0;
+        upd(item.sym, price, chgPct);
+        updated++;
+        break; // success for this commodity
+      } catch(e) { continue; }
+    }
   }));
 
-  if (updated > 0) {
-    updateTickerFromLive();
-    buildGlobalTicker();
-    renderTrending(liveStocks);
-  }
+  if (updated > 0) refresh();
 }
-setTimeout(fetchCommoditiesLive, 500);
+setTimeout(fetchCommoditiesLive, 800);
 setInterval(fetchCommoditiesLive, 5 * 60 * 1000);
 setTimeout(()=>{loadNews('markets',document.getElementById('nc_markets'));},2000);
 setInterval(()=>{const cat=window._mpNewsCat||'markets';delete _newsLoaded[cat];loadNews(cat,document.getElementById('nc_'+cat));},10*60*1000);
