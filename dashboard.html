@@ -251,11 +251,11 @@ header {
 
 /* STORIES */
 #storiesBar::-webkit-scrollbar{display:none;}
-.story-bubble{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;width:68px;}
-.story-ring{width:58px;height:58px;border-radius:14px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;}
+.story-bubble{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;width:52px;}
+.story-ring{width:46px;height:46px;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;}
 .story-ring.seen{opacity:0.55;}
 .story-ring:hover{transform:scale(1.07);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-.story-ring-inner{font-size:24px;line-height:1;}
+.story-ring-inner{font-size:18px;line-height:1;}
 .story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
 /* Story Modal */
 #storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
@@ -1205,7 +1205,7 @@ header {
 
     <!-- ── STORIES BAR ── -->
     <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
-      <div id="storiesTrack" style="display:flex;gap:14px;align-items:center;min-width:max-content;"></div>
+      <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
     </div>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
