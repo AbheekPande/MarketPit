@@ -9723,8 +9723,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _mpInit);
+} else {
+  _mpInit();
+}
 
-// ══════════════════════════════════════════════════════════════
 // UNLISTED SHARES
 // HOW TO UPDATE: edit the arrays below — price, chg, chgPct, prevClose, week1
 // ══════════════════════════════════════════════════════════════
