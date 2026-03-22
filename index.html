@@ -91,7 +91,7 @@
 
 <a id="nav-features" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#features" onclick="setActive('features')">Features</a>
 <a id="nav-platforms" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#" onclick="setActive('platforms')">Platforms</a>
-<a id="nav-education" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="education.html">Education</a>
+<a id="nav-education" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#education" onclick="setActive('education')">Education</a>
 </div>
 <div class="flex items-center space-x-6">
 <!-- Log In → login.html -->
@@ -539,23 +539,26 @@ const ACTIVE_CLS   = 'text-[#003227] border-b-2 border-[#003227] pb-1 font-headl
 const INACTIVE_CLS = 'text-[#191c1b]/70 hover:text-[#003227] transition-colors font-headline font-semibold tracking-tight';
 
 function setActive(id) {
-  ['features','platforms'].forEach(n => {
+  ['features','platforms','education'].forEach(n => {
     const el = document.getElementById('nav-' + n);
     if (!el) return;
     el.className = (n === id) ? ACTIVE_CLS : INACTIVE_CLS;
   });
 }
 
-// On page load — no active by default (none of the scroll sections is active yet)
-// Highlight Features nav when #features section is scrolled into view
-const featuresSection = document.getElementById('features');
-if (featuresSection) {
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) setActive('features');
-    else { setActive(''); } // clear all when scrolled away
-  }, { threshold: 0.15 });
-  observer.observe(featuresSection);
-}
+// Auto-highlight nav based on scroll position
+const sections = [
+  { id: 'features',  nav: 'features'  },
+  { id: 'education', nav: 'education' },
+];
+
+sections.forEach(({ id, nav }) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) setActive(nav);
+  }, { threshold: 0.15 }).observe(el);
+});
 </script>
 </body>
 </html>
