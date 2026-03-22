@@ -86,13 +86,11 @@
 <!-- TopNavBar -->
 <nav class="fixed top-0 w-full z-50 bg-surface/80 glass-nav shadow-[0px_20px_40px_rgba(25,28,27,0.06)] h-20">
 <div class="flex justify-between items-center max-w-7xl mx-auto px-8 h-full">
-<div class="text-2xl font-headline italic font-bold text-[#003227]">
-                Market Pit
-            </div>
+<a href="index.html" class="text-2xl font-headline italic font-bold text-[#003227]">Market Pit</a>
 <div class="hidden md:flex items-center space-x-8 font-headline font-semibold tracking-tight">
 
 <a id="nav-features" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#features" onclick="setActive('features')">Features</a>
-<a id="nav-platforms" class="text-[#003227] border-b-2 border-[#003227] pb-1" href="#" onclick="setActive('platforms')">Platforms</a>
+<a id="nav-platforms" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#" onclick="setActive('platforms')">Platforms</a>
 <a id="nav-education" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="education.html">Education</a>
 </div>
 <div class="flex items-center space-x-6">
@@ -537,26 +535,27 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 </div>
 </footer>
 <script>
+const ACTIVE_CLS   = 'text-[#003227] border-b-2 border-[#003227] pb-1 font-headline font-semibold tracking-tight';
+const INACTIVE_CLS = 'text-[#191c1b]/70 hover:text-[#003227] transition-colors font-headline font-semibold tracking-tight';
+
 function setActive(id) {
   ['features','platforms'].forEach(n => {
     const el = document.getElementById('nav-' + n);
     if (!el) return;
-    if (n === id) {
-      el.className = 'text-[#003227] border-b-2 border-[#003227] pb-1';
-    } else {
-      el.className = 'text-[#191c1b]/70 hover:text-[#003227] transition-colors';
-    }
+    el.className = (n === id) ? ACTIVE_CLS : INACTIVE_CLS;
   });
 }
 
+// On page load — no active by default (none of the scroll sections is active yet)
 // Highlight Features nav when #features section is scrolled into view
 const featuresSection = document.getElementById('features');
 if (featuresSection) {
   const observer = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) setActive('features');
-    else setActive('platforms');
+    else { setActive(''); } // clear all when scrolled away
   }, { threshold: 0.15 });
   observer.observe(featuresSection);
 }
 </script>
-</body></html>
+</body>
+</html>
