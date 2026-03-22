@@ -239,13 +239,12 @@ function completeSetup() {
     const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
     if (user) {
       user.interests = [...selected];
-      user.onboardingDone = true;
       localStorage.setItem('mp_user', JSON.stringify(user));
     } else {
       localStorage.setItem('mp_interests', JSON.stringify([...selected]));
     }
   } catch(e) {}
-  window.location.href = 'dashboard.html';
+  window.location.href = 'alerts-setup.html';
 }
 
 // If user has already done onboarding, skip straight to dashboard
