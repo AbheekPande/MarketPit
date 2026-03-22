@@ -3210,18 +3210,22 @@ function renderTrending(data) {
     if (tab === 'comm')   rows = commDisplay.map(s=>stockRow(s,'$')).join('');
     if (!rows) rows = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading live data…</div>';
     const rowsEl = document.getElementById('trendListRows');
-    if (rowsEl) { rowsEl.innerHTML = rows; return; }
+    if (rowsEl) {
+      rowsEl.innerHTML = rows;
+      // Always update tab highlight styles
+      document.querySelectorAll('.tl-tab').forEach(b => {
+        b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
+        b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
+      });
+      return;
+    }
     // First build
     el.innerHTML = '<div style="display:flex;border-bottom:1px solid var(--border);">'
-      + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="nse"    style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid var(--accent);font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:Space Mono,monospace;">NSE</button>'
-      + '<button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="crypto" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">CRYPTO</button>'
-      + '<button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab(this.dataset.tab)" data-tab="comm"   style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);font-family:Space Mono,monospace;">COMMOD</button>'
+      + '<button class="tl-tab" data-tab="nse"    onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='nse'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='nse'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">NSE</button>'
+      + '<button class="tl-tab" data-tab="crypto" onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='crypto'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='crypto'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">CRYPTO</button>'
+      + '<button class="tl-tab" data-tab="comm"   onclick="renderTrending._renderTab(this.dataset.tab)" style="flex:1;padding:7px 4px;background:none;border:none;border-bottom:2px solid ' + (tab==='comm'?'var(--accent)':'transparent') + ';font-size:11px;font-weight:700;cursor:pointer;color:' + (tab==='comm'?'var(--accent)':'var(--text3)') + ';font-family:Space Mono,monospace;">COMMOD</button>'
       + '</div>'
       + '<div id="trendListRows" style="overflow-y:auto;max-height:360px;">' + rows + '</div>';
-    document.querySelectorAll('.tl-tab').forEach(b => {
-      b.style.color = b.dataset.tab===tab ? 'var(--accent)' : 'var(--text3)';
-      b.style.borderBottom = b.dataset.tab===tab ? '2px solid var(--accent)' : '2px solid transparent';
-    });
   }
 
   renderTrending._renderTab = renderTab;
