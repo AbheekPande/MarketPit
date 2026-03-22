@@ -208,6 +208,21 @@
       const data = await res.json();
 
       if (data.ok) {
+        // Save account so future logins skip OTP
+        const isSignup = new URLSearchParams(window.location.search).get('signup');
+        if (isSignup) {
+          const name     = sessionStorage.getItem('mp_pending_name') || userEmail.split('@')[0];
+          const password = sessionStorage.getItem('mp_pending_password') || '';
+          const accounts = JSON.parse(localStorage.getItem('mp_accounts') || '[]');
+          if (!accounts.find(a => a.email.toLowerCase() === userEmail.toLowerCase())) {
+            accounts.push({ name, email: userEmail, password, joinedAt: Date.now() });
+            localStorage.setItem('mp_accounts', JSON.stringify(accounts));
+          }
+          localStorage.setItem('mp_user', JSON.stringify({ name, email: userEmail, displayName: name, joinedAt: Date.now() }));
+          sessionStorage.removeItem('mp_pending_name');
+          sessionStorage.removeItem('mp_pending_password');
+        }
+        localStorage.setItem('mp_session_email', userEmail);
         btn.textContent = '✓ Verified!';
         setTimeout(() => window.location.href = 'dashboard.html', 400);
       } else {

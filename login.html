@@ -208,7 +208,7 @@
 <div id="signup-error" class="text-error text-xs font-label" style="display:none"></div>
 <div class="pt-2">
 <button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold py-4 rounded-lg shadow-lg hover:opacity-90 active:scale-95 transition-all duration-150" type="submit" id="signup-btn">
-                                Create Account & Verify Email
+                                Create Account
                             </button>
 </div>
 </form>
@@ -242,6 +242,14 @@
 <script>
 const RAILWAY = 'https://web-production-78fc1.up.railway.app';
 
+// ── Check if user already has an account (stored in localStorage) ────────────
+function getStoredAccounts() {
+  try { return JSON.parse(localStorage.getItem('mp_accounts') || '[]'); } catch(e) { return []; }
+}
+function isExistingUser(email) {
+  return getStoredAccounts().some(a => a.email.toLowerCase() === email.toLowerCase());
+}
+
 async function sendOTP(email, extra = {}) {
   const controller = new AbortController();
   const timeout    = setTimeout(() => controller.abort(), 12000);
@@ -256,34 +264,54 @@ async function sendOTP(email, extra = {}) {
     return await res.json();
   } catch (err) {
     clearTimeout(timeout);
-    if (err.name === 'AbortError') throw new Error('Request timed out. Railway server may be starting up — please try again in 15 seconds.');
-    throw new Error('Cannot reach server. Check your internet connection or try again shortly.');
+    if (err.name === 'AbortError') throw new Error('Request timed out. Please try again in 15 seconds.');
+    throw new Error('Cannot reach server. Check your internet connection.');
   }
 }
 
 async function handleLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('email').value.trim();
-  const btn   = e.target.querySelector('button[type="submit"]');
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn      = e.target.querySelector('button[type="submit"]');
 
-  if (!email) { alert('Please enter your email address.'); return; }
+  if (!email)    { alert('Please enter your email address.'); return; }
+  if (!password) { alert('Please enter your password.'); return; }
 
+  // ── Existing user: skip OTP, go straight to dashboard ──
+  if (isExistingUser(email)) {
+    const accounts = getStoredAccounts();
+    const account  = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+    if (account && account.password && account.password !== password) {
+      alert('Incorrect password. Please try again.');
+      return;
+    }
+    // Store session and go directly to dashboard
+    localStorage.setItem('mp_session_email', email);
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  // ── New user: send OTP first ──
   btn.textContent = 'Sending code…';
   btn.disabled    = true;
 
   try {
     const data = await sendOTP(email);
     if (data.ok) {
+      // Store password temporarily to save after verification
+      sessionStorage.setItem('mp_pending_email',    email);
+      sessionStorage.setItem('mp_pending_password', password);
       window.location.href = 'verify.html?email=' + encodeURIComponent(email);
     } else {
-      alert(data.message || 'Failed to send OTP. Please try again.');
-      btn.textContent = 'Sign In to Market Pit';
-      btn.disabled    = false;
+      // If OTP fails (Railway offline), allow login anyway for new users
+      localStorage.setItem('mp_session_email', email);
+      window.location.href = 'dashboard.html';
     }
   } catch (err) {
-    alert(err.message);
-    btn.textContent = 'Sign In to Market Pit';
-    btn.disabled    = false;
+    // Railway offline — go to dashboard anyway
+    localStorage.setItem('mp_session_email', email);
+    window.location.href = 'dashboard.html';
   }
 }
 
@@ -307,31 +335,46 @@ async function handleSignup(e) {
   const errEl    = document.getElementById('signup-error');
   const btn      = document.getElementById('signup-btn');
 
-  // Client-side validation
   errEl.style.display = 'none';
-  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (!name)  { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+  if (isExistingUser(email)) { errEl.textContent = 'An account with this email already exists. Please sign in.'; errEl.style.display = 'block'; return; }
   if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
   if (password.length < 8)  { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
 
   btn.textContent = 'Sending verification code…';
   btn.disabled    = true;
 
+  // Save pending signup data
+  sessionStorage.setItem('mp_pending_name',     name);
+  sessionStorage.setItem('mp_pending_email',    email);
+  sessionStorage.setItem('mp_pending_password', password);
+
   try {
     const data = await sendOTP(email, { name, signup: true });
     if (data.ok) {
       window.location.href = 'verify.html?email=' + encodeURIComponent(email) + '&signup=1';
     } else {
-      errEl.textContent   = data.message || 'Failed to send verification code.';
-      errEl.style.display = 'block';
-      btn.textContent     = 'Create Account & Verify Email';
-      btn.disabled        = false;
+      // OTP failed — create account anyway (offline mode)
+      _saveAccount(name, email, password);
+      window.location.href = 'dashboard.html';
     }
   } catch (err) {
-    errEl.textContent   = err.message;
-    errEl.style.display = 'block';
-    btn.textContent     = 'Create Account & Verify Email';
-    btn.disabled        = false;
+    // Railway offline — create account and go to dashboard
+    _saveAccount(name, email, password);
+    window.location.href = 'dashboard.html';
   }
+}
+
+// ── Save account to local storage ────────────────────────────────────────────
+function _saveAccount(name, email, password) {
+  const accounts = getStoredAccounts();
+  if (!accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
+    accounts.push({ name, email, password, joinedAt: Date.now() });
+    localStorage.setItem('mp_accounts', JSON.stringify(accounts));
+  }
+  localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now() }));
+  localStorage.setItem('mp_session_email', email);
 }
 </script>
 </body></html>
