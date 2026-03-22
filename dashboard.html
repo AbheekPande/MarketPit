@@ -2490,23 +2490,8 @@ const YF_STOCK_MAP = {
 
 // Fetch one stock/index/commodity via Yahoo Finance — tries multiple proxies
 async function yfFetch(yfSym) {
-  // ── Primary: Vercel serverless /api/quote (server-side, no CORS, fast) ──
-  try {
-    const r = await fetch(`/api/quote?symbols=${encodeURIComponent(yfSym)}`, { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const j = await r.json();
-      const q = j?.quoteResponse?.result?.[0];
-      if (q?.regularMarketPrice) {
-        const price = q.regularMarketPrice;
-        const prev  = q.regularMarketPreviousClose || price;
-        const chg   = prev ? ((price - prev) / prev * 100) : 0;
-        return { price, prev, chg, up: chg >= 0 };
-      }
-    }
-  } catch(e) {}
-
-  // ── Fallback: browser proxies ──
-  const url = `${YF_BASE}${yfSym}?interval=1m&range=1d`;
+  // ── Primary: direct corsproxy (fastest when Railway is sleeping) ──
+  const url = `${YF_BASE}${yfSym}?interval=1d&range=2d`;
   for (const proxyFn of YF_PROXIES) {
     try {
       const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(8000) });
@@ -2672,36 +2657,105 @@ const PRIORITY_SYMS = [
   'ASIANPAINT','MARUTI','SUNPHARMA','KOTAKBANK','HCLTECH','LT'
 ];
 
-// Fetch priority stocks immediately on load via single batch call
+// ── Helper: update liveStocks from YF result array ──
+function _applyYFResults(results) {
+  let updated = 0;
+  (results || []).forEach(q => {
+    if (!q?.regularMarketPrice) return;
+    const sym = Object.keys(YF_STOCK_MAP).find(k => YF_STOCK_MAP[k] === q.symbol);
+    if (!sym) return;
+    const price  = q.regularMarketPrice;
+    const prev   = q.regularMarketPreviousClose || price;
+    const chgNum = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
+    const chgStr = (chgNum>=0?'+':'') + chgNum.toFixed(2) + '%';
+    const s = liveStocks.find(x => x.sym === sym);
+    if (s) { s.price = price; s.chg = chgStr; s.up = chgNum>=0; s._live = true; updated++; }
+    else {
+      const st = STATIC_STOCKS.find(x=>x.sym===sym);
+      liveStocks.push({...(st||{sym,name:sym}), price, chg:chgStr, up:chgNum>=0, _live:true});
+    }
+  });
+  return updated;
+}
+
+// ── Direct YF batch fetch via corsproxy (no Railway needed) ──
+async function _yfBatchDirect(yfSyms) {
+  // Batch the symbols with Yahoo Finance v7 spark endpoint (works without cookies)
+  const url = 'https://query1.finance.yahoo.com/v7/finance/spark?symbols=' +
+    encodeURIComponent(yfSyms) + '&range=1d&interval=1d';
+  for (const proxyFn of YF_PROXIES) {
+    try {
+      const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) continue;
+      const raw = await r.text();
+      let parsed;
+      try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; }
+      catch(e) { try { parsed = JSON.parse(raw); } catch(e2) { continue; } }
+      const spark = parsed?.spark?.result;
+      if (!spark?.length) continue;
+      const fakeResults = spark.map(item => ({
+        symbol: item.symbol,
+        regularMarketPrice: item.response?.[0]?.meta?.regularMarketPrice,
+        regularMarketPreviousClose: item.response?.[0]?.meta?.previousClose || item.response?.[0]?.meta?.chartPreviousClose,
+        regularMarketChangePercent: (() => {
+          const p = item.response?.[0]?.meta?.regularMarketPrice;
+          const c = item.response?.[0]?.meta?.previousClose || item.response?.[0]?.meta?.chartPreviousClose;
+          return (p && c) ? ((p-c)/c*100) : null;
+        })()
+      })).filter(q => q.regularMarketPrice);
+      if (fakeResults.length > 0) return fakeResults;
+    } catch(e) { continue; }
+  }
+  return [];
+}
+
+// Fetch priority stocks immediately on load
 async function fetchPriorityStocks() {
   const yfSyms = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean).join(',');
+  let updated = 0;
+
+  // Try 1: Vercel/Railway batch
   try {
-    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(12000) });
+    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(10000) });
     if (r.ok) {
       const j = await r.json();
-      let updated = 0;
-      (j?.quoteResponse?.result || []).forEach(q => {
-        if (!q?.regularMarketPrice) return;
-        const sym = Object.keys(YF_STOCK_MAP).find(k => YF_STOCK_MAP[k] === q.symbol);
-        if (!sym) return;
-        const price  = q.regularMarketPrice;
-        const prev   = q.regularMarketPreviousClose || price;
-        const chgNum = q.regularMarketChangePercent != null ? q.regularMarketChangePercent : ((price-prev)/(prev||1)*100);
-        const chgStr = (chgNum>=0?'+':'') + chgNum.toFixed(2) + '%';
-        const s = liveStocks.find(x => x.sym === sym);
-        if (s) { s.price = price; s.chg = chgStr; s.up = chgNum>=0; s._live = true; updated++; }
-      });
-      if (updated > 0) {
-        const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-        setLiveStatus('live', '● LIVE · ' + ts + ' IST');
-        window._hasLiveData = true;
-        renderTrending(liveStocks);
-        updateWhatsMoving();
-        updateTickerFromLive();
-        onLiveDataUpdate();
-      }
+      updated = _applyYFResults(j?.quoteResponse?.result);
     }
   } catch(e) {}
+
+  // Try 2: Direct Yahoo Finance via corsproxy (no Railway needed)
+  if (updated === 0) {
+    try {
+      const results = await _yfBatchDirect(yfSyms);
+      updated = _applyYFResults(results);
+    } catch(e) {}
+  }
+
+  // Try 3: One-by-one fallback for top 10 stocks
+  if (updated === 0) {
+    await Promise.allSettled(PRIORITY_SYMS.slice(0,10).map(async sym => {
+      const yfSym = YF_STOCK_MAP[sym];
+      if (!yfSym) return;
+      try {
+        const r = await yfFetch(yfSym);
+        if (!r.price) return;
+        const chgStr = (r.chg>=0?'+':'') + r.chg.toFixed(2) + '%';
+        const s = liveStocks.find(x=>x.sym===sym);
+        if (s) { s.price=r.price; s.chg=chgStr; s.up=r.up; s._live=true; updated++; }
+      } catch(e) {}
+    }));
+  }
+
+  if (updated > 0) {
+    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+    setLiveStatus('live', '● LIVE · ' + ts + ' IST');
+    window._hasLiveData = true;
+    renderTrending(liveStocks);
+    updateWhatsMoving();
+    updateTickerFromLive();
+    buildGlobalTicker();
+    onLiveDataUpdate();
+  }
 }
 
 // ── BATCH FETCH ALL NSE STOCKS FOR MARKET MOVERS ──
@@ -2715,11 +2769,20 @@ async function _fetchAllMovers() {
     const batch  = allSyms.slice(i, i + BATCH);
     const yfSyms = batch.map(([,yf]) => yf).join(',');
     try {
-      const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms),
-        { signal: AbortSignal.timeout(15000) });
-      if (!r.ok) continue;
-      const j = await r.json();
-      (j?.quoteResponse?.result || []).forEach(q => {
+      // Try Railway first, then direct YF
+      let results = [];
+      try {
+        const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(8000) });
+        if (r.ok) { const j = await r.json(); results = j?.quoteResponse?.result || []; }
+      } catch(e) {}
+
+      // Direct YF fallback if Railway failed
+      if (!results.length) {
+        try { results = await _yfBatchDirect(yfSyms); } catch(e) {}
+      }
+      if (!results.length) continue;
+
+      results.forEach(q => {
         if (!q?.regularMarketPrice) return;
         const nseEntry = batch.find(([,yf]) => yf === q.symbol);
         if (!nseEntry) return;
@@ -2748,6 +2811,8 @@ async function _fetchAllMovers() {
 
 // Refresh movers every 30 seconds
 setInterval(_fetchAllMovers, 60000);
+// Refresh top 20 stocks every 30 seconds for live ticker + movers
+setInterval(() => { fetchPriorityStocks(); }, 30000);
 // Refresh ticker every 20 seconds
 setInterval(updateTickerFromLive, 30000);
 // Refresh sidebar every 15 seconds
@@ -9684,12 +9749,18 @@ async function _fastBootstrapStocks() {
     for (let i = 0; i < allNseSyms.length; i += BATCH) {
       const batch = allNseSyms.slice(i, i + BATCH);
       try {
-        const r = await fetch(`/api/quote?symbols=${encodeURIComponent(batch.join(','))}`, {
-          signal: AbortSignal.timeout(15000)
-        });
-        if (!r.ok) continue;
-        const j = await r.json();
-        const results = j?.quoteResponse?.result || [];
+        let results = [];
+        try {
+          const r = await fetch(`/api/quote?symbols=${encodeURIComponent(batch.join(','))}`, {
+            signal: AbortSignal.timeout(8000)
+          });
+          if (r.ok) { const j = await r.json(); results = j?.quoteResponse?.result || []; }
+        } catch(e) {}
+        // Direct YF fallback
+        if (!results.length) {
+          try { results = await _yfBatchDirect(batch.join(',')); } catch(e) {}
+        }
+        if (!results.length) continue;
         let updated = 0;
         results.forEach(q => {
           if (!q?.regularMarketPrice) return;
