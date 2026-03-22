@@ -91,9 +91,9 @@
             </div>
 <div class="hidden md:flex items-center space-x-8 font-headline font-semibold tracking-tight">
 
-<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#features">Features</a>
-<a class="text-[#003227] border-b-2 border-[#003227] pb-1" href="#">Platforms</a>
-<a class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="education.html">Education</a>
+<a id="nav-features" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="#features" onclick="setActive('features')">Features</a>
+<a id="nav-platforms" class="text-[#003227] border-b-2 border-[#003227] pb-1" href="#" onclick="setActive('platforms')">Platforms</a>
+<a id="nav-education" class="text-[#191c1b]/70 hover:text-[#003227] transition-colors" href="education.html">Education</a>
 </div>
 <div class="flex items-center space-x-6">
 <!-- Log In → login.html -->
@@ -536,4 +536,27 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 </div>
 </div>
 </footer>
+<script>
+function setActive(id) {
+  ['features','platforms'].forEach(n => {
+    const el = document.getElementById('nav-' + n);
+    if (!el) return;
+    if (n === id) {
+      el.className = 'text-[#003227] border-b-2 border-[#003227] pb-1';
+    } else {
+      el.className = 'text-[#191c1b]/70 hover:text-[#003227] transition-colors';
+    }
+  });
+}
+
+// Highlight Features nav when #features section is scrolled into view
+const featuresSection = document.getElementById('features');
+if (featuresSection) {
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) setActive('features');
+    else setActive('platforms');
+  }, { threshold: 0.15 });
+  observer.observe(featuresSection);
+}
+</script>
 </body></html>
