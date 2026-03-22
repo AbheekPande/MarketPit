@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MarketPit — Trading Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1204,8 +1206,8 @@ header {
 
 
     <!-- ── STORIES BAR ── -->
-    <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
-      <div id="storiesTrack" style="display:flex;gap:6px;align-items:center;min-width:max-content;"></div>
+    <div id="storiesBar" style="display:flex;align-items:center;gap:10px;padding:5px 10px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;">
+      <div id="storiesTrack" style="display:flex;gap:5px;align-items:center;min-width:max-content;"></div>
     </div>
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
@@ -2017,6 +2019,36 @@ header {
 </div>
 
 <script>
+
+// ── PERFORMANCE: Debounce utility ──────────────────────────────────────────
+function _debounce(fn, ms) {
+  let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this,a), ms); };
+}
+// ── PERFORMANCE: RAF-throttled render queue ─────────────────────────────────
+let _rafPending = false;
+const _rafQueue = new Set();
+function _scheduleRender(fn) {
+  _rafQueue.add(fn);
+  if (!_rafPending) {
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
+      _rafQueue.forEach(f => { try { f(); } catch(e) {} });
+      _rafQueue.clear();
+    });
+  }
+}
+
+// ── PERFORMANCE: Cache DOM elements ───────────────────────────────────────
+const _dom = {
+  get tickerTrack()   { return this._tt  || (this._tt  = document.getElementById('tickerTrack')); },
+  get trendList()     { return this._tl  || (this._tl  = document.getElementById('trendList')); },
+  get trendListRows() { return document.getElementById('trendListRows'); }, // dynamic
+  get wmGainers()     { return this._wmg || (this._wmg = document.getElementById('wmGainers')); },
+  get wmLosers()      { return this._wml || (this._wml = document.getElementById('wmLosers')); },
+  get mmiContent()    { return this._mmi || (this._mmi = document.getElementById('sidebarMmiContent')); },
+  get mmiTs()         { return this._mts || (this._mts = document.getElementById('sidebarMmiTs')); },
+};
 // ── CONFIG ──
 // Use relative /api path so Vercel proxies to Railway correctly
 // Falls back to direct Railway URL if running locally
@@ -2715,11 +2747,11 @@ async function _fetchAllMovers() {
 }
 
 // Refresh movers every 30 seconds
-setInterval(_fetchAllMovers, 30000);
+setInterval(_fetchAllMovers, 60000);
 // Refresh ticker every 20 seconds
-setInterval(updateTickerFromLive, 20000);
+setInterval(updateTickerFromLive, 30000);
 // Refresh sidebar every 15 seconds
-setInterval(() => renderTrending(liveStocks), 15000);
+setInterval(() => renderTrending(liveStocks), 20000);
 // Auto-refresh news every 5 minutes if news page is open
 setInterval(() => {
   if (window._activePage === 'news') {
@@ -2729,7 +2761,6 @@ setInterval(() => {
     loadNews(cat, activeBtn);
   }
 }, 5 * 60 * 1000);
-setInterval(() => { try { renderTrending(liveStocks); } catch(e) {} }, 15000);
 let _cryptoFetching = false;
 async function fetchCryptoLive() {
   if (_cryptoFetching) return;
@@ -3818,7 +3849,7 @@ function renderPosts() {
     const avDisp = isMe ? getAvatarDisplay(currentUser) : {type:'initials', val:p.author.slice(0,2).toUpperCase(), bg:getColor(p.author)};
     const avFontSize = avDisp.type === 'emoji' ? '18px' : '11px';
     const avHtml = avDisp.type === 'image'
-      ? `<div class="post-av" style="background:transparent;overflow:hidden;padding:0;cursor:pointer;" onclick="openUserProfile('${p.author}')"><img src="${avDisp.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+      ? `<div class="post-av" style="background:transparent;overflow:hidden;padding:0;cursor:pointer;" onclick="openUserProfile('${p.author}')"><img loading="lazy" src="${avDisp.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
       : `<div class="post-av" style="background:${avDisp.bg};font-size:${avFontSize};cursor:pointer;" onclick="openUserProfile('${p.author}')">${avDisp.val}</div>`;
     const pitColors = {Stocks:'var(--accent)',Crypto:'var(--gold)',Commodities:'var(--accent2)',Macro:'var(--green)',Options:'#8855ff'};
     const pc = pitColors[p.pit] || 'var(--text3)';
@@ -4446,7 +4477,7 @@ function getAvatarDisplay(user) {
 function renderAvatarEl(user, size=36, fontSize=11) {
   const av = getAvatarDisplay(user);
   if (av.type === 'image') {
-    return `<div class="avatar" style="width:${size}px;height:${size}px;background:transparent;flex-shrink:0;overflow:hidden;padding:0;"><img src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
+    return `<div class="avatar" style="width:${size}px;height:${size}px;background:transparent;flex-shrink:0;overflow:hidden;padding:0;"><img loading="lazy" src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
   }
   const fs = av.type==='emoji' ? Math.round(size*0.55) : fontSize;
   return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${fs}px;background:${av.bg};flex-shrink:0;">${av.val}</div>`;
@@ -4472,7 +4503,7 @@ function renderProfileModal() {
     : bannerColor;
 
   const avatarHtml = av.type === 'image'
-    ? '<img src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    ? '<img loading="lazy" src="' + av.val + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
     : '<span style="font-size:' + (av.type==='emoji'?'36px':'20px') + ';">' + av.val + '</span>';
 
   // ── RIGHT-CARD style: image bleeds to edges, gradient overlay from bottom ──
@@ -4769,7 +4800,7 @@ function showEditProfile() {
       <!-- Preview -->
       <div style="position:relative;flex-shrink:0;">
         <div id="editAvPreview" style="width:72px;height:72px;border-radius:50%;background:${av.type==='image'?'transparent':av.bg};display:flex;align-items:center;justify-content:center;font-size:${av.type==='emoji'?'34px':av.type==='image'?'0':'22px'};border:3px solid var(--border);overflow:hidden;">
-          ${av.type==='image' ? `<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;">` : av.val}
+          ${av.type==='image' ? `<img loading="lazy" src="${av.val}" style="width:100%;height:100%;object-fit:cover;">` : av.val}
         </div>
       </div>
       <!-- Upload buttons -->
@@ -4842,7 +4873,7 @@ function onAvatarFileSelected(input) {
     // Update preview
     const prev = document.getElementById('editAvPreview');
     if (prev) {
-      prev.innerHTML = `<img src="${_editingAvatarImage}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      prev.innerHTML = `<img loading="lazy" src="${_editingAvatarImage}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
       prev.style.fontSize = '0';
     }
   };
@@ -5316,7 +5347,7 @@ function updateAvatars() {
   const hdr  = document.getElementById('headerAvatar');
   const cmp  = document.getElementById('composeAv');
   if (av.type === 'image') {
-    const imgHtml = `<img src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    const imgHtml = `<img loading="lazy" src="${av.val}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
     if (hdr) { hdr.innerHTML = imgHtml; hdr.style.background = 'transparent'; hdr.style.padding = '0'; hdr.style.overflow = 'hidden'; }
     if (cmp) { cmp.innerHTML = imgHtml; cmp.style.background = 'transparent'; cmp.style.padding = '0'; cmp.style.overflow = 'hidden'; }
   } else {
@@ -9568,11 +9599,14 @@ function updateTVChart() {
 function renderRooms(){}
 
 function onLiveDataUpdate(){
+  // Batch all visual updates in a single animation frame
+  requestAnimationFrame(() => {
   try { updateWhatsMoving(); } catch(e) {}
   try { updateTickerFromLive(); } catch(e) {}
   try { renderTrending(liveStocks); } catch(e) {}
   try { renderSidebarMmi(); } catch(e) {}
   try { if(typeof updateHeroPrices==='function') updateHeroPrices(); } catch(e) {}
+  });
   const active = window._activePage;
   try {
     if(active==='watchlist') renderWatchlistPage();
@@ -9597,19 +9631,19 @@ function _mpInit() {
   updateWhatsMoving();   // shows static gainers/losers immediately
   renderSidebarMmi();    // shows static MMI immediately (score 50 until live data arrives)
   onLiveDataUpdate();
-  // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
-  fetchCryptoLive();
-  _fetchIndicesVercel();
-  fetchPriorityStocks();
-  _fastBootstrapStocks();
-  _fetchAllMovers();
-  fetchLiveData();
-  loadSymbols();
+  // ── STEP 2: Staggered fetches — critical first to avoid network congestion ──
+  fetchCryptoLive();          // t=0: crypto
+  _fetchIndicesVercel();      // t=0: Nifty for MMI
+  fetchCommoditiesLive();     // t=0: commodity ticker
+  setTimeout(() => fetchPriorityStocks(),  200);
+  setTimeout(() => _fastBootstrapStocks(), 500);
+  setTimeout(() => _fetchAllMovers(),      900);
+  setTimeout(() => fetchLiveData(),       1400);
+  setTimeout(() => loadSymbols(),         2000);
 
-  // ── STEP 3: Safety re-renders — update sidebar as data arrives ──
-  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); }, 2000);
-  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 5000);
-  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 10000);
+  // ── STEP 3: Safety re-renders ──
+  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); onLiveDataUpdate(); }), 2500);
+  setTimeout(() => requestAnimationFrame(() => { renderTrending(liveStocks); updateTickerFromLive(); }), 6000);
 }
 
 // Fetch Nifty/BankNifty/Sensex via Vercel /api/indices (server-side, no CORS)
@@ -12262,23 +12296,23 @@ function renderHeatmap() {
 // ══════════════════════════════════════════════════════
 
 const STORY_SUBJECTS = [
-  // NSE Stocks — using Material Symbols icon names
-  {id:'RELIANCE',  label:'Reliance',  icon:'local_gas_station', type:'stock',     yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',       icon:'computer',           type:'stock',     yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank', icon:'account_balance',    type:'stock',     yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',   icon:'monitor',            type:'stock',     yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',       icon:'domain',             type:'stock',     yf:'SBIN.NS'},
+  // NSE Stocks
+  {id:'RELIANCE',  label:'Reliance',   icon:'local_gas_station', type:'stock',     yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',        icon:'terminal',          type:'stock',     yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank',  icon:'account_balance',   type:'stock',     yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',    icon:'code',              type:'stock',     yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',        icon:'corporate_fare',    type:'stock',     yf:'SBIN.NS'},
   {id:'TATAMOTORS',label:'Tata Motors',icon:'directions_car',    type:'stock',     yf:'TATAMOTORS.NS'},
-  {id:'ADANIENT',  label:'Adani',     icon:'bolt',               type:'stock',     yf:'ADANIENT.NS'},
-  {id:'ZOMATO',    label:'Zomato',    icon:'restaurant',         type:'stock',     yf:'ZOMATO.NS'},
+  {id:'ADANIENT',  label:'Adani',      icon:'bolt',              type:'stock',     yf:'ADANIENT.NS'},
+  {id:'ZOMATO',    label:'Zomato',     icon:'delivery_dining',   type:'stock',     yf:'ZOMATO.NS'},
   // Crypto
-  {id:'BTC',       label:'Bitcoin',   icon:'currency_bitcoin',   type:'crypto',    cg:'bitcoin'},
-  {id:'ETH',       label:'Ethereum',  icon:'diamond',            type:'crypto',    cg:'ethereum'},
-  {id:'SOL',       label:'Solana',    icon:'flash_on',           type:'crypto',    cg:'solana'},
+  {id:'BTC',       label:'Bitcoin',    icon:'currency_bitcoin',  type:'crypto',    cg:'bitcoin'},
+  {id:'ETH',       label:'Ethereum',   icon:'diamond',           type:'crypto',    cg:'ethereum'},
+  {id:'SOL',       label:'Solana',     icon:'flash_on',          type:'crypto',    cg:'solana'},
   // Commodities
-  {id:'GOLD',      label:'Gold',      icon:'star',               type:'commodity', yf:'GC=F'},
-  {id:'CRUDE',     label:'Crude Oil', icon:'oil_barrel',         type:'commodity', yf:'CL=F'},
-  {id:'SILVER',    label:'Silver',    icon:'stars',              type:'commodity', yf:'SI=F'},
+  {id:'GOLD',      label:'Gold',       icon:'payments',          type:'commodity', yf:'GC=F'},
+  {id:'CRUDE',     label:'Crude Oil',  icon:'oil_barrel',        type:'commodity', yf:'CL=F'},
+  {id:'SILVER',    label:'Silver',     icon:'toll',              type:'commodity', yf:'SI=F'},
 ];
 
 let _stories = {};          // {id: {price, chg, up, news, ts}}
@@ -12356,9 +12390,9 @@ function renderStoryBubbles() {
     const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
       + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
-        + '<div class="story-ring-inner"><span class="material-symbols-outlined" style="font-size:18px;color:var(--accent);font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">' + subj.icon + '</span></div>'
+        + '<div class="story-ring-inner"><span class="material-symbols-outlined" style="font-size:16px;color:var(--accent);font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">' + subj.icon + '</span></div>'
       + '</div>'
-      + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:58px;">' + subj.label.toUpperCase() + '</div>'
+      + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:56px;">' + subj.label.toUpperCase() + '</div>'
       + '<div style="font-size:8px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>'
     + '</div>';
   }).join('');
