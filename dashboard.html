@@ -2279,16 +2279,15 @@ const STATIC_CRYPTO = [
   {sym:'LINK', name:'Chainlink',  price:13.67, chg:'+1.23%',up:true, currency:'$'},
 ];
 const STATIC_COMMODITIES = [
-  // Live prices via TradingView widget
-  {sym:'GOLD',      name:'Gold',             price:2987,  chg:'+0.67%',up:true, currency:'$'},
-  {sym:'SILVER',    name:'Silver',           price:33.45, chg:'-0.34%',up:false,currency:'$'},
-  {sym:'CRUDE',     name:'Crude Oil (WTI)',  price:67.23, chg:'-1.45%',up:false,currency:'$'},
-  {sym:'BRENT',     name:'Brent Crude',      price:70.45, chg:'-1.23%',up:false,currency:'$'},
-  {sym:'NATURALGAS',name:'Natural Gas',      price:4.23,  chg:'+1.89%',up:true, currency:'$'},
-  {sym:'COPPER',    name:'Copper',           price:4.45,  chg:'-0.56%',up:false,currency:'$'},
-  {sym:'PLATINUM',  name:'Platinum',         price:967,   chg:'-0.34%',up:false,currency:'$'},
-  {sym:'WHEAT',     name:'Wheat',            price:534,   chg:'+0.98%',up:true, currency:'$'},
-  {sym:'CORN',      name:'Corn',             price:456,   chg:'-0.67%',up:false,currency:'$'},
+  {sym:'GOLD',      name:'Gold',             price:3085,  chg:'+0.42%',up:true, currency:'$'},
+  {sym:'SILVER',    name:'Silver',           price:34.12, chg:'+0.28%',up:true, currency:'$'},
+  {sym:'CRUDE',     name:'Crude Oil (WTI)',  price:68.35, chg:'-0.82%',up:false,currency:'$'},
+  {sym:'BRENT',     name:'Brent Crude',      price:71.60, chg:'-0.75%',up:false,currency:'$'},
+  {sym:'NATURALGAS',name:'Natural Gas',      price:4.05,  chg:'+1.20%',up:true, currency:'$'},
+  {sym:'COPPER',    name:'Copper',           price:4.52,  chg:'+0.34%',up:true, currency:'$'},
+  {sym:'PLATINUM',  name:'Platinum',         price:982,   chg:'-0.18%',up:false,currency:'$'},
+  {sym:'WHEAT',     name:'Wheat',            price:541,   chg:'+0.65%',up:true, currency:'$'},
+  {sym:'CORN',      name:'Corn',             price:462,   chg:'-0.43%',up:false,currency:'$'},
 ];
 
 // ── STATIC TECHNICAL ANALYSIS DATA ──
@@ -13500,14 +13499,17 @@ async function fetchCommoditiesLive(){
     fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url),{signal:AbortSignal.timeout(5000)}).then(r=>r.text()),
   ];
 
+  // Try stooq first (direct CORS, no proxy needed) then YF proxies as fallback
   await Promise.allSettled(C.map(async it=>{
-    // Race YF proxies
+    // 1. Stooq — direct, fast, no proxy
+    try{
+      const r=await fetch('https://stooq.com/q/l/?s='+it.stooq+'&f=sd2t2ohlcv&h&e=csv',{signal:AbortSignal.timeout(6000)});
+      if(r.ok){const csv=await r.text();const res=parseStooq(csv,it.sym);if(res){upd(it.sym,res.p,res.cp);return;}}
+    }catch(e){}
+    // 2. YF via proxies
     const allFetches=[
       ...yfUrls(it.yf).flatMap(url=>proxies(url).map(async p=>{try{const raw=await p;const res=parseYF(raw);if(res)return{...res,src:'yf'};}catch(e){}})),
-      // Stooq CSV — direct CORS allowed
-      (async()=>{try{const r=await fetch('https://stooq.com/q/l/?s='+it.stooq+'&f=sd2t2ohlcv&h&e=csv',{signal:AbortSignal.timeout(5000)});if(!r.ok)return;const csv=await r.text();const res=parseStooq(csv,it.sym);if(res)return{...res,src:'stooq'};}catch(e){}})(),
     ];
-    // Use first successful result
     const results=await Promise.allSettled(allFetches);
     const winner=results.find(r=>r.status==='fulfilled'&&r.value?.p);
     if(winner?.value){upd(it.sym,winner.value.p,winner.value.cp);}
