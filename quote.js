@@ -50,7 +50,7 @@ function fetch_url(url, headers) {
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
-  res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=30');
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
 
   const symbols = (req.query.symbols || '').trim();
   if (!symbols) return res.status(400).json({ error: 'symbols required' });

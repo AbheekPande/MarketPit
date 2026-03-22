@@ -13074,23 +13074,26 @@ async function fetchCommoditiesLive(){
 
   // Use Vercel /api/quote — server-side Yahoo Finance, no CORS issues
   try {
-    const syms = C.map(c=>encodeURIComponent(c.yf)).join(',');
-    const r = await fetch('/api/quote?symbols='+syms, {signal:AbortSignal.timeout(12000)});
+    // Do NOT encode individual symbols - pass raw (GC=F,SI=F etc.)
+    const syms = C.map(c=>c.yf).join(',');
+    const r = await fetch('/api/quote?symbols='+encodeURIComponent(syms), {signal:AbortSignal.timeout(12000)});
     if (r.ok) {
       const j = await r.json();
       let updated = 0;
       (j?.quoteResponse?.result||[]).forEach(q => {
         if (!q?.regularMarketPrice) return;
-        const item = C.find(c=>c.yf===q.symbol);
+        // Match by decoding returned symbol (Yahoo may return encoded or raw)
+        const returnedSym = decodeURIComponent(q.symbol || '');
+        const item = C.find(c => c.yf === returnedSym || c.yf === q.symbol);
         if (!item) return;
-        const price   = q.regularMarketPrice;
-        const chgPct  = q.regularMarketChangePercent ?? 0;
+        const price  = q.regularMarketPrice;
+        const chgPct = q.regularMarketChangePercent ?? 0;
         upd(item.sym, price, chgPct);
         updated++;
       });
-      if (updated > 0) { refresh(); console.log('Commodities: '+updated+' updated via /api/quote'); return; }
+      if (updated > 0) { refresh(); return; }
     }
-  } catch(e) { console.log('Commodities /api/quote error:', e.message); }
+  } catch(e) {}
 
   // Fallback: fetch individually via allorigins (server-side Yahoo Finance)
   console.log('Commodities: trying proxy fallback...');
