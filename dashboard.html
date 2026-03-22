@@ -3287,12 +3287,15 @@ function renderTrending(data) {
   if (!el) return;
   if (!renderTrending._tab) renderTrending._tab = 'nse';
 
-  const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
-  const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
-  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,8);
-  const nseDisplay   = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
-  const cryptoDisplay= cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
-  const commDisplay  = commList.length   ? commList   : STATIC_COMMODITIES.slice(0,8);
+  const nseStocks   = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
+  const cryptoList  = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
+  const nseDisplay  = nseStocks.length  ? nseStocks  : STATIC_STOCKS.slice(0,15);
+  const cryptoDisplay = cryptoList.length ? cryptoList : STATIC_CRYPTO.filter(s=>s.price).slice(0,10);
+  // Always show ALL commodities — overlay live prices on top of static fallback
+  const commDisplay = STATIC_COMMODITIES.map(sc => {
+    const live = liveStocks.find(s => s.sym === sc.sym && s._live);
+    return live ? live : sc;
+  });
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
