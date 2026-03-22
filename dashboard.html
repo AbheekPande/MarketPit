@@ -12792,7 +12792,9 @@ function renderStorySlide() {
 }
 
 // ── Auto-refresh every hour ──
-buildStories();
+// Render stories immediately with static data, then fetch live prices
+renderStoryBubbles();
+setTimeout(buildStories, 1000);
 setInterval(buildStories, 60 * 60 * 1000);
 
 // Also refresh stories when live data arrives
