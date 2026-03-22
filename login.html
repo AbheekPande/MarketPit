@@ -133,11 +133,23 @@
 <h2 class="serif-heading text-3xl font-bold text-on-surface mb-2">Welcome Back</h2>
 <p class="text-on-surface-variant text-sm font-body">Enter your credentials to access your terminal.</p>
 </div>
-<!-- Google → goes to dashboard -->
-<button onclick="window.location.href='dashboard.html'" class="w-full flex items-center justify-center gap-3 bg-surface-container-high hover:bg-surface-container-highest transition-colors duration-150 py-3.5 px-4 rounded-lg group">
-<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7Y_9JwR4kU_j34n71vghYL_wjFYQzXCT7sS05Bn9OCAjx4VErGa2ZmGIMJdJDutLn1B-LbtUyAAUUWWPJ55ES-E9hqOAjyI4-ZEkPW41b1zL1t8fMfmR_AzV9tlC6sOD8B2iTr__e6Y7rHX-p6GBwyMx84nR2IFOntxfZZjuZa8tViga4CfRZtIaOyWwaV8cK3B6Ref2L2eb0mA1wcl9MJF5vXv2MzF1np5U8trhynvLOhikfipaxoIx0WqnCGaTNgwLOt0WT9KY"/>
-<span class="text-on-surface font-body font-semibold text-sm">Continue with Google</span>
-</button>
+<!-- Real Google Sign-In -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+<div id="g_id_onload"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
+  data-callback="handleGoogleLogin"
+  data-auto_select="false"
+  data-itp_support="true">
+</div>
+<div class="g_id_signin"
+  data-type="standard"
+  data-shape="rectangular"
+  data-theme="outline"
+  data-text="continue_with"
+  data-size="large"
+  data-logo_alignment="left"
+  data-width="400">
+</div>
 <div class="relative my-8">
 <div class="absolute inset-0 flex items-center">
 <div class="w-full border-t border-outline-variant/30"></div>
@@ -241,6 +253,26 @@
 </footer>
 <script>
 const RAILWAY = 'https://web-production-78fc1.up.railway.app';
+
+// ── Google Sign-In callback ───────────────────────────────────────────────
+function handleGoogleLogin(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    const name  = payload.name || payload.given_name || 'User';
+    const email = payload.email || '';
+    if (!email) { alert('Could not get email from Google. Try again.'); return; }
+    const accounts = JSON.parse(localStorage.getItem('mp_accounts') || '[]');
+    if (!accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
+      accounts.push({ name, email, password: '', joinedAt: Date.now() });
+      localStorage.setItem('mp_accounts', JSON.stringify(accounts));
+    }
+    localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now() }));
+    localStorage.setItem('mp_session_email', email);
+    window.location.href = 'dashboard.html';
+  } catch(e) {
+    alert('Google sign-in failed. Please use email login below.');
+  }
+}
 
 // ── Check if user already has an account (stored in localStorage) ────────────
 function getStoredAccounts() {
