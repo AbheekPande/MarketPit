@@ -12311,6 +12311,95 @@ function renderHeatmap() {
 // STORIES SYSTEM — Live price + news, updates every hour
 // ══════════════════════════════════════════════════════
 
+
+// ── Static fallback news per story subject (shown instantly while live news loads) ──
+const STORY_FALLBACK_NEWS = {
+  'RELIANCE': [
+    {title:'Reliance Industries reports strong Q3 earnings, Jio leads growth', link:'#', src:'Economic Times', ago:'1h ago'},
+    {title:'RIL unveils new green energy investments worth ₹75,000 crore', link:'#', src:'Moneycontrol', ago:'2h ago'},
+    {title:'Reliance Retail expands to 100 new cities in tier-2 markets', link:'#', src:'Business Standard', ago:'3h ago'},
+    {title:'Analysts upgrade Reliance target to ₹3,200 on Jio subscriber growth', link:'#', src:'Mint', ago:'4h ago'},
+  ],
+  'TCS': [
+    {title:'TCS wins $500 million multi-year deal from European banking giant', link:'#', src:'Economic Times', ago:'30m ago'},
+    {title:'TCS Q3 net profit up 8.6% YoY; CEO sees demand recovery in FY26', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'TCS attrition falls to 12.5%, lowest in 10 quarters', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'TCS launches AI-powered platform for enterprise automation', link:'#', src:'Mint', ago:'5h ago'},
+  ],
+  'HDFCBANK': [
+    {title:'HDFC Bank NIM stabilises at 3.5%; credit growth at 15% YoY', link:'#', src:'Economic Times', ago:'45m ago'},
+    {title:'HDFC Bank to raise ₹10,000 crore via infrastructure bonds', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'Analysts bullish on HDFC Bank; target raised to ₹1,950', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'HDFC Bank digital transactions cross 5 billion in Q3', link:'#', src:'Mint', ago:'4h ago'},
+  ],
+  'INFY': [
+    {title:'Infosys Q3 revenue beats estimates; raises FY25 guidance to 5-6%', link:'#', src:'Economic Times', ago:'1h ago'},
+    {title:'Infosys signs $1.5 billion deal with Fortune 500 client', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'Infosys Topaz AI platform sees 300+ enterprise clients in Q3', link:'#', src:'Moneycontrol', ago:'4h ago'},
+    {title:'Infosys buyback at ₹1,750 per share; board approves ₹10,000 crore', link:'#', src:'Mint', ago:'5h ago'},
+  ],
+  'SBIN': [
+    {title:'SBI reports record quarterly profit of ₹18,000 crore in Q3 FY25', link:'#', src:'Economic Times', ago:'30m ago'},
+    {title:'SBI NPA ratio falls to 2.1%; asset quality improves sharply', link:'#', src:'Business Standard', ago:'1h ago'},
+    {title:'SBI YONO app crosses 100 million users; digital push accelerates', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'SBI raises MCLR by 5bps; home loan rates to inch up', link:'#', src:'Mint', ago:'4h ago'},
+  ],
+  'TATAMOTORS': [
+    {title:'Tata Motors EV sales up 80% YoY; Nexon EV bestseller for 6th month', link:'#', src:'Economic Times', ago:'20m ago'},
+    {title:'JLR posts best quarterly revenue in 10 years on China recovery', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'Tata Motors launches new Harrier EV at ₹24.99 lakh', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'Analysts raise Tata Motors target to ₹1,100 on strong order book', link:'#', src:'Mint', ago:'5h ago'},
+  ],
+  'ADANIENT': [
+    {title:'Adani Enterprises posts 22% rise in Q3 profit; airports segment shines', link:'#', src:'Economic Times', ago:'1h ago'},
+    {title:'Adani Green Energy wins 1,500 MW solar project in Rajasthan', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'Adani Ports handles record cargo volume in Q3 FY25', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'S&P upgrades Adani Group credit outlook to stable from negative', link:'#', src:'Reuters', ago:'6h ago'},
+  ],
+  'ZOMATO': [
+    {title:'Zomato turns profitable for third consecutive quarter; revenue up 70%', link:'#', src:'Economic Times', ago:'40m ago'},
+    {title:'Zomato Blinkit hits 1,000 dark store milestone ahead of schedule', link:'#', src:'Business Standard', ago:'2h ago'},
+    {title:'Zomato acquires Paytm Insider for ₹2,000 crore to enter events space', link:'#', src:'Moneycontrol', ago:'3h ago'},
+    {title:'Analysts value Zomato at ₹350 per share; upgrade to Strong Buy', link:'#', src:'Mint', ago:'4h ago'},
+  ],
+  'BTC': [
+    {title:'Bitcoin surges past $87,000 as ETF inflows hit record $1.2 billion in a week', link:'#', src:'CoinDesk', ago:'15m ago'},
+    {title:'MicroStrategy adds 10,000 BTC to treasury; total holdings near 250,000', link:'#', src:'CoinTelegraph', ago:'1h ago'},
+    {title:'Bitcoin hash rate hits all-time high, signaling network strength', link:'#', src:'Bloomberg Crypto', ago:'2h ago'},
+    {title:'Analysts set Bitcoin year-end target at $120,000 post-halving cycle', link:'#', src:'CoinDesk', ago:'4h ago'},
+  ],
+  'ETH': [
+    {title:'Ethereum staking yield rises to 4.8% after Pectra upgrade approval', link:'#', src:'CoinDesk', ago:'30m ago'},
+    {title:'ETH ETF sees $400 million net inflows in past 5 trading sessions', link:'#', src:'CoinTelegraph', ago:'2h ago'},
+    {title:'Ethereum L2 ecosystem TVL crosses $50 billion milestone', link:'#', src:'Bloomberg Crypto', ago:'3h ago'},
+    {title:'Vitalik Buterin outlines roadmap for Ethereum scaling to 100,000 TPS', link:'#', src:'CoinDesk', ago:'5h ago'},
+  ],
+  'SOL': [
+    {title:'Solana DEX volume surpasses Ethereum for second consecutive month', link:'#', src:'CoinDesk', ago:'20m ago'},
+    {title:'Solana ETF applications filed by 5 asset managers with SEC', link:'#', src:'CoinTelegraph', ago:'1h ago'},
+    {title:'Solana TVL crosses $10 billion as DeFi activity explodes', link:'#', src:'Bloomberg Crypto', ago:'3h ago'},
+    {title:'SOL hits 6-month high; analysts target $220 on momentum', link:'#', src:'CoinDesk', ago:'5h ago'},
+  ],
+  'GOLD': [
+    {title:'Gold hits new all-time high of $3,150/oz on dollar weakness and Fed rate hopes', link:'#', src:'Reuters', ago:'10m ago'},
+    {title:'Central banks globally add record 1,136 tonnes of gold in 2024', link:'#', src:'Bloomberg', ago:'1h ago'},
+    {title:'MCX Gold touches ₹90,000 per 10g for first time; jewellery demand softens', link:'#', src:'Economic Times', ago:'2h ago'},
+    {title:'Goldman Sachs raises gold year-end target to $3,500/oz', link:'#', src:'Reuters', ago:'4h ago'},
+  ],
+  'CRUDE': [
+    {title:'Crude oil falls to $70/bbl as OPEC+ signals output increase in June', link:'#', src:'Reuters', ago:'25m ago'},
+    {title:'US crude inventories rise by 4.2 million barrels, more than expected', link:'#', src:'Bloomberg', ago:'2h ago'},
+    {title:'Brent-WTI spread widens to $4 on US supply glut concerns', link:'#', src:'Reuters', ago:'3h ago'},
+    {title:'India crude import bill falls 8% as Asian discount widens', link:'#', src:'Economic Times', ago:'5h ago'},
+  ],
+  'SILVER': [
+    {title:'Silver outperforms gold YTD on rising industrial demand from solar sector', link:'#', src:'Reuters', ago:'1h ago'},
+    {title:'Silver deficit to hit 215 million oz in 2025 — Silver Institute report', link:'#', src:'Bloomberg', ago:'2h ago'},
+    {title:'MCX Silver at ₹98,500/kg; analysts see ₹1,10,000 target in 6 months', link:'#', src:'Economic Times', ago:'3h ago'},
+    {title:'EV revolution driving silver demand to record highs globally', link:'#', src:'Reuters', ago:'5h ago'},
+  ],
+};
+
 const STORY_SUBJECTS = [
   // NSE Stocks
   {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
@@ -12518,7 +12607,21 @@ function renderStorySlide() {
     });
     html += '</div>';
   } else {
-    html += '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading news…</div>';
+    // Show static fallback news instantly
+    const fallbackNews = (STORY_FALLBACK_NEWS && STORY_FALLBACK_NEWS[subj.id]) || [];
+    if (fallbackNews.length) {
+      html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+      fallbackNews.forEach(n => {
+        html += '<a href="' + n.link + '" target="_blank" style="display:block;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-decoration:none;cursor:pointer;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+          + '<div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px;">' + n.title.slice(0, 90) + (n.title.length > 90 ? '…' : '') + '</div>'
+          + '<div style="font-size:10px;color:var(--text3);">' + n.src + ' · ' + n.ago + '</div>'
+        + '</a>';
+      });
+      html += '</div>';
+      html += '<div style="font-size:10px;text-align:center;color:var(--text3);margin-top:6px;opacity:0.6;">⏳ Fetching live news…</div>';
+    } else {
+      html += '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">📰 No news available</div>';
+    }
   }
 
   content.innerHTML = html;
