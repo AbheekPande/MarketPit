@@ -251,11 +251,11 @@ header {
 
 /* STORIES */
 #storiesBar::-webkit-scrollbar{display:none;}
-.story-bubble{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:80px;}
-.story-ring{width:72px;height:72px;border-radius:16px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;}
-.story-ring.seen{opacity:0.6;}
-.story-ring:hover{transform:scale(1.06);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)22;}
-.story-ring-inner{font-size:28px;line-height:1;}
+.story-bubble{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;width:68px;}
+.story-ring{width:58px;height:58px;border-radius:14px;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative;}
+.story-ring.seen{opacity:0.55;}
+.story-ring:hover{transform:scale(1.07);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.story-ring-inner{font-size:24px;line-height:1;}
 .story-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:64px;font-family:'Space Mono',monospace;}
 /* Story Modal */
 #storyModal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;}
@@ -12497,23 +12497,37 @@ const STORY_FALLBACK_NEWS = {
 };
 
 const STORY_SUBJECTS = [
-  // NSE Stocks
-  {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',       emoji:'💻',  type:'stock', yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'🏦',  type:'stock', yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',   emoji:'🖥️',  type:'stock', yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',       emoji:'🏛️',  type:'stock', yf:'SBIN.NS'},
-  {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗', type:'stock', yf:'TATAMOTORS.NS'},
-  {id:'ADANIENT',  label:'Adani',     emoji:'⚡',  type:'stock', yf:'ADANIENT.NS'},
-  {id:'ZOMATO',    label:'Zomato',    emoji:'🍱',  type:'stock', yf:'ZOMATO.NS'},
+  // NSE Stocks — clean minimal SVG icons
+  {id:'RELIANCE',  label:'Reliance',   type:'stock',     yf:'RELIANCE.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h18v4H3zM3 11h18v2H3zM3 17c0 2.2 1.8 4 4 4h10c2.2 0 4-1.8 4-4"/><circle cx="7" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>'},
+  {id:'TCS',       label:'TCS',        type:'stock',     yf:'TCS.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8M12 18v2"/><path d="M7 9h2M7 12h4M7 15h8M13 9h4"/></svg>'},
+  {id:'HDFCBANK',  label:'HDFC Bank',  type:'stock',     yf:'HDFCBANK.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>'},
+  {id:'INFY',      label:'Infosys',    type:'stock',     yf:'INFY.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="12" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M14 8h3M14 12h3M4 20h16M7 16v4M12 16v4M17 16v4"/></svg>'},
+  {id:'SBIN',      label:'SBI',        type:'stock',     yf:'SBIN.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M6 8h12M5 11h14M6 14h12M4 21V8l8-5 8 5v13"/><rect x="10" y="16" width="4" height="5"/></svg>'},
+  {id:'TATAMOTORS',label:'Tata Motors',type:'stock',     yf:'TATAMOTORS.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13l2-5h14l2 5"/><path d="M1 13h22v4H1z"/><circle cx="6.5" cy="17" r="2"/><circle cx="17.5" cy="17" r="2"/><path d="M8.5 17h7"/></svg>'},
+  {id:'ADANIENT',  label:'Adani',      type:'stock',     yf:'ADANIENT.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>'},
+  {id:'ZOMATO',    label:'Zomato',     type:'stock',     yf:'ZOMATO.NS',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M8 8h8M8 16h5"/></svg>'},
   // Crypto
-  {id:'BTC',       label:'Bitcoin',   emoji:'₿',   type:'crypto', cg:'bitcoin'},
-  {id:'ETH',       label:'Ethereum',  emoji:'💎',  type:'crypto', cg:'ethereum'},
-  {id:'SOL',       label:'Solana',    emoji:'☀️',  type:'crypto', cg:'solana'},
+  {id:'BTC',       label:'Bitcoin',    type:'crypto',    cg:'bitcoin',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 3H15a3.5 3.5 0 010 7H9.5M9.5 10H15.5a3.5 3.5 0 010 7H9.5"/><path d="M9.5 3v18M7 3h2.5M7 21h2.5M7 10h2.5M14 3v2M14 18v2"/></svg>'},
+  {id:'ETH',       label:'Ethereum',   type:'crypto',    cg:'ethereum',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v8.5L5 13.5 12 2z"/><path d="M12 2v8.5l7 3L12 2z"/><path d="M5 13.5L12 22v-8l-7-0.5z"/><path d="M12 14v8l7-8.5L12 14z"/></svg>'},
+  {id:'SOL',       label:'Solana',     type:'crypto',    cg:'solana',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h13l3-3H7L4 7zM4 12h13l3-3H7L4 12zM4 17h13l3-3H7L4 17z"/></svg>'},
   // Commodities
-  {id:'GOLD',      label:'Gold',      emoji:'🥇',  type:'commodity', yf:'GC=F'},
-  {id:'CRUDE',     label:'Crude Oil', emoji:'🛢️',  type:'commodity', yf:'CL=F'},
-  {id:'SILVER',    label:'Silver',    emoji:'🪙',  type:'commodity', yf:'SI=F'},
+  {id:'GOLD',      label:'Gold',       type:'commodity', yf:'GC=F',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg>'},
+  {id:'CRUDE',     label:'Crude Oil',  type:'commodity', yf:'CL=F',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v4M12 2v5M16 3v4"/><path d="M6 7h12l2 3v2H4v-2l2-3z"/><path d="M4 12v9h16v-9"/><path d="M9 12v9M15 12v9"/></svg>'},
+  {id:'SILVER',    label:'Silver',     type:'commodity', yf:'SI=F',
+   icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 8h3.5a2.5 2.5 0 010 5H9m0-5v8m0-3h5"/></svg>'},
 ];
 
 let _stories = {};          // {id: {price, chg, up, news, ts}}
@@ -12587,15 +12601,20 @@ function renderStoryBubbles() {
     const data   = _stories[subj.id] || {};
     const seen   = _seenStories.has(subj.id);
     const chgPct = data.chgPct;
-    const chgStr = chgPct != null ? (chgPct >= 0 ? '+' : '') + chgPct.toFixed(2) + '%' : null;
-    const col    = chgPct != null ? (chgPct >= 0 ? '#00c853' : '#ff3b3b') : 'var(--text3)';
-    const borderCol = chgPct != null ? (chgPct >= 0 ? 'rgba(0,200,83,0.3)' : 'rgba(255,59,59,0.3)') : 'var(--border)';
+    const up     = chgPct != null ? chgPct >= 0 : null;
+    const chgStr = chgPct != null ? (up ? '+' : '') + chgPct.toFixed(2) + '%' : '—';
+    const col    = chgPct != null ? (up ? '#00c853' : '#ff3b3b') : 'var(--text3)';
+    const borderCol = chgPct != null ? (up ? 'rgba(0,200,83,0.35)' : 'rgba(255,59,59,0.35)') : 'var(--border)';
+    const iconColor = chgPct != null ? (up ? '#00c853' : '#ff3b3b') : 'var(--accent)';
+    const iconHtml = subj.icon
+      ? '<div style="color:' + iconColor + ';display:flex;align-items:center;justify-content:center;">' + subj.icon + '</div>'
+      : '<span style="font-size:22px;">' + (subj.emoji || '?') + '</span>';
     return '<div class="story-bubble" onclick="openStory(' + i + ')">'
       + '<div class="story-ring' + (seen ? ' seen' : '') + '" style="border-color:' + borderCol + ';">'
-        + '<div class="story-ring-inner">' + subj.emoji + '</div>'
+        + iconHtml
       + '</div>'
-      + '<div style="font-family:Space Mono,monospace;font-size:9px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:80px;letter-spacing:0.3px;">' + subj.label.toUpperCase() + '</div>'
-      + '<div style="font-size:9px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + (chgStr || '—') + '</div>'
+      + '<div style="font-family:Space Mono,monospace;font-size:8px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:68px;letter-spacing:0.2px;margin-top:1px;">' + subj.label.toUpperCase() + '</div>'
+      + '<div style="font-size:8px;font-weight:700;color:' + col + ';text-align:center;font-family:Space Mono,monospace;">' + chgStr + '</div>'
     + '</div>';
   }).join('');
 }
