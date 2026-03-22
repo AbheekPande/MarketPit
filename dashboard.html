@@ -1234,11 +1234,12 @@ header {
     </div>
     <script>
     // Retry rendering stories until the function is available
+    // Poll until stories functions are ready (up to 30 seconds)
     (function tryStories(attempt) {
-      if (typeof renderStoryBubbles === 'function') {
+      if (typeof renderStoryBubbles === 'function' && typeof STORY_SUBJECTS !== 'undefined') {
         renderStoryBubbles();
-        if (typeof buildStories === 'function') setTimeout(buildStories, 2000);
-      } else if (attempt < 30) {
+        if (typeof buildStories === 'function') setTimeout(buildStories, 1000);
+      } else if (attempt < 150) {
         setTimeout(() => tryStories(attempt + 1), 200);
       }
     })(0);
@@ -13500,8 +13501,8 @@ async function fetchCommoditiesLive(){
 
   // Use Vercel /api/quote — server-side Yahoo Finance, no CORS issues
   try {
-    const syms = C.map(c=>c.yf).join(',');
-    const r = await fetch('/api/quote?symbols='+encodeURIComponent(syms), {signal:AbortSignal.timeout(12000)});
+    const syms = C.map(c=>encodeURIComponent(c.yf)).join(',');
+    const r = await fetch('/api/quote?symbols='+syms, {signal:AbortSignal.timeout(12000)});
     if (r.ok) {
       const j = await r.json();
       let updated = 0;
