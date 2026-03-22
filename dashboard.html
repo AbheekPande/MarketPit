@@ -1225,17 +1225,17 @@ header {
         <!-- TradingView Mini Ticker for live hero prices -->
         <div style="display:flex;gap:20px;margin-top:8px;pointer-events:all;" id="heroPricesRow">
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroNifty">23,115</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">NIFTY 50</div>
           </div>
           <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#0070f3;" id="heroBankNifty">49,450</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BANK NIFTY</div>
           </div>
           <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
           <div style="text-align:center;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc"><span style="opacity:0.4;font-size:14px;">loading…</span></div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f5a623;" id="heroBtc">$68,420</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BITCOIN</div>
           </div>
         </div>
@@ -1883,11 +1883,11 @@ header {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▲ Top Gainers</div>
-          <div id="wmGainers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmGainers"><div onclick="fetchAndShowStock('TATASTEEL')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;"><div><div style="font-weight:700;font-size:11px;">TATASTEEL</div><div style="font-size:9px;color:var(--text3);">₹148</div></div><span style="font-size:11px;font-weight:800;color:var(--green);">+2.78%</span></div><div onclick="fetchAndShowStock('SBIN')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;cursor:pointer;"><div><div style="font-weight:700;font-size:11px;">SBIN</div><div style="font-size:9px;color:var(--text3);">₹812</div></div><span style="font-size:11px;font-weight:800;color:var(--green);">+2.10%</span></div></div>
         </div>
         <div>
           <div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">▼ Top Losers</div>
-          <div id="wmLosers"><div style="font-size:10px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+          <div id="wmLosers"><div onclick="fetchAndShowStock('WIPRO')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;"><div><div style="font-weight:700;font-size:11px;">WIPRO</div><div style="font-size:9px;color:var(--text3);">₹298</div></div><span style="font-size:11px;font-weight:800;color:var(--red);">-1.02%</span></div><div onclick="fetchAndShowStock('INFY')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;cursor:pointer;"><div><div style="font-weight:700;font-size:11px;">INFY</div><div style="font-size:9px;color:var(--text3);">₹1,456</div></div><span style="font-size:11px;font-weight:800;color:var(--red);">-0.89%</span></div></div>
         </div>
       </div>
     </div>
@@ -12469,49 +12469,16 @@ function renderStorySlide() {
 
 // ── Auto-refresh every hour ──
 
-// ── Live commodity prices ──────────────────────────────────────────────────
-async function fetchCommoditiesLive() {
-  const C = [
-    {sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},
-    {sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},
-    {sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'},
-  ];
-  const upd = (sym,price,pct) => {
-    const up=pct>=0, chg=(up?'+':'')+pct.toFixed(2)+'%';
-    const ex=liveStocks.find(s=>s.sym===sym);
-    if(ex){ex.price=price;ex.chg=chg;ex.up=up;ex._live=true;}
-    else{const sc=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(sc||{sym,name:sym,currency:'$'}),price,chg,up,_live:true});}
-  };
-  try {
-    const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(12000)});
-    if(r.ok){
-      const j=await r.json(); let n=0;
-      (j?.quoteResponse?.result||[]).forEach(q=>{
-        if(!q?.regularMarketPrice)return;
-        const sym=decodeURIComponent(q.symbol||'');
-        const it=C.find(c=>c.yf===sym||c.yf===q.symbol);
-        if(!it)return;
-        upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);n++;
-      });
-      if(n>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}
-    }
-  }catch(e){}
-  await Promise.allSettled(C.map(async it=>{
-    try{
-      const url='https://query1.finance.yahoo.com/v8/finance/chart/'+it.yf+'?interval=1d&range=2d';
-      const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});
-      if(!r.ok)return;
-      const j=await r.json();
-      const m=JSON.parse(j.contents||'{}')?.chart?.result?.[0]?.meta;
-      if(!m?.regularMarketPrice)return;
-      const p=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p;
-      upd(it.sym,p,((p-prev)/(prev||1))*100);
-    }catch(e){}
-  }));
+async function fetchCommoditiesLive(){
+  const C=[{sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},{sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},{sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'}];
+  const upd=(sym,p,pct)=>{const up=pct>=0,chg=(up?'+':'')+pct.toFixed(2)+'%';const ex=liveStocks.find(s=>s.sym===sym);if(ex){ex.price=p;ex.chg=chg;ex.up=up;ex._live=true;}else{const sc=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(sc||{sym,name:sym,currency:'$'}),price:p,chg,up,_live:true});}};
+  try{const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(12000)});if(r.ok){const j=await r.json();let n=0;(j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const sym=decodeURIComponent(q.symbol||'');const it=C.find(c=>c.yf===sym||c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);n++;});if(n>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}}}catch(e){}
+  await Promise.allSettled(C.map(async it=>{try{const url='https://query1.finance.yahoo.com/v8/finance/chart/'+it.yf+'?interval=1d&range=2d';const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});if(!r.ok)return;const j=await r.json();const m=JSON.parse(j.contents||'{}')?.chart?.result?.[0]?.meta;if(!m?.regularMarketPrice)return;const p2=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p2;upd(it.sym,p2,((p2-prev)/(prev||1))*100);}catch(e){}}));
   updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);
 }
 setTimeout(fetchCommoditiesLive,800);
 setInterval(fetchCommoditiesLive,5*60*1000);
+
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
 
