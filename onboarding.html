@@ -181,12 +181,8 @@ tailwind.config = {
   </section>
 
   <!-- Footer -->
-  <footer class="w-full max-w-5xl mt-16 flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-outline-variant/10">
-    <div class="flex items-center gap-4 text-on-surface-variant/40">
-      <span class="text-xs font-label uppercase tracking-widest">Selected</span>
-      <span class="h-1 w-8 bg-primary-fixed rounded-full"></span>
-      <span id="selectedCount" class="text-on-surface font-bold">0/8</span>
-    </div>
+  <footer class="w-full max-w-5xl mt-16 flex flex-col sm:flex-row items-center justify-end gap-8 pt-12 border-t border-outline-variant/10">
+
     <div class="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
       <button onclick="goToDashboard()" class="w-full sm:w-auto px-8 py-4 text-sm font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors sm:hidden">
         Skip for now
@@ -226,7 +222,7 @@ function toggleCard(card) {
     title.style.color = '#003227';
   }
 
-  document.getElementById('selectedCount').textContent = selected.size + '/8';
+  
 }
 
 function goToDashboard() {

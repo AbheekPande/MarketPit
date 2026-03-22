@@ -86,8 +86,9 @@ tailwind.config = {
     <!-- Passive Investor -->
     <button onclick="selectStrategy(this,'passive')" data-strategy="passive"
       class="strategy-card group relative flex flex-col text-left p-8 bg-surface-container-lowest rounded-lg hover:shadow-[0px_20px_40px_rgba(25,28,27,0.06)] transition-all duration-300 border border-transparent hover:border-primary-fixed">
-      <div class="mb-8">
+      <div class="mb-8 flex justify-between items-start">
         <span class="soft-glow-chip px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest text-on-primary-fixed-variant font-bold">Low Risk</span>
+        <span class="tick-badge hidden material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
       </div>
       <h3 class="card-title font-headline text-xl text-primary mb-4 font-bold">Passive Investor</h3>
       <p class="font-body text-sm text-on-surface-variant leading-relaxed mb-12">Focus on long-term wealth preservation and consistent dividend growth with minimal volatility.</p>
@@ -102,7 +103,7 @@ tailwind.config = {
       class="strategy-card group relative flex flex-col text-left p-8 bg-surface-container-low rounded-lg hover:shadow-[0px_20px_40px_rgba(25,28,27,0.06)] transition-all duration-300 border border-transparent hover:border-primary-fixed scale-105 z-10">
       <div class="mb-8 flex justify-between items-start">
         <span class="soft-glow-chip px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest text-on-primary-fixed-variant font-bold">Moderate</span>
-        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+        <span class="tick-badge hidden material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
       </div>
       <h3 class="card-title font-headline text-xl text-primary mb-4 font-bold">Strategic Accumulator</h3>
       <p class="font-body text-sm text-on-surface-variant leading-relaxed mb-12">Balanced approach targeting growth through sector diversification and periodic rebalancing.</p>
@@ -115,8 +116,9 @@ tailwind.config = {
     <!-- Active Trader -->
     <button onclick="selectStrategy(this,'active')" data-strategy="active"
       class="strategy-card group relative flex flex-col text-left p-8 bg-surface-container-lowest rounded-lg hover:shadow-[0px_20px_40px_rgba(25,28,27,0.06)] transition-all duration-300 border border-transparent hover:border-primary-fixed">
-      <div class="mb-8">
+      <div class="mb-8 flex justify-between items-start">
         <span class="soft-glow-chip px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest text-on-primary-fixed-variant font-bold">High Frequency</span>
+        <span class="tick-badge hidden material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
       </div>
       <h3 class="card-title font-headline text-xl text-primary mb-4 font-bold">Active Trader</h3>
       <p class="font-body text-sm text-on-surface-variant leading-relaxed mb-12">Capitalize on market inefficiencies and technical patterns with multiple daily positions.</p>
@@ -129,8 +131,9 @@ tailwind.config = {
     <!-- Venture Capitalist -->
     <button onclick="selectStrategy(this,'venture')" data-strategy="venture"
       class="strategy-card group relative flex flex-col text-left p-8 bg-surface-container-lowest rounded-lg hover:shadow-[0px_20px_40px_rgba(25,28,27,0.06)] transition-all duration-300 border border-transparent hover:border-primary-fixed">
-      <div class="mb-8">
+      <div class="mb-8 flex justify-between items-start">
         <span class="px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest font-bold" style="background:rgba(186,26,26,0.1);color:#ba1a1a;">High Risk</span>
+        <span class="tick-badge hidden material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
       </div>
       <h3 class="card-title font-headline text-xl text-primary mb-4 font-bold">Venture Capitalist</h3>
       <p class="font-body text-sm text-on-surface-variant leading-relaxed mb-12">Aggressive alpha pursuit through high-volatility assets and emerging market opportunities.</p>
@@ -180,14 +183,16 @@ tailwind.config = {
 let selectedStrategy = 'strategic'; // default
 
 function selectStrategy(card, strategy) {
-  // Remove selection from all
   document.querySelectorAll('.strategy-card').forEach(c => {
     c.classList.remove('card-selected');
     c.style.boxShadow = '';
     c.style.borderColor = '';
+    const tick = c.querySelector('.tick-badge');
+    if (tick) tick.classList.add('hidden');
   });
-  // Select clicked
   card.classList.add('card-selected');
+  const tick = card.querySelector('.tick-badge');
+  if (tick) tick.classList.remove('hidden');
   selectedStrategy = strategy;
 }
 
