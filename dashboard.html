@@ -10101,14 +10101,6 @@ function renderSidebarMmi() {
     else if (spread < -0.5) { score -= 7;  signals.push({ label:'Bank Nifty', val:bc.toFixed(2)+'%',                col:'#ff6d00' }); }
     else                    {              signals.push({ label:'Bank Nifty', val:(bc>=0?'+':'')+bc.toFixed(2)+'%', col:'#ffd740' }); }
   }
-  if (fii?.fii_net != null) {
-    const f = fii.fii_net;
-    if      (f >  2000) { score += 12; signals.push({ label:'FII Flow', val:'₹'+Math.abs(f).toFixed(0)+' Cr', col:'#00c853' }); }
-    else if (f >  0)    { score += 6;  signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#69f0ae' }); }
-    else if (f > -2000) { score -= 6;  signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#ff6d00' }); }
-    else                { score -= 12; signals.push({ label:'FII Flow', val:'₹'+f.toFixed(0)+' Cr',           col:'#ff3b3b' }); }
-  }
-
   score = Math.max(0, Math.min(100, score));
   let zone, zoneCol, emoji;
   if      (score >= 75) { zone='Extreme Greed'; zoneCol='#00c853'; emoji='🤑'; }
@@ -10253,10 +10245,7 @@ function _calcMoodScore(data) {
   // FII flow
   if (data.fii?.fii_net != null) {
     const f = data.fii.fii_net;
-    if (f > 2000)        { score += 15; signals.push({label:'FII Flow',  val:'₹'+Math.abs(f).toFixed(0)+' Cr', mood:'Strong Buying',  col:'#00c853'}); }
-    else if (f > 0)      { score += 7;  signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Net Buying',     col:'#69f0ae'}); }
-    else if (f > -2000)  { score -= 7;  signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Net Selling',    col:'#ff6d00'}); }
-    else                 { score -= 15; signals.push({label:'FII Flow',  val:'₹'+f.toFixed(0)+' Cr',           mood:'Heavy Selling',  col:'#d50000'}); }
+  
   }
 
   // Bank Nifty vs Nifty (banking sector strength)
@@ -12159,22 +12148,23 @@ function renderIpoPage() {
 // This means ALL 150+ stocks automatically appear in the heatmap grouped by sector
 function buildHeatmapData() {
   const sectorMap = {};
-  // Only use stocks that have live prices
-  const liveNse = liveStocks.filter(s =>
-    !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) &&
-    s.price && s.price !== '—'
-  );
 
-  liveNse.forEach(s => {
-    let sector = s.sector;
-    if (!sector) {
-      const st = STATIC_STOCKS.find(x => x.sym === s.sym);
-      sector = st ? st.sector : 'Other';
-    }
+  // Use liveStocks if available, fallback to STATIC_STOCKS for display
+  const source = liveStocks.filter(s =>
+    !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price && s.price !== '—'
+  );
+  // Merge with STATIC_STOCKS to ensure all stocks show even before live fetch
+  const allStocks = STATIC_STOCKS.map(st => {
+    const live = source.find(x => x.sym === st.sym);
+    return live || st;
+  });
+
+  allStocks.forEach(s => {
     const chgRaw = s.chg ? parseFloat((s.chg+'').replace('%','').replace('+','')) : 0;
     if (isNaN(chgRaw)) return;
+    const sector = s.sector || 'Other';
     if (!sectorMap[sector]) sectorMap[sector] = [];
-    sectorMap[sector].push({ sym: s.sym, name: s.name || s.sym, chg: chgRaw });
+    sectorMap[sector].push({ sym: s.sym, name: s.name || s.sym, chg: chgRaw, _live: !!s._live });
   });
 
   return Object.entries(sectorMap)
@@ -12188,15 +12178,31 @@ function renderHeatmap() {
   const el = document.getElementById('heatmapBody');
   if (!el) return;
 
+  // Trigger live fetch when heatmap opens, throttled to once per minute
+  if (!window._heatmapFetchDone || Date.now() - window._heatmapFetchDone > 60000) {
+    window._heatmapFetchDone = Date.now();
+    fetchPriorityStocks();
+    setTimeout(() => { _fastBootstrapStocks(); }, 500);
+  }
+
   const data = buildHeatmapData();
   const total = data.reduce((a,s)=>a+s.stocks.length, 0);
+  const liveCount = liveStocks.filter(s=>s._live && !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym)).length;
+  const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+
+  // Auto-refresh every 30s while visible
+  clearInterval(window._heatmapTimer);
+  window._heatmapTimer = setInterval(() => {
+    if (window._activePage === 'heatmap') fetchPriorityStocks().then(() => renderHeatmap());
+    else clearInterval(window._heatmapTimer);
+  }, 30000);
 
   if (!total) {
     el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);">
       <div class="loading-spin" style="margin:0 auto 16px;"></div>
-      <div style="font-size:14px;font-weight:600;color:var(--text2);">Loading live prices…</div>
-      <div style="font-size:12px;margin-top:6px;">Fetching ${STATIC_STOCKS.length}+ stocks from Railway</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);">Loading prices…</div>
     </div>`;
+    setTimeout(() => renderHeatmap(), 2000);
     return;
   }
 
@@ -12204,6 +12210,7 @@ function renderHeatmap() {
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:12px;color:var(--text3);">Showing <b style="color:var(--text)">${total} stocks</b> across <b style="color:var(--text)">${data.length} sectors</b></span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:4px;background:${liveCount>0?'rgba(0,200,83,0.12)':'var(--bg3)'};color:${liveCount>0?'#00c853':'var(--text3)'};">${liveCount>0?'● LIVE · '+liveCount+' live · '+ts:'⏳ Fetching live…'}</span>
       </div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;">
         ${[[-3,'#b71c1c'],[-2,'#e53935'],[-1,'#ef9a9a'],[0,'#607d8b'],[1,'#a5d6a7'],[2,'#4caf50'],[3,'#1b5e20']].map(([v,c])=>`<span style="background:${c};color:#fff;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;">${v>0?'+':''}${v}%</span>`).join('')}
@@ -12224,8 +12231,8 @@ function renderHeatmap() {
               const c = s.chg;
               const bg = c>=3?'#1b5e20':c>=2?'#2e7d32':c>=1?'#388e3c':c>=0?'#558b2f':c>=-1?'#8d6e63':c>=-2?'#c62828':'#b71c1c';
               return `<div class="heatmap-cell" style="background:${bg};" onclick="fetchAndShowStock('${s.sym}')" title="${s.name||s.sym}: ${c>=0?'+':''}${c}%">
-                <div class="heatmap-sector">${s.sym}</div>
-                <div class="heatmap-chg">${c>=0?'+':''}${c}%</div>
+                <div class="heatmap-sector">${s.sym}${s._live?'<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.7);margin-left:3px;vertical-align:middle;"></span>':''}</div>
+                <div class="heatmap-chg">${c>=0?'+':''}${c.toFixed(2)}%</div>
               </div>`;
             }).join('')}
           </div>
