@@ -136,7 +136,7 @@
 <!-- Real Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="g_id_onload"
-  data-client_id="329129705952-ebejg4u7le9dfa3fq9hdnojv572r2atb.apps.googleusercontent.com"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
   data-callback="handleGoogleLogin"
   data-auto_select="false"
   data-itp_support="true">
@@ -317,11 +317,17 @@ async function handleLogin(e) {
       alert('Incorrect password. Please try again.');
       return;
     }
+    // Existing user — restore their saved name
+    const name = account.name || email.split('@')[0];
+    _saveAccount(name, email, password);
+  } else {
+    // New user via email login — use part before @ as name
+    const name = email.split('@')[0];
+    _saveAccount(name, email, password);
   }
 
   btn.textContent = 'Signing in…';
   btn.disabled    = true;
-  localStorage.setItem('mp_session_email', email);
   window.location.href = 'dashboard.html';
 }
 

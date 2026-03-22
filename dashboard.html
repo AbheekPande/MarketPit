@@ -4575,6 +4575,13 @@ function renderProfileModal() {
   document.getElementById('profileModalTitle').textContent = user ? 'YOUR PROFILE' : 'JOIN MARKETPIT';
   if (!user) { showSignupStep(1); return; }
 
+  // Ensure name is always set (fallback from email)
+  if (!user.name && user.email) {
+    user.name = user.email.split('@')[0];
+    user.displayName = user.displayName || user.name;
+    saveUser(user);
+  }
+
   const posts   = getPosts().filter(p => p.author === user.name);
   const likes   = posts.reduce((a,p) => a + (p.likes||0), 0);
   const av      = getAvatarDisplay(user);
