@@ -691,10 +691,6 @@ header {
   body { overflow-x: auto; }
   .bottom-nav { display: none !important; }
 
-  /* Show mobile-only elements */
-  #mobileFeatsLeft { display: block !important; }
-  #mobileTrendingRight { display: block !important; }
-
   /* Hide trending from left sidebar on mobile */
   .left-sidebar .trend-header { display: none !important; }
   .left-sidebar .stock-search-wrap { display: none !important; }
@@ -802,6 +798,12 @@ header {
   #optpnlBody > div > div > div { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
   #stratUnderlying { cursor: pointer; }
 
+
+/* Mobile-only elements */
+.mobile-only { display: none; }
+@media (max-width: 768px) {
+  .mobile-only { display: block !important; }
+}
 </style>
 <body>
 
@@ -1180,7 +1182,7 @@ header {
 
 
     <!-- MOBILE FEATURES GRID (hidden on desktop) -->
-    <div id="mobileFeatsLeft" style="display:none;">
+    <div id="mobileFeatsLeft" class="mobile-only">
       <div class="section-label" style="padding:8px 8px 4px;">Features</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:0 6px 8px;">
         <div onclick="switchTab(null,'pits')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🏛️<span>Pits</span></div>
@@ -1931,7 +1933,7 @@ header {
     <!-- LEADERBOARD -->
 
     <!-- MOBILE TRENDING MIRROR (hidden on desktop) -->
-    <div id="mobileTrendingRight" style="display:none;padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div id="mobileTrendingRight" class="mobile-only" style="padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:6px;">📈 TRENDING NOW</div>
       <div id="mobileTrendingMirror" style="max-height:200px;overflow-y:auto;"></div>
     </div>
