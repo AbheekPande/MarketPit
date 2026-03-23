@@ -883,6 +883,35 @@ header {
   #optpnlBody > div > div > div { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
   #stratUnderlying { cursor: pointer; }
 
+
+@media (max-width: 768px) {
+  /* Force color emoji rendering in stories */
+  .story-ring-inner {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-size: 22px !important;
+  }
+
+  /* Eyes banner: hide overflow, reduce height */
+  #eyesBanner {
+    height: 60px !important;
+    overflow: hidden !important;
+  }
+
+  /* Ticker: smaller text */
+  .news-ticker-wrap {
+    font-size: 11px !important;
+  }
+
+  /* Story bubbles: slightly smaller on mobile */
+  .story-bubble { width: 56px !important; }
+  .story-ring { width: 48px !important; height: 48px !important; }
+  .story-label { font-size: 9px !important; }
+
+  /* Stories bar: horizontal scroll, no wrap */
+  #storiesBar {
+    padding: 8px 10px !important;
+  }
+}
 </style>
 <body>
 
@@ -12425,11 +12454,11 @@ function renderHeatmap() {
 
 const STORY_SUBJECTS = [
   // NSE Stocks
-  {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',       emoji:'💻',  type:'stock', yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'🏦',  type:'stock', yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',   emoji:'🖥️',  type:'stock', yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',       emoji:'🏛️',  type:'stock', yf:'SBIN.NS'},
+  {id:'RELIANCE',  label:'Reliance',  emoji:'⛽',  type:'stock', yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',       emoji:'💙',  type:'stock', yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'💰',  type:'stock', yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',   emoji:'🟦',  type:'stock', yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',       emoji:'🏅',  type:'stock', yf:'SBIN.NS'},
   {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗', type:'stock', yf:'TATAMOTORS.NS'},
   {id:'ADANIENT',  label:'Adani',     emoji:'⚡',  type:'stock', yf:'ADANIENT.NS'},
   {id:'ZOMATO',    label:'Zomato',    emoji:'🍱',  type:'stock', yf:'ZOMATO.NS'},
