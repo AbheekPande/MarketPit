@@ -11925,6 +11925,32 @@ function renderHeatmap() {
       if (!animFrame) animFrame = requestAnimationFrame(animate);
     });
 
+    // ── Touch support for spotlight ──
+    heroEl.addEventListener('touchstart', function(e) {
+      const t = e.touches[0];
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = t.clientX - rect.left;
+      mouseY = t.clientY - rect.top;
+      if (glow)   glow.style.opacity   = '1';
+      if (glow2)  glow2.style.opacity  = '1';
+      if (cursor) cursor.style.opacity = '1';
+      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    }, {passive: true});
+
+    heroEl.addEventListener('touchmove', function(e) {
+      const t = e.touches[0];
+      const rect = heroEl.getBoundingClientRect();
+      mouseX = t.clientX - rect.left;
+      mouseY = t.clientY - rect.top;
+      if (!animFrame) animFrame = requestAnimationFrame(animate);
+    }, {passive: true});
+
+    heroEl.addEventListener('touchend', function() {
+      if (glow)   glow.style.opacity   = '0.3';
+      if (glow2)  glow2.style.opacity  = '0.2';
+      if (cursor) cursor.style.opacity = '0';
+    }, {passive: true});
+
     heroEl.addEventListener('mouseleave', function() {
       if (glow)   glow.style.opacity   = '0.3';
       if (glow2)  glow2.style.opacity  = '0.2';
@@ -12233,6 +12259,17 @@ function renderHeatmap() {
     // Pupils follow cursor from ANYWHERE on the page
     trackPupils(e.clientX, e.clientY);
   });
+
+  // ── Touch support for pupils ──
+  document.addEventListener('touchmove', function(e) {
+    const t = e.touches[0];
+    trackPupils(t.clientX, t.clientY);
+  }, {passive: true});
+
+  document.addEventListener('touchstart', function(e) {
+    const t = e.touches[0];
+    trackPupils(t.clientX, t.clientY);
+  }, {passive: true});
 })();
 
 </script>
