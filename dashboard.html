@@ -688,11 +688,20 @@ header {
 
 /* ── RESPONSIVE BREAKPOINTS ── */
 @media (max-width: 768px) {
-  /* Desktop layout preserved — shrink sidebars, give center more room */
   body { overflow-x: auto; }
   .bottom-nav { display: none !important; }
 
-  /* LEFT SIDEBAR — very narrow, icon+text */
+  /* Show mobile-only elements */
+  #mobileFeatsLeft { display: block !important; }
+  #mobileTrendingRight { display: block !important; }
+
+  /* Hide trending section from left sidebar on mobile */
+  .left-sidebar .trend-header { display: none !important; }
+  .left-sidebar .stock-search-wrap { display: none !important; }
+  .left-sidebar #stockDrop { display: none !important; }
+  .left-sidebar #trendList { display: none !important; }
+
+  /* LEFT SIDEBAR — narrow, features grid */
   .left-sidebar {
     display: flex !important;
     width: 110px !important;
@@ -1171,6 +1180,29 @@ header {
       <div class="pit-item" onclick="filterFeed('Options',this)"><span class="pit-icon">📈</span><span class="pit-name">Options Flow</span></div>
     </div>
 
+
+    <!-- MOBILE FEATURES GRID (hidden on desktop) -->
+    <div id="mobileFeatsLeft" style="display:none;">
+      <div class="section-label" style="padding:8px 8px 4px;">Features</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:0 6px 8px;">
+        <div onclick="switchTab(null,'pits')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🏛️<span>Pits</span></div>
+        <div onclick="switchTab(null,'screener')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🔍<span>Screener</span></div>
+        <div onclick="switchTab(null,'news')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">📰<span>News</span></div>
+        <div onclick="switchTab(null,'messages')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">💬<span>Messages</span></div>
+        <div onclick="switchTab(null,'watchlist')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">⭐<span>Watchlist</span></div>
+        <div onclick="switchTab(null,'paper')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">📝<span>Paper</span></div>
+        <div onclick="switchTab(null,'heatmap')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🌡️<span>Heatmap</span></div>
+        <div onclick="switchTab(null,'ipo')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🚀<span>IPO</span></div>
+        <div onclick="switchTab(null,'alerts')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🔔<span>Alerts</span></div>
+        <div onclick="switchTab(null,'fii')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🌍<span>FII</span></div>
+        <div onclick="switchTab(null,'mmi')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">😊<span>Mood</span></div>
+        <div onclick="switchTab(null,'earnings')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">📊<span>Earnings</span></div>
+        <div onclick="switchTab(null,'compare')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">⚖️<span>Compare</span></div>
+        <div onclick="switchTab(null,'rooms')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🎙️<span>Rooms</span></div>
+        <div onclick="switchTab(null,'mf')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🏦<span>MF</span></div>
+        <div onclick="switchTab(null,'predict')" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:9px;font-weight:600;color:var(--text2);text-align:center;">🎯<span>Predict</span></div>
+      </div>
+    </div>
     <!-- STOCK SEARCH -->
     <div style="padding:8px 8px 0;">
       <div class="trend-header">
@@ -1899,6 +1931,12 @@ header {
     </div>
 
     <!-- LEADERBOARD -->
+
+    <!-- MOBILE TRENDING MIRROR (hidden on desktop) -->
+    <div id="mobileTrendingRight" style="display:none;padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:6px;">📈 TRENDING NOW</div>
+      <div id="mobileTrendingMirror" style="max-height:200px;overflow-y:auto;"></div>
+    </div>
     <div class="leaderboard-section">
       <div class="lb-title">TOP CALLERS THIS WEEK</div>
       <div id="leaderboard"><div style="color:var(--text3);font-size:11px;">No activity yet — start posting!</div></div>
@@ -13096,6 +13134,20 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
     document.addEventListener('DOMContentLoaded', showOffline);
   }
 })();
+
+// ── MOBILE: sync trending into right sidebar mirror ──
+function _syncMobileTrending() {
+  var src = document.getElementById('trendListRows');
+  var dst = document.getElementById('mobileTrendingMirror');
+  if (src && dst) dst.innerHTML = src.innerHTML;
+}
+setTimeout(_syncMobileTrending, 2000);
+setInterval(_syncMobileTrending, 30000);
+(function(){
+  var orig = typeof onLiveDataUpdate==='function' ? onLiveDataUpdate : null;
+  onLiveDataUpdate = function(){ if(orig) orig(); setTimeout(_syncMobileTrending, 300); };
+})();
+
 </script>
 
 <style>
