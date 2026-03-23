@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=0.5, minimum-scale=0.3, maximum-scale=3.0, user-scalable=yes">
 <title>MarketPit — Trading Community</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -688,15 +688,64 @@ header {
 
 /* ── RESPONSIVE BREAKPOINTS ── */
 @media (max-width: 768px) {
-  /* Keep desktop layout — just allow horizontal scroll */
-  body { overflow-x: auto; min-width: 900px; }
-  /* Bottom nav hidden — use desktop nav */
+  /* Scale entire layout to fit mobile screen */
+  html {
+    font-size: 10px;
+  }
+  /* Allow horizontal scroll if needed */
+  body {
+    overflow-x: auto;
+    min-width: 0;
+  }
+  /* Bottom nav hidden */
   .bottom-nav { display: none !important; }
-  /* Keep all sidebars visible */
+  /* Keep all sidebars */
   .left-sidebar { display: flex !important; }
   .right-sidebar { display: flex !important; }
-  /* Header keeps nav tabs */
-  .nav-tabs { display: flex !important; }
+  /* Shrink sidebars */
+  .left-sidebar { width: 140px !important; }
+  .right-sidebar { width: 160px !important; }
+  /* Smaller header */
+  header { height: 44px !important; padding: 0 8px !important; }
+  .logo { font-size: 14px !important; }
+  .logo-mark { width: 26px !important; height: 26px !important; }
+  /* Smaller pit items */
+  .pit-item { padding: 6px 8px !important; font-size: 11px !important; }
+  .pit-icon { font-size: 13px !important; }
+  .pit-name { font-size: 11px !important; }
+  .section-label { font-size: 9px !important; }
+  /* Smaller nav tabs */
+  .nav-tab { padding: 0 8px !important; font-size: 10px !important; }
+  .nav-tab svg { width: 12px !important; height: 12px !important; }
+  /* Smaller right sidebar */
+  #sidebarMmi { padding: 6px 8px !important; }
+  #whatsMoving { padding: 6px 8px !important; }
+  /* Story bubbles smaller */
+  .story-bubble { width: 48px !important; }
+  .story-ring { width: 40px !important; height: 40px !important; }
+  .story-ring-inner { font-size: 16px !important; }
+  .story-label { font-size: 8px !important; }
+  /* Feed padding */
+  .feed-scroll { padding: 8px !important; }
+  /* Eyes banner smaller */
+  #eyesBanner { height: 50px !important; overflow: hidden !important; }
+  /* Ticker text */
+  .news-ticker-track { font-size: 10px !important; }
+  /* Hero banner */
+  #spotlightHero { height: 110px !important; margin: 6px 8px 0 !important; }
+  /* Post card */
+  .post-card { padding: 10px !important; }
+  /* Compose box */
+  .compose-box { padding: 10px !important; }
+  /* Search bar */
+  .stock-search-wrap input { font-size: 10px !important; }
+  /* Trending label */
+  .trend-label { font-size: 9px !important; }
+  .trend-live { font-size: 8px !important; }
+  /* Movers text */
+  #wmGainers div, #wmLosers div { font-size: 9px !important; }
+  /* MMI gauge smaller */
+  #sidebarMmiContent svg { width: 130px !important; height: 70px !important; }
 }
 
 @media (max-width: 480px) {
@@ -9661,9 +9710,6 @@ window.addEventListener('unhandledrejection', (e) => {
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _mpInit);
-} else {
-  _mpInit();
-}
 
 // ══════════════════════════════════════════════════════════════
 // UNLISTED SHARES
