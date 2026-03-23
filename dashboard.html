@@ -687,158 +687,19 @@ header {
 .sidebar-drawer.open { transform:translateX(0); }
 
 /* ── RESPONSIVE BREAKPOINTS ── */
-
-/* ════════════════════════════════════════════════
-   MOBILE ONLY (max-width: 768px)
-   Desktop layout completely unchanged
-   ════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Hide both sidebars */
-  .left-sidebar  { display: none !important; }
-  .right-sidebar { display: none !important; }
-
-  /* Header: hide nav tabs, search, notif */
-  .nav-tabs        { display: none !important; }
-  .header-search   { display: none !important; }
-  .notif-btn       { display: none !important; }
-  .header-search-icon { display: flex !important; }
-
-  /* Full width feed */
-  .main-feed { width: 100% !important; }
-  body { padding-bottom: 58px; }
-
-  /* Bottom nav */
-  .bottom-nav { display: block; }
-
-  /* Show mobile panel */
-  #mobileSidePanel { display: block !important; }
-
-  /* Mobile pits row */
-  #mobilePitsRow {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 0 0 10px 0;
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  #mobilePitsRow::-webkit-scrollbar { display: none; }
-
-  .m-pit-chip {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 7px 14px;
-    border-radius: 20px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .m-pit-chip.m-active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-
-  /* Features grid 4 cols */
-  #mobileFeaturesGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .m-feat-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    padding: 10px 4px 8px;
-    border-radius: 12px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text2);
-    text-align: center;
-    line-height: 1.2;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .m-feat-btn:active { opacity: 0.7; }
-  .m-feat-btn .m-feat-icon { font-size: 20px; }
-
-  /* Market movers compact */
-  #mobileMovers {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .m-mover-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .m-mover-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-  }
-  .m-mover-row:last-child { border-bottom: none; }
-  .m-mover-sym { font-weight: 700; font-size: 11px; color: var(--text); }
-  .m-mover-price { font-size: 9px; color: var(--text3); }
-
-  /* Trending now section */
-  #mobileTrendingWrap {
-    display: block;
-  }
-  #mobileTrendingTitle {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  /* Feed padding */
-  .feed-scroll { padding: 10px 12px; }
-  .compose-box { border-radius: 10px; padding: 12px; }
-  .post-card { padding: 12px; border-radius: 10px; }
-  .modal { width: 100% !important; max-width: 100% !important; max-height: 92vh; border-radius: 16px 16px 0 0; margin: 0; position: fixed; bottom: 0; left: 0; right: 0; }
-  .modal-overlay { align-items: flex-end; }
-  #tvChartContainer { height: 260px !important; }
-  .screener-filters { flex-direction: column; }
-  #newsContainer .news-grid { grid-template-columns: 1fr !important; }
-  .stat-grid-3 { grid-template-columns: 1fr 1fr !important; }
-  .pit-tag { font-size: 10px; padding: 3px 8px; }
-  #pitsGrid { grid-template-columns: 1fr !important; }
-  #chartIntervals button { padding: 3px 6px; font-size: 10px; }
-  .hashtag-popup { left: 0 !important; right: 0 !important; }
+  /* Keep desktop layout — just allow horizontal scroll */
+  body { overflow-x: auto; min-width: 900px; }
+  /* Bottom nav hidden — use desktop nav */
+  .bottom-nav { display: none !important; }
+  /* Keep all sidebars visible */
+  .left-sidebar { display: flex !important; }
+  .right-sidebar { display: flex !important; }
+  /* Header keeps nav tabs */
+  .nav-tabs { display: flex !important; }
 }
 
-/* Mobile panel hidden on desktop */
-#mobileSidePanel { display: none; }
-
-@media (max-width: 480px)@media (max-width: 480px) {
+@media (max-width: 480px) {
   .stat-grid-2 { grid-template-columns:1fr 1fr; }
   .stat-grid-3 { grid-template-columns:1fr 1fr !important; }
   .post-card { padding:10px; }
@@ -883,35 +744,6 @@ header {
   #optpnlBody > div > div > div { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
   #stratUnderlying { cursor: pointer; }
 
-
-@media (max-width: 768px) {
-  /* Force color emoji rendering in stories */
-  .story-ring-inner {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 22px !important;
-  }
-
-  /* Eyes banner: hide overflow, reduce height */
-  #eyesBanner {
-    height: 60px !important;
-    overflow: hidden !important;
-  }
-
-  /* Ticker: smaller text */
-  .news-ticker-wrap {
-    font-size: 11px !important;
-  }
-
-  /* Story bubbles: slightly smaller on mobile */
-  .story-bubble { width: 56px !important; }
-  .story-ring { width: 48px !important; height: 48px !important; }
-  .story-label { font-size: 9px !important; }
-
-  /* Stories bar: horizontal scroll, no wrap */
-  #storiesBar {
-    padding: 8px 10px !important;
-  }
-}
 </style>
 <body>
 
@@ -1323,87 +1155,13 @@ header {
       <div id="storiesTrack" style="display:flex;gap:10px;align-items:center;min-width:max-content;"></div>
     </div>
     <script>
-    // Retry until stories JS is loaded (defined late in page)
     (function tryStories(n){
       if(typeof renderStoryBubbles==='function'&&typeof STORY_SUBJECTS!=='undefined'){
         renderStoryBubbles();
-        if(typeof buildStories==='function') setTimeout(buildStories, 1000);
-      } else if(n<80) {
-        setTimeout(function(){tryStories(n+1);}, 200);
-      }
+        if(typeof buildStories==='function') setTimeout(buildStories,1000);
+      } else if(n<80) setTimeout(function(){tryStories(n+1);},200);
     })(0);
     </script>
-
-
-    <!-- ══ MOBILE PANEL — hidden on desktop, shown on mobile ══ -->
-    <div id="mobileSidePanel" style="background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 14px;">
-
-      <!-- 1: YOUR PITS horizontal chips -->
-      <div id="mobilePitsRow">
-        <div class="m-pit-chip m-active" onclick="mPitClick(this,'')">📊 All</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'foryou')">✨ For You</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'Stocks')">🏦 Equities</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'Crypto')">₿ Crypto</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'Commodities')">🛢️ Commod.</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'Macro')">🌐 Macro</div>
-        <div class="m-pit-chip" onclick="mPitClick(this,'Options')">📈 Options</div>
-      </div>
-
-      <!-- 2: ALL FEATURES grid -->
-      <div id="mobileFeaturesGrid">
-        <div class="m-feat-btn" onclick="switchTab(null,'pits')"><span class="m-feat-icon">🏛️</span>Trading Pits</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'screener')"><span class="m-feat-icon">🔍</span>Screener</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'news')"><span class="m-feat-icon">📰</span>News</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'messages')"><span class="m-feat-icon">💬</span>Messages</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'trending')"><span class="m-feat-icon">🔥</span>Trending</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'watchlist')"><span class="m-feat-icon">⭐</span>Watchlist</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'paper')"><span class="m-feat-icon">📝</span>Paper Trade</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'ipo')"><span class="m-feat-icon">🚀</span>IPO</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'heatmap')"><span class="m-feat-icon">🌡️</span>Heatmap</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'earnings')"><span class="m-feat-icon">📊</span>Earnings</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'alerts')"><span class="m-feat-icon">🔔</span>Alerts</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'fii')"><span class="m-feat-icon">🌍</span>FII Flow</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'rooms')"><span class="m-feat-icon">🎙️</span>Live Rooms</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'compare')"><span class="m-feat-icon">⚖️</span>Compare</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'mf')"><span class="m-feat-icon">🏦</span>Mut. Funds</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'predict')"><span class="m-feat-icon">🎯</span>Predict</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'mmi')"><span class="m-feat-icon">😊</span>Mkt Mood</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'calendar')"><span class="m-feat-icon">📆</span>Calendar</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'unlisted')"><span class="m-feat-icon">🔒</span>Unlisted</div>
-        <div class="m-feat-btn" onclick="switchTab(null,'optpnl')"><span class="m-feat-icon">🎯</span>Options P&L</div>
-      </div>
-
-      <!-- 3: MARKET MOVERS -->
-      <div id="mobileMovers">
-        <div>
-          <div class="m-mover-label" style="color:var(--green);">▲ TOP GAINERS</div>
-          <div id="mobileGainers">
-            <div class="m-mover-row" onclick="fetchAndShowStock('TATASTEEL')"><div><div class="m-mover-sym">TATASTEEL</div><div class="m-mover-price">₹148</div></div><span style="font-weight:800;font-size:11px;color:var(--green);">+2.78%</span></div>
-            <div class="m-mover-row" onclick="fetchAndShowStock('SBIN')"><div><div class="m-mover-sym">SBIN</div><div class="m-mover-price">₹812</div></div><span style="font-weight:800;font-size:11px;color:var(--green);">+2.10%</span></div>
-            <div class="m-mover-row" onclick="fetchAndShowStock('TATAMOTORS')"><div><div class="m-mover-sym">TATAMOTORS</div><div class="m-mover-price">₹689</div></div><span style="font-weight:800;font-size:11px;color:var(--green);">+1.45%</span></div>
-          </div>
-        </div>
-        <div>
-          <div class="m-mover-label" style="color:var(--red);">▼ TOP LOSERS</div>
-          <div id="mobileLosers">
-            <div class="m-mover-row" onclick="fetchAndShowStock('WIPRO')"><div><div class="m-mover-sym">WIPRO</div><div class="m-mover-price">₹298</div></div><span style="font-weight:800;font-size:11px;color:var(--red);">-1.02%</span></div>
-            <div class="m-mover-row" onclick="fetchAndShowStock('INFY')"><div><div class="m-mover-sym">INFY</div><div class="m-mover-price">₹1,456</div></div><span style="font-weight:800;font-size:11px;color:var(--red);">-0.89%</span></div>
-            <div class="m-mover-row" onclick="fetchAndShowStock('TCS')"><div><div class="m-mover-sym">TCS</div><div class="m-mover-price">₹3,421</div></div><span style="font-weight:800;font-size:11px;color:var(--red);">-0.45%</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4: TRENDING NOW -->
-      <div id="mobileTrendingWrap">
-        <div id="mobileTrendingTitle">
-          <span>📈 TRENDING NOW</span>
-          <span id="mobileLiveTs" style="font-size:9px;color:var(--text3);"></span>
-        </div>
-        <div id="mobileTrendingList"></div>
-      </div>
-
-    </div>
-    <!-- ══ END MOBILE PANEL ══ -->
 
     <!-- ── CURSOR SPOTLIGHT HERO BANNER ── -->
     <div id="spotlightHero" style="position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;background:#0a0a0f;height:160px;cursor:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.06);">
@@ -3361,7 +3119,7 @@ function renderTrending(data) {
 
   const nseStocks  = liveStocks.filter(s => !CRYPTO_SYMS.has(s.sym) && !COMM_SYMS.has(s.sym) && s.price).slice(0,15);
   const cryptoList = liveStocks.filter(s => CRYPTO_SYMS.has(s.sym) && s.price).slice(0,10);
-  const commList   = liveStocks.filter(s => COMM_SYMS.has(s.sym) && s.price).slice(0,8);
+  const commList   = STATIC_COMMODITIES.map(sc=>{const l=liveStocks.find(s=>s.sym===sc.sym&&s.price);return l||sc;});
 
   function stockRow(s, cur) {
     const price = s.price ? Number(s.price).toLocaleString('en-IN',{maximumFractionDigits:s.price<100?2:0}) : '—';
@@ -9903,6 +9661,9 @@ window.addEventListener('unhandledrejection', (e) => {
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _mpInit);
+} else {
+  _mpInit();
+}
 
 // ══════════════════════════════════════════════════════════════
 // UNLISTED SHARES
@@ -12122,6 +11883,17 @@ function renderHeatmap() {
       mouseY = e.clientY - rect.top;
       if (!animFrame) animFrame = requestAnimationFrame(animate);
     });
+    heroEl.addEventListener('touchmove', function(e) {
+      const t=e.touches[0]; const rect=heroEl.getBoundingClientRect();
+      mouseX=t.clientX-rect.left; mouseY=t.clientY-rect.top;
+      if(!animFrame) animFrame=requestAnimationFrame(animate);
+    },{passive:true});
+    heroEl.addEventListener('touchstart', function(e) {
+      const t=e.touches[0]; const rect=heroEl.getBoundingClientRect();
+      mouseX=t.clientX-rect.left; mouseY=t.clientY-rect.top;
+      if(glow) glow.style.opacity='1'; if(glow2) glow2.style.opacity='1'; if(cursor) cursor.style.opacity='1';
+      if(!animFrame) animFrame=requestAnimationFrame(animate);
+    },{passive:true});
 
     heroEl.addEventListener('mouseleave', function() {
       if (glow)   glow.style.opacity   = '0.3';
@@ -12431,6 +12203,12 @@ function renderHeatmap() {
     // Pupils follow cursor from ANYWHERE on the page
     trackPupils(e.clientX, e.clientY);
   });
+  document.addEventListener('touchmove', function(e){
+    var t=e.touches[0]; trackPupils(t.clientX, t.clientY);
+  },{passive:true});
+  document.addEventListener('touchstart', function(e){
+    var t=e.touches[0]; trackPupils(t.clientX, t.clientY);
+  },{passive:true});
 })();
 
 </script>
@@ -12454,11 +12232,11 @@ function renderHeatmap() {
 
 const STORY_SUBJECTS = [
   // NSE Stocks
-  {id:'RELIANCE',  label:'Reliance',  emoji:'⛽',  type:'stock', yf:'RELIANCE.NS'},
-  {id:'TCS',       label:'TCS',       emoji:'💙',  type:'stock', yf:'TCS.NS'},
-  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'💰',  type:'stock', yf:'HDFCBANK.NS'},
-  {id:'INFY',      label:'Infosys',   emoji:'🟦',  type:'stock', yf:'INFY.NS'},
-  {id:'SBIN',      label:'SBI',       emoji:'🏅',  type:'stock', yf:'SBIN.NS'},
+  {id:'RELIANCE',  label:'Reliance',  emoji:'🛢️',  type:'stock', yf:'RELIANCE.NS'},
+  {id:'TCS',       label:'TCS',       emoji:'💻',  type:'stock', yf:'TCS.NS'},
+  {id:'HDFCBANK',  label:'HDFC Bank', emoji:'🏦',  type:'stock', yf:'HDFCBANK.NS'},
+  {id:'INFY',      label:'Infosys',   emoji:'🖥️',  type:'stock', yf:'INFY.NS'},
+  {id:'SBIN',      label:'SBI',       emoji:'🏛️',  type:'stock', yf:'SBIN.NS'},
   {id:'TATAMOTORS',label:'Tata Motors',emoji:'🚗', type:'stock', yf:'TATAMOTORS.NS'},
   {id:'ADANIENT',  label:'Adani',     emoji:'⚡',  type:'stock', yf:'ADANIENT.NS'},
   {id:'ZOMATO',    label:'Zomato',    emoji:'🍱',  type:'stock', yf:'ZOMATO.NS'},
@@ -12663,6 +12441,17 @@ function renderStorySlide() {
 }
 
 // ── Auto-refresh every hour ──
+
+async function fetchCommoditiesLive(){
+  const C=[{sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},{sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},{sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'}];
+  const upd=(sym,p,pct)=>{const up=pct>=0,chg=(up?'+':'')+pct.toFixed(2)+'%';const ex=liveStocks.find(s=>s.sym===sym);if(ex){ex.price=p;ex.chg=chg;ex.up=up;ex._live=true;}else{const sc=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(sc||{sym,name:sym,currency:'$'}),price:p,chg,up,_live:true});}};
+  try{const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(12000)});if(r.ok){const j=await r.json();let n=0;(j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const sym=decodeURIComponent(q.symbol||'');const it=C.find(c=>c.yf===sym||c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);n++;});if(n>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}}}catch(e){}
+  await Promise.allSettled(C.map(async it=>{try{const url='https://query1.finance.yahoo.com/v8/finance/chart/'+it.yf+'?interval=1d&range=2d';const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});if(!r.ok)return;const j=await r.json();const m=JSON.parse(j.contents||'{}')?.chart?.result?.[0]?.meta;if(!m?.regularMarketPrice)return;const p2=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p2;upd(it.sym,p2,((p2-prev)/(prev||1))*100);}catch(e){}}));
+  updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);
+}
+setTimeout(fetchCommoditiesLive,800);
+setInterval(fetchCommoditiesLive,5*60*1000);
+
 buildStories();
 setInterval(buildStories, 60 * 60 * 1000);
 
@@ -13259,65 +13048,6 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
     document.addEventListener('DOMContentLoaded', showOffline);
   }
 })();
-
-// ── MOBILE PANEL JS ────────────────────────────────────────────────
-function mPitClick(el, filter) {
-  document.querySelectorAll('.m-pit-chip').forEach(c => c.classList.remove('m-active'));
-  el.classList.add('m-active');
-  filterFeed(filter, el);
-}
-
-function _syncMobileMovers() {
-  // Sync gainers
-  const dg = document.getElementById('wmGainers');
-  const mg = document.getElementById('mobileGainers');
-  if (dg && mg && dg.children.length > 0) {
-    mg.innerHTML = Array.from(dg.children).map(row => {
-      const sym   = row.querySelector('[style*="font-weight:700;font-size:11px"]')?.textContent || '';
-      const price = row.querySelector('[style*="font-size:9px"]')?.textContent || '';
-      const chg   = row.querySelector('[style*="var(--green)"]')?.textContent || '';
-      if (!sym) return '';
-      return '<div class="m-mover-row" onclick="fetchAndShowStock(''+sym+'')">'
-        + '<div><div class="m-mover-sym">'+sym+'</div><div class="m-mover-price">'+price+'</div></div>'
-        + '<span style="font-weight:800;font-size:11px;color:var(--green);">'+chg+'</span>'
-        + '</div>';
-    }).join('');
-  }
-  // Sync losers
-  const dl = document.getElementById('wmLosers');
-  const ml = document.getElementById('mobileLosers');
-  if (dl && ml && dl.children.length > 0) {
-    ml.innerHTML = Array.from(dl.children).map(row => {
-      const sym   = row.querySelector('[style*="font-weight:700;font-size:11px"]')?.textContent || '';
-      const price = row.querySelector('[style*="font-size:9px"]')?.textContent || '';
-      const chg   = row.querySelector('[style*="var(--red)"]')?.textContent || '';
-      if (!sym) return '';
-      return '<div class="m-mover-row" onclick="fetchAndShowStock(''+sym+'')">'
-        + '<div><div class="m-mover-sym">'+sym+'</div><div class="m-mover-price">'+price+'</div></div>'
-        + '<span style="font-weight:800;font-size:11px;color:var(--red);">'+chg+'</span>'
-        + '</div>';
-    }).join('');
-  }
-  // Sync trending
-  const dt = document.getElementById('trendListRows');
-  const mt = document.getElementById('mobileTrendingList');
-  if (dt && mt) mt.innerHTML = dt.innerHTML;
-  // Sync timestamp
-  const dts = document.getElementById('liveTs');
-  const mts = document.getElementById('mobileLiveTs');
-  if (dts && mts) mts.textContent = dts.textContent;
-}
-
-// Sync after data loads
-setTimeout(_syncMobileMovers, 2000);
-setInterval(_syncMobileMovers, 30000);
-
-// Also hook into onLiveDataUpdate
-(function() {
-  const _orig = typeof onLiveDataUpdate === 'function' ? onLiveDataUpdate : null;
-  onLiveDataUpdate = function() { if (_orig) _orig(); setTimeout(_syncMobileMovers, 200); };
-})();
-
 </script>
 
 <style>
