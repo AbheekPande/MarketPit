@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=0.5, minimum-scale=0.3, maximum-scale=3.0, user-scalable=yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>MarketPit — Trading Community</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -688,50 +688,27 @@ header {
 
 /* ── RESPONSIVE BREAKPOINTS ── */
 @media (max-width: 768px) {
-  body { overflow-x: auto; }
-  .bottom-nav { display: none !important; }
+  body { overflow-x: hidden; }
+  .bottom-nav { display: flex !important; }
 
-  /* Hide trending from left sidebar on mobile */
-  .left-sidebar .trend-header { display: none !important; }
-  .left-sidebar .stock-search-wrap { display: none !important; }
-  .left-sidebar #stockDrop { display: none !important; }
-  .left-sidebar #trendList { display: none !important; }
+  /* HIDE both sidebars completely on mobile */
+  .left-sidebar  { display: none !important; }
+  .right-sidebar { display: none !important; }
 
-  /* LEFT sidebar — narrow */
-  .left-sidebar {
-    display: flex !important;
-    width: 100px !important;
-    flex-shrink: 0 !important;
+  /* CENTER feed takes full width */
+  .main-feed {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
-  .left-sidebar .pit-item { padding: 5px 5px !important; }
-  .left-sidebar .pit-icon { font-size: 11px !important; }
-  .left-sidebar .pit-name { font-size: 9px !important; }
-  .left-sidebar .section-label { font-size: 8px !important; padding: 5px 6px 2px !important; }
-
-  /* CENTER — as wide as possible */
-  .main-feed { flex: 1 1 auto !important; min-width: 0 !important; width: auto !important; }
-  .feed-scroll { padding: 6px 8px !important; }
-
-  /* RIGHT sidebar — very narrow */
-  .right-sidebar {
-    display: flex !important;
-    width: 130px !important;
-    flex-shrink: 0 !important;
-    overflow-y: auto !important;
-  }
-  .right-sidebar #sidebarMmi { padding: 5px 6px !important; }
-  .right-sidebar #sidebarMmiContent svg { width: 118px !important; height: 66px !important; }
-  .right-sidebar #sidebarMmiContent { font-size: 9px !important; }
-  .right-sidebar #whatsMoving { padding: 5px 6px !important; }
-  .right-sidebar #wmGainers div,
-  .right-sidebar #wmLosers div { font-size: 8px !important; }
-  .right-sidebar .leaderboard-section { display: none !important; }
+  .feed-scroll { padding: 6px 10px !important; }
 
   /* Header compact */
-  header { height: 42px !important; padding: 0 6px !important; gap: 3px !important; }
+  header { height: 42px !important; padding: 0 8px !important; gap: 4px !important; }
   .logo { font-size: 13px !important; letter-spacing: 1px !important; }
   .logo-mark { width: 24px !important; height: 24px !important; }
-  .nav-tab { padding: 0 5px !important; font-size: 9px !important; gap: 2px !important; }
+  .nav-tab { padding: 0 6px !important; font-size: 9px !important; gap: 2px !important; }
   .nav-tab svg { width: 10px !important; height: 10px !important; }
 
   /* Stories */
@@ -739,18 +716,18 @@ header {
   .story-ring { width: 38px !important; height: 38px !important; }
   .story-ring-inner { font-size: 15px !important; }
   .story-label { font-size: 7px !important; }
-  #storiesBar { padding: 5px 6px !important; }
+  #storiesBar { padding: 5px 8px !important; }
 
   /* Eyes banner */
   #eyesBanner { height: 48px !important; overflow: hidden !important; }
 
   /* Hero banner */
-  #spotlightHero { height: 110px !important; margin: 5px 6px 0 !important; }
+  #spotlightHero { height: 110px !important; margin: 5px 8px 0 !important; }
 
   /* Post/compose */
-  .post-card { padding: 8px !important; }
-  .compose-box { padding: 8px !important; }
-  .compose-input { font-size: 12px !important; min-height: 50px !important; }
+  .post-card { padding: 10px !important; }
+  .compose-box { padding: 10px !important; }
+  .compose-input { font-size: 13px !important; min-height: 50px !important; }
 }
 
 @media (max-width: 480px) {
