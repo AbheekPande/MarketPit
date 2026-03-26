@@ -13272,5 +13272,39 @@ setInterval(_syncMobileTrending, 30000);
   };
 })();
 </script>
+
+<!-- DESKTOP FIX: Hide all mobile-only elements on desktop -->
+<style>
+@media (min-width: 769px) {
+  /* Hide eyes/creatures banner on desktop */
+  #eyesBanner { display: none !important; }
+
+  /* Hide mobile drawer buttons in header */
+  .mp-btn-left, .mp-btn-right { display: none !important; }
+
+  /* Hide mobile drawer and overlay */
+  .mp-drawer, .mp-drawer-overlay { display: none !important; }
+
+  /* Hide mobile bottom nav */
+  .bottom-nav { display: none !important; }
+
+  /* Hide mobile-only sections */
+  .mobile-only { display: none !important; }
+  #mobileFeatsLeft, #mobileTrendingRight { display: none !important; }
+
+  /* Ensure left sidebar shows on desktop */
+  .left-sidebar { display: flex !important; }
+
+  /* Ensure right sidebar shows on desktop */
+  .right-sidebar { display: flex !important; }
+
+  /* Fix header height and layout */
+  header { height: 56px !important; padding: 0 18px !important; }
+
+  /* Ensure layout fills properly */
+  .layout { display: flex !important; flex: 1 !important; overflow: hidden !important; }
+}
+</style>
+
 </body>
 </html>
