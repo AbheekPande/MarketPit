@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 
 <html lang="en"><head>
+<script>
+(function(){
+  try {
+    var u = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    var s = localStorage.getItem('mp_session_email');
+    if (u && u.email && s) {
+      window.location.replace('dashboard-22.html');
+    }
+  } catch(e) {}
+})();
+</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Market Pit | Institutional Terminal</title>
@@ -97,13 +108,13 @@
 
   <!-- Desktop buttons -->
   <div class="hidden md:flex items-center space-x-6">
-    <a href="login.html" class="text-[#003227] font-semibold hover:opacity-80 transition-all">Log In</a>
-    <a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-md hover:scale-[0.99] active:opacity-80 duration-200">Get Started</a>
+    <a href="login-2.html" class="text-[#003227] font-semibold hover:opacity-80 transition-all">Log In</a>
+    <a href="login-2.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-md hover:scale-[0.99] active:opacity-80 duration-200">Get Started</a>
   </div>
 
   <!-- Mobile: Log In + Hamburger -->
   <div class="flex md:hidden items-center gap-3">
-    <a href="login.html" class="text-[#003227] font-semibold text-sm">Log In</a>
+    <a href="login-2.html" class="text-[#003227] font-semibold text-sm">Log In</a>
     <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="flex flex-col gap-1.5 p-2" aria-label="Menu">
       <span class="block w-6 h-0.5 bg-[#003227]"></span>
       <span class="block w-6 h-0.5 bg-[#003227]"></span>
@@ -118,7 +129,7 @@
     <a href="#features" onclick="setActive('features');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Features</a>
     <a href="#" onclick="setActive('platforms');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Platforms</a>
     <a href="#education" onclick="setActive('education');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Education</a>
-    <a href="login.html" class="mt-3 w-full text-center bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-semibold shadow-md">Get Started</a>
+    <a href="login-2.html" class="mt-3 w-full text-center bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-semibold shadow-md">Get Started</a>
   </div>
 </div>
 </nav>
@@ -138,42 +149,19 @@
                     </p>
 <div class="flex flex-wrap gap-4">
 <!-- Enter the Pit → login.html -->
-<a href="login.html" class="bg-primary text-on-primary px-8 py-4 rounded-lg font-bold flex items-center gap-2 group">
+<a href="login-2.html" class="bg-primary text-on-primary px-8 py-4 rounded-lg font-bold flex items-center gap-2 group">
                             Enter the Pit
                             <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </a>
 <!-- Explore Ecosystem → login.html -->
-<a href="login.html" class="border border-outline/20 px-8 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-low transition-colors">
+<a href="login-2.html" class="border border-outline/20 px-8 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-low transition-colors">
                             Explore Ecosystem
                         </a>
 </div>
 </div>
 <div class="lg:col-span-5 relative">
 <div class="aspect-square rounded-2xl overflow-hidden bg-surface-container shadow-2xl relative z-10">
-<div class="w-full h-full bg-[#003227] flex flex-col p-6 gap-3 justify-between">
-  <div class="flex justify-between items-center">
-    <span class="text-white/80 text-xs font-mono font-bold tracking-widest">MARKETPIT LIVE</span>
-    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-400"></span><span class="text-green-400 text-[10px]">LIVE</span></span>
-  </div>
-  <div class="grid grid-cols-3 gap-2">
-    <div class="bg-white/10 rounded-lg p-3 text-center"><p class="text-green-400 font-bold text-sm">+1.72%</p><p class="text-white/50 text-[10px] mt-1">NIFTY</p></div>
-    <div class="bg-white/10 rounded-lg p-3 text-center"><p class="text-green-400 font-bold text-sm">+2.10%</p><p class="text-white/50 text-[10px] mt-1">BANKNIFTY</p></div>
-    <div class="bg-white/10 rounded-lg p-3 text-center"><p class="text-red-400 font-bold text-sm">-3.28%</p><p class="text-white/50 text-[10px] mt-1">BTC</p></div>
-  </div>
-  <div class="bg-white/5 rounded-xl p-4">
-    <p class="text-white/40 text-[10px] font-mono mb-2">NIFTY 50 · 1D CHART</p>
-    <svg viewBox="0 0 200 60" class="w-full h-16"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.3"/><stop offset="100%" stop-color="#4ade80" stop-opacity="0"/></linearGradient></defs><polyline points="0,55 25,45 50,48 80,25 110,32 140,18 170,12 200,6" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/><polygon points="0,55 25,45 50,48 80,25 110,32 140,18 170,12 200,6 200,60 0,60" fill="url(#g1)"/></svg>
-  </div>
-  <div class="grid grid-cols-2 gap-2">
-    <div class="bg-white/5 rounded-lg p-3"><p class="text-white/40 text-[9px] font-mono">GOLD</p><p class="text-yellow-400 font-bold text-sm">₹72,450 <span class="text-green-400 text-[10px]">+0.6%</span></p></div>
-    <div class="bg-white/5 rounded-lg p-3"><p class="text-white/40 text-[9px] font-mono">CRUDE</p><p class="text-orange-400 font-bold text-sm">$83.20 <span class="text-red-400 text-[10px]">-1.2%</span></p></div>
-  </div>
-  <div class="flex gap-2 mt-auto">
-    <div class="flex-1 text-center"><p class="text-white font-bold text-xs">₹23,306</p><p class="text-white/30 text-[9px]">NIFTY</p></div>
-    <div class="flex-1 text-center"><p class="text-white font-bold text-xs">₹53,708</p><p class="text-white/30 text-[9px]">BANKNIFTY</p></div>
-    <div class="flex-1 text-center"><p class="text-white font-bold text-xs">$68,971</p><p class="text-white/30 text-[9px]">BITCOIN</p></div>
-  </div>
-</div>
+<img class="w-full h-full object-cover grayscale-[30%] hover:grayscale-0 transition-all duration-700" data-alt="Abstract financial data visualization on dark screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDR5eWkYZEzzOWyWsZnZ-TXlhfq4QyMYP97OnqTRh9-4GMx-2tf8ZE2fDjm84LP8pk5YrvjVFDxmVqSfPKooLPyR68GMdn2XGTbiv00cEKbbpMu851FQAYV-sxx1DZRWpoPqsvMfV4WYbeKEagcawns4x_QSuGD-rUI9OhZvyos0Oj0fbCFtSQ-VD_Mvd_XXhgn4awCdiz8N9h380uaJUOhzMiTlzbX1r7ZW7DT3Oi-KgQ4e9rUyNTqqr4VhRXQCxMkHAzIaOf0lfY"/>
 </div>
 <div class="absolute -bottom-6 -left-6 w-48 h-48 bg-primary-fixed/30 rounded-full blur-3xl -z-10"></div>
 <div class="absolute -top-10 right-0 p-6 bg-surface-container-lowest shadow-xl rounded-xl border border-outline-variant/10 max-w-[200px]">
@@ -224,7 +212,7 @@
 <span class="material-symbols-outlined text-4xl mb-6">lock_open</span>
 <h3 class="font-headline text-3xl font-bold mb-4">Unlisted &amp; IPO Data</h3>
 <p class="font-body text-on-primary/70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
-<a href="login.html" class="inline-flex items-center gap-2 font-bold hover:underline decoration-primary-fixed/30 underline-offset-4">
+<a href="login-2.html" class="inline-flex items-center gap-2 font-bold hover:underline decoration-primary-fixed/30 underline-offset-4">
 Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span>
 </a>
 </div>
@@ -254,8 +242,12 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-2xl font-bold text-primary mb-3">The Pit Community</h3>
 <p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">Connect with top traders, share technical analysis, and exchange high-conviction market knowledge.</p>
 <div class="flex -space-x-3">
-<div class="w-10 h-10 rounded-full border-2 border-white bg-[#2b6958] flex items-center justify-center text-white text-xs font-bold">TR</div>
-<div class="w-10 h-10 rounded-full border-2 border-white bg-[#2b6958] flex items-center justify-center text-white text-xs font-bold">TR</div>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high overflow-hidden">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb-hiSSNBs8A_69cg3u7LG1CXiChjjZn-kdO-0si6xxYQZvVFPwunI9Yg4yPHBwnnBAMTOdHClbY7wKRL6DIAVQneEVjTP4Gs5m_UMEtIMcGiW1QGpKVKVB9JD1GLRNxKrwqnBsEJip6TlyJ9zj3T4LOE9uDEzJAmzmrCLrUNW2H_Noa88YV3FEZIZ41bwkN-jRhMFR_hdtGxBkcKHleerHcQWnb1Q6vKtfXWNv2tbcF7_5hzWhrmWc6joPSLb-HCkdtXrvPnr_Zk"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high overflow-hidden">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDR8MAfnxo6xuR1818HcF0O_iIKzFZzj61ZycFlbSS4fF2YIXdmMkUq07cQcN6OVrhmfA0IoexlyUS5p2IK4Hznx_0p5jNhs7r3wuWxJ-wwtM8W1Xta-mudE1FXD1Ezm4xPBDvUUr9zmBiyxyq9bdvDpefzPbz7F1OydQPYTxiL1Hw-yXvSxEtyP74vRyDKc5eYDqIghpa9KFMl_kAj6M2fDwUvVJpFyFNzX3WL5rhos_OMe208bYao8jvO73_d1PGcACQ2G60ygPc"/>
+</div>
 <div class="w-10 h-10 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-xs font-bold text-primary">+4k</div>
 </div>
 </div>
@@ -355,7 +347,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <span class="material-symbols-outlined text-4xl mb-6">lock_open</span>
 <h3 class="font-headline text-3xl font-bold mb-4">Unlisted &amp; IPO Data</h3>
 <p class="font-body opacity-70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
-<a class="inline-flex items-center gap-2 font-bold hover:underline underline-offset-4" href="login.html">Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+<a class="inline-flex items-center gap-2 font-bold hover:underline underline-offset-4" href="login-2.html">Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
 </div>
 <div class="absolute -right-10 -bottom-10 opacity-10"><span class="material-symbols-outlined text-[200px]">finance_chip</span></div>
 </div>
@@ -432,7 +424,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <span class="px-3 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface-variant uppercase">Asset Classes</span>
 </div>
 </div>
-<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 2: Technical Analysis -->
@@ -443,7 +435,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-2xl text-primary mb-4">Technical Analysis</h3>
 <p class="text-on-surface-variant leading-relaxed mb-6">Advanced charting techniques and price action strategies that bypass traditional lagging indicators.</p>
 </div>
-<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 3: Risk Management -->
@@ -454,7 +446,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-2xl text-primary mb-4">Risk Management</h3>
 <p class="text-on-surface-variant leading-relaxed mb-6">Capital preservation frameworks used by prop desks to maintain consistent equity growth under pressure.</p>
 </div>
-<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 4: Macro Intelligence -->
@@ -467,7 +459,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-3xl mb-4 text-primary-fixed">Macro Intelligence</h3>
 <p class="text-on-primary-container leading-relaxed text-lg mb-8">Master the invisible forces driving global capital. From Central Bank policy shifts to geopolitical flow dynamics, learn to read the global chess board.</p>
 <div class="flex gap-6 items-center">
-<a href="login.html" class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-lg font-bold hover:bg-white transition-colors">Enroll in Track</a>
+<a href="login-2.html" class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-lg font-bold hover:bg-white transition-colors">Enroll in Track</a>
 <span class="text-sm italic opacity-80">68 Modules | Advanced Level</span>
 </div>
 </div>
@@ -521,7 +513,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h2 class="font-headline text-5xl font-bold mb-6">Ready to join the discourse?</h2>
 <p class="text-xl opacity-80 mb-10 max-w-2xl mx-auto">Create your bespoke financial environment today and experience the new standard of market intelligence.</p>
 <!-- Apply for Access → login.html -->
-<a href="login.html" class="bg-surface text-primary px-10 py-5 rounded-lg font-bold hover:bg-primary-fixed transition-all shadow-lg inline-block">
+<a href="login-2.html" class="bg-surface text-primary px-10 py-5 rounded-lg font-bold hover:bg-primary-fixed transition-all shadow-lg inline-block">
                         Apply for Access
                     </a>
 </div>
@@ -541,9 +533,9 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <div>
 <h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Platform</h5>
 <ul class="space-y-4">
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">The Pit</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Market Data</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Global API</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">The Pit</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">Market Data</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">Global API</a></li>
 </ul>
 </div>
 <div>
