@@ -4,12 +4,10 @@
 <script>
 (function(){
   try {
-    var u = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    var u = JSON.parse(localStorage.getItem('mp_user')||'null');
     var s = localStorage.getItem('mp_session_email');
-    if (u && u.email && s) {
-      window.location.replace('dashboard-22.html');
-    }
-  } catch(e) {}
+    if(u && u.email && s){ window.location.replace('dashboard-22.html'); }
+  } catch(e){}
 })();
 </script>
 <meta charset="utf-8"/>
@@ -97,7 +95,7 @@
 <!-- TopNavBar -->
 <nav class="fixed top-0 w-full z-50 bg-surface/80 glass-nav shadow-[0px_20px_40px_rgba(25,28,27,0.06)] h-20">
 <div class="flex justify-between items-center max-w-7xl mx-auto px-8 h-full">
-  <a href="index.html" class="text-2xl font-headline italic font-bold text-[#003227]">Market Pit</a>
+  <a href="index-21.html" class="text-2xl font-headline italic font-bold text-[#003227]">Market Pit</a>
 
   <!-- Desktop nav -->
   <div class="hidden md:flex items-center space-x-8 font-headline font-semibold tracking-tight">
@@ -542,7 +540,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Resources</h5>
 <ul class="space-y-4">
 <li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Market News</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="education.html">Education</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="education-7.html">Education</a></li>
 <li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Risk Disclosure</a></li>
 </ul>
 </div>
