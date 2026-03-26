@@ -690,16 +690,14 @@ header {
 @media (max-width: 768px) {
   body { overflow-x: hidden; }
 
-  /* Hide both sidebars completely — drawers handle them */
+  /* Hide both sidebars — drawers replace them */
   .left-sidebar  { display: none !important; }
   .right-sidebar { display: none !important; }
+  .bottom-nav    { display: none !important; }
 
   /* Center feed = full width */
   .main-feed { flex: 1 1 100% !important; min-width: 0 !important; width: 100% !important; }
-  .feed-scroll { padding: 4px 10px 70px !important; }
-
-  /* Bottom nav hidden — we use header drawer buttons instead */
-  .bottom-nav { display: none !important; }
+  .feed-scroll { padding: 4px 10px 20px !important; }
 
   /* Header compact */
   header { height: 46px !important; padding: 0 8px !important; gap: 4px !important; }
@@ -735,21 +733,26 @@ header {
   .btn-post { padding: 7px 10px !important; font-size: 11px !important; }
   .post-card { padding: 8px !important; }
 
-  /* Mobile drawers */
+  /* Drawers */
   .mp-drawer {
     position: fixed; top: 0; bottom: 0; width: 80vw; max-width: 300px;
-    background: var(--bg2); z-index: 500; overflow-y: auto;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    background: var(--bg2); z-index: 9999; overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
     transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
   }
   .mp-drawer-left  { left: 0;  transform: translateX(-100%); }
-  .mp-drawer-right { right: 0; transform: translateX(100%); width: 72vw; max-width: 280px; }
-  .mp-drawer.open  { transform: translateX(0); }
+  .mp-drawer-right { right: 0; transform: translateX(100%); width: 75vw; max-width: 290px; }
+  .mp-drawer.open  { transform: translateX(0) !important; }
   .mp-drawer-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-    z-index: 499; backdrop-filter: blur(2px);
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 9998;
+    backdrop-filter: blur(2px);
   }
   .mp-drawer-overlay.open { display: block; }
+
+  /* Show drawer buttons in header */
+  .mp-btn-left, .mp-btn-right { display: flex !important; }
 }
 
 @media (max-width: 480px) {
@@ -1001,8 +1004,8 @@ header {
 
 <!-- HEADER -->
 <header>
-  <!-- ── MOBILE DRAWER BUTTON LEFT (Features) — hidden on desktop ── -->
-  <button id="mpDrawerLeftBtn" onclick="mpOpenDrawer('left')" class="mobile-only" style="display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);font-size:18px;margin-right:4px;">☰</button>
+  <!-- Mobile: Left drawer button (hidden on desktop) -->
+  <button class="mp-btn-left" onclick="mpOpenDrawer('left')" style="display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);font-size:20px;padding:0;margin-right:2px;">☰</button>
 
   <!-- ── LOGO ── -->
   <div class="logo" onclick="showPage('feed')">
@@ -1160,8 +1163,8 @@ header {
       <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.474l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/></svg>
     </button>
     <div class="avatar" id="headerAvatar" onclick="openModal('profileModal')" style="border-radius:8px;">?</div>
-    <!-- ── MOBILE DRAWER BUTTON RIGHT (Markets) — hidden on desktop ── -->
-    <button id="mpDrawerRightBtn" onclick="mpOpenDrawer('right')" class="mobile-only" style="display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);font-size:18px;margin-left:2px;">📊</button>
+    <!-- Mobile: Right drawer button (hidden on desktop) -->
+    <button class="mp-btn-right" onclick="mpOpenDrawer('right')" style="display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);font-size:18px;padding:0;margin-left:2px;">📊</button>
   </div>
 </header>
 
@@ -13167,29 +13170,31 @@ setInterval(_syncMobileTrending, 30000);
 
 <!-- Brightness overlay -->
 
-<!-- ═══════════════════════════════════════════
-     MOBILE DRAWERS  (hidden on desktop)
-═══════════════════════════════════════════ -->
+<!-- ══ MOBILE DRAWERS ════════════════════════════════════ -->
+<div class="mp-drawer-overlay" id="mpOverlay" onclick="mpCloseDrawer()"></div>
 
-<!-- Overlay -->
-<div class="mp-drawer-overlay mobile-only" id="mpDrawerOverlay" onclick="mpCloseDrawer()"></div>
-
-<!-- LEFT DRAWER — Features / Navigation -->
-<div class="mp-drawer mp-drawer-left mobile-only" id="mpDrawerLeft">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text);">NAVIGATE</span>
-    <button onclick="mpCloseDrawer()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;color:var(--text3);">✕</button>
+<!-- LEFT DRAWER: Navigate + Features -->
+<div class="mp-drawer mp-drawer-left" id="mpLeft">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);">NAVIGATE</span>
+    <button onclick="mpCloseDrawer()" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;color:var(--text3);">✕</button>
   </div>
-  <!-- Pit filter -->
+  <!-- Pits -->
   <div style="padding:10px 12px 6px;">
-    <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;">YOUR PITS</div>
-    <div id="mDrawerPits"></div>
+    <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px;">YOUR PITS</div>
+    <div id="mpPitList">
+      <div onclick="filterFeed('',this);mpCloseDrawer()" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"><span>📊</span> All Markets</div>
+      <div onclick="filterFeed('Stocks',this);mpCloseDrawer()" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"><span>🏦</span> Equities</div>
+      <div onclick="filterFeed('Crypto',this);mpCloseDrawer()" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"><span>₿</span> Crypto</div>
+      <div onclick="filterFeed('Commodities',this);mpCloseDrawer()" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"><span>🛢️</span> Commodities</div>
+      <div onclick="filterFeed('Macro',this);mpCloseDrawer()" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"><span>🌍</span> Macro</div>
+    </div>
   </div>
-  <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-  <!-- Features grid -->
-  <div style="padding:10px 12px 6px;">
+  <div style="height:1px;background:var(--border);margin:4px 12px;"></div>
+  <!-- Features -->
+  <div style="padding:10px 12px;">
     <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;">FEATURES</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
       <button onclick="switchTab(null,'screener');mpCloseDrawer()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:10px;font-weight:600;color:var(--text2);">🔍<span>Screener</span></button>
       <button onclick="switchTab(null,'news');mpCloseDrawer()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:10px;font-weight:600;color:var(--text2);">📰<span>News</span></button>
       <button onclick="switchTab(null,'watchlist');mpCloseDrawer()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:10px;font-weight:600;color:var(--text2);">⭐<span>Watch</span></button>
@@ -13206,103 +13211,59 @@ setInterval(_syncMobileTrending, 30000);
   </div>
 </div>
 
-<!-- RIGHT DRAWER — Markets: MMI + Movers + Trending -->
-<div class="mp-drawer mp-drawer-right mobile-only" id="mpDrawerRight">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text);">MARKETS</span>
-    <button onclick="mpCloseDrawer()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;color:var(--text3);">✕</button>
+<!-- RIGHT DRAWER: Markets data -->
+<div class="mp-drawer mp-drawer-right" id="mpRight">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);">MARKETS</span>
+    <button onclick="mpCloseDrawer()" style="width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:16px;color:var(--text3);">✕</button>
   </div>
-  <!-- Market Mood — cloned content -->
-  <div id="mpRightMmi" style="padding:10px 12px;border-bottom:1px solid var(--border);"></div>
-  <!-- Market Movers — cloned content -->
-  <div id="mpRightMovers" style="padding:10px 12px;border-bottom:1px solid var(--border);"></div>
-  <!-- Trending now — cloned content -->
-  <div id="mpRightTrending" style="padding:10px 12px;"></div>
+  <div id="mpRightContent" style="padding:10px 12px;">
+    <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">Loading…</div>
+  </div>
 </div>
 
 <script>
-// ── MOBILE DRAWER LOGIC ──────────────────────────────
-(function() {
-  // Show drawer buttons only on mobile
-  function checkMobile() {
-    const isMob = window.innerWidth <= 768;
-    ['mpDrawerLeftBtn','mpDrawerRightBtn'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = isMob ? 'flex' : 'none';
-    });
-    ['mpDrawerLeft','mpDrawerRight','mpDrawerOverlay'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = isMob ? '' : 'none';
-    });
-  }
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
+(function(){
+  function isMobile(){ return window.innerWidth <= 768; }
 
-  // Populate pits list in left drawer
-  function populateDrawerPits() {
-    const el = document.getElementById('mDrawerPits');
-    if (!el) return;
-    const pits = [
-      { icon:'📊', label:'All Markets', tab:'' },
-      { icon:'✨', label:'For You',     tab:'feed' },
-      { icon:'🏦', label:'Equities',    tab:'feed' },
-      { icon:'₿',  label:'Crypto',      tab:'feed' },
-      { icon:'🛢️', label:'Commodities', tab:'feed' },
-      { icon:'🌍', label:'Macro',        tab:'feed' },
-      { icon:'📈', label:'Options Flow', tab:'feed' },
-    ];
-    el.innerHTML = pits.map(p =>
-      `<div onclick="filterFeed('${p.label === 'All Markets' ? '' : p.label}',this);mpCloseDrawer()"
-        style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);transition:background 0.1s;"
-        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <span style="font-size:16px;width:20px;text-align:center;">${p.icon}</span>${p.label}
-      </div>`
-    ).join('');
+  function setDrawerBtns(){
+    var d = isMobile() ? 'flex' : 'none';
+    document.querySelectorAll('.mp-btn-left,.mp-btn-right').forEach(function(b){ b.style.display = d; });
   }
+  setDrawerBtns();
+  window.addEventListener('resize', setDrawerBtns);
 
-  // Sync right drawer content from sidebar
-  function syncRightDrawer() {
-    // MMI
-    const mmiSrc = document.getElementById('sidebarMmiContent');
-    const mmiDst = document.getElementById('mpRightMmi');
-    if (mmiSrc && mmiDst) {
-      mmiDst.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:8px;">😊 MARKET MOOD</div>'
-        + mmiSrc.innerHTML;
+  window.mpOpenDrawer = function(side){
+    if(side === 'right'){
+      var el = document.getElementById('mpRightContent');
+      if(el){
+        var mmi    = document.getElementById('sidebarMmiContent');
+        var movers = document.getElementById('whatsMoving');
+        var trend  = document.getElementById('trendListRows');
+        el.innerHTML =
+          '<div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:8px;">😊 MARKET MOOD</div>'
+          + (mmi ? mmi.innerHTML : '') +
+          '<div style="height:1px;background:var(--border);margin:12px 0;"></div>'
+          + (movers ? movers.outerHTML.replace(' id="whatsMoving"',' id="mpMovers"') : '') +
+          '<div style="height:1px;background:var(--border);margin:12px 0;"></div>'
+          + '<div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:8px;">📈 TRENDING NOW</div>'
+          + (trend ? trend.innerHTML : '');
+      }
     }
-    // Movers
-    const moversSrc = document.getElementById('whatsMoving');
-    const moversDst = document.getElementById('mpRightMovers');
-    if (moversSrc && moversDst) moversDst.innerHTML = moversSrc.innerHTML;
-    // Trending
-    const trendSrc = document.getElementById('trendListRows');
-    const trendDst = document.getElementById('mpRightTrending');
-    if (trendSrc && trendDst) {
-      trendDst.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:8px;">📈 TRENDING NOW</div>'
-        + trendSrc.innerHTML;
-    }
-  }
-
-  window.mpOpenDrawer = function(side) {
-    if (side === 'right') syncRightDrawer();
-    if (side === 'left')  populateDrawerPits();
-    const drawer  = document.getElementById(side === 'left' ? 'mpDrawerLeft' : 'mpDrawerRight');
-    const overlay = document.getElementById('mpDrawerOverlay');
-    if (drawer)  drawer.classList.add('open');
-    if (overlay) overlay.classList.add('open');
+    var drawer  = document.getElementById(side==='left' ? 'mpLeft' : 'mpRight');
+    var overlay = document.getElementById('mpOverlay');
+    if(drawer)  drawer.classList.add('open');
+    if(overlay) overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   };
 
-  window.mpCloseDrawer = function() {
-    document.querySelectorAll('.mp-drawer').forEach(d => d.classList.remove('open'));
-    const overlay = document.getElementById('mpDrawerOverlay');
-    if (overlay) overlay.classList.remove('open');
+  window.mpCloseDrawer = function(){
+    document.querySelectorAll('.mp-drawer').forEach(function(d){ d.classList.remove('open'); });
+    var overlay = document.getElementById('mpOverlay');
+    if(overlay) overlay.classList.remove('open');
     document.body.style.overflow = '';
   };
-
-  // Initial pit population
-  setTimeout(populateDrawerPits, 500);
 })();
 </script>
-
 </body>
 </html>
