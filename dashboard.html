@@ -865,129 +865,110 @@ header {
   padding:8px 10px; overflow:hidden;
 }
 </style>
-<div id="eyesBanner" style="width:100%;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%);height:82px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-bottom:2px solid rgba(0,0,0,0.06);flex-shrink:0;">
-  <div id="ebGlow"></div>
-  <div id="ebTileGrid"><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div><div class="eb-tile"><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div><div class="eb-sub"></div></div></div>
-  <!-- Soft dot pattern -->
-  <div class="eb-dot-bg" style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;transition:opacity 0.4s;"></div>
+<div id="eyesBanner" style="width:100% !important;background:linear-gradient(135deg,#fff8f0 0%,#f0f4ff 50%,#f8f0ff 100%) !important;height:82px !important;display:flex !important;align-items:center !important;justify-content:center !important;overflow:hidden !important;position:relative !important;border-bottom:2px solid rgba(0,0,0,0.06) !important;flex-shrink:0 !important;">
+  <div id="eyesContainer" style="display:flex !important;flex-direction:row !important;align-items:flex-end !important;gap:22px !important;padding-bottom:4px !important;position:relative !important;z-index:2 !important;pointer-events:none !important;">
 
-  <!-- Left label -->
-  <div id="ebLeftLabel" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(0,0,0,0.3);letter-spacing:2px;position:absolute;left:16px;text-transform:uppercase;transition:color 0.4s;z-index:2;">👀 We see the markets</div>
-
-  <!-- Characters row -->
-  <div id="eyesContainer" style="display:flex;align-items:flex-end;gap:22px;padding-bottom:4px;position:relative;z-index:2;pointer-events:none;">
-
-    <!-- Creature 1 — round chubby pink -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
-          <svg class="pupil-svg" width="11" height="11" viewBox="0 0 11 11" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#222"/><circle cx="6" cy="4" r="2" fill="white"/></svg>
+    <!-- Creature 1 — pink -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:1px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:4px !important;">
+        <div class="eyeball" style="width:22px !important;height:22px !important;border-radius:50% !important;background:#fff !important;border:2.5px solid #ffacc7 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,172,199,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:11px !important;height:11px !important;border-radius:50% !important;background:#222 !important;box-shadow:inset 0 0 0 11px #222 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:4px !important;height:4px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 4px #fff !important;margin:-2px -2px 0 0 !important;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2.5px solid #ffacc7;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,172,199,0.4);">
-          <svg class="pupil-svg" width="11" height="11" viewBox="0 0 11 11" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#222"/><circle cx="6" cy="4" r="2" fill="white"/></svg>
+        <div class="eyeball" style="width:22px !important;height:22px !important;border-radius:50% !important;background:#fff !important;border:2.5px solid #ffacc7 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,172,199,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:11px !important;height:11px !important;border-radius:50% !important;background:#222 !important;box-shadow:inset 0 0 0 11px #222 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:4px !important;height:4px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 4px #fff !important;margin:-2px -2px 0 0 !important;"></div>
           </div>
         </div>
       </div>
-      <!-- cheeks + smile -->
-      <div style="display:flex;gap:14px;margin-top:-2px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,172,199,0.6);"></div>
+      <div style="display:flex !important;flex-direction:row !important;gap:14px !important;margin-top:-2px !important;">
+        <div style="width:7px !important;height:4px !important;border-radius:50% !important;background:rgba(255,172,199,0.6) !important;"></div>
+        <div style="width:7px !important;height:4px !important;border-radius:50% !important;background:rgba(255,172,199,0.6) !important;"></div>
       </div>
     </div>
 
-    <!-- Creature 2 — star eyes yellow -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:5px;">
-        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
-          <svg class="pupil-svg" width="12" height="12" viewBox="0 0 12 12" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="6" fill="#333"/><text x="6" y="9" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif">✦</text></svg>
+    <!-- Creature 2 — yellow star eyes -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:1px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:5px !important;">
+        <div class="eyeball" style="width:24px !important;height:24px !important;border-radius:50% !important;background:#fff9e6 !important;border:2.5px solid #ffd166 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,209,102,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:12px !important;height:12px !important;border-radius:50% !important;background:#333 !important;box-shadow:inset 0 0 0 12px #333 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="color:#fff !important;font-size:7px !important;line-height:1 !important;">✦</div>
           </div>
         </div>
-        <div class="eyeball" style="width:24px;height:24px;border-radius:50%;background:#fff9e6;border:2.5px solid #ffd166;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,209,102,0.4);">
-          <svg class="pupil-svg" width="12" height="12" viewBox="0 0 12 12" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="6" fill="#333"/><text x="6" y="9" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif">✦</text></svg>
+        <div class="eyeball" style="width:24px !important;height:24px !important;border-radius:50% !important;background:#fff9e6 !important;border:2.5px solid #ffd166 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,209,102,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:12px !important;height:12px !important;border-radius:50% !important;background:#333 !important;box-shadow:inset 0 0 0 12px #333 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="color:#fff !important;font-size:7px !important;line-height:1 !important;">✦</div>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:16px;margin-top:-1px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(255,209,102,0.5);"></div>
       </div>
     </div>
 
-    <!-- Creature 3 — big round blue (main mascot, tallest) -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:2px;">
-      <div style="display:flex;gap:5px;">
-        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
-          <svg class="pupil-svg" width="15" height="15" viewBox="0 0 15 15" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#1a1a2e"/><circle cx="8" cy="6" r="2" fill="white"/></svg>
+    <!-- Creature 3 — big blue eyes -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:2px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:6px !important;">
+        <div class="eyeball" style="width:30px !important;height:30px !important;border-radius:50% !important;background:#e8f0fe !important;border:3px solid #6d8dfc !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 12px rgba(109,141,252,0.45) !important;overflow:visible !important;">
+          <div class="pupil" style="width:15px !important;height:15px !important;border-radius:50% !important;background:#191970 !important;box-shadow:inset 0 0 0 15px #191970 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:5px !important;height:5px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 5px #fff !important;margin:-3px -3px 0 0 !important;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #5b8dee;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(91,141,238,0.45);">
-          <svg class="pupil-svg" width="15" height="15" viewBox="0 0 15 15" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#1a1a2e"/><circle cx="8" cy="6" r="2" fill="white"/></svg>
+        <div class="eyeball" style="width:30px !important;height:30px !important;border-radius:50% !important;background:#e8f0fe !important;border:3px solid #6d8dfc !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 12px rgba(109,141,252,0.45) !important;overflow:visible !important;">
+          <div class="pupil" style="width:15px !important;height:15px !important;border-radius:50% !important;background:#191970 !important;box-shadow:inset 0 0 0 15px #191970 !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:5px !important;height:5px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 5px #fff !important;margin:-3px -3px 0 0 !important;"></div>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:18px;">
-        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
-        <div style="width:8px;height:5px;border-radius:50%;background:rgba(91,141,238,0.35);"></div>
       </div>
     </div>
 
-    <!-- Creature 4 — sleepy half-closed green -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
-          <svg class="pupil-svg" width="9" height="9" viewBox="0 0 9 9" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="4" cy="4" r="4" fill="#1a3a1a"/><circle cx="5" cy="3" r="1" fill="white"/></svg>
+    <!-- Creature 4 — small green eyes -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:1px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:3px !important;">
+        <div class="eyeball" style="width:18px !important;height:18px !important;border-radius:50% !important;background:#e8f5e9 !important;border:2px solid #66bb6a !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 6px rgba(102,203,113,0.35) !important;overflow:visible !important;">
+          <div class="pupil" style="width:9px !important;height:9px !important;border-radius:50% !important;background:#1a3a1a !important;box-shadow:inset 0 0 0 9px #1a3a1a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:3px !important;height:3px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 3px #fff !important;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:22px;height:16px;border-radius:50%;background:#e8fdf0;border:2.5px solid #4ecb71;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(78,203,113,0.35);">
-          <svg class="pupil-svg" width="9" height="9" viewBox="0 0 9 9" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="4" cy="4" r="4" fill="#1a3a1a"/><circle cx="5" cy="3" r="1" fill="white"/></svg>
+        <div class="eyeball" style="width:18px !important;height:18px !important;border-radius:50% !important;background:#e8f5e9 !important;border:2px solid #66bb6a !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 6px rgba(102,203,113,0.35) !important;overflow:visible !important;">
+          <div class="pupil" style="width:9px !important;height:9px !important;border-radius:50% !important;background:#1a3a1a !important;box-shadow:inset 0 0 0 9px #1a3a1a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:3px !important;height:3px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 3px #fff !important;"></div>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:14px;margin-top:1px;">
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(78,203,113,0.4);"></div>
       </div>
     </div>
 
-    <!-- Creature 5 — sparkly purple wide eyes -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
-          <svg class="pupil-svg" width="12" height="12" viewBox="0 0 12 12" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="6" fill="#2d1b69"/><circle cx="7" cy="5" r="2" fill="white"/></svg>
+    <!-- Creature 5 — indigo sleepy eyes -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:1px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:5px !important;">
+        <div class="eyeball" style="width:24px !important;height:24px !important;border-radius:50% !important;background:#ede7f6 !important;border:2.5px solid #7c4dff !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 10px rgba(97,139,250,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:12px !important;height:12px !important;border-radius:50% !important;background:#0a0a2a !important;box-shadow:inset 0 0 0 12px #0a0a2a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:4px !important;height:4px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 4px #fff !important;margin:-2px -2px 0 0 !important;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:23px;height:23px;border-radius:50%;background:#f5f0ff;border:2.5px solid #a78bfa;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(167,139,250,0.4);">
-          <svg class="pupil-svg" width="12" height="12" viewBox="0 0 12 12" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="6" fill="#2d1b69"/><circle cx="7" cy="5" r="2" fill="white"/></svg>
+        <div class="eyeball" style="width:24px !important;height:24px !important;border-radius:50% !important;background:#ede7f6 !important;border:2.5px solid #7c4dff !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 10px rgba(97,139,250,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:12px !important;height:12px !important;border-radius:50% !important;background:#0a0a2a !important;box-shadow:inset 0 0 0 12px #0a0a2a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:4px !important;height:4px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 4px #fff !important;margin:-2px -2px 0 0 !important;"></div>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:15px;margin-top:-1px;">
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
-        <div style="width:7px;height:4px;border-radius:50%;background:rgba(167,139,250,0.45);"></div>
       </div>
     </div>
 
-    <!-- Creature 6 — tiny cute orange dot eyes -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <div style="display:flex;gap:4px;">
-        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
-          <svg class="pupil-svg" width="10" height="10" viewBox="0 0 10 10" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#3d1500"/><circle cx="6" cy="4" r="1" fill="white"/></svg>
+    <!-- Creature 6 — orange warm eyes -->
+    <div style="display:flex !important;flex-direction:column !important;align-items:center !important;gap:1px !important;">
+      <div style="display:flex !important;flex-direction:row !important;gap:4px !important;">
+        <div class="eyeball" style="width:22px !important;height:22px !important;border-radius:50% !important;background:#fff3e0 !important;border:2.5px solid #ff8c00 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,140,0,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:10px !important;height:10px !important;border-radius:50% !important;background:#0a2a0a !important;box-shadow:inset 0 0 0 10px #0a2a0a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:3px !important;height:3px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 3px #fff !important;"></div>
           </div>
         </div>
-        <div class="eyeball" style="width:20px;height:20px;border-radius:50%;background:#fff5ee;border:2.5px solid #ff8c42;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,140,66,0.4);">
-          <svg class="pupil-svg" width="10" height="10" viewBox="0 0 10 10" style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#3d1500"/><circle cx="6" cy="4" r="1" fill="white"/></svg>
+        <div class="eyeball" style="width:22px !important;height:22px !important;border-radius:50% !important;background:#fff3e0 !important;border:2.5px solid #ff8c00 !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 8px rgba(255,140,0,0.4) !important;overflow:visible !important;">
+          <div class="pupil" style="width:10px !important;height:10px !important;border-radius:50% !important;background:#0a2a0a !important;box-shadow:inset 0 0 0 10px #0a2a0a !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;z-index:5 !important;">
+            <div style="width:3px !important;height:3px !important;border-radius:50% !important;background:#fff !important;box-shadow:inset 0 0 0 3px #fff !important;"></div>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:0px;">
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
-        <div style="width:6px;height:3px;border-radius:50%;background:rgba(255,140,66,0.45);"></div>
       </div>
     </div>
 
   </div>
-
 </div>
 
 <!-- HEADER -->
@@ -13262,8 +13243,68 @@ setInterval(_syncMobileTrending, 30000);
 </script>
 
 <style>
+/* ===== EYES BANNER: force horizontal layout & visible pupils ===== */
+#eyesBanner {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 82px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+#eyesContainer {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  gap: 22px !important;
+}
+#eyesContainer > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+#eyesContainer > div > div:first-child {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+/* Eyeball white bg locked */
+#eyesBanner .eyeball {
+  background: #ffffff !important;
+  overflow: visible !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+/* Pupil dark locked via box-shadow (immune to background overrides) */
+#eyesBanner .pupil {
+  background: #111 !important;
+  box-shadow: inset 0 0 0 30px #111 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 5 !important;
+  overflow: visible !important;
+}
+/* White shine dot */
+#eyesBanner .pupil > div:not([style*="color"]) {
+  background: #ffffff !important;
+  box-shadow: inset 0 0 0 10px #ffffff !important;
+  border-radius: 50% !important;
+}
+/* Star text */
+#eyesBanner .pupil > div[style*="color"] {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+/* ===== DESKTOP: hide mobile-only elements ===== */
 @media (min-width: 769px) {
-  #eyesBanner         { display: none !important; }
+  #eyesBanner         { display: flex !important; }
   .mp-btn-left,
   .mp-btn-right       { display: none !important; }
   .mp-drawer,
@@ -13277,9 +13318,6 @@ setInterval(_syncMobileTrending, 30000);
   header              { height: 56px !important; padding: 0 18px !important; }
   .layout             { display: flex !important; flex: 1 !important; overflow: hidden !important; }
 }
-/* SVG pupils cannot be overridden by background CSS */
-.pupil-svg { display: block !important; flex-shrink: 0 !important; }
-#eyesBanner .eyeball { background: #ffffff !important; overflow: visible !important; }
 </style>
 
 </body>
