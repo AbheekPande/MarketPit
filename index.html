@@ -134,9 +134,9 @@ if(typeof tailwind!=="undefined") tailwind.config = {
     </div>
   </section>
 
-  <!-- FEATURES -->
-  <section class="px-8 py-24 bg-surface-container-low" id="features">
-    <div class="max-w-7xl mx-auto">
+  <!-- Feature Bento Grid (Replaces old Markets Section) -->
+  <section class="px-8 py-24 bg-surface-container-low">
+    <div class="max-w-screen-2xl mx-auto">
       <div class="mb-16">
         <h2 class="font-headline text-4xl md:text-5xl font-bold text-primary mb-4">Sophisticated Ecosystem</h2>
         <p class="font-body text-lg text-on-surface-variant max-w-2xl">Beyond data. We provide the structural intelligence required for modern asset management across every vertical.</p>
@@ -157,38 +157,50 @@ if(typeof tailwind!=="undefined") tailwind.config = {
             </div>
           </div>
         </div>
-        <!-- Unlisted IPO -->
+        <!-- Unlisted & IPO Data -->
         <div class="md:col-span-4 bg-primary text-on-primary p-8 md:p-12 rounded-xl relative overflow-hidden">
           <div class="z-10 relative">
             <span class="material-symbols-outlined text-4xl mb-6">lock_open</span>
             <h3 class="font-headline text-3xl font-bold mb-4">Unlisted &amp; IPO Data</h3>
-            <p class="font-body opacity-70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
-            <a href="login-2.html" class="inline-flex items-center gap-2 font-bold hover:underline underline-offset-4">Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+            <p class="font-body text-on-primary/70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
+            <a class="inline-flex items-center gap-2 font-bold hover:underline decoration-primary-fixed/30 underline-offset-4" href="login-2.html">
+              Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
           </div>
           <div class="absolute -right-10 -bottom-10 opacity-10"><span class="material-symbols-outlined text-[200px]">finance_chip</span></div>
         </div>
-        <!-- Live Prices -->
+        <!-- Live Multi-Asset Prices -->
         <div class="md:col-span-4 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/5">
           <span class="material-symbols-outlined text-3xl text-primary mb-4">bolt</span>
           <h3 class="font-headline text-2xl font-bold text-primary mb-3">Live Multi-Asset Prices</h3>
           <p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">Real-time data for global stocks, crypto, and commodities. Zero-latency streaming directly to your interface.</p>
           <div class="space-y-3">
-            <div class="flex justify-between items-center p-3 bg-surface-container rounded-lg"><span class="font-label font-bold text-xs uppercase">BTC/USD</span><span class="text-green-600 font-bold text-sm">+4.2%</span></div>
-            <div class="flex justify-between items-center p-3 bg-surface-container rounded-lg opacity-60"><span class="font-label font-bold text-xs uppercase">NIFTY 50</span><span class="text-red-600 font-bold text-sm">-0.8%</span></div>
+            <div class="flex justify-between items-center p-3 bg-surface-container rounded-lg">
+              <span class="font-label font-bold text-xs uppercase">BTC/USD</span>
+              <span class="text-green-600 font-bold text-sm">+4.2%</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-surface-container rounded-lg opacity-60">
+              <span class="font-label font-bold text-xs uppercase">NIFTY 50</span>
+              <span class="text-red-600 font-bold text-sm">-0.8%</span>
+            </div>
           </div>
         </div>
-        <!-- Community -->
+        <!-- The Pit Community -->
         <div class="md:col-span-4 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/5">
           <span class="material-symbols-outlined text-3xl text-primary mb-4">hub</span>
           <h3 class="font-headline text-2xl font-bold text-primary mb-3">The Pit Community</h3>
           <p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">Connect with top traders, share technical analysis, and exchange high-conviction market knowledge.</p>
           <div class="flex -space-x-3">
-            <div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high flex items-center justify-center text-xs font-bold text-primary">JD</div>
-            <div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high flex items-center justify-center text-xs font-bold text-primary">SC</div>
-            <div class="w-10 h-10 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-xs font-bold text-primary">4k+</div>
+            <div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high overflow-hidden">
+              <img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb-hiSSNBs8A_69cg3u7LG1CXiChjjZn-kdO-0si6xxYQZvVFPwunI9Yg4yPHBwnnBAMTOdHClbY7wKRL6DIAVQneEVjTP4Gs5m_UMEtIMcGiW1QGpKVKVB9JD1GLRNxKrwqnBsEJip6TlyJ9zj3T4LOE9uDEzJAmzmrCLrUNW2H_Noa88YV3FEZIZ41bwkN-jRhMFR_hdtGxBkcKHleerHcQWnb1Q6vKtfXWNv2tbcF7_5hzWhrmWc6joPSLb-HCkdtXrvPnr_Zk"/>
+            </div>
+            <div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high overflow-hidden">
+              <img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDR8MAfnxo6xuR1818HcF0O_iIKzFZzj61ZycFlbSS4fF2YIXdmMkUq07cQcN6OVrhmfA0IoexlyUS5p2IK4Hznx_0p5jNhs7r3wuWxJ-wwtM8W1Xta-mudE1FXD1Ezm4xPBDvUUr9zmBiyxyq9bdvDpefzPbz7F1OydQPYTxiL1Hw-yXvSxEtyP74vRyDKc5eYDqIghpa9KFMl_kAj6M2fDwUvVJpFyFNzX3WL5rhos_OMe208bYao8jvO73_d1PGcACQ2G60ygPc"/>
+            </div>
+            <div class="w-10 h-10 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-xs font-bold text-primary">+4k</div>
           </div>
         </div>
-        <!-- Comparison -->
+        <!-- Comparison & Analytics -->
         <div class="md:col-span-4 bg-secondary-container/30 p-8 rounded-xl border border-outline-variant/5">
           <span class="material-symbols-outlined text-3xl text-primary mb-4">analytics</span>
           <h3 class="font-headline text-2xl font-bold text-primary mb-3">Comparison &amp; Analytics</h3>
