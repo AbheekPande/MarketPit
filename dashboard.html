@@ -13304,6 +13304,18 @@ setInterval(_syncMobileTrending, 30000);
   /* Ensure layout fills properly */
   .layout { display: flex !important; flex: 1 !important; overflow: hidden !important; }
 }
+
+/* FIX: Pupil visibility — theme CSS was overriding dark background */
+.pupil {
+  background: #111 !important;
+  position: relative !important;
+}
+.eyeball {
+  overflow: visible !important;
+}
+#eyesBanner .pupil > div {
+  background: #fff !important;
+}
 </style>
 
 </body>
