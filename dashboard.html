@@ -813,6 +813,7 @@ header {
   .right-sidebar { display: flex !important; }
   .bottom-nav    { display: none !important; }
   .mp-btn-left, .mp-btn-right { display: none !important; }
+  .mp-drawer, .mp-drawer-overlay { display: none !important; }
   .main-feed     { flex: 1 !important; width: auto !important; }
   body           { min-width: 1024px !important; overflow-x: auto !important; }
 }
@@ -13251,6 +13252,7 @@ setInterval(_syncMobileTrending, 30000);
   window.addEventListener('resize', setDrawerBtns);
 
   window.mpOpenDrawer = function(side){
+    if(!isMobile()) return; // never open on desktop
     if(side === 'right'){
       var el = document.getElementById('mpRightContent');
       if(el){
