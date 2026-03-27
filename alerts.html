@@ -241,7 +241,8 @@ function finalizeSetup() {
     const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
     if (user) {
       user.alertPrefs   = alerts;
-            localStorage.setItem('mp_user', JSON.stringify(user));
+      user.onboardingDone = true;
+      localStorage.setItem('mp_user', JSON.stringify(user));
     } else {
       localStorage.setItem('mp_alert_prefs', JSON.stringify(alerts));
     }
