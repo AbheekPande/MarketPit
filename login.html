@@ -146,7 +146,7 @@ try {
 <!-- Real Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="g_id_onload"
-  data-client_id="329129705952-ebejg4u7le9dfa3fq9hdnojv572r2atb.apps.googleusercontent.com"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
   data-callback="handleGoogleLogin"
   data-auto_select="false"
   data-itp_support="true">
@@ -365,7 +365,8 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   const isNew = _saveAccount(name, email, password);
-  window.location.href = 'session-keep.html';
+  // New users go through onboarding flow
+  window.location.href = isNew ? 'verify.html' : 'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
@@ -376,7 +377,8 @@ function _saveAccount(name, email, password, isNew) {
     accounts.push({ name, email, password, joinedAt: Date.now() });
     localStorage.setItem('mp_accounts', JSON.stringify(accounts));
   }
-  localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now() }));
+  const onboardingDone = !!exists; // only existing users have completed onboarding
+  localStorage.setItem('mp_user', JSON.stringify({ name, email, displayName: name, joinedAt: Date.now(), onboardingDone }));
   localStorage.setItem('mp_session_email', email);
   return !exists; // returns true if brand new user
 }
