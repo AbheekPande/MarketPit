@@ -8,7 +8,7 @@ try {
   const kept = localStorage.getItem('mp_keep_session');
   const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
   if (kept === '1' && user && user.email) {
-    window.location.replace('dashboard-22.html');
+    window.location.replace('dashboard.html');
   }
 } catch(e) {}
 </script>
@@ -105,7 +105,7 @@ try {
 <header class="bg-[#f8faf7] sticky top-0 z-50">
 <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
 <!-- Logo → back to landing page -->
-<a href="index-21.html" class="text-2xl font-serif font-bold text-[#003227] hover:opacity-80 transition-opacity">
+<a href="index.html" class="text-2xl font-serif font-bold text-[#003227] hover:opacity-80 transition-opacity">
                 Market Pit
             </a>
 <div class="flex items-center gap-4">
@@ -272,7 +272,7 @@ function handleGoogleLogin(response) {
     const email = payload.email || '';
     if (!email) { alert('Could not get email from Google. Try again.'); return; }
     const isNew = _saveAccount(name, email, '');
-    window.location.href = 'session-keep-3.html';
+    window.location.href = 'session-keep.html';
   } catch(e) {
     alert('Google sign-in failed. Please use email login below.');
   }
@@ -331,7 +331,7 @@ async function handleLogin(e) {
 
   btn.textContent = 'Signing in…';
   btn.disabled    = true;
-  window.location.href = 'session-keep-3.html';
+  window.location.href = 'session-keep.html';
 }
 
 // ── Toggle between login and signup panels ──────────────────────────────────
@@ -365,7 +365,7 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   const isNew = _saveAccount(name, email, password);
-  window.location.href = 'session-keep-3.html';
+  window.location.href = 'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────

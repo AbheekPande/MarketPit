@@ -238,7 +238,7 @@ function toggleCard(card) {
 }
 
 function goToDashboard() {
-  window.location.href = 'dashboard-22.html';
+  window.location.href = 'dashboard.html';
 }
 
 function completeSetup() {
@@ -252,14 +252,14 @@ function completeSetup() {
       localStorage.setItem('mp_interests', JSON.stringify([...selected]));
     }
   } catch(e) {}
-  window.location.href = 'alerts-setup-4.html';
+  window.location.href = 'alerts-setup.html';
 }
 
 // If user has already done onboarding, skip straight to dashboard
 try {
   const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
   if (user && user.onboardingDone) {
-    window.location.href = 'dashboard-22.html';
+    window.location.href = 'dashboard.html';
   }
 } catch(e) {}
 </script>

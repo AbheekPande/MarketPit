@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 
 <html lang="en"><head>
-<script>
-(function(){
-  try {
-    var u = JSON.parse(localStorage.getItem('mp_user')||'null');
-    var s = localStorage.getItem('mp_session_email');
-    if(u && u.email && s){ window.location.replace('dashboard-22.html'); }
-  } catch(e){}
-})();
-</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Market Pit | Institutional Terminal</title>
@@ -95,7 +86,7 @@
 <!-- TopNavBar -->
 <nav class="fixed top-0 w-full z-50 bg-surface/80 glass-nav shadow-[0px_20px_40px_rgba(25,28,27,0.06)] h-20">
 <div class="flex justify-between items-center max-w-7xl mx-auto px-8 h-full">
-  <a href="index-21.html" class="text-2xl font-headline italic font-bold text-[#003227]">Market Pit</a>
+  <a href="index.html" class="text-2xl font-headline italic font-bold text-[#003227]">Market Pit</a>
 
   <!-- Desktop nav -->
   <div class="hidden md:flex items-center space-x-8 font-headline font-semibold tracking-tight">
@@ -106,13 +97,13 @@
 
   <!-- Desktop buttons -->
   <div class="hidden md:flex items-center space-x-6">
-    <a href="login-2.html" class="text-[#003227] font-semibold hover:opacity-80 transition-all">Log In</a>
-    <a href="login-2.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-md hover:scale-[0.99] active:opacity-80 duration-200">Get Started</a>
+    <a href="login.html" class="text-[#003227] font-semibold hover:opacity-80 transition-all">Log In</a>
+    <a href="login.html" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-md hover:scale-[0.99] active:opacity-80 duration-200">Get Started</a>
   </div>
 
   <!-- Mobile: Log In + Hamburger -->
   <div class="flex md:hidden items-center gap-3">
-    <a href="login-2.html" class="text-[#003227] font-semibold text-sm">Log In</a>
+    <a href="login.html" class="text-[#003227] font-semibold text-sm">Log In</a>
     <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="flex flex-col gap-1.5 p-2" aria-label="Menu">
       <span class="block w-6 h-0.5 bg-[#003227]"></span>
       <span class="block w-6 h-0.5 bg-[#003227]"></span>
@@ -127,7 +118,7 @@
     <a href="#features" onclick="setActive('features');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Features</a>
     <a href="#" onclick="setActive('platforms');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Platforms</a>
     <a href="#education" onclick="setActive('education');toggleMobileMenu();" class="py-3 text-[#191c1b]/80 font-semibold text-base border-b border-[#003227]/10">Education</a>
-    <a href="login-2.html" class="mt-3 w-full text-center bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-semibold shadow-md">Get Started</a>
+    <a href="login.html" class="mt-3 w-full text-center bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-semibold shadow-md">Get Started</a>
   </div>
 </div>
 </nav>
@@ -147,12 +138,12 @@
                     </p>
 <div class="flex flex-wrap gap-4">
 <!-- Enter the Pit → login.html -->
-<a href="login-2.html" class="bg-primary text-on-primary px-8 py-4 rounded-lg font-bold flex items-center gap-2 group">
+<a href="login.html" class="bg-primary text-on-primary px-8 py-4 rounded-lg font-bold flex items-center gap-2 group">
                             Enter the Pit
                             <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </a>
 <!-- Explore Ecosystem → login.html -->
-<a href="login-2.html" class="border border-outline/20 px-8 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-low transition-colors">
+<a href="login.html" class="border border-outline/20 px-8 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-low transition-colors">
                             Explore Ecosystem
                         </a>
 </div>
@@ -210,7 +201,7 @@
 <span class="material-symbols-outlined text-4xl mb-6">lock_open</span>
 <h3 class="font-headline text-3xl font-bold mb-4">Unlisted &amp; IPO Data</h3>
 <p class="font-body text-on-primary/70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
-<a href="login-2.html" class="inline-flex items-center gap-2 font-bold hover:underline decoration-primary-fixed/30 underline-offset-4">
+<a href="login.html" class="inline-flex items-center gap-2 font-bold hover:underline decoration-primary-fixed/30 underline-offset-4">
 Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span>
 </a>
 </div>
@@ -345,7 +336,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <span class="material-symbols-outlined text-4xl mb-6">lock_open</span>
 <h3 class="font-headline text-3xl font-bold mb-4">Unlisted &amp; IPO Data</h3>
 <p class="font-body opacity-70 mb-8">Access pre-market and unlisted shares. Early access intelligence before the retail crowd arrives.</p>
-<a class="inline-flex items-center gap-2 font-bold hover:underline underline-offset-4" href="login-2.html">Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+<a class="inline-flex items-center gap-2 font-bold hover:underline underline-offset-4" href="login.html">Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
 </div>
 <div class="absolute -right-10 -bottom-10 opacity-10"><span class="material-symbols-outlined text-[200px]">finance_chip</span></div>
 </div>
@@ -422,7 +413,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <span class="px-3 py-1 bg-surface-container-high rounded text-xs font-medium text-on-surface-variant uppercase">Asset Classes</span>
 </div>
 </div>
-<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 2: Technical Analysis -->
@@ -433,7 +424,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-2xl text-primary mb-4">Technical Analysis</h3>
 <p class="text-on-surface-variant leading-relaxed mb-6">Advanced charting techniques and price action strategies that bypass traditional lagging indicators.</p>
 </div>
-<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 3: Risk Management -->
@@ -444,7 +435,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-2xl text-primary mb-4">Risk Management</h3>
 <p class="text-on-surface-variant leading-relaxed mb-6">Capital preservation frameworks used by prop desks to maintain consistent equity growth under pressure.</p>
 </div>
-<a href="login-2.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
+<a href="login.html" class="flex items-center gap-2 text-primary font-bold group-hover:gap-4 transition-all mt-auto">Start Learning <span class="material-symbols-outlined">arrow_forward</span></a>
 </div>
 </div>
 <!-- Track 4: Macro Intelligence -->
@@ -457,7 +448,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h3 class="font-headline text-3xl mb-4 text-primary-fixed">Macro Intelligence</h3>
 <p class="text-on-primary-container leading-relaxed text-lg mb-8">Master the invisible forces driving global capital. From Central Bank policy shifts to geopolitical flow dynamics, learn to read the global chess board.</p>
 <div class="flex gap-6 items-center">
-<a href="login-2.html" class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-lg font-bold hover:bg-white transition-colors">Enroll in Track</a>
+<a href="login.html" class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-lg font-bold hover:bg-white transition-colors">Enroll in Track</a>
 <span class="text-sm italic opacity-80">68 Modules | Advanced Level</span>
 </div>
 </div>
@@ -511,7 +502,7 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <h2 class="font-headline text-5xl font-bold mb-6">Ready to join the discourse?</h2>
 <p class="text-xl opacity-80 mb-10 max-w-2xl mx-auto">Create your bespoke financial environment today and experience the new standard of market intelligence.</p>
 <!-- Apply for Access → login.html -->
-<a href="login-2.html" class="bg-surface text-primary px-10 py-5 rounded-lg font-bold hover:bg-primary-fixed transition-all shadow-lg inline-block">
+<a href="login.html" class="bg-surface text-primary px-10 py-5 rounded-lg font-bold hover:bg-primary-fixed transition-all shadow-lg inline-block">
                         Apply for Access
                     </a>
 </div>
@@ -531,16 +522,16 @@ Secure Access <span class="material-symbols-outlined text-sm">arrow_forward</spa
 <div>
 <h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Platform</h5>
 <ul class="space-y-4">
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">The Pit</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">Market Data</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login-2.html">Global API</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">The Pit</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Market Data</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="login.html">Global API</a></li>
 </ul>
 </div>
 <div>
 <h5 class="font-bold text-[#003227] mb-6 font-manrope text-sm tracking-widest uppercase">Resources</h5>
 <ul class="space-y-4">
 <li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Market News</a></li>
-<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="education-7.html">Education</a></li>
+<li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="education.html">Education</a></li>
 <li><a class="text-[#191c1b]/60 text-sm hover:text-[#004b3c] hover:underline underline-offset-4 transition-all duration-300" href="#">Risk Disclosure</a></li>
 </ul>
 </div>
