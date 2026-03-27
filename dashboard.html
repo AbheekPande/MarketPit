@@ -13144,7 +13144,9 @@ setInterval(autoResolveBets, 5 * 60 * 1000);
   });
 
   // Check on load
-  if (!navigator.onLine)
+  if (!navigator.onLine) {
+    document.addEventListener('DOMContentLoaded', showOffline);
+  }
 })();
 
 // ── MOBILE: sync trending into right sidebar mirror ──

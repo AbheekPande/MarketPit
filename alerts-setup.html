@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alert Preferences - Market Pit</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary": "#4c1e14", "tertiary-fixed-dim": "#ffb4a4",
+        "surface-container-highest": "#e1e3e0", "on-secondary": "#ffffff",
+        "on-primary-container": "#7cbaa6", "secondary-container": "#cce5db",
+        "inverse-on-surface": "#eff1ee", "tertiary-fixed": "#ffdad3",
+        "on-surface-variant": "#404945", "background": "#f8faf7",
+        "tertiary-container": "#673328", "on-tertiary-container": "#e59c8d",
+        "error": "#ba1a1a", "on-tertiary-fixed-variant": "#6d382c",
+        "on-tertiary": "#ffffff", "on-primary-fixed": "#002019",
+        "on-error": "#ffffff", "surface-dim": "#d8dbd8",
+        "error-container": "#ffdad6", "surface-tint": "#2b6958",
+        "surface": "#f8faf7", "on-background": "#191c1b",
+        "secondary": "#4c635b", "inverse-surface": "#2e312f",
+        "secondary-fixed": "#cfe8de", "surface-variant": "#e1e3e0",
+        "on-surface": "#191c1b", "surface-container-high": "#e7e9e6",
+        "on-tertiary-fixed": "#370e06", "on-primary": "#ffffff",
+        "surface-container-low": "#f2f4f1", "primary-fixed-dim": "#95d3bf",
+        "on-primary-fixed-variant": "#0a5041", "outline": "#707975",
+        "on-secondary-container": "#51675f", "surface-bright": "#f8faf7",
+        "inverse-primary": "#95d3bf", "on-secondary-fixed-variant": "#354b44",
+        "on-secondary-fixed": "#091f19", "surface-container-lowest": "#ffffff",
+        "primary-container": "#004b3c", "surface-container": "#eceeeb",
+        "outline-variant": "#bfc9c4", "secondary-fixed-dim": "#b3ccc2",
+        "primary-fixed": "#b0efda", "primary": "#003227", "on-error-container": "#93000a"
+      },
+      fontFamily: { "headline": ["Noto Serif"], "body": ["Manrope"], "label": ["Manrope"] },
+      borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+    },
+  },
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .toggle-dot { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  input:checked ~ .toggle-bg { background-color: #003227; }
+  input:checked ~ .toggle-dot { transform: translateX(1.25rem); background-color: #b0efda; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+
+<!-- Header -->
+<header class="bg-[#f8faf7] fixed top-0 w-full z-50">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-8">
+      <span class="font-['Noto_Serif'] italic font-bold text-[#003227] text-lg">Market Pit</span>
+    </div>
+    <button onclick="goToDashboard()" class="text-sm font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors">
+      Skip for now
+    </button>
+  </div>
+</header>
+
+<main class="min-h-screen pt-32 pb-40 px-6 max-w-5xl mx-auto">
+
+  <!-- Progress bar -->
+  <div class="mb-16">
+    <div class="flex justify-between items-end mb-4">
+      <span class="font-label text-xs uppercase tracking-[0.2em] text-outline font-bold">Step 2 of 3</span>
+      <span class="font-label text-xs font-bold text-primary">66% Complete</span>
+    </div>
+    <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+      <div class="h-full bg-primary rounded-full" style="width:66%"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+    <!-- Left column -->
+    <div class="lg:col-span-5">
+      <h1 class="font-headline text-5xl lg:text-6xl text-on-surface leading-[1.1] mb-6">
+        Stay ahead of <br/><span class="italic font-normal">the tape</span>
+      </h1>
+      <p class="text-on-surface-variant text-lg leading-relaxed max-w-md">
+        Configure your intelligence feed. Our proprietary Veridian Logic filters out noise, ensuring you only receive high-conviction signals directly to your terminal.
+      </p>
+      <div class="mt-12 p-8 bg-surface-container-low rounded-lg relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <span class="material-symbols-outlined text-primary mb-4" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+        <h3 class="font-headline text-xl mb-2 text-primary">Veridian Logic</h3>
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          Institutional-grade filtering applied to all active alerts. Zero latency, maximum clarity.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right column: toggles -->
+    <div class="lg:col-span-7 space-y-4">
+
+      <!-- Breaking News -->
+      <div class="bg-surface-container-lowest p-8 rounded-lg shadow-[0px_20px_40px_rgba(25,28,27,0.04)] hover:shadow-[0px_20px_40px_rgba(25,28,27,0.08)] transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-full">
+              <span class="material-symbols-outlined text-primary">campaign</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-on-surface">Breaking News</h4>
+              <p class="text-xs text-on-surface-variant font-label uppercase tracking-wider">Macro &amp; Event Driven</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" id="alert_news"/>
+            <div class="w-11 h-6 bg-surface-container-highest rounded-full toggle-bg transition-colors peer-focus:ring-2 peer-focus:ring-primary-fixed"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full toggle-dot"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Technical Breakouts -->
+      <div class="bg-surface-container-lowest p-8 rounded-lg shadow-[0px_20px_40px_rgba(25,28,27,0.04)] hover:shadow-[0px_20px_40px_rgba(25,28,27,0.08)] transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-full">
+              <span class="material-symbols-outlined text-primary">trending_up</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-on-surface">Technical Breakouts</h4>
+              <p class="text-xs text-on-surface-variant font-label uppercase tracking-wider">Pattern Recognition</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" id="alert_technical"/>
+            <div class="w-11 h-6 bg-surface-container-highest rounded-full toggle-bg transition-colors peer-focus:ring-2 peer-focus:ring-primary-fixed"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full toggle-dot"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sentiment Shifts -->
+      <div class="bg-surface-container-lowest p-8 rounded-lg shadow-[0px_20px_40px_rgba(25,28,27,0.04)] hover:shadow-[0px_20px_40px_rgba(25,28,27,0.08)] transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-full">
+              <span class="material-symbols-outlined text-primary">psychology</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-on-surface">Sentiment Shifts</h4>
+              <p class="text-xs text-on-surface-variant font-label uppercase tracking-wider">Social &amp; Retail Flow</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" id="alert_sentiment"/>
+            <div class="w-11 h-6 bg-surface-container-highest rounded-full toggle-bg transition-colors peer-focus:ring-2 peer-focus:ring-primary-fixed"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full toggle-dot"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Institutional Flow -->
+      <div class="bg-surface-container-lowest p-8 rounded-lg shadow-[0px_20px_40px_rgba(25,28,27,0.04)] hover:shadow-[0px_20px_40px_rgba(25,28,27,0.08)] transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-full">
+              <span class="material-symbols-outlined text-primary">account_balance</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-on-surface">Institutional Flow</h4>
+              <p class="text-xs text-on-surface-variant font-label uppercase tracking-wider">Dark Pools &amp; Whale Activity</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" id="alert_institutional"/>
+            <div class="w-11 h-6 bg-surface-container-highest rounded-full toggle-bg transition-colors peer-focus:ring-2 peer-focus:ring-primary-fixed"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full toggle-dot"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Insider Trades -->
+      <div class="bg-surface-container-lowest p-8 rounded-lg shadow-[0px_20px_40px_rgba(25,28,27,0.04)] hover:shadow-[0px_20px_40px_rgba(25,28,27,0.08)] transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-full">
+              <span class="material-symbols-outlined text-primary">gavel</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-on-surface">Insider Trades</h4>
+              <p class="text-xs text-on-surface-variant font-label uppercase tracking-wider">Form 4 Filings</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" id="alert_insider"/>
+            <div class="w-11 h-6 bg-surface-container-highest rounded-full toggle-bg transition-colors peer-focus:ring-2 peer-focus:ring-primary-fixed"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full toggle-dot"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Nav buttons -->
+      <div class="pt-10 flex items-center justify-between">
+        <button onclick="window.location.href='onboarding.html'" class="flex items-center gap-2 text-primary font-bold group">
+          <span class="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+          Back
+        </button>
+        <button onclick="finalizeSetup()" class="bg-primary text-white px-10 py-4 rounded-lg font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+          Finalize Setup
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center px-8 py-6 gap-4 bg-white/80 backdrop-blur-md z-50">
+  <span class="font-['Manrope'] text-xs tracking-wider uppercase text-[#707973]">© 2024 Market Pit. Premium Financial Intelligence.</span>
+  <div class="flex gap-8">
+    <a class="font-['Manrope'] text-xs tracking-wider uppercase text-[#707973] hover:text-[#004b3c] transition-all" href="#">Privacy Policy</a>
+    <a class="font-['Manrope'] text-xs tracking-wider uppercase text-[#707973] hover:text-[#004b3c] transition-all" href="#">Terms of Service</a>
+    <a class="font-['Manrope'] text-xs tracking-wider uppercase text-[#707973] hover:text-[#004b3c] transition-all" href="#">Contact Support</a>
+  </div>
+</footer>
+
+<script>
+function goToDashboard() {
+  window.location.href = 'dashboard.html';
+}
+
+function finalizeSetup() {
+  // Save alert preferences
+  const alerts = {
+    breakingNews:      document.getElementById('alert_news').checked,
+    technicalBreakouts:document.getElementById('alert_technical').checked,
+    sentimentShifts:   document.getElementById('alert_sentiment').checked,
+    institutionalFlow: document.getElementById('alert_institutional').checked,
+    insiderTrades:     document.getElementById('alert_insider').checked,
+  };
+  try {
+    const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    if (user) {
+      user.alertPrefs   = alerts;
+      user.onboardingDone = true;
+      localStorage.setItem('mp_user', JSON.stringify(user));
+    } else {
+      localStorage.setItem('mp_alert_prefs', JSON.stringify(alerts));
+    }
+  } catch(e) {}
+  window.location.href = 'strategy-setup.html';
+}
+</script>
+</body></html>

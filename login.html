@@ -272,8 +272,7 @@ function handleGoogleLogin(response) {
     const email = payload.email || '';
     if (!email) { alert('Could not get email from Google. Try again.'); return; }
     const isNew = _saveAccount(name, email, '');
-        if (isNew) { window.location.href = 'onboarding.html'; return; }
-        window.location.href = 'session-keep.html';
+    window.location.href = 'session-keep.html';
   } catch(e) {
     alert('Google sign-in failed. Please use email login below.');
   }
@@ -366,7 +365,7 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   const isNew = _saveAccount(name, email, password);
-        window.location.href = isNew ? 'onboarding.html' : 'session-keep.html';
+  window.location.href = 'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
