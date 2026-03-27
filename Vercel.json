@@ -1,4 +1,17 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false
+  "version": 2,
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "installCommand": "echo skip",
+  "rewrites": [
+    { "source": "/dashboard",  "destination": "/dashboard.html" },
+    { "source": "/login",      "destination": "/login.html" },
+    { "source": "/onboarding", "destination": "/onboarding.html" },
+    { "source": "/verify",     "destination": "/verify.html" },
+    { "source": "/alerts",     "destination": "/alerts.html" },
+    { "source": "/strategy",   "destination": "/strategy.html" },
+    { "source": "/education",  "destination": "/education.html" },
+    { "source": "/(.*)",       "destination": "/index.html" }
+  ]
 }
