@@ -1,20 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.js",   "use": "@vercel/static" },
-    { "src": "*.css",  "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/",                  "dest": "/index-21.html" },
-    { "src": "/login",             "dest": "/login-2.html" },
-    { "src": "/dashboard",         "dest": "/dashboard-22.html" },
-    { "src": "/onboarding",        "dest": "/onboarding-6.html" },
-    { "src": "/verify",            "dest": "/verify-8.html" },
-    { "src": "/alerts",            "dest": "/alerts-setup-4.html" },
-    { "src": "/strategy",          "dest": "/strategy-setup-5.html" },
-    { "src": "/education",         "dest": "/education-7.html" },
-    { "src": "/session-keep",      "dest": "/session-keep-3.html" },
-    { "src": "/(.*)",              "dest": "/$1" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
