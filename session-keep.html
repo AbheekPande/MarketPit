@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Market Pit | Session</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{colors:{
+    "on-surface-variant":"#404945","surface-container":"#eceeeb",
+    "surface-container-high":"#e7e9e6","on-surface":"#191c1b",
+    "outline":"#707975","outline-variant":"#bfc9c4",
+    "secondary":"#4c635b","primary-fixed":"#b0efda",
+    "primary-container":"#004b3c","on-primary":"#ffffff",
+    "surface-container-lowest":"#ffffff","surface-container-low":"#f2f4f1",
+    "primary":"#003227","surface":"#f8faf7",
+  },fontFamily:{"headline":["Noto Serif"],"body":["Manrope"],"label":["Manrope"]},
+  borderRadius:{"DEFAULT":"0.5rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"}}}
+}
+</script>
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}</style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen overflow-hidden">
+
+<!-- Blurred background dashboard mockup -->
+<div class="fixed inset-0 z-0 blur-md grayscale-[0.2] opacity-60 pointer-events-none">
+  <header class="fixed top-0 w-full bg-[#f8faf7]/80 backdrop-blur-[20px] shadow-sm flex justify-between items-center px-12 py-4">
+    <div class="text-lg font-headline italic tracking-widest text-primary">MARKET PIT</div>
+    <nav class="hidden md:flex gap-8 items-center">
+      <span class="text-primary font-semibold border-b-2 border-primary pb-1">Market Feed</span>
+      <span class="text-stone-500 font-medium">Trading Pits</span>
+      <span class="text-stone-500 font-medium">Screener</span>
+      <span class="text-stone-500 font-medium">Market News</span>
+    </nav>
+  </header>
+  <main class="pt-28 px-12 grid grid-cols-12 gap-8">
+    <div class="col-span-8 h-96 bg-surface-container-low rounded-xl"></div>
+    <div class="col-span-4 h-96 bg-surface-container-low rounded-xl"></div>
+    <div class="col-span-4 h-64 bg-surface-container-low rounded-xl"></div>
+    <div class="col-span-4 h-64 bg-surface-container-low rounded-xl"></div>
+    <div class="col-span-4 h-64 bg-surface-container-low rounded-xl"></div>
+  </main>
+</div>
+
+<!-- Modal overlay -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-on-surface/10 backdrop-blur-sm p-6">
+  <div class="relative w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-[0px_20px_40px_rgba(25,28,27,0.10)] overflow-hidden border border-outline-variant/10">
+    <div class="absolute -top-12 -right-12 w-48 h-48 bg-primary-fixed/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="relative p-10 md:p-14 flex flex-col items-center text-center">
+      <div class="mb-8 w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-3xl">lock_clock</span>
+      </div>
+      <h2 class="font-headline text-3xl md:text-4xl text-on-surface mb-6 leading-tight">
+        Keep your <span class="italic text-primary">session active?</span>
+      </h2>
+      <p class="font-body text-on-surface-variant text-lg leading-relaxed mb-10 max-w-sm">
+        Staying logged in ensures uninterrupted access to
+        <span class="text-primary font-semibold">real-time market data</span>
+        and exclusive institutional-grade community signals.
+      </p>
+      <div class="flex flex-col w-full gap-4">
+        <button onclick="keepSession()" class="w-full py-4 px-8 bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold rounded-lg shadow-lg hover:opacity-90 transition-all active:scale-[0.98]">
+          Keep me logged in
+        </button>
+        <button onclick="askLater()" class="w-full py-3 px-8 text-secondary font-body font-semibold hover:text-primary transition-colors duration-300">
+          Ask me later
+        </button>
+      </div>
+      <div class="mt-10 pt-8 border-t border-outline-variant/20 w-full flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-outline" style="font-size:14px;">verified_user</span>
+        <span class="font-label text-[10px] uppercase tracking-widest text-outline">Secure · Market Pit</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function keepSession() {
+  try {
+    const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    if (user) {
+      user.keepSession    = true;
+      // onboardingDone is set only after completing onboarding
+      localStorage.setItem('mp_user', JSON.stringify(user));
+    }
+    localStorage.setItem('mp_keep_session', '1');
+  } catch(e) {}
+  window.location.href = 'dashboard.html';
+  try {
+    const u = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    if (u && u.onboardingDone) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'onboarding.html';
+    }
+  } catch(e) {
+    window.location.href = 'onboarding.html';
+  }
+
+function askLater() {
+  try {
+    const user = JSON.parse(localStorage.getItem('mp_user') || 'null');
+    if (user && user.onboardingDone) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'onboarding.html';
+    }
+  } catch(e) {
+    window.location.href = 'onboarding.html';
+  }
+}
+</script>
+</body></html>
