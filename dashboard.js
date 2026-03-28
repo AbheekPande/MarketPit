@@ -10218,7 +10218,7 @@ function renderHeatmap() {
 
   // ── Pupil tracking ──
   function trackPupils(cx, cy) {
-    banner.querySelectorAll('.eyeball').forEach(eyeball => {
+    document.querySelectorAll('.eyeball').forEach(eyeball => {
       const pupil = eyeball.querySelector('.pupil');
       if (!pupil) return;
       const er = eyeball.getBoundingClientRect();
