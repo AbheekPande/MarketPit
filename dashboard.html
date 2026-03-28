@@ -681,11 +681,13 @@ header {
 .opt-itm-put  { background:rgba(0,168,84,0.05); }
 
 /* ── BOTTOM NAV (mobile only) ── */
-.bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:58px; background:var(--bg2); border-top:1px solid var(--border); z-index:300; box-shadow:0 -2px 12px rgba(0,0,0,0.08); }
-.bottom-nav-inner { display:flex; height:100%; }
-.bn-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; transition:all 0.15s; border:none; background:none; color:var(--text3); font-size:10px; font-weight:600; font-family:'DM Sans',sans-serif; }
+.bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:64px; background:var(--bg2); border-top:1px solid var(--border); z-index:300; box-shadow:0 -4px 20px rgba(0,0,0,0.1); }
+.bottom-nav-inner { display:flex; height:100%; align-items:stretch; }
+.bn-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; transition:all 0.15s; border:none; background:none; color:var(--text3); font-size:10px; font-weight:600; font-family:'DM Sans',sans-serif; padding:8px 4px; -webkit-tap-highlight-color:transparent; }
 .bn-item.active { color:var(--accent); }
-.bn-item .bn-icon { font-size:20px; line-height:1; }
+.bn-item.active svg { stroke:var(--accent); }
+.bn-item svg { width:22px; height:22px; stroke:var(--text3); transition:stroke 0.15s; flex-shrink:0; }
+.bn-item:active { transform:scale(0.92); }
 
 /* ── MOBILE SIDEBAR DRAWER ── */
 .sidebar-drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:350; }
@@ -703,33 +705,32 @@ header {
 
   /* Center feed = full width */
   .main-feed { flex: 1 1 100% !important; min-width: 0 !important; width: 100% !important; }
-  .feed-scroll { padding: 4px 10px 20px !important; }
+  .feed-scroll { padding: 4px 10px 80px !important; }
 
   /* Header compact */
   header { height: 46px !important; padding: 0 8px !important; gap: 4px !important; }
   .logo-mark { width: 26px !important; height: 26px !important; }
   .logo-wordmark { font-size: 13px !important; letter-spacing: 1px !important; }
   .logo-tag { display: none !important; }
-  .nav-tab { padding: 0 5px !important; font-size: 9px !important; }
-  .nav-tab .ti { display: none !important; }
-  .header-search { max-width: 110px !important; }
+  .nav-tab { display: none !important; }
+  .header-search { max-width: 120px !important; }
   .notif-btn { width: 28px !important; height: 28px !important; }
 
-  /* Eyes banner */
-  #eyesBanner { height: 44px !important; overflow: hidden !important; }
+  /* Eyes banner — hide on mobile, wastes space */
+  #eyesBanner { display: none !important; }
 
   /* Hero */
-  #spotlightHero { height: 100px !important; margin: 4px 8px 0 !important; }
+  #spotlightHero { height: 110px !important; margin: 4px 8px 0 !important; }
   #heroTitle { font-size: 22px !important; letter-spacing: 2px !important; }
   #heroPricesRow { gap: 8px !important; margin-top: 4px !important; }
   #heroNifty, #heroBankNifty, #heroBtc { font-size: 13px !important; }
 
   /* Stories */
   #storiesBar { padding: 4px 8px !important; gap: 6px !important; }
-  .story-bubble { width: 40px !important; }
-  .story-ring { width: 34px !important; height: 34px !important; }
-  .story-ring-inner { font-size: 13px !important; }
-  .story-label { font-size: 7px !important; }
+  .story-bubble { width: 44px !important; }
+  .story-ring { width: 36px !important; height: 36px !important; }
+  .story-ring-inner { font-size: 14px !important; }
+  .story-label { font-size: 8px !important; }
 
   /* Feed */
   .feed-filters { padding: 4px 8px !important; gap: 6px !important; }
@@ -819,8 +820,9 @@ header {
   .right-sidebar { display: flex !important; }
   .bottom-nav    { display: none !important; }
   .mp-btn-left, .mp-btn-right { display: none !important; }
+  .mp-drawer { display: none !important; }
+  .mp-drawer-overlay { display: none !important; }
   .main-feed     { flex: 1 !important; width: auto !important; }
-  body           { min-width: 1024px !important; overflow-x: auto !important; }
 }
 </style>
 <body>
@@ -1971,17 +1973,26 @@ header {
 <!-- BOTTOM NAV (mobile) -->
 <div class="bottom-nav">
   <div class="bottom-nav-inner">
-    <button class="bn-item active" onclick="switchTabMobile(this,'feed')"><span class="bn-icon">⚡</span>Feed</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'pits')"><span class="bn-icon">🏛️</span>Pits</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'trending')"><span class="bn-icon">🔥</span>Trending</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'watchlist')"><span class="bn-icon">⭐</span>Watch</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'news')"><span class="bn-icon">📰</span>News</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'messages')"><span class="bn-icon">💬</span>DMs</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'paper')"><span class="bn-icon">📝</span>Paper</button>
-
-    <button class="bn-item" onclick="switchTabMobile(this,'compare')"><span class="bn-icon">⚖️</span>Compare</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'optpnl')"><span class="bn-icon">🎯</span>Strategies</button>
-    <button class="bn-item" onclick="switchTabMobile(this,'mf')"><span class="bn-icon">🏦</span>MF</button>
+    <button class="bn-item active" onclick="switchTabMobile(this,'feed')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Feed
+    </button>
+    <button class="bn-item" onclick="switchTabMobile(this,'watchlist')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Watch
+    </button>
+    <button class="bn-item" onclick="mpOpenDrawer('left')" id="bnMenuBtn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      More
+    </button>
+    <button class="bn-item" onclick="switchTabMobile(this,'news')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+      News
+    </button>
+    <button class="bn-item" onclick="switchTabMobile(this,'paper')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Paper
+    </button>
   </div>
 </div>
 
@@ -13259,6 +13270,7 @@ setInterval(_syncMobileTrending, 30000);
   window.addEventListener('resize', setDrawerBtns);
 
   window.mpOpenDrawer = function(side){
+    if(!isMobile()) return; // never open drawers on desktop
     if(side === 'right'){
       var el = document.getElementById('mpRightContent');
       if(el){
