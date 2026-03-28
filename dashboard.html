@@ -8448,117 +8448,131 @@ setInterval(() => {
 // Cache for technicals so we don't re-fetch on every dropdown change
 const _techCache = {};
 
-// Fetch 6-month daily OHLC and calculate all technical indicators
 async function fetchTechnicals(sym) {
   if (_techCache[sym] && Date.now() - _techCache[sym]._ts < 300000) return _techCache[sym];
 
   const yfSym = YF_STOCK_MAP[sym];
   if (!yfSym) return {};
 
-  // Try to get chart data from multiple sources
   let closes = [], highs = [], lows = [];
 
-  // ── Source 1: Railway /api/technicals (server-side yfinance — most accurate) ──
+  // ── Source 1: Railway /api/technicals (yfinance server-side) ──
   try {
-    const r = await fetch(API_BASE + '/technicals/' + sym, { signal: AbortSignal.timeout(15000) });
+    const r = await fetch(API_BASE + '/technicals/' + sym, { signal: AbortSignal.timeout(12000) });
     if (r.ok) {
       const d = await r.json();
       if (!d.error && d.rsi != null) {
-        const tech = { ...d, _ts: Date.now() };
-        _techCache[sym] = tech;
-        return tech;
+        _techCache[sym] = { ...d, _ts: Date.now() };
+        return _techCache[sym];
       }
     }
   } catch(e) {}
 
-  // ── Source 2: Vercel /api/quote with v8 chart (6 months daily) ──
-  const chartUrls = [
+  // ── Source 2: Vercel /api/quote — fetch v8 chart via serverless (no CORS) ──
+  // We build a special chart URL and pass it through our own Vercel proxy
+  const chartEndpoints = [
+    '/api/quote?chart=' + encodeURIComponent(yfSym),  // custom chart param if supported
     'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yfSym) + '?interval=1d&range=1y',
     'https://query2.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yfSym) + '?interval=1d&range=1y',
   ];
-  const proxies = [
+
+  // Proxy wrappers — try allorigins first (most reliable), then others
+  const wrap = [
     u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
     u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+    u => 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(u),
   ];
 
-  for (const chartUrl of chartUrls) {
-    for (const proxy of proxies) {
+  // Only proxy the direct Yahoo URLs (skip the /api/quote wrapper attempt)
+  const directUrls = chartEndpoints.slice(1);
+  outer:
+  for (const url of directUrls) {
+    for (const proxy of wrap) {
       try {
-        const r = await fetch(proxy(chartUrl), { signal: AbortSignal.timeout(12000) });
+        const r = await fetch(proxy(url), { signal: AbortSignal.timeout(10000) });
         if (!r.ok) continue;
-        const raw  = await r.text();
+        const raw = await r.text();
         let parsed;
-        try { const w = JSON.parse(raw); parsed = w.contents ? JSON.parse(w.contents) : w; }
-        catch(e) { continue; }
+        try {
+          const j = JSON.parse(raw);
+          parsed = j.contents ? JSON.parse(j.contents) : j;
+        } catch(e) { continue; }
         const result = parsed?.chart?.result?.[0];
         if (!result) continue;
-        closes = result.indicators?.quote?.[0]?.close || [];
-        highs  = result.indicators?.quote?.[0]?.high  || [];
-        lows   = result.indicators?.quote?.[0]?.low   || [];
-        if (closes.filter(v => v != null).length >= 20) break;
+        const q = result.indicators?.quote?.[0] || {};
+        closes = q.close || [];
+        highs  = q.high  || [];
+        lows   = q.low   || [];
+        if (closes.filter(v => v != null).length >= 20) break outer;
       } catch(e) { continue; }
     }
-    if (closes.filter(v => v != null).length >= 20) break;
   }
 
-  // Not enough data
   const validCloses = closes.filter(v => v != null);
-  if (validCloses.length < 20) return {};
+
+  // ── Source 3: If still no chart data, compute what we can from live price only ──
+  if (validCloses.length < 5) {
+    const live = liveStocks.find(x => x.sym === sym);
+    if (live?.price) {
+      // Return minimal data from live price — at least price/chg will show
+      const tech = {
+        rsi: null, macd_bullish: null,
+        ma9: null, ma20: null, ma50: null, ma200: null,
+        above_ma9: null, above_ma20: null, above_ma50: null, above_ma200: null,
+        high_52w: null, low_52w: null, pct_from_high: null,
+        data_points: 0, overall: null, _ts: Date.now(),
+      };
+      _techCache[sym] = tech;
+      return tech;
+    }
+    return {};
+  }
 
   try {
-    // ── RSI(14) ──
-    const rsi = calcRSI(validCloses, 14);
-
-    // ── MACD(12,26,9) ──
+    const cur   = validCloses[validCloses.length - 1];
+    const rsi   = calcRSI(validCloses, 14);
     const ema12 = calcEMA(validCloses, 12);
     const ema26 = calcEMA(validCloses, 26);
     const macdLine = ema12[ema12.length-1] - ema26[ema26.length-1];
-    const macdArr  = validCloses.map((_,i) => {
-      const e12 = calcEMA(validCloses.slice(0, i+1), 12);
-      const e26 = calcEMA(validCloses.slice(0, i+1), 26);
-      return (e12[e12.length-1]||0) - (e26[e26.length-1]||0);
-    }).slice(-30);
-    const signalArr  = calcEMA(macdArr, 9);
-    const macdBullish = macdLine > (signalArr[signalArr.length-1] || 0);
+    // Simplified MACD signal using last 30 MACD values
+    const macdVals = [];
+    for (let i = Math.max(0, validCloses.length-30); i < validCloses.length; i++) {
+      const sl = validCloses.slice(0, i+1);
+      const e12 = calcEMA(sl, 12); const e26 = calcEMA(sl, 26);
+      macdVals.push((e12[e12.length-1]||0) - (e26[e26.length-1]||0));
+    }
+    const sig = calcEMA(macdVals, 9);
+    const macdBullish = macdLine > (sig[sig.length-1] || 0);
 
-    // ── Moving Averages ──
-    const cur   = validCloses[validCloses.length - 1];
     const ma9   = validCloses.length >= 9   ? avg(validCloses.slice(-9))   : null;
     const ma20  = validCloses.length >= 20  ? avg(validCloses.slice(-20))  : null;
     const ma50  = validCloses.length >= 50  ? avg(validCloses.slice(-50))  : null;
     const ma200 = validCloses.length >= 200 ? avg(validCloses.slice(-200)) : null;
 
-    // ── 52W High/Low ──
     const validHigh = highs.filter(v => v != null);
     const validLow  = lows.filter(v => v != null);
     const high52w = validHigh.length ? Math.max(...validHigh) : null;
     const low52w  = validLow.length  ? Math.min(...validLow)  : null;
-
-    // ── Distance from 52W High ──
     const pctFrom52wHigh = high52w ? ((cur - high52w) / high52w * 100) : null;
 
-    // ── Overall Signal ──
     const bulls = [rsi>50, macdBullish, ma20&&cur>ma20, ma50&&cur>ma50, ma200&&cur>ma200].filter(Boolean).length;
     const overall = bulls >= 4 ? 'STRONG BUY' : bulls === 3 ? 'BUY' : bulls === 2 ? 'NEUTRAL' : bulls === 1 ? 'SELL' : 'STRONG SELL';
 
     const tech = {
-      rsi:             rsi  ? parseFloat(rsi.toFixed(1))  : null,
-      macd_bullish:    macdBullish,
-      ma9:             ma9  ? parseFloat(ma9.toFixed(2))  : null,
-      ma20:            ma20 ? parseFloat(ma20.toFixed(2)) : null,
-      ma50:            ma50 ? parseFloat(ma50.toFixed(2)) : null,
-      ma200:           ma200? parseFloat(ma200.toFixed(2)): null,
-      above_ma9:       ma9  ? cur > ma9   : null,
-      above_ma20:      ma20 ? cur > ma20  : null,
-      above_ma50:      ma50 ? cur > ma50  : null,
-      above_ma200:     ma200? cur > ma200 : null,
-      high_52w:        high52w  ? parseFloat(high52w.toFixed(2))  : null,
-      low_52w:         low52w   ? parseFloat(low52w.toFixed(2))   : null,
-      pct_from_high:   pctFrom52wHigh ? parseFloat(pctFrom52wHigh.toFixed(2)) : null,
-      data_points:     validCloses.length,
-      overall,
-      _ts: Date.now(),
+      rsi: rsi ? parseFloat(rsi.toFixed(1)) : null, macdBullish,
+      macd_bullish: macdBullish,
+      ma9:   ma9   ? parseFloat(ma9.toFixed(2))   : null,
+      ma20:  ma20  ? parseFloat(ma20.toFixed(2))  : null,
+      ma50:  ma50  ? parseFloat(ma50.toFixed(2))  : null,
+      ma200: ma200 ? parseFloat(ma200.toFixed(2)) : null,
+      above_ma9:   ma9   != null ? cur > ma9   : null,
+      above_ma20:  ma20  != null ? cur > ma20  : null,
+      above_ma50:  ma50  != null ? cur > ma50  : null,
+      above_ma200: ma200 != null ? cur > ma200 : null,
+      high_52w: high52w ? parseFloat(high52w.toFixed(2)) : null,
+      low_52w:  low52w  ? parseFloat(low52w.toFixed(2))  : null,
+      pct_from_high: pctFrom52wHigh ? parseFloat(pctFrom52wHigh.toFixed(2)) : null,
+      data_points: validCloses.length, overall, _ts: Date.now(),
     };
     _techCache[sym] = tech;
     return tech;
@@ -8566,6 +8580,8 @@ async function fetchTechnicals(sym) {
   return {};
 }
 
+
+  const yfSym = YF_STOCK_MAP[sym];
 function calcRSI(closes, period) {
   const clean = closes.filter(v => v != null);
   if (clean.length < period + 1) return null;
@@ -8591,7 +8607,6 @@ function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : nu
 
 async function renderCompare(){
   const el=document.getElementById('compareBody'); if(!el) return;
-  // Use STATIC_STOCKS as base (always available), enriched with live prices
   const syms = STATIC_STOCKS.map(s=>s.sym).sort();
   ['cmp_s1','cmp_s2','cmp_s3'].forEach((id,i)=>{
     const sel=document.getElementById(id); if(!sel) return;
@@ -8603,59 +8618,70 @@ async function renderCompare(){
   const picks=['cmp_s1','cmp_s2','cmp_s3'].map(id=>document.getElementById(id)?.value).filter(Boolean);
   if(!picks.length){ el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);">Select stocks above to compare.</div>'; return; }
 
-  // Show loading state
-  el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);"><div class="loading-spin"></div><div style="margin-top:10px;font-size:12px;">Fetching live technicals…</div></div>';
-
-  // Fetch technicals for all picks in parallel
-  const techResults = await Promise.all(picks.map(sym => fetchTechnicals(sym)));
-
+  // ── Step 1: Render prices IMMEDIATELY from liveStocks/STATIC_STOCKS ──
   const getStock = (sym, tech) => {
     const live = liveStocks.find(x=>x.sym===sym) || {};
     const stat = STATIC_STOCKS.find(x=>x.sym===sym) || {};
     return Object.assign({}, stat, live, tech || {});
   };
-  const stocks = picks.map((sym, i) => getStock(sym, techResults[i]));
-  const fmt = (v,d) => v!=null&&v!==''?parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:d||2}):'—';
 
-  var rows=[
-    ['Price',           function(s){ return s.price?'₹'+fmt(s.price):'—'; },                                                null],
-    ['Change Today',    function(s){ return s.chg||'—'; },                                                                   function(s){ return parseFloat(s.chg)>=0; }],
-    ['RSI (14)',        function(s){ return s.rsi!=null?s.rsi.toFixed(1)+' / 100':'—'; },                                   function(s){ return s.rsi&&s.rsi>50; }],
-    ['Signal',          function(s){ return s.overall||'—'; },                                                               function(s){ return (s.overall||'').includes('BUY'); }],
-    ['MACD',            function(s){ return s.macd_bullish!=null?(s.macd_bullish?'📈 Bullish':'📉 Bearish'):'—'; },         function(s){ return s.macd_bullish; }],
-    ['9 DMA',           function(s){ return s.ma9?'₹'+fmt(s.ma9):'—'; },                                                    null],
-    ['Above 9 DMA',     function(s){ return s.above_ma9!=null?(s.above_ma9?'✓ Yes':'✗ No'):'—'; },                         function(s){ return s.above_ma9; }],
-    ['20 DMA',          function(s){ return s.ma20?'₹'+fmt(s.ma20):'—'; },                                                  null],
-    ['Above 20 DMA',    function(s){ return s.above_ma20!=null?(s.above_ma20?'✓ Yes':'✗ No'):'—'; },                       function(s){ return s.above_ma20; }],
-    ['50 DMA',          function(s){ return s.ma50?'₹'+fmt(s.ma50):'—'; },                                                  null],
-    ['Above 50 DMA',    function(s){ return s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):'—'; },                       function(s){ return s.above_ma50; }],
-    ['200 DMA',         function(s){ return s.ma200?'₹'+fmt(s.ma200):'—'; },                                                null],
-    ['Above 200 DMA',   function(s){ return s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):'—'; },                     function(s){ return s.above_ma200; }],
-    ['52W High',        function(s){ return s.high_52w?'₹'+fmt(s.high_52w):'—'; },                                          null],
-    ['52W Low',         function(s){ return s.low_52w?'₹'+fmt(s.low_52w):'—'; },                                            null],
-    ['From 52W High',   function(s){ return s.pct_from_high!=null?(s.pct_from_high>=0?'+':'')+s.pct_from_high.toFixed(2)+'%':'—'; }, function(s){ return s.pct_from_high!=null&&s.pct_from_high>=0; }],
-    ['Sector',          function(s){ return s.sector||'—'; },                                                                null],
-  ];
+  const renderTable = (stocks, techResults, loading) => {
+    const fmt = (v,d) => v!=null&&v!==''?parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:d||2}):'—';
+    const rows=[
+      ['Price',         s => s.price?'₹'+fmt(s.price):'—',                                                          null],
+      ['Change Today',  s => s.chg||'—',                                                                             s => parseFloat(s.chg)>=0],
+      ['RSI (14)',      s => s.rsi!=null?s.rsi.toFixed(1)+' / 100':(loading?'…':'—'),                               s => s.rsi&&s.rsi>50],
+      ['Signal',        s => s.overall||(loading?'…':'—'),                                                           s => (s.overall||'').includes('BUY')],
+      ['MACD',          s => s.macd_bullish!=null?(s.macd_bullish?'📈 Bullish':'📉 Bearish'):(loading?'…':'—'),     s => s.macd_bullish],
+      ['9 DMA',         s => s.ma9?'₹'+fmt(s.ma9):(loading?'…':'—'),                                               null],
+      ['Above 9 DMA',   s => s.above_ma9!=null?(s.above_ma9?'✓ Yes':'✗ No'):(loading?'…':'—'),                    s => s.above_ma9],
+      ['20 DMA',        s => s.ma20?'₹'+fmt(s.ma20):(loading?'…':'—'),                                             null],
+      ['Above 20 DMA',  s => s.above_ma20!=null?(s.above_ma20?'✓ Yes':'✗ No'):(loading?'…':'—'),                  s => s.above_ma20],
+      ['50 DMA',        s => s.ma50?'₹'+fmt(s.ma50):(loading?'…':'—'),                                             null],
+      ['Above 50 DMA',  s => s.above_ma50!=null?(s.above_ma50?'✓ Yes':'✗ No'):(loading?'…':'—'),                  s => s.above_ma50],
+      ['200 DMA',       s => s.ma200?'₹'+fmt(s.ma200):(loading?'…':'—'),                                           null],
+      ['Above 200 DMA', s => s.above_ma200!=null?(s.above_ma200?'✓ Yes':'✗ No'):(loading?'…':'—'),                s => s.above_ma200],
+      ['52W High',      s => s.high_52w?'₹'+fmt(s.high_52w):(loading?'…':'—'),                                     null],
+      ['52W Low',       s => s.low_52w?'₹'+fmt(s.low_52w):(loading?'…':'—'),                                       null],
+      ['From 52W High', s => s.pct_from_high!=null?(s.pct_from_high>=0?'+':'')+s.pct_from_high.toFixed(2)+'%':(loading?'…':'—'), s => s.pct_from_high!=null&&s.pct_from_high>=0],
+      ['Sector',        s => s.sector||'—',                                                                          null],
+    ];
 
-  var thead = '<thead><tr style="border-bottom:2px solid var(--border);">'
-    + '<th style="padding:12px 14px;text-align:left;color:var(--text3);font-family:Space Mono,monospace;font-size:10px;">METRIC</th>'
-    + stocks.map(function(s){ return '<th style="padding:12px 14px;text-align:center;font-size:15px;letter-spacing:2px;font-weight:800;">'+s.sym+'</th>'; }).join('')
-    + '</tr></thead>';
+    const thead = '<thead><tr style="border-bottom:2px solid var(--border);">'
+      + '<th style="padding:12px 14px;text-align:left;color:var(--text3);font-family:Space Mono,monospace;font-size:10px;white-space:nowrap;">METRIC</th>'
+      + stocks.map(s=>'<th style="padding:12px 14px;text-align:center;font-size:15px;letter-spacing:2px;font-weight:800;">'+s.sym+'</th>').join('')
+      + '</tr></thead>';
 
-  var tbody = '<tbody>' + rows.map(function(row){
-    var label=row[0], val=row[1], isPos=row[2];
-    var tr = '<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background=var_bg3" onmouseout="this.style.background=empty"><td style="padding:11px 14px;font-size:11px;color:var(--text3);">'+label+'</td>';
-    tr = tr.replace('var_bg3', "'var(--bg3)'").replace('empty', "''");
-    return tr
-      + stocks.map(function(s){ var v=val(s); var pos=isPos?isPos(s):null; var col=pos===null?'var(--text)':pos?'var(--green)':'var(--red)'; return '<td style="padding:11px 14px;text-align:center;font-weight:700;color:'+col+';">'+v+'</td>'; }).join('')
-      + '</tr>';
-  }).join('') + '</tbody>';
+    const tbody = '<tbody>' + rows.map(([label,val,isPos]) => {
+      let tr = '<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
+        + '<td style="padding:11px 14px;font-size:11px;color:var(--text3);white-space:nowrap;">'+label+'</td>';
+      return tr + stocks.map(s => {
+        const v = val(s);
+        const pos = isPos ? isPos(s) : null;
+        const col = pos===null ? 'var(--text)' : pos ? 'var(--green)' : 'var(--red)';
+        const isLoading = v === '…';
+        return '<td style="padding:11px 14px;text-align:center;font-weight:700;color:'+(isLoading?'var(--text3)':col)+';'+(isLoading?'opacity:0.4;':'')+'">' + v + '</td>';
+      }).join('') + '</tr>';
+    }).join('') + '</tbody>';
 
-  el.innerHTML='<div style="overflow-x:auto;padding:16px;">'
-    + '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:12px;padding:6px 10px;background:var(--bg3);border-radius:6px;display:inline-block;">'
-    + '📊 Technicals from 1-year daily data · ' + picks.map((s,i)=>{const t=techResults[i];return s+(t&&t.data_points?(' ('+t.data_points+'d)'):' (—)');}).join(' · ')
-    + '</div>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'+thead+tbody+'</table></div>';
+    const statusLine = loading
+      ? '<div style="font-size:10px;color:var(--accent);font-family:Space Mono,monospace;margin-bottom:12px;padding:6px 10px;background:rgba(0,112,243,0.08);border-radius:6px;display:inline-flex;align-items:center;gap:6px;"><div class="loading-spin" style="width:10px;height:10px;border-width:2px;"></div> Fetching technicals…</div>'
+      : '<div style="font-size:10px;color:var(--text3);font-family:Space Mono,monospace;margin-bottom:12px;padding:6px 10px;background:var(--bg3);border-radius:6px;display:inline-block;">📊 '
+        + (techResults ? picks.map((s,i)=>{const t=techResults[i];return s+(t&&t.data_points?(' ('+t.data_points+'d)'):' (no chart data)');}).join(' · ') : 'Prices only')
+        + '</div>';
+
+    el.innerHTML = '<div style="overflow-x:auto;padding:16px;">' + statusLine
+      + '<table style="width:100%;border-collapse:collapse;font-size:13px;">' + thead + tbody + '</table></div>';
+  };
+
+  // Immediately render with prices (technicals show "…")
+  const initialStocks = picks.map(sym => getStock(sym, {}));
+  renderTable(initialStocks, null, true);
+
+  // Then fetch technicals async and re-render
+  const techResults = await Promise.all(picks.map(sym => fetchTechnicals(sym)));
+  const finalStocks = picks.map((sym,i) => getStock(sym, techResults[i]));
+  renderTable(finalStocks, techResults, false);
 }
 
 // ═══════════════════════════════════════════════════════════════════
