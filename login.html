@@ -366,7 +366,7 @@ async function handleSignup(e) {
 
   const isNew = _saveAccount(name, email, password);
   // New users go through onboarding flow
-  window.location.href = isNew ? 'verify.html' : 'session-keep.html';
+  window.location.href = isNew ?  'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
