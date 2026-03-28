@@ -72,6 +72,12 @@ body.bg-neon {
   --border:rgba(0,255,136,0.12); --text:#e0ffe8; --text2:#00cc66; --text3:#006633;
   background: linear-gradient(135deg,#030303 0%,#080818 50%,#030308 100%) fixed !important;
 }
+body.bg-sunny {
+  --bg:#fef9f0; --bg2:#fffdf8; --bg3:#f7f0e4; --panel:#fffdf8;
+  --border:rgba(180,140,80,0.2); --text:#1a1209; --text2:#5c4326; --text3:#9c8060;
+  background: linear-gradient(135deg,#fef9f0 0%,#fdf3dc 50%,#fef9f0 100%) fixed !important;
+}
+
 /* Ensure all panels use the bg variable */
 body[class*='bg-'] header,
 body[class*='bg-'] .panel,
@@ -813,7 +819,6 @@ header {
   .right-sidebar { display: flex !important; }
   .bottom-nav    { display: none !important; }
   .mp-btn-left, .mp-btn-right { display: none !important; }
-  .mp-drawer, .mp-drawer-overlay { display: none !important; }
   .main-feed     { flex: 1 !important; width: auto !important; }
   body           { min-width: 1024px !important; overflow-x: auto !important; }
 }
@@ -5411,6 +5416,7 @@ const BG_THEMES = [
   { id:'midnight', label:'Midnight', emoji:'🌃', preview:'linear-gradient(135deg,#0a0a0f,#1a1a2e,#16213e)' },
   { id:'gold',     label:'Gold',     emoji:'✨', preview:'linear-gradient(135deg,#f7971e,#ffd200,#fff3a3)' },
   { id:'neon',     label:'Neon',     emoji:'⚡', preview:'linear-gradient(135deg,#0d0d0d,#1a0033,#00ff88)' },
+  { id:'sunny',    label:'Sunny',    emoji:'☀️', preview:'linear-gradient(135deg,#fef9f0,#fdf3dc,#fde8b0)' },
 ];
 
 function applySettings(s) {
@@ -5433,7 +5439,7 @@ function applySettings(s) {
   body.classList.remove('font-small','font-normal','font-large');
   if (s.fontSize) body.classList.add('font-' + s.fontSize);
   // Background theme
-  body.classList.remove('bg-cosmos','bg-aurora','bg-sunset','bg-forest','bg-ocean','bg-sakura','bg-midnight','bg-gold','bg-neon');
+  body.classList.remove('bg-cosmos','bg-aurora','bg-sunset','bg-forest','bg-ocean','bg-sakura','bg-midnight','bg-gold','bg-neon','bg-sunny');
   if (s.bgTheme && s.bgTheme !== 'none') body.classList.add('bg-' + s.bgTheme);
 }
 
@@ -5453,6 +5459,7 @@ const BG_COLORS = {
   midnight: {bg:'#050508',card:'#0a0a12',text:'#d0d0f0',accent:'#818cf8'},
   gold:     {bg:'#1a1000',card:'#261800',text:'#fff8d0',accent:'#fbbf24'},
   neon:     {bg:'#030303',card:'#080810',text:'#e0ffe8',accent:'#00ff88'},
+  sunny:    {bg:'#fef9f0',card:'#fffdf8',text:'#1a1209',accent:'#c97c10'},
 };
 function renderBgCard(bg, curBg) {
   const active = curBg === bg.id;
@@ -13252,7 +13259,6 @@ setInterval(_syncMobileTrending, 30000);
   window.addEventListener('resize', setDrawerBtns);
 
   window.mpOpenDrawer = function(side){
-    if(!isMobile()) return; // never open on desktop
     if(side === 'right'){
       var el = document.getElementById('mpRightContent');
       if(el){
