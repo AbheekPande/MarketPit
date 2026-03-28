@@ -146,7 +146,7 @@ try {
 <!-- Real Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <div id="g_id_onload"
-  data-client_id="329129705952-m47can70icphk5e0ovsheemohmqkhpcn.apps.googleusercontent.com"
+  data-client_id="YOUR_GOOGLE_CLIENT_ID"
   data-callback="handleGoogleLogin"
   data-auto_select="false"
   data-itp_support="true">
@@ -168,7 +168,7 @@ try {
 <span class="bg-surface-container-lowest px-4 text-outline font-label">or institutional mail</span>
 </div>
 </div>
-<!-- Form → submits to verify.html with email -->
+<!-- Sign In form -->
 <form class="space-y-6" onsubmit="handleLogin(event)">
 <div class="space-y-2">
 <label class="block text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant" for="email">Email Address</label>
@@ -182,7 +182,7 @@ try {
 <input class="w-full bg-surface-container-high border-none focus:ring-2 focus:ring-primary-fixed/30 rounded-lg py-3 px-4 text-on-surface font-body transition-all" id="password" placeholder="••••••••" type="password"/>
 </div>
 <div class="pt-2">
-<!-- Sign In → goes to verify page -->
+<!-- Sign In button -->
 <button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold py-4 rounded-lg shadow-lg hover:opacity-90 active:scale-95 transition-all duration-150" type="submit">
                                 Sign In to Market Pit
                             </button>
@@ -286,24 +286,7 @@ function isExistingUser(email) {
   return getStoredAccounts().some(a => a.email.toLowerCase() === email.toLowerCase());
 }
 
-async function sendOTP(email, extra = {}) {
-  const controller = new AbortController();
-  const timeout    = setTimeout(() => controller.abort(), 12000);
-  try {
-    const res = await fetch(`${RAILWAY}/api/send-otp`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email, ...extra }),
-      signal:  controller.signal,
-    });
-    clearTimeout(timeout);
-    return await res.json();
-  } catch (err) {
-    clearTimeout(timeout);
-    if (err.name === 'AbortError') throw new Error('Request timed out. Please try again in 15 seconds.');
-    throw new Error('Cannot reach server. Check your internet connection.');
-  }
-}
+
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -365,8 +348,8 @@ async function handleSignup(e) {
   btn.disabled    = true;
 
   const isNew = _saveAccount(name, email, password);
-  // New users go through onboarding flow
-  window.location.href = isNew ? 'verify.html' : 'session-keep.html';
+  // Skip OTP — go straight to onboarding for new users, session-keep for existing
+  window.location.href = isNew ? 'onboarding.html' : 'session-keep.html';
 }
 
 // ── Save account to local storage ────────────────────────────────────────────
