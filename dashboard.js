@@ -18,14 +18,14 @@ async function checkApiAndWake() {
     const r = await fetch(API_BASE + '/status', { signal: AbortSignal.timeout(3000) });
     if (r.ok) { _apiOnline = true; _apiChecked = true; _apiWaking = false; return true; }
   } catch(e) {}
-  // Non-blocking retry in background — don't freeze
+  // Non-blocking retry — don't freeze the page
   setTimeout(async () => {
     try {
-      const r2 = await fetch(API_BASE + '/status', { signal: AbortSignal.timeout(5000) });
-      if (r2.ok) { _apiOnline = true; fetchLiveData(); }
+      const r = await fetch(API_BASE + '/status', { signal: AbortSignal.timeout(5000) });
+      if (r.ok) { _apiOnline = true; fetchLiveData(); }
     } catch(e) {}
     _apiWaking = false; _apiChecked = true;
-  }, 8000);
+  }, 10000);
   _apiChecked = true; _apiWaking = false;
   return false;
 }
@@ -441,24 +441,22 @@ const YF_STOCK_MAP = {
 
 // Fetch one stock/index/commodity via Yahoo Finance — tries multiple proxies
 async function yfFetch(yfSym) {
-  // ── Try Vercel /api/quote only if API is confirmed online ──
-  if (_apiOnline) {
-    try {
-      const r = await fetch(`/api/quote?symbols=${encodeURIComponent(yfSym)}`, { signal: AbortSignal.timeout(5000) });
-      if (r.ok) {
-        const j = await r.json();
-        const q = j?.quoteResponse?.result?.[0];
-        if (q?.regularMarketPrice) {
-          const price = q.regularMarketPrice;
-          const prev  = q.regularMarketPreviousClose || price;
-          const chg   = prev ? ((price - prev) / prev * 100) : 0;
-          return { price, prev, chg, up: chg >= 0 };
-        }
+  // ── Primary: Vercel /api/quote — only if API is confirmed online ──
+  if (_apiOnline) try {
+    const r = await fetch(`/api/quote?symbols=${encodeURIComponent(yfSym)}`, { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const j = await r.json();
+      const q = j?.quoteResponse?.result?.[0];
+      if (q?.regularMarketPrice) {
+        const price = q.regularMarketPrice;
+        const prev  = q.regularMarketPreviousClose || price;
+        const chg   = prev ? ((price - prev) / prev * 100) : 0;
+        return { price, prev, chg, up: chg >= 0 };
       }
-    } catch(e) {}
-  }
+    }
+  } catch(e) {}
 
-  // ── Browser CORS proxies — always available ──
+  // ── Fallback: browser proxies ──
   const url = `${YF_BASE}${yfSym}?interval=1m&range=1d`;
   for (const proxyFn of YF_PROXIES) {
     try {
@@ -483,15 +481,26 @@ async function yfFetch(yfSym) {
 let _cgCache = null;
 let _cgCacheTime = 0;
 async function cgFetchAll() {
-  if (_cgCache && Date.now() - _cgCacheTime < 25000) return _cgCache; // 25s TTL — fresh on every 30s tick
+  if (_cgCache && Date.now() - _cgCacheTime < 25000) return _cgCache;
   const ids = Object.values(CG_IDS).join(',');
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-  const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-  if (!r.ok) throw new Error('CoinGecko error');
-  const data = await r.json();
-  _cgCache = data;
-  _cgCacheTime = Date.now();
-  return data;
+  const sources = [
+    () => fetch(url, { signal: AbortSignal.timeout(6000) }),
+    () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(8000) }),
+    () => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(8000) }),
+  ];
+  for (const src of sources) {
+    try {
+      const r = await src();
+      if (!r.ok) continue;
+      const raw = await r.json();
+      const data = raw.contents ? JSON.parse(raw.contents) : raw;
+      if (!data || typeof data !== 'object' || !Object.keys(data).length) continue;
+      _cgCache = data; _cgCacheTime = Date.now();
+      return data;
+    } catch(e) { continue; }
+  }
+  throw new Error('CoinGecko all sources failed');
 }
 
 // Fetch a single crypto price
@@ -704,11 +713,9 @@ async function _fetchAllMovers() {
 
 // Refresh movers every 30 seconds
 setInterval(_fetchAllMovers, 30000);
-setInterval(fetchCommoditiesLive, 60000); // commodities every 60s
-setInterval(_fetchIndicesYF, 60000); // indices every 60s
 setInterval(fetchPriorityStocks, 30000); // live stock prices every 30s
 // Refresh ticker every 20 seconds
-setInterval(updateTickerFromLive, 15000);
+setInterval(updateTickerFromLive, 20000);
 setInterval(() => renderTrending(liveStocks), 30000);
 // Refresh sidebar every 15 seconds
 setInterval(() => renderTrending(liveStocks), 15000);
@@ -7581,36 +7588,20 @@ function onLiveDataUpdate(){
 }
 
 // ── STARTUP — wait for DOM to be ready ──
-
-// ── Fetch commodities via Yahoo Finance proxies (always works, no /api needed) ──
-const COMM_YF_MAP = {
-  'GOLD': 'GC=F', 'SILVER': 'SI=F', 'CRUDE': 'CL=F', 'BRENT': 'BZ=F',
-  'NATURALGAS': 'NG=F', 'COPPER': 'HG=F', 'PLATINUM': 'PL=F', 'WHEAT': 'ZW=F',
-};
-
-// ── Fetch Nifty/BankNifty directly via Yahoo Finance proxies ──
-async function _fetchIndicesYF() {
-  const pairs = [
-    ['^NSEI',       'NIFTY 50',       'NIFTY'],
-    ['^NSEBANK',    'NIFTY BANK',     'BANKNIFTY'],
-    ['^CNXFINANCE', 'NIFTY FIN SVC',  'FINNIFTY'],
-  ];
-  if (!window._liveIndices) window._liveIndices = {};
-  await Promise.allSettled(pairs.map(async ([yfSym, name, short]) => {
-    try {
-      const { price, chg, up } = await yfFetch(yfSym);
-      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
-      const obj = { sym: short, name, price, chg: chgStr, up, _live: true };
-      window._liveIndices[name]  = obj;
-      window._liveIndices[short] = obj;
-    } catch(e) {}
-  }));
-  try { if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks(); } catch(e) {}
-  try { updateTickerFromLive(); } catch(e) {}
-}
-
+// ── Fetch commodity prices via Yahoo Finance CORS proxies ──
 async function fetchCommoditiesLive() {
-  await Promise.allSettled(Object.entries(COMM_YF_MAP).map(async ([sym, yfSym]) => {
+  const COMM_MAP = {
+    'GOLD':'GC=F','SILVER':'SI=F','CRUDE':'CL=F','BRENT':'BZ=F',
+    'NATURALGAS':'NG=F','COPPER':'HG=F','PLATINUM':'PL=F','WHEAT':'ZW=F'
+  };
+  const syms = Object.values(COMM_MAP);
+  const symStr = syms.join(',');
+  // Try batch fetch via proxy first
+  const proxies = [
+    () => fetch(`https://query1.finance.yahoo.com/v8/finance/spark?symbols=${encodeURIComponent(symStr)}&range=1d&interval=1d`, {signal: AbortSignal.timeout(6000)}),
+  ];
+  // Fall back to individual yfFetch calls
+  await Promise.allSettled(Object.entries(COMM_MAP).map(async ([sym, yfSym]) => {
     try {
       const { price, chg, up } = await yfFetch(yfSym);
       const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
@@ -7619,8 +7610,9 @@ async function fetchCommoditiesLive() {
       else liveStocks.push({ sym, name: sym, price, chg: chgStr, up, currency: '$', _live: true });
     } catch(e) {}
   }));
-  try { updateWhatsMoving(); onLiveDataUpdate(); } catch(e) {}
+  try { onLiveDataUpdate(); } catch(e) {}
 }
+
 
 function _mpInit() {
   updateAvatars();
@@ -7636,24 +7628,29 @@ function _mpInit() {
   updateWhatsMoving();   // shows static gainers/losers immediately
   renderSidebarMmi();
   onLiveDataUpdate();
-  // ── STEP 2: Fire fetches immediately — fast sources first ──
-  fetchCryptoLive();                                             // CoinGecko — instant, no API needed
-  setTimeout(() => fetchPriorityStocks(), 100);                 // Top NSE stocks via YF proxy
-  setTimeout(() => _fetchIndicesYF(), 150);                     // Nifty/BankNifty via YF proxy
-  setTimeout(() => fetchCommoditiesLive(), 200);                // Gold/Oil/Silver via YF proxy
-  setTimeout(() => _fetchAllMovers(), 400);                     // Market movers
-  setTimeout(() => fetchLiveData(), 1000);                      // Railway full sync (if online)
-  setTimeout(() => loadSymbols(), 1500);                        // Search index
+  // ── STEP 2: Fire ALL live fetches in parallel — don't wait for Railway ──
+  fetchCryptoLive();
+  _fetchIndicesVercel();
+  fetchCommoditiesLive();
+  setTimeout(() => fetchPriorityStocks(), 300);
+  setTimeout(() => _fastBootstrapStocks(), 700);
+  setTimeout(() => _fetchAllMovers(), 1200);
+  setTimeout(() => fetchLiveData(), 1800);
+  setTimeout(() => loadSymbols(), 2500);
 
-  // ── STEP 3: Re-render as data arrives ──
-  setTimeout(() => { try { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); } catch(e) {} }, 2500);
-  setTimeout(() => { try { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); } catch(e) {} }, 6000);
+  // ── STEP 3: Safety re-renders — update sidebar as data arrives ──
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); }, 2000);
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 5000);
+  setTimeout(() => { renderTrending(liveStocks); onLiveDataUpdate(); updateTickerFromLive(); }, 10000);
 }
 
 // Fetch Nifty/BankNifty/Sensex via Vercel /api/indices (server-side, no CORS)
 async function _fetchIndicesVercel() {
+  // Always fetch Nifty/BankNifty via YF proxy — fast and no server needed
+  _fetchIndicesYF();
+  // Also try Vercel API but with short timeout so it doesn't block
   try {
-    const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
+    const r = await fetch('/api/indices', { signal: AbortSignal.timeout(3000) });
     if (!r.ok) return;
     const d = await r.json();
     if (!window._liveIndices) window._liveIndices = {};
@@ -7663,6 +7660,26 @@ async function _fetchIndicesVercel() {
     if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks();
     updateTickerFromLive();
   } catch(e) {}
+}
+
+// ── Fetch indices directly via Yahoo Finance proxy — no server needed ──
+async function _fetchIndicesYF() {
+  const pairs = [
+    ['^NSEI',    'NIFTY 50',   'NIFTY'],
+    ['^NSEBANK', 'NIFTY BANK', 'BANKNIFTY'],
+  ];
+  if (!window._liveIndices) window._liveIndices = {};
+  await Promise.allSettled(pairs.map(async ([yfSym, name, short]) => {
+    try {
+      const { price, chg, up } = await yfFetch(yfSym);
+      const chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
+      const obj = { sym: short, name, price, chg: chgStr, up, _live: true };
+      window._liveIndices[name]  = obj;
+      window._liveIndices[short] = obj;
+    } catch(e) {}
+  }));
+  try { if (typeof updateHeroFromLiveStocks === 'function') updateHeroFromLiveStocks(); } catch(e) {}
+  try { updateTickerFromLive(); } catch(e) {}
 }
 
 // Fast-fetch top 25 most-watched NSE stocks via YF in parallel
@@ -8180,24 +8197,13 @@ setInterval(() => {
   fetchLiveData();
   _fetchIndicesVercel(); // refresh indices every cycle too
 }, 20000);
-// Bootstrap retry every 15s for max 3 tries (via YF proxy, not Railway)
+// Fast bootstrap: retry every 10s until Railway comes up (max 12 tries = 2 min)
 let _bsRetries = 0;
-const _bsTimer = setInterval(()=>{
-  if (window._hasLiveData || _bsRetries++ > 3) { clearInterval(_bsTimer); return; }
-  // Use YF proxy directly — don't wait for Railway
-  Promise.allSettled(_FAST_SYMS.slice(0, 10).map(async sym => {
-    const yfSym = YF_STOCK_MAP[sym]; if (!yfSym) return;
-    try {
-      const {price, chg, up} = await yfFetch(yfSym);
-      const s = liveStocks.find(x=>x.sym===sym);
-      if (s && price) { s.price=price; s.chg=(up?'+':'')+chg.toFixed(2)+'%'; s.up=up; s._live=true; }
-    } catch(e){}
-  })).then(() => {
-    try { renderTrending(liveStocks); updateWhatsMoving(); updateTickerFromLive(); onLiveDataUpdate(); } catch(e){}
-    const ts = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-    try { setLiveStatus('live', '● LIVE · ' + ts + ' IST'); window._hasLiveData = true; } catch(e){}
-  });
-}, 15000);
+const _bsTimer = setInterval(() => {
+  if (window._hasLiveData || _bsRetries++ > 4) { clearInterval(_bsTimer); return; }
+  // Use direct YF proxy — works without Railway
+  fetchPriorityStocks().catch(() => {});
+}, 20000);
 
 
 // ── VISIBILITY-AWARE REFRESH: pause everything when tab not visible ──
@@ -8220,17 +8226,18 @@ setInterval(pingRailway, 8 * 60 * 1000); // every 8 minutes
 // ── WAKE-UP RETRY: if Railway is offline at startup, retry every 15s for 3 mins ──
 let _wakeRetries = 0;
 const _wakeTimer = setInterval(async () => {
-  if (_apiOnline || _wakeRetries > 12) { clearInterval(_wakeTimer); return; }
+  if (_apiOnline || _wakeRetries > 6) { clearInterval(_wakeTimer); return; }
   _wakeRetries++;
+  // Short timeout — don't block, just check
   try {
-    const r = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(8000) });
+    const r = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       _apiOnline = true;
       clearInterval(_wakeTimer);
-      fetchLiveData(); // fetch full dataset now that Railway is up
+      fetchLiveData();
     }
   } catch(e) {}
-}, 15000);
+}, 20000);
 
 // Live clock — updates every second
 function tickClock() {
@@ -10238,7 +10245,7 @@ function renderHeatmap() {
   }
 
   function resetPupils() {
-    banner.querySelectorAll('.pupil').forEach(p => {
+    document.querySelectorAll('.pupil').forEach(p => {
       p.style.transform = 'translate(0,0)';
     });
   }
