@@ -2080,7 +2080,9 @@ header {
 // ── CONFIG ──
 // Use relative /api path so Vercel proxies to Railway correctly
 // Falls back to direct Railway URL if running locally
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const _isLocalFile = window.location.protocol === 'file:';
+const _isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = (_isLocalFile || _isLocalHost)
   ? 'https://web-production-78fc1.up.railway.app/api'
   : '/api';
 
@@ -2706,7 +2708,7 @@ const PRIORITY_SYMS = [
 async function fetchPriorityStocks() {
   const yfSyms = PRIORITY_SYMS.map(s => YF_STOCK_MAP[s]).filter(Boolean).join(',');
   try {
-    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(12000) });
+    const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(yfSyms), { signal: AbortSignal.timeout(12000) });
     if (r.ok) {
       const j = await r.json();
       let updated = 0;
@@ -2745,7 +2747,7 @@ async function _fetchAllMovers() {
     const batch  = allSyms.slice(i, i + BATCH);
     const yfSyms = batch.map(([,yf]) => yf).join(',');
     try {
-      const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms),
+      const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(yfSyms),
         { signal: AbortSignal.timeout(15000) });
       if (!r.ok) continue;
       const j = await r.json();
@@ -2934,7 +2936,7 @@ async function _fetchYFDirectInner() {
     const batch = allNseItems.slice(i, i + BATCH_SIZE);
     try {
       const symsStr = batch.map(b => b.yf).join(',');
-      const r = await fetch('/api/quote?symbols=' + encodeURIComponent(symsStr), { signal: AbortSignal.timeout(15000) });
+      const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(symsStr), { signal: AbortSignal.timeout(15000) });
       if (r.ok) {
         const j = await r.json();
         (j?.quoteResponse?.result || []).forEach(q => {
@@ -2978,7 +2980,7 @@ async function _fetchYFDirectInner() {
   ];
   try {
     const commSyms = commodities.map(c => c.yf).join(',');
-    const rc = await fetch('/api/quote?symbols=' + encodeURIComponent(commSyms), { signal: AbortSignal.timeout(12000) });
+    const rc = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(commSyms), { signal: AbortSignal.timeout(12000) });
     if (rc.ok) {
       const jc = await rc.json();
       (jc?.quoteResponse?.result || []).forEach(q => {
@@ -8580,8 +8582,6 @@ async function fetchTechnicals(sym) {
   return {};
 }
 
-
-  const yfSym = YF_STOCK_MAP[sym];
 function calcRSI(closes, period) {
   const clean = closes.filter(v => v != null);
   if (clean.length < period + 1) return null;
@@ -9709,7 +9709,7 @@ function _mpInit() {
 // Fetch Nifty/BankNifty/Sensex via Vercel /api/indices (server-side, no CORS)
 async function _fetchIndicesVercel() {
   try {
-    const r = await fetch('/api/indices', { signal: AbortSignal.timeout(10000) });
+    const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/indices', { signal: AbortSignal.timeout(10000) });
     if (!r.ok) return;
     const d = await r.json();
     if (!window._liveIndices) window._liveIndices = {};
@@ -9982,7 +9982,7 @@ async function _fetchMmiData() {
   // Fetch India VIX, Nifty, BankNifty, PCR from Yahoo Finance via /api/quote
   try {
     const syms = ['^INDIAVIX', '^NSEI', '^ENSEBANK', '^BSESN'].join(',');
-    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(syms), { signal: AbortSignal.timeout(10000) });
+    const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(syms), { signal: AbortSignal.timeout(10000) });
     if (r.ok) {
       const j = await r.json();
       const results = j?.quoteResponse?.result || [];
@@ -10375,9 +10375,11 @@ async function loadNews(cat, btn) {
 
   // ── Source 2: RSS2JSON (free public API, no CORS) ──
   try {
-    const url2 = 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)+'&count=16';
+    const url2 = 'https://api.allorigins.win/get?url='+encodeURIComponent(rssUrl);
     const r2 = await fetch(url2, {signal:AbortSignal.timeout(8000)});
-    if(r2.ok){ const j2=await r2.json();
+    if(r2.ok){ const raw2=await r2.json(); const j2={items:[]};
+      if(raw2.contents){ try{ const p=new DOMParser().parseFromString(raw2.contents,'text/xml'); j2.items=Array.from(p.querySelectorAll('item')).map(el=>({title:el.querySelector('title')?.textContent||'',pubDate:el.querySelector('pubDate')?.textContent||'',link:el.querySelector('link')?.textContent||'#',description:el.querySelector('description')?.textContent||'',author:(el.querySelector('source')||{}).textContent||''})); j2.status='ok'; }catch(e){} }
+    if(j2.status==='ok'||j2.items?.length){
       if(j2.status==='ok' && j2.items?.length){
         const items = j2.items.map(i=>({title:i.title||'',link:i.link||'#',date:i.pubDate||'',
           source:(j2.feed?.title||i.author||'Google News'), ago:timeAgo(i.pubDate||'')})).filter(i=>i.title.length>8);
@@ -12298,7 +12300,7 @@ function renderHeatmap() {
 
   // ── Pupil tracking ──
   function trackPupils(cx, cy) {
-    document.querySelectorAll('.eyeball').forEach(eyeball => {
+    banner.querySelectorAll('.eyeball').forEach(eyeball => {
       const pupil = eyeball.querySelector('.pupil');
       if (!pupil) return;
       const er = eyeball.getBoundingClientRect();
@@ -12318,7 +12320,7 @@ function renderHeatmap() {
   }
 
   function resetPupils() {
-    document.querySelectorAll('.pupil').forEach(p => {
+    banner.querySelectorAll('.pupil').forEach(p => {
       p.style.transform = 'translate(0,0)';
     });
   }
@@ -12419,7 +12421,7 @@ async function buildStories() {
   // Fetch prices for all stock/commodity subjects in one batch
   try {
     const yfSyms = STORY_SUBJECTS.filter(s => s.yf).map(s => s.yf).join(',');
-    const r = await fetch('/api/quote?symbols=' + encodeURIComponent(yfSyms), {signal: AbortSignal.timeout(12000)});
+    const r = await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols=' + encodeURIComponent(yfSyms), {signal: AbortSignal.timeout(12000)});
     if (r.ok) {
       const j = await r.json();
       (j?.quoteResponse?.result || []).forEach(q => {
@@ -12447,9 +12449,29 @@ async function buildStories() {
     try {
       const q   = encodeURIComponent(subj.label + ' stock market India');
       const rss = encodeURIComponent('https://news.google.com/rss/search?q=' + q + '&hl=en-IN&gl=IN&ceid=IN:en');
-      const r   = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rss + '&count=3', {signal: AbortSignal.timeout(6000)});
+      const _rssRaw = 'https://news.google.com/rss/search?q=' + encodeURIComponent(subj.label + ' stock market India') + '&hl=en-IN&gl=IN&ceid=IN:en';
+      const _rssProxies = [
+        'https://api.allorigins.win/get?url=' + encodeURIComponent(_rssRaw),
+        'https://corsproxy.io/?' + encodeURIComponent(_rssRaw),
+      ];
+      let j = null;
+      for (const _px of _rssProxies) {
+        try {
+          const _pr = await fetch(_px, {signal: AbortSignal.timeout(7000)});
+          if (!_pr.ok) continue;
+          const _raw = await _pr.json();
+          const _xml = new DOMParser().parseFromString(_raw.contents || '', 'text/xml');
+          const _items = Array.from(_xml.querySelectorAll('item')).slice(0, 3).map(el => ({
+            title: el.querySelector('title')?.textContent || '',
+            link:  el.querySelector('link')?.textContent || '#',
+            pubDate: el.querySelector('pubDate')?.textContent || '',
+            author: el.querySelector('source')?.textContent || 'Google News',
+          })).filter(i => i.title.length > 5);
+          if (_items.length) { j = { status: 'ok', items: _items }; break; }
+        } catch(e) { continue; }
+      }
+      const r = { ok: !!j };
       if (r.ok) {
-        const j = await r.json();
         if (j.status === 'ok' && j.items?.length) {
           if (!_stories[subj.id]) _stories[subj.id] = {};
           _stories[subj.id].news = j.items.slice(0, 3).map(i => ({
@@ -12460,6 +12482,7 @@ async function buildStories() {
           })).filter(n => n.title.length > 10);
         }
       }
+      } // end if j
     } catch(e) {}
   }));
 
@@ -12600,7 +12623,7 @@ function renderStorySlide() {
 async function fetchCommoditiesLive(){
   const C=[{sym:'GOLD',yf:'GC=F'},{sym:'SILVER',yf:'SI=F'},{sym:'CRUDE',yf:'CL=F'},{sym:'BRENT',yf:'BZ=F'},{sym:'NATURALGAS',yf:'NG=F'},{sym:'COPPER',yf:'HG=F'},{sym:'PLATINUM',yf:'PL=F'},{sym:'WHEAT',yf:'ZW=F'},{sym:'CORN',yf:'ZC=F'}];
   const upd=(sym,p,pct)=>{const up=pct>=0,chg=(up?'+':'')+pct.toFixed(2)+'%';const ex=liveStocks.find(s=>s.sym===sym);if(ex){ex.price=p;ex.chg=chg;ex.up=up;ex._live=true;}else{const sc=STATIC_COMMODITIES.find(s=>s.sym===sym);liveStocks.push({...(sc||{sym,name:sym,currency:'$'}),price:p,chg,up,_live:true});}};
-  try{const r=await fetch('/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(12000)});if(r.ok){const j=await r.json();let n=0;(j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const sym=decodeURIComponent(q.symbol||'');const it=C.find(c=>c.yf===sym||c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);n++;});if(n>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}}}catch(e){}
+  try{const r=await fetch((_isLocalFile ? 'https://web-production-78fc1.up.railway.app' : '') + '/api/quote?symbols='+encodeURIComponent(C.map(c=>c.yf).join(',')),{signal:AbortSignal.timeout(12000)});if(r.ok){const j=await r.json();let n=0;(j?.quoteResponse?.result||[]).forEach(q=>{if(!q?.regularMarketPrice)return;const sym=decodeURIComponent(q.symbol||'');const it=C.find(c=>c.yf===sym||c.yf===q.symbol);if(!it)return;upd(it.sym,q.regularMarketPrice,q.regularMarketChangePercent??0);n++;});if(n>0){updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);return;}}}catch(e){}
   await Promise.allSettled(C.map(async it=>{try{const url='https://query1.finance.yahoo.com/v8/finance/chart/'+it.yf+'?interval=1d&range=2d';const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});if(!r.ok)return;const j=await r.json();const m=JSON.parse(j.contents||'{}')?.chart?.result?.[0]?.meta;if(!m?.regularMarketPrice)return;const p2=m.regularMarketPrice,prev=m.previousClose||m.chartPreviousClose||p2;upd(it.sym,p2,((p2-prev)/(prev||1))*100);}catch(e){}}));
   updateTickerFromLive();buildGlobalTicker();renderTrending(liveStocks);
 }
